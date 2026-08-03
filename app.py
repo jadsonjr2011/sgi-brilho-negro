@@ -5,6 +5,8 @@ from flask import send_file
 from io import BytesIO
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import sqlite3
 
 
@@ -155,13 +157,9 @@ def atualizar_banco():
 
 def registrar_historico(integrante_id, acao, status_anterior, status_novo):
 
-    from datetime import datetime
-
-
     conexao = sqlite3.connect(BANCO)
 
     cursor = conexao.cursor()
-
 
     cursor.execute("""
     INSERT INTO historico_integrantes
@@ -639,6 +637,34 @@ def salvar_cadastro():
 
     cursor = conexao.cursor()
 
+    # ==============================
+    # VERIFICAR CPF DUPLICADO
+    # ==============================
+
+    cpf = request.form.get("cpf")
+
+
+    cursor.execute(
+        """
+        SELECT nome 
+        FROM integrantes
+        WHERE cpf = ?
+        """,
+        (cpf,)
+    )
+
+
+    cpf_existente = cursor.fetchone()
+
+
+    if cpf_existente:
+
+        conexao.close()
+
+        return render_template(
+            "cadastro/erro.html",
+        )
+
 
     # ==============================
     # GERAR CÓDIGO DO INTEGRANTE
@@ -667,9 +693,9 @@ def salvar_cadastro():
     # DATA CADASTRO
     # ==============================
 
-    import datetime
-
-    data_cadastro = datetime.datetime.now().strftime(
+    data_cadastro = datetime.now(
+        ZoneInfo("America/Sao_Paulo")
+    ).strftime(
         "%d/%m/%Y %H:%M"
     )
 
@@ -970,9 +996,6 @@ def exportar_pdf():
         Spacer(1,15)
     )
 
-
-
-    from datetime import datetime
 
 
     filtro_texto = (
