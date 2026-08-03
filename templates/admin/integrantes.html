@@ -16,59 +16,67 @@
 👥 Integrantes cadastrados
 </h2>
 
-<div class="text-end mb-3">
+<div class="row align-items-center mb-3">
 
-<a 
-href="/admin/exportar/excel"
-class="btn btn-success">
+    <div class="col-md-6">
 
-📊 Exportar Excel
+        <form 
+        action="/admin/exportar/pdf"
+        method="get"
+        class="d-flex align-items-center gap-2">
 
-</a>
+            <select 
+            name="status"
+            class="form-select"
+            style="width:220px;">
 
+                <option value="">
+                    Todos os integrantes
+                </option>
 
-<form 
-action="/admin/exportar/pdf"
-method="get"
-class="d-inline-flex align-items-center gap-2">
+                <option value="PENDENTE">
+                    Pendentes
+                </option>
 
-<select 
-name="status"
-class="form-select"
-style="width:200px;">
+                <option value="APROVADO">
+                    Aprovados
+                </option>
 
-<option value="">
-Todos os integrantes
-</option>
+                <option value="REPROVADO">
+                    Reprovados
+                </option>
 
-<option value="PENDENTE">
-Pendentes
-</option>
+                <option value="INATIVO">
+                    Inativos
+                </option>
 
-<option value="APROVADO">
-Aprovados
-</option>
-
-<option value="REPROVADO">
-Reprovados
-</option>
-
-<option value="INATIVO">
-Inativos
-</option>
-
-</select>
+            </select>
 
 
-<button 
-type="submit"
-class="btn btn-danger">
+            <button 
+            type="submit"
+            class="btn btn-danger">
 
-📄 Exportar PDF
+                📄 Exportar PDF
 
-</button>
+            </button>
 
-</form>
+        </form>
+
+    </div>
+
+
+    <div class="col-md-6 text-end">
+
+        <a 
+        href="/admin/exportar/excel"
+        class="btn btn-success">
+
+            📊 Exportar Excel
+
+        </a>
+
+    </div>
 
 </div>
 
@@ -145,6 +153,10 @@ Aprovados
 
 </div>
 
+<h3 class="titulo mt-4 mb-3">
+👥 Lista de integrantes cadastrados
+</h3>
+
 <div class="table-responsive">
 
 
@@ -157,7 +169,7 @@ Aprovados
 
 <th>Código</th>
 
-<th>Nome</th>
+<th>Integrante</th>
 
 <th>Cidade</th>
 
