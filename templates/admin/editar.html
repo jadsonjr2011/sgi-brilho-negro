@@ -1,0 +1,186 @@
+{% extends 'layout/base.html' %}
+
+
+{% block titulo %}
+Editar Integrante
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="row justify-content-center">
+
+<div class="col-lg-8">
+
+
+<div class="card-bn">
+
+
+<h2 class="titulo text-center">
+✏️ Editar Integrante
+</h2>
+
+
+<hr>
+
+
+<form method="POST">
+
+
+<label>
+Nome completo
+</label>
+
+<input
+class="form-control"
+name="nome"
+value="{{ integrante.nome }}"
+required>
+
+
+<label>
+Data de nascimento
+</label>
+
+<input
+type="date"
+class="form-control"
+name="data_nascimento"
+value="{{ integrante.data_nascimento }}">
+
+
+<label>
+Telefone
+</label>
+
+<input
+class="form-control"
+name="telefone"
+value="{{ integrante.telefone }}">
+
+
+<label>
+Email
+</label>
+
+<input
+class="form-control"
+name="email"
+value="{{ integrante.email }}">
+
+
+
+<h4 class="mt-4">
+🏠 Endereço
+</h4>
+
+<hr>
+
+
+<label>
+Rua
+</label>
+
+<input
+class="form-control"
+name="rua"
+value="{{ integrante.rua }}">
+
+
+<label>
+Número
+</label>
+
+<input
+class="form-control"
+name="numero"
+value="{{ integrante.numero }}">
+
+
+<label>
+Complemento
+</label>
+
+<input
+class="form-control"
+name="complemento"
+value="{{ integrante.complemento }}">
+
+
+<label>
+Bairro
+</label>
+
+<input
+class="form-control"
+name="bairro"
+value="{{ integrante.bairro }}">
+
+
+<label>
+Cidade
+</label>
+
+<input
+class="form-control"
+name="cidade"
+value="{{ integrante.cidade }}">
+
+
+<label>
+Estado
+</label>
+
+<input
+class="form-control"
+name="estado"
+value="{{ integrante.estado }}">
+
+
+<label>
+CEP
+</label>
+
+<input
+class="form-control"
+name="cep"
+value="{{ integrante.cep }}">
+
+
+
+<div class="text-center mt-5">
+
+
+<button
+class="btn btn-brilho">
+
+💾 Salvar Alterações
+
+</button>
+
+
+<a
+href="/admin/integrante/{{ integrante.id }}"
+class="btn btn-secondary ms-2">
+
+Cancelar
+
+</a>
+
+
+</div>
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+</div>
+
+
+{% endblock %}

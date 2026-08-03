@@ -1,0 +1,70 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Sistema de Gestão de Integrantes
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-7">
+
+        <div class="card-bn text-center">
+
+            <img
+                src="{{ url_for('static', filename='img/logo.png') }}"
+                class="logo-principal mb-2">
+
+            <h2 class="nome-banda mb-1">
+
+                Brilho Negro
+
+            </h2>
+
+            <h1 class="titulo mb-2">
+
+                Sistema de Gestão de Integrantes
+
+            </h1>
+
+            <h5 class="subtitulo mb-4">
+
+                SGI
+
+            </h5>
+
+            <p class="subtitulo mb-3">
+
+                Bem-vindo ao portal oficial do Sistema de Gestão de Integrantes da Brilho Negro.
+
+                <br>
+
+                Escolha uma das opções abaixo para continuar.
+
+            </p>
+
+
+            <div class="mt-5 mb-3">
+
+                <a href="/cadastro" class="btn btn-brilho btn-inicial mx-2">
+
+                    👤 Realizar Cadastro
+
+                </a>
+
+                <a href="/login" class="btn btn-dark btn-inicial mx-2">
+
+                    ⚙️ Área Administrativa
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

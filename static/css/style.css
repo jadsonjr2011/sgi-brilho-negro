@@ -1,0 +1,211 @@
+/* ===========================
+   BRILHO NEGRO - STYLE.CSS
+   Versão 1.0
+=========================== */
+
+:root{
+    --cor-fundo:#0f0f12;
+    --cor-card:#1c1f26;
+    --cor-principal:#111111;
+    --cor-secundaria:#d4af37;
+    --cor-texto:#ffffff;
+    --cor-texto-secundario:#cfcfcf;
+    --cor-borda:#343a40;
+}
+
+
+/* ===========================
+   BODY
+=========================== */
+
+body{
+
+    background:linear-gradient(135deg,#0f0f12,#1d1f25);
+
+    color:var(--cor-texto);
+
+    min-height:100vh;
+
+    font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+
+}
+
+
+/* ===========================
+   NAVBAR
+=========================== */
+
+.navbar{
+
+    background:rgba(15,15,18,.95)!important;
+
+    border-bottom:1px solid rgba(212,175,55,.25);
+
+}
+
+
+/* ===========================
+   LOGO
+=========================== */
+
+.logo-principal{
+    width:170px;
+    transition:.3s;
+}
+
+.logo-principal:hover{
+    transform:scale(1.05);
+}
+
+
+/* ===========================
+   CARD
+=========================== */
+.card-bn{
+    background:rgba(28,31,38,.92);
+    border:1px solid rgba(212,175,55,.18);
+    border-radius:20px;
+    padding:25px 30px 15px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+/* ===========================
+   TITULOS
+=========================== */
+
+.titulo{
+    font-size:2rem;
+    font-weight:700;
+    color:#d6d6d6;
+}
+
+.subtitulo{
+
+    color:var(--cor-texto-secundario);
+
+}
+
+
+/* ===========================
+   BOTÃO PRINCIPAL
+=========================== */
+
+.btn-brilho{
+    background:var(--cor-secundaria);
+    color:#000;
+    font-weight:bold;
+    border:none;
+    border-radius:30px;
+    padding:12px 30px;
+}
+
+.btn-brilho:hover{
+    background:#f1cd57;
+    transform:translateY(-2px);
+}
+
+
+/* ===========================
+   RODAPÉ
+=========================== */
+
+footer{
+    margin-top:10px;
+    color:#9f9f9f;
+}
+
+/* ===========================
+   FORMULÁRIOS
+=========================== */
+
+.form-control,
+.form-select{
+    background:#2a2d34;
+    color:white;
+    border:1px solid #555;
+    border-radius:12px;
+    padding:12px;
+}
+
+/* Placeholder */
+
+.form-control::placeholder{
+    color:#d0d0d0;
+    opacity:1;
+}
+
+.form-control:focus,
+.form-select:focus{
+    background:#2a2d34;
+    color:white;
+    border-color:#d4af37;
+    box-shadow:0 0 10px rgba(212,175,55,.4);
+}
+
+.form-label{
+    font-weight:600;
+    margin-bottom:8px;
+    color:#f5f5f5;
+}
+
+.form-select option{
+    background:#2a2d34;
+    color:white;
+}
+
+.progress{
+    position:relative;
+    height:30px;
+    background:#2f3136;
+}
+
+.progress-bar{
+    height:100%;
+}
+
+.progress > .position-absolute{
+    inset:0;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.progress > .position-absolute span{
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    text-align:center;
+    width:30px;
+}
+
+.is-invalid{
+    border:2px solid #dc3545 !important;
+    box-shadow:0 0 8px rgba(220,53,69,.4);
+}
+
+.nome-banda{
+    color: #FFFFFF;
+    font-size: 2.7rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.btn-inicial{
+    width:260px;
+    padding:12px 30px;
+    border-radius:30px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+.btn-admin{
+    background:#6c757d;
+    color:white;
+    border:none;
+    border-radius:30px;
+}
+
+.btn-admin:hover{
+    background:#5c636a;
+    color:white;
+}

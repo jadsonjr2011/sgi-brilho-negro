@@ -1,0 +1,231 @@
+{% extends 'layout/base.html' %}
+
+
+{% block titulo %}
+Área Administrativa
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+
+<h2 class="titulo text-center">
+👥 Integrantes cadastrados
+</h2>
+
+<div class="text-end mb-3">
+
+<a 
+href="/admin/exportar/excel"
+class="btn btn-success">
+
+📊 Exportar Excel
+
+</a>
+
+
+<a 
+href="/admin/exportar/pdf"
+class="btn btn-danger">
+
+📄 Exportar PDF
+
+</a>
+
+</div>
+
+</div>
+
+<hr>
+
+
+<div class="text-end mb-3">
+
+<a href="/logout" class="btn btn-danger">
+Sair
+</a>
+
+</div>
+
+
+
+<div class="row text-center mb-4">
+
+
+<div class="col-md-4">
+
+<div class="card-bn">
+
+<h3>
+👥 {{ total }}
+</h3>
+
+<p>
+Total de Integrantes
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="col-md-4">
+
+<div class="card-bn">
+
+<h3>
+⏳ {{ pendentes }}
+</h3>
+
+<p>
+Pendentes
+</p>
+
+</div>
+
+</div>
+
+
+
+<div class="col-md-4">
+
+<div class="card-bn">
+
+<h3>
+✅ {{ aprovados }}
+</h3>
+
+<p>
+Aprovados
+</p>
+
+</div>
+
+</div>
+
+
+</div>
+
+<div class="table-responsive">
+
+
+<table class="table table-dark table-hover">
+
+
+<thead>
+
+<tr>
+
+<th>Código</th>
+
+<th>Nome</th>
+
+<th>Cidade</th>
+
+<th>Status</th>
+
+<th>Cadastro</th>
+
+<th>Ações</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+{% for pessoa in integrantes %}
+
+
+<tr>
+
+
+<td>
+{{ pessoa.codigo_integrante }}
+</td>
+
+
+<td>
+{{ pessoa.nome }}
+</td>
+
+
+<td>
+{{ pessoa.cidade }}
+</td>
+
+
+<td>
+
+{% if pessoa.status == "PENDENTE" %}
+
+<span class="badge bg-warning text-dark">
+PENDENTE
+</span>
+
+{% elif pessoa.status == "APROVADO" %}
+
+<span class="badge bg-success">
+APROVADO
+</span>
+
+{% else %}
+
+<span class="badge bg-danger">
+{{ pessoa.status }}
+</span>
+
+{% endif %}
+
+
+</td>
+
+
+<td>
+
+{{ pessoa.data_cadastro }}
+
+</td>
+
+
+<td>
+
+
+<a 
+href="/admin/integrante/{{ pessoa.id }}"
+class="btn btn-sm btn-brilho">
+
+Ver
+
+</a>
+
+
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+</div>
+
+
+{% endblock %}

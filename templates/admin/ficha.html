@@ -1,0 +1,387 @@
+{% extends 'layout/base.html' %}
+
+
+{% block titulo %}
+Ficha do Integrante
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+
+<h2 class="titulo text-center">
+👤 Ficha do Integrante
+</h2>
+
+
+<hr>
+
+
+<h4>
+Código:
+</h4>
+
+<p>
+{{ integrante.codigo_integrante }}
+</p>
+
+
+
+<h4>
+Dados Pessoais
+</h4>
+
+<hr>
+
+
+<p>
+<strong>Nome:</strong>
+{{ integrante.nome }}
+</p>
+
+
+<p>
+<strong>CPF:</strong>
+{{ integrante.cpf }}
+</p>
+
+
+<p>
+<strong>Data nascimento:</strong>
+{{ integrante.data_nascimento }}
+</p>
+
+
+<p>
+<strong>Gênero:</strong>
+{{ integrante.genero }}
+</p>
+
+
+
+<h4 class="mt-4">
+📞 Contato
+</h4>
+
+<hr>
+
+
+<p>
+<strong>Telefone:</strong>
+{{ integrante.telefone }}
+</p>
+
+
+<p>
+<strong>Email:</strong>
+{{ integrante.email }}
+</p>
+
+
+
+<h4 class="mt-4">
+🏠 Endereço
+</h4>
+
+<hr>
+
+
+<p>
+{{ integrante.rua }},
+{{ integrante.numero }}
+</p>
+
+
+<p>
+{{ integrante.bairro }}
+</p>
+
+
+<p>
+{{ integrante.cidade }} - {{ integrante.estado }}
+</p>
+
+
+<p>
+CEP:
+{{ integrante.cep }}
+</p>
+
+
+
+<h4 class="mt-4">
+❤️ Saúde
+</h4>
+
+<hr>
+
+
+<p>
+<strong>Alergia:</strong>
+{{ integrante.alergia_medicamento }}
+</p>
+
+
+<p>
+{{ integrante.descricao_alergia }}
+</p>
+
+
+
+<h4 class="mt-4">
+🎺 Informações
+</h4>
+
+<hr>
+
+
+<p>
+<strong>Calçado:</strong>
+{{ integrante.calcado }}
+</p>
+
+
+<p>
+<strong>Estuda:</strong>
+{{ integrante.estuda }}
+</p>
+
+
+<p>
+<strong>Trabalha:</strong>
+{{ integrante.trabalha }}
+</p>
+
+
+<p>
+<strong>Experiência musical:</strong>
+{{ integrante.experiencia_banda }}
+</p>
+
+
+
+<h4 class="mt-4">
+Status:
+</h4>
+
+
+{% if integrante.status == "PENDENTE" %}
+
+<span class="badge bg-warning text-dark">
+PENDENTE
+</span>
+
+{% elif integrante.status == "APROVADO" %}
+
+<span class="badge bg-success">
+APROVADO
+</span>
+
+{% elif integrante.status == "INATIVO" %}
+
+<span class="badge bg-secondary">
+INATIVO
+</span>
+
+{% elif integrante.status == "REPROVADO" %}
+
+<span class="badge bg-danger">
+REPROVADO
+</span>
+
+{% endif %}
+
+
+
+<div class="mt-4">
+
+
+<!-- EDITAR SEMPRE DISPONÍVEL -->
+
+<a 
+href="/admin/integrante/{{ integrante.id }}/editar"
+class="btn btn-brilho">
+
+✏️ Editar Cadastro
+
+</a>
+
+
+
+<!-- APROVAÇÃO SOMENTE PENDENTE -->
+
+{% if integrante.status == "PENDENTE" %}
+
+
+<a 
+href="/admin/aprovar/{{ integrante.id }}"
+class="btn btn-success">
+
+✅ Aprovar
+
+</a>
+
+
+<a 
+href="/admin/reprovar/{{ integrante.id }}"
+class="btn btn-warning">
+
+❌ Reprovar
+
+</a>
+
+
+{% endif %}
+
+
+
+
+<!-- EXCLUIR -->
+
+<a 
+href="/admin/integrante/{{ integrante.id }}/excluir"
+class="btn btn-danger"
+onclick="return confirm('Tem certeza que deseja excluir este integrante?')">
+
+🗑 Excluir Cadastro
+
+</a>
+
+{% if integrante.status == "APROVADO" %}
+
+<a 
+href="/admin/integrante/{{ integrante.id }}/inativar"
+class="btn btn-secondary"
+onclick="return confirm('Deseja inativar este integrante?')">
+
+⏸ Inativar Cadastro
+
+</a>
+
+{% elif integrante.status == "INATIVO" %}
+
+<a 
+href="/admin/integrante/{{ integrante.id }}/reativar"
+class="btn btn-success"
+onclick="return confirm('Deseja reativar este integrante?')">
+
+▶️ Reativar Cadastro
+
+</a>
+
+{% endif %}
+
+</div>
+
+<h4 class="mt-5">
+📋 Histórico do Integrante
+</h4>
+
+<hr>
+
+
+{% if historico %}
+
+
+<div class="table-responsive">
+
+<table class="table table-dark table-hover">
+
+
+<thead>
+
+<tr>
+
+<th>Data</th>
+
+<th>Ação</th>
+
+<th>Anterior</th>
+
+<th>Novo</th>
+
+<th>Usuário</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+
+{% for item in historico %}
+
+
+<tr>
+
+<td>
+{{ item.data_hora }}
+</td>
+
+
+<td>
+{{ item.acao }}
+</td>
+
+
+<td>
+{{ item.status_anterior }}
+</td>
+
+
+<td>
+{{ item.status_novo }}
+</td>
+
+
+<td>
+{{ item.usuario }}
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+
+</table>
+
+</div>
+
+
+{% else %}
+
+
+<p class="text-secondary">
+
+Nenhuma alteração registrada.
+
+</p>
+
+
+{% endif %}
+
+<a 
+href="/admin"
+class="btn btn-secondary">
+
+← Voltar
+
+</a>
+
+
+</div>
+
+
+</div>
+
+
+{% endblock %}
