@@ -646,12 +646,17 @@ def salvar_cadastro():
 
     cursor.execute(
         """
-        SELECT COUNT(*) 
+        SELECT MAX(id)
         FROM integrantes
         """
     )
 
-    total = cursor.fetchone()[0] + 1
+    ultimo_id = cursor.fetchone()[0]
+
+    if ultimo_id:
+        total = ultimo_id + 1
+    else:
+        total = 1
 
 
     codigo_integrante = f"BN{total:06d}"
@@ -673,12 +678,13 @@ def salvar_cadastro():
     # DADOS DO FORMULÁRIO
     # ==============================
 
+    nome_integrante = request.form.get("nome","").title()
 
     dados = (
 
         codigo_integrante,
 
-        request.form.get("nome"),
+        nome_integrante,
         request.form.get("cpf"),
         request.form.get("data_nascimento"),
 
@@ -811,18 +817,53 @@ def exportar_pdf():
     cursor = conexao.cursor()
 
 
-    cursor.execute("""
-        SELECT
-            codigo_integrante,
-            nome,
-            cidade,
-            estado,
-            status
+    # ==============================
+    # FILTRO
+    # ==============================
 
-        FROM integrantes
+    status_filtro = request.args.get("status")
 
-        ORDER BY nome
-    """)
+
+    if status_filtro:
+
+
+        cursor.execute("""
+            SELECT
+                codigo_integrante,
+                nome,
+                cpf,
+                data_nascimento,
+                cidade,
+                estado,
+                status
+
+            FROM integrantes
+
+            WHERE status = ?
+
+            ORDER BY nome
+
+        """,(status_filtro,))
+
+
+    else:
+
+
+        cursor.execute("""
+            SELECT
+                codigo_integrante,
+                nome,
+                cpf,
+                data_nascimento,
+                cidade,
+                estado,
+                status
+
+            FROM integrantes
+
+            ORDER BY LOWER(nome)
+
+        """)
 
 
     integrantes = cursor.fetchall()
@@ -832,11 +873,22 @@ def exportar_pdf():
 
 
 
+    # ==============================
+    # CRIA PDF
+    # ==============================
+
     arquivo = BytesIO()
 
 
+    from reportlab.lib.pagesizes import A4
+
     pdf = SimpleDocTemplate(
-        arquivo
+        arquivo,
+        pagesize=A4,
+        topMargin=30,
+        bottomMargin=40,
+        leftMargin=40,
+        rightMargin=40
     )
 
 
@@ -846,25 +898,128 @@ def exportar_pdf():
     estilos = getSampleStyleSheet()
 
 
+
+    # LOGO
+
+    from reportlab.platypus import Image
+
+
+    logo = Image(
+        "static/img/logo_relatorio.PNG",
+        width=320,
+        height=79
+    )
+
+    logo.hAlign = "CENTER"
+
+
+    elementos.append(logo)
+
+
+    elementos.append(
+        Spacer(1,5)
+    )
+
+
+
     titulo = Paragraph(
-        "Brilho Negro<br/>Relatório de Integrantes",
+        """
+        <b>BRILHO NEGRO</b><br/>
+        <font size="14">
+        Sistema de Gestão de Integrantes
+        </font>
+        """,
         estilos["Title"]
     )
 
 
     elementos.append(titulo)
 
-    elementos.append(Spacer(1,20))
+    from reportlab.platypus import HRFlowable
 
+
+    elementos.append(
+        Spacer(1,8)
+    )
+
+
+    elementos.append(
+        HRFlowable(
+            width="100%",
+            thickness=1
+        )
+    )
+
+
+    elementos.append(
+        Spacer(1,15)
+    )
+
+
+    subtitulo = Paragraph(
+        "<b>Relatório de Integrantes</b>",
+        estilos["Heading2"]
+    )
+
+
+    elementos.append(subtitulo)
+
+
+
+    elementos.append(
+        Spacer(1,15)
+    )
+
+
+
+    from datetime import datetime
+
+
+    filtro_texto = (
+        status_filtro
+        if status_filtro
+        else
+        "TODOS OS INTEGRANTES"
+    )
+
+
+
+    informacoes = Paragraph(
+
+        f"""
+        Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}<br/>
+        Filtro: {filtro_texto}<br/>
+        Total encontrado: {len(integrantes)}
+        """,
+
+        estilos["Normal"]
+
+    )
+
+
+    elementos.append(informacoes)
+
+
+
+    elementos.append(
+        Spacer(1,20)
+    )
+
+
+
+    # ==============================
+    # TABELA
+    # ==============================
 
 
     dados = [
 
         [
             "Código",
-            "Nome",
-            "Cidade",
-            "Estado",
+            "Integrante",
+            "CPF",
+            "Data nascimento",
+            "Cidade/UF",
             "Status"
         ]
 
@@ -874,21 +1029,38 @@ def exportar_pdf():
 
     for pessoa in integrantes:
 
+
         dados.append(
-
-            [
-                pessoa["codigo_integrante"],
-                pessoa["nome"],
-                pessoa["cidade"],
-                pessoa["estado"],
-                pessoa["status"]
-            ]
-
+        [
+            pessoa["codigo_integrante"],
+            pessoa["nome"].title(),
+            pessoa["cpf"],
+            datetime.strptime(
+                pessoa["data_nascimento"],
+                "%Y-%m-%d"
+            ).strftime("%d/%m/%Y"),
+            f'{pessoa["cidade"]}/{pessoa["estado"]}',
+            pessoa["status"]
+        ]
         )
 
 
 
-    tabela = Table(dados)
+    from reportlab.lib import colors
+
+
+    tabela = Table(
+        dados,
+        colWidths=[
+            65,
+            150,
+            90,
+            80,
+            100,
+            65
+        ]
+    )
+
 
 
     tabela.setStyle(
@@ -897,11 +1069,59 @@ def exportar_pdf():
 
             [
 
-                ("GRID",(0,0),(-1,-1),0.5,None),
+                # grade
 
-                ("BACKGROUND",(0,0),(-1,0),None),
+                (
+                    "GRID",
+                    (0,0),
+                    (-1,-1),
+                    0.5,
+                    colors.grey
+                ),
 
-                ("ALIGN",(0,0),(-1,-1),"CENTER")
+
+                # cabeçalho
+
+                (
+                    "BACKGROUND",
+                    (0,0),
+                    (-1,0),
+                    colors.lightgrey
+                ),
+
+
+                (
+                    "FONTNAME",
+                    (0,0),
+                    (-1,0),
+                    "Helvetica-Bold"
+                ),
+
+
+                (
+                    "ALIGN",
+                    (0,0),
+                    (-1,0),
+                    "CENTER"
+                ),
+
+
+                # status centralizado
+
+                (
+                    "ALIGN",
+                    (3,1),
+                    (3,-1),
+                    "CENTER"
+                ),
+
+
+                (
+                    "VALIGN",
+                    (0,0),
+                    (-1,-1),
+                    "MIDDLE"
+                )
 
             ]
 
@@ -913,10 +1133,31 @@ def exportar_pdf():
     elementos.append(tabela)
 
 
+
+    elementos.append(
+        Spacer(1,20)
+    )
+
+
+    rodape = Paragraph(
+        """
+        SGI Brilho Negro<br/>
+        Documento gerado automaticamente.
+        """,
+        estilos["Normal"]
+    )
+
+
+    elementos.append(rodape)
+
+
+
     pdf.build(elementos)
 
 
+
     arquivo.seek(0)
+
 
 
     return send_file(
@@ -925,7 +1166,7 @@ def exportar_pdf():
 
         as_attachment=True,
 
-        download_name="integrantes_brilho_negro.pdf",
+        download_name="relatorio_integrantes_brilho_negro.pdf",
 
         mimetype="application/pdf"
 
