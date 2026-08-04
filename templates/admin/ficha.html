@@ -21,18 +21,22 @@ Ficha do Integrante
 
 
 <h4>
-Código:
+🔑 Código do Integrante
 </h4>
 
+<hr>
+
 <p>
+<strong>
 {{ integrante.codigo_integrante }}
+</strong>
 </p>
 
 
 
 <h4>
 👤 Dados Pessoais
-</h4>4>
+</h4>
 
 <hr>
 
@@ -47,7 +51,6 @@ Código:
 <strong>CPF:</strong>
 {{ integrante.cpf }}
 </p>
-
 
 <p>
 <strong>Data nascimento:</strong>
@@ -84,10 +87,19 @@ Código:
 
 
 <p>
-{{ integrante.rua }},
+<strong>Rua:</strong>
+{{ integrante.rua }}
+</p>
+
+<p>
+<strong>Número:</strong>
 {{ integrante.numero }}
 </p>
 
+<p>
+<strong>Complemento:</strong>
+{{ integrante.complemento }}
+</p>
 
 <p>
 {{ integrante.bairro }}
@@ -104,26 +116,70 @@ CEP:
 {{ integrante.cep }}
 </p>
 
-
-
 <h4 class="mt-4">
 ❤️ Saúde
 </h4>
 
 <hr>
 
-
 <p>
-<strong>Alergia:</strong>
-{{ integrante.alergia_medicamento }}
+<strong>Possui alergia:</strong>
+{{ integrante.possui_alergia }}
 </p>
 
+
+{% if integrante.descricao_alergia %}
+
+<p>
+<strong>Descrição da alergia:</strong>
+</p>
 
 <p>
 {{ integrante.descricao_alergia }}
 </p>
 
+{% endif %}
 
+
+<p>
+<strong>Alergia a medicamentos:</strong>
+{{ integrante.alergia_medicamento }}
+</p>
+
+<h4 class="mt-4">
+👨‍👩‍👧 Responsável
+</h4>
+
+<hr>
+
+
+{% if integrante.responsavel %}
+
+<p>
+<strong>Nome:</strong>
+{{ integrante.responsavel }}
+</p>
+
+
+<p>
+<strong>Parentesco:</strong>
+{{ integrante.parentesco }}
+</p>
+
+
+<p>
+<strong>Telefone:</strong>
+{{ integrante.telefone_responsavel }}
+</p>
+
+
+{% else %}
+
+<p>
+Nenhum responsável informado.
+</p>
+
+{% endif %}
 
 <h4 class="mt-4">
 🎺 Informações
@@ -183,11 +239,26 @@ CEP:
 <strong>Descrição da experiência:</strong>
 </p>
 
-<p>
+
+<div class="p-3 border rounded">
+
 {{ integrante.descricao_experiencia }}
-</p>
+
+</div>
 
 {% endif %}
+
+<h4 class="mt-4">
+📅 Cadastro
+</h4>
+
+<hr>
+
+
+<p>
+<strong>Data cadastro:</strong>
+{{ integrante.data_cadastro }}
+</p>
 
 <h4 class="mt-4">
 Status:

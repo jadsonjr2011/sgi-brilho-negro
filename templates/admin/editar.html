@@ -26,6 +26,15 @@ Editar Integrante
 
 
 <form method="POST">
+    
+<label>
+CPF
+</label>
+
+<input
+class="form-control"
+name="cpf"
+value="{{ integrante.cpf or '' }}"
 
 
 <label>
@@ -147,7 +156,75 @@ class="form-control"
 name="cep"
 value="{{ integrante.cep }}">
 
+<h4 class="mt-4">
+❤️ Saúde
+</h4>
 
+<hr>
+
+
+<label>
+Possui alergia?
+</label>
+
+<input
+class="form-control"
+name="possui_alergia"
+value="{{ integrante.possui_alergia or '' }}">
+
+
+<label>
+Descrição da alergia
+</label>
+
+<textarea
+class="form-control"
+name="descricao_alergia">{{ integrante.descricao_alergia or '' }}</textarea>
+
+<label>
+Alergia a medicamento
+</label>
+
+<input
+class="form-control"
+name="alergia_medicamento"
+value="{{ integrante.alergia_medicamento }}">
+
+<h4 class="mt-4">
+👨‍👩‍👧 Responsável
+</h4>
+
+<hr>
+
+
+<label>
+Nome do responsável
+</label>
+
+<input
+class="form-control"
+name="responsavel"
+value="{{ integrante.responsavel or '' }}"
+
+
+<label>
+Parentesco
+</label>
+
+<input
+class="form-control"
+name="parentesco"
+value="{{ integrante.parentesco or '' }}"
+
+
+<label>
+Telefone do responsável
+</label>
+
+<input
+class="form-control"
+name="telefone_responsavel"
+value="{{ integrante.telefone_responsavel or '' }}"
 
 <div class="text-center mt-5">
 

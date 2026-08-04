@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from database import SessionLocal
 from sqlalchemy import text
 from werkzeug.security import check_password_hash
+from reportlab.lib import colors
 
 
 app = Flask(__name__)
@@ -306,6 +307,16 @@ def editar_integrante(id):
                 data_nascimento=:data_nascimento,
                 telefone=:telefone,
                 email=:email,
+                cpf=:cpf,
+
+                possui_alergia=:possui_alergia,
+                descricao_alergia=:descricao_alergia,
+                alergia_medicamento=:alergia_medicamento,
+
+                responsavel=:responsavel,
+                parentesco=:parentesco,
+                telefone_responsavel=:telefone_responsavel,
+
                 rua=:rua,
                 numero=:numero,
                 complemento=:complemento,
@@ -319,8 +330,16 @@ def editar_integrante(id):
             {
                 "nome": request.form["nome"],
                 "data_nascimento": request.form["data_nascimento"],
+                "possui_alergia": request.form["possui_alergia"],
+                "descricao_alergia": request.form["descricao_alergia"],
+                "alergia_medicamento": request.form["alergia_medicamento"],
+
+                "responsavel": request.form["responsavel"],
+                "parentesco": request.form["parentesco"],
+                "telefone_responsavel": request.form["telefone_responsavel"],
                 "telefone": request.form["telefone"],
                 "email": request.form["email"],
+                "cpf": request.form["cpf"],
                 "rua": request.form["rua"],
                 "numero": request.form["numero"],
                 "complemento": request.form["complemento"],
@@ -1092,59 +1111,94 @@ def exportar_pdf():
     # TABELA
     # ==============================
 
+    from reportlab.lib.styles import ParagraphStyle
+
+
+    estilo_tabela = ParagraphStyle(
+        "Tabela",
+        parent=estilos["Normal"],
+        fontSize=8,
+        leading=10
+    )
+
 
     dados = [
 
         [
-            "Código",
-            "Integrante",
-            "CPF",
-            "Data nascimento",
-            "Cidade/UF",
-            "Status"
+            Paragraph("Código", estilo_tabela),
+            Paragraph("Integrante", estilo_tabela),
+            Paragraph("CPF", estilo_tabela),
+            Paragraph("Data nascimento", estilo_tabela),
+            Paragraph("Cidade/UF", estilo_tabela),
+            Paragraph("Status", estilo_tabela)
         ]
 
     ]
 
+
     for pessoa in integrantes:
 
+        data_nascimento = datetime.strptime(
+            pessoa["data_nascimento"],
+            "%Y-%m-%d"
+        ).strftime("%d/%m/%Y")
+
+
         dados.append(
-        [
-            pessoa["codigo_integrante"],
-            pessoa["nome"].title(),
-            pessoa["cpf"],
-            datetime.strptime(
-                pessoa["data_nascimento"],
-                "%Y-%m-%d"
-            ).strftime("%d/%m/%Y"),
-            f'{pessoa["cidade"]}/{pessoa["estado"]}',
-            pessoa["status"]
-        ]
+            [
+                Paragraph(
+                    str(pessoa["codigo_integrante"]),
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    pessoa["nome"].title(),
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    pessoa["cpf"],
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    data_nascimento,
+                    estilo_tabela
+                ),
+
+             Paragraph(
+                    f'{pessoa["cidade"]}/{pessoa["estado"]}',
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    pessoa["status"],
+                    estilo_tabela
+                )
+            ]
         )
 
-
-    from reportlab.lib import colors
 
 
     tabela = Table(
         dados,
         colWidths=[
-            65,
-            150,
-            90,
-            80,
-            100,
-            65
-        ]
+            55,   # código
+            150,  # nome
+            85,   # cpf
+            75,   # nascimento
+            95,   # cidade
+            55    # status
+        ],
+        repeatRows=1
     )
+
 
     tabela.setStyle(
 
         TableStyle(
 
             [
-
-                # grade
 
                 (
                     "GRID",
@@ -1154,16 +1208,12 @@ def exportar_pdf():
                     colors.grey
                 ),
 
-
-                # cabeçalho
-
                 (
                     "BACKGROUND",
                     (0,0),
                     (-1,0),
                     colors.lightgrey
                 ),
-
 
                 (
                     "FONTNAME",
@@ -1172,7 +1222,6 @@ def exportar_pdf():
                     "Helvetica-Bold"
                 ),
 
-
                 (
                     "ALIGN",
                     (0,0),
@@ -1180,22 +1229,11 @@ def exportar_pdf():
                     "CENTER"
                 ),
 
-
-                # status centralizado
-
-                (
-                    "ALIGN",
-                    (3,1),
-                    (3,-1),
-                    "CENTER"
-                ),
-
-
                 (
                     "VALIGN",
                     (0,0),
                     (-1,-1),
-                    "MIDDLE"
+                    "TOP"
                 )
 
             ]
@@ -1253,16 +1291,24 @@ def exportar_excel():
     integrantes = db.execute(
         text("""
             SELECT
-                codigo_integrante,
-                nome,
-                cpf,
-                data_nascimento,
-                telefone,
-                email,
-                cidade,
-                estado,
-                status,
-                data_cadastro
+            codigo_integrante,
+            nome,
+            cpf,
+            data_nascimento,
+            telefone,
+            email,
+            endereco,
+            cidade,
+            estado,
+            possui_alergia,
+            descricao_alergia,
+            responsavel,
+            parentesco,
+            telefone_responsavel,
+            calcado,
+            status,
+            data_cadastro,
+            calcado
 
             FROM integrantes
 
@@ -1294,8 +1340,15 @@ def exportar_excel():
         "Data Nascimento",
         "Telefone",
         "Email",
+        "Endereço",
         "Cidade",
         "Estado",
+        "Possui Alergia",
+        "Descrição Alergia",
+        "Responsável",
+        "Parentesco",
+        "Telefone Responsável",
+        "Tamanho Calçado",
         "Status",
         "Data Cadastro"
 
@@ -1326,8 +1379,15 @@ def exportar_excel():
             pessoa["data_nascimento"],
             pessoa["telefone"],
             pessoa["email"],
+            pessoa["endereco"],
             pessoa["cidade"],
             pessoa["estado"],
+            pessoa["possui_alergia"],
+            pessoa["descricao_alergia"],
+            pessoa["responsavel"],
+            pessoa["parentesco"],
+            pessoa["telefone_responsavel"],
+            pessoa["calcado"],
             pessoa["status"],
             pessoa["data_cadastro"]
 
