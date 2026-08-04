@@ -31,8 +31,8 @@ Código:
 
 
 <h4>
-Dados Pessoais
-</h4>
+👤 Dados Pessoais
+</h4>4>
 
 <hr>
 
@@ -52,12 +52,6 @@ Dados Pessoais
 <p>
 <strong>Data nascimento:</strong>
 {{ integrante.data_nascimento }}
-</p>
-
-
-<p>
-<strong>Gênero:</strong>
-{{ integrante.genero }}
 </p>
 
 
@@ -137,7 +131,6 @@ CEP:
 
 <hr>
 
-
 <p>
 <strong>Calçado:</strong>
 {{ integrante.calcado }}
@@ -150,10 +143,32 @@ CEP:
 </p>
 
 
+{% if integrante.local_estudo %}
+
+<p>
+<strong>Local de estudo:</strong>
+{{ integrante.local_estudo }}
+</p>
+
+{% endif %}
+
+
+
 <p>
 <strong>Trabalha:</strong>
 {{ integrante.trabalha }}
 </p>
+
+
+{% if integrante.profissao %}
+
+<p>
+<strong>Profissão:</strong>
+{{ integrante.profissao }}
+</p>
+
+{% endif %}
+
 
 
 <p>
@@ -162,6 +177,17 @@ CEP:
 </p>
 
 
+{% if integrante.descricao_experiencia %}
+
+<p>
+<strong>Descrição da experiência:</strong>
+</p>
+
+<p>
+{{ integrante.descricao_experiencia }}
+</p>
+
+{% endif %}
 
 <h4 class="mt-4">
 Status:

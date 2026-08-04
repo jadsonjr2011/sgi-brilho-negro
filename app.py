@@ -7,149 +7,13 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
 from zoneinfo import ZoneInfo
-import sqlite3
+from database import SessionLocal
+from sqlalchemy import text
+from werkzeug.security import check_password_hash
 
 
 app = Flask(__name__)
 app.secret_key = "brilho_negro_2026"
-
-
-# ==============================
-# CONFIGURAÇÃO DO BANCO
-# ==============================
-
-BANCO = "brilhonegro.db"
-
-
-def criar_banco():
-
-    conexao = sqlite3.connect(BANCO)
-
-    cursor = conexao.cursor()
-
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS integrantes (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        nome TEXT NOT NULL,
-
-        data_nascimento TEXT,
-
-        telefone TEXT,
-
-        email TEXT,
-
-        rua TEXT,
-        numero TEXT,
-        complemento TEXT,
-        bairro TEXT,
-        cidade TEXT,
-        estado TEXT,
-        cep TEXT,
-
-        tipo_sanguineo TEXT,
-
-        possui_alergia TEXT,
-
-        descricao_alergia TEXT,
-
-        responsavel TEXT,
-
-        parentesco TEXT,
-
-        telefone_responsavel TEXT,
-
-        status TEXT DEFAULT 'PENDENTE'
-
-    )
-    """)
-
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS historico_integrantes (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        integrante_id INTEGER NOT NULL,
-
-        acao TEXT NOT NULL,
-
-        status_anterior TEXT,
-
-        status_novo TEXT,
-
-        data_hora TEXT,
-
-        usuario TEXT
-
-    )
-    """)
-
-
-    conexao.commit()
-
-    conexao.close()
-
-
-def atualizar_banco():
-
-    conexao = sqlite3.connect(BANCO)
-
-    cursor = conexao.cursor()
-
-
-    campos = [
-
-        ("codigo_integrante","TEXT"),
-        ("cpf","TEXT"),
-        ("genero","TEXT"),
-
-        ("cep","TEXT"),
-        ("rua","TEXT"),
-        ("numero","TEXT"),
-        ("complemento","TEXT"),
-        ("bairro","TEXT"),
-        ("cidade","TEXT"),
-        ("estado","TEXT"),
-
-        ("alergia_medicamento","TEXT"),
-
-        ("calcado","TEXT"),
-        ("estuda","TEXT"),
-        ("local_estudo","TEXT"),
-
-        ("trabalha","TEXT"),
-        ("profissao","TEXT"),
-
-        ("experiencia_banda","TEXT"),
-        ("descricao_experiencia","TEXT"),
-
-        ("responsavel","TEXT"),
-        ("telefone_responsavel","TEXT"),
-
-        ("data_cadastro","TEXT")
-
-    ]
-
-
-    for campo,tipo in campos:
-
-        try:
-
-            cursor.execute(
-                f"ALTER TABLE integrantes ADD COLUMN {campo} {tipo}"
-            )
-
-        except sqlite3.OperationalError:
-
-            pass
-
-
-    conexao.commit()
-
-    conexao.close()
 
 # ==============================
 # HISTÓRICO DE ALTERAÇÕES
@@ -157,46 +21,73 @@ def atualizar_banco():
 
 def registrar_historico(integrante_id, acao, status_anterior, status_novo):
 
-    conexao = sqlite3.connect(BANCO)
+    db = SessionLocal()
 
-    cursor = conexao.cursor()
+    try:
 
-    cursor.execute("""
-    INSERT INTO historico_integrantes
-    (
-        integrante_id,
-        acao,
-        status_anterior,
-        status_novo,
-        data_hora,
-        usuario
-    )
+        db.execute(
+            text("""
+            INSERT INTO historico_integrantes
+            (
+                integrante_id,
+                acao,
+                status_anterior,
+                status_novo,
+                data_hora,
+                usuario
+            )
 
-    VALUES (?,?,?,?,?,?)
+            VALUES
+            (
+                :integrante_id,
+                :acao,
+                :status_anterior,
+                :status_novo,
+                :data_hora,
+                :usuario
+            )
+            """),
+            {
 
-    """,
-    (
-        integrante_id,
-        acao,
-        status_anterior,
-        status_novo,
-        datetime.now().strftime("%d/%m/%Y %H:%M"),
-        "Administrador"
-    ))
+                "integrante_id": integrante_id,
+
+                "acao": acao,
+
+                "status_anterior": status_anterior,
+
+                "status_novo": status_novo,
+
+                "data_hora": datetime.now().strftime(
+                    "%d/%m/%Y %H:%M"
+                ),
+
+                "usuario": "Administrador"
+
+            }
+        )
 
 
-    conexao.commit()
+        db.commit()
 
-    conexao.close()
+
+    except Exception as e:
+
+        db.rollback()
+
+        print("Erro no histórico:", e)
+
+
+    finally:
+
+        db.close()
 
 # ==============================
 # INICIALIZAÇÃO DO BANCO
 # ==============================
 
-criar_banco()
-
-atualizar_banco()
-
+# Banco PostgreSQL já criado pelo script externo
+# criar_banco()
+# atualizar_banco()
 
 
 # ==============================
@@ -217,32 +108,56 @@ def cadastro():
 @app.route("/login", methods=["GET","POST"])
 def login():
 
-
     if request.method == "POST":
-
 
         usuario = request.form["usuario"]
 
         senha = request.form["senha"]
 
 
-        # usuário inicial administrativo
+        db = SessionLocal()
 
-        if usuario == "administrativo" and senha == "123456":
+        try:
+
+            resultado = db.execute(
+                text("""
+                    SELECT usuario, senha
+                    FROM usuarios
+                    WHERE usuario = :usuario
+                """),
+                {
+                    "usuario": usuario
+                }
+            ).fetchone()
 
 
-            session["admin"] = True
+            if resultado:
+
+                senha_banco = resultado.senha
 
 
-            return redirect("/admin")
+                if check_password_hash(
+                    senha_banco,
+                    senha
+                ):
+
+                    session["admin"] = True
+                    session["usuario"] = usuario
 
 
-        else:
+                    return redirect("/admin")
+
+
 
             return render_template(
                 "admin/login.html",
                 erro="Usuário ou senha inválidos"
             )
+
+
+        finally:
+
+            db.close()
 
 
     return render_template("admin/login.html")
@@ -254,58 +169,55 @@ def logout():
 
     return redirect("/login")
 
+
 @app.route("/admin")
 def admin():
 
-
     if "admin" not in session:
-
         return redirect("/login")
 
+    db = SessionLocal()
 
-    conexao = sqlite3.connect(BANCO)
+    try:
 
-    conexao.row_factory = sqlite3.Row
-
-    cursor = conexao.cursor()
-
-
-    cursor.execute("""
-        SELECT *
-        FROM integrantes
-        ORDER BY id DESC
-    """)
-
-    integrantes = cursor.fetchall()
+        integrantes = db.execute(
+            text("""
+                SELECT *
+                FROM integrantes
+                ORDER BY id DESC
+            """)
+        ).fetchall()
 
 
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM integrantes
-    """)
-
-    total = cursor.fetchone()[0]
-
-
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM integrantes
-        WHERE status = 'PENDENTE'
-    """)
-
-    pendentes = cursor.fetchone()[0]
+        total = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM integrantes
+            """)
+        ).scalar()
 
 
-    cursor.execute("""
-        SELECT COUNT(*)
-        FROM integrantes
-        WHERE status = 'APROVADO'
-    """)
+        pendentes = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM integrantes
+                WHERE status = 'PENDENTE'
+            """)
+        ).scalar()
 
-    aprovados = cursor.fetchone()[0]
+
+        aprovados = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM integrantes
+                WHERE status = 'APROVADO'
+            """)
+        ).scalar()
 
 
-    conexao.close()
+    finally:
+
+        db.close()
 
 
     return render_template(
@@ -323,44 +235,55 @@ def ver_integrante(id):
         return redirect("/login")
 
 
-    conexao = sqlite3.connect(BANCO)
-
-    conexao.row_factory = sqlite3.Row
-
-    cursor = conexao.cursor()
+    db = SessionLocal()
 
 
-    cursor.execute("""
-        SELECT *
-        FROM integrantes
-        WHERE id = ?
-    """,(id,))
+    try:
 
-
-    integrante = cursor.fetchone()
-
-
-
-    cursor.execute("""
-        SELECT *
-        FROM historico_integrantes
-        WHERE integrante_id = ?
-        ORDER BY id DESC
-    """,(id,))
-
-
-    historico = cursor.fetchall()
+        integrante = db.execute(
+            text("""
+                SELECT *
+                FROM integrantes
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()
 
 
 
-    conexao.close()
+        historico = db.execute(
+            text("""
+                SELECT *
+                FROM historico_integrantes
+                WHERE integrante_id = :id
+                ORDER BY id DESC
+            """),
+            {
+                "id": id
+            }
+        ).fetchall()
 
 
-    return render_template(
-        "admin/ficha.html",
-        integrante=integrante,
-        historico=historico
-    )
+
+        return render_template(
+            "admin/ficha.html",
+            integrante=integrante,
+            historico=historico
+        )
+
+
+    except Exception as e:
+
+        print("Erro ao abrir integrante:", e)
+
+        return f"Erro: {e}"
+
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/integrante/<int:id>/editar", methods=["GET","POST"])
 def editar_integrante(id):
@@ -369,72 +292,69 @@ def editar_integrante(id):
         return redirect("/login")
 
 
-    conexao = sqlite3.connect(BANCO)
-
-    conexao.row_factory = sqlite3.Row
-
-    cursor = conexao.cursor()
+    db = SessionLocal()
 
 
 
     if request.method == "POST":
 
-        cursor.execute("""
-        UPDATE integrantes SET
+        db.execute(
+            text("""
+            UPDATE integrantes SET
 
-            nome=?,
-            data_nascimento=?,
-            telefone=?,
-            email=?,
-            rua=?,
-            numero=?,
-            complemento=?,
-            bairro=?,
-            cidade=?,
-            estado=?,
-            cep=?
+                nome=:nome,
+                data_nascimento=:data_nascimento,
+                telefone=:telefone,
+                email=:email,
+                rua=:rua,
+                numero=:numero,
+                complemento=:complemento,
+                bairro=:bairro,
+                cidade=:cidade,
+                estado=:estado,
+                cep=:cep
 
-        WHERE id=?
-
-        """,
-        (
-
-            request.form["nome"],
-            request.form["data_nascimento"],
-            request.form["telefone"],
-            request.form["email"],
-            request.form["rua"],
-            request.form["numero"],
-            request.form["complemento"],
-            request.form["bairro"],
-            request.form["cidade"],
-            request.form["estado"],
-            request.form["cep"],
-            id
-
-        ))
+            WHERE id=:id
+            """),
+            {
+                "nome": request.form["nome"],
+                "data_nascimento": request.form["data_nascimento"],
+                "telefone": request.form["telefone"],
+                "email": request.form["email"],
+                "rua": request.form["rua"],
+                "numero": request.form["numero"],
+                "complemento": request.form["complemento"],
+                "bairro": request.form["bairro"],
+                "cidade": request.form["cidade"],
+                "estado": request.form["estado"],
+                "cep": request.form["cep"],
+                "id": id
+            }
+        )
 
 
-        conexao.commit()
+        db.commit()
 
-        conexao.close()
+        db.close()
 
 
         return redirect(f"/admin/integrante/{id}")
 
 
 
-    cursor.execute("""
-    SELECT *
-    FROM integrantes
-    WHERE id=?
-    """,(id,))
+    integrante = db.execute(
+        text("""
+            SELECT *
+            FROM integrantes
+            WHERE id=:id
+        """),
+        {
+            "id": id
+        }
+    ).fetchone()
 
 
-    integrante = cursor.fetchone()
-
-
-    conexao.close()
+    db.close()
 
 
     return render_template(
@@ -445,84 +365,130 @@ def editar_integrante(id):
 @app.route("/admin/aprovar/<int:id>")
 def aprovar_integrante(id):
 
-    conexao = sqlite3.connect(BANCO)
+    db = SessionLocal()
 
-    cursor = conexao.cursor()
+    try:
 
+        # Buscar status atual
 
-    cursor.execute("""
-        SELECT status
-        FROM integrantes
-        WHERE id = ?
-    """,(id,))
-
-
-    anterior = cursor.fetchone()[0]
-
-
-    cursor.execute("""
-        UPDATE integrantes
-        SET status = 'APROVADO'
-        WHERE id = ?
-    """,(id,))
+        anterior = db.execute(
+            text("""
+                SELECT status
+                FROM integrantes
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()[0]
 
 
-    conexao.commit()
+        # Atualizar status
 
-    conexao.close()
-
-
-    registrar_historico(
-        id,
-        "APROVAÇÃO",
-        anterior,
-        "APROVADO"
-    )
-
-
-    return redirect(f"/admin/integrante/{id}")
+        db.execute(
+            text("""
+                UPDATE integrantes
+                SET status = 'APROVADO'
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
 
 
+        db.commit()
+
+
+        registrar_historico(
+            id,
+            "APROVAÇÃO",
+            anterior,
+            "APROVADO"
+        )
+
+
+        return redirect(
+            f"/admin/integrante/{id}"
+        )
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print("Erro ao aprovar:", e)
+
+        return f"Erro: {e}"
+
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/reprovar/<int:id>")
 def reprovar_integrante(id):
 
-    conexao = sqlite3.connect(BANCO)
+    db = SessionLocal()
 
-    cursor = conexao.cursor()
+    try:
 
+        # Buscar status atual
 
-    cursor.execute("""
-        SELECT status
-        FROM integrantes
-        WHERE id = ?
-    """,(id,))
-
-
-    anterior = cursor.fetchone()[0]
-
-
-    cursor.execute("""
-        UPDATE integrantes
-        SET status = 'REPROVADO'
-        WHERE id = ?
-    """,(id,))
+        anterior = db.execute(
+            text("""
+                SELECT status
+                FROM integrantes
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()[0]
 
 
-    conexao.commit()
+        # Atualizar status
 
-    conexao.close()
+        db.execute(
+            text("""
+                UPDATE integrantes
+                SET status = 'REPROVADO'
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
 
 
-    registrar_historico(
-        id,
-        "REPROVAÇÃO",
-        anterior,
-        "REPROVADO"
-    )
+        db.commit()
 
 
-    return redirect(f"/admin/integrante/{id}")
+        registrar_historico(
+            id,
+            "REPROVAÇÃO",
+            anterior,
+            "REPROVADO"
+        )
+
+
+        return redirect(
+            f"/admin/integrante/{id}"
+        )
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print("Erro ao reprovar:", e)
+
+        return f"Erro: {e}"
+
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/integrante/<int:id>/excluir")
 def excluir_integrante(id):
@@ -531,20 +497,36 @@ def excluir_integrante(id):
         return redirect("/login")
 
 
-    conexao = sqlite3.connect(BANCO)
+    db = SessionLocal()
 
-    cursor = conexao.cursor()
+    try:
+
+        db.execute(
+            text("""
+                DELETE FROM integrantes
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
 
 
-    cursor.execute("""
-        DELETE FROM integrantes
-        WHERE id = ?
-    """,(id,))
+        db.commit()
 
 
-    conexao.commit()
+    except Exception as e:
 
-    conexao.close()
+        db.rollback()
+
+        print("Erro ao excluir:", e)
+
+        return f"Erro: {e}"
+
+
+    finally:
+
+        db.close()
 
 
     return redirect("/admin")
@@ -552,282 +534,366 @@ def excluir_integrante(id):
 @app.route("/admin/integrante/<int:id>/inativar")
 def inativar_integrante(id):
 
-    conexao = sqlite3.connect(BANCO)
+    db = SessionLocal()
 
-    cursor = conexao.cursor()
+    try:
 
-
-    cursor.execute("""
-        SELECT status
-        FROM integrantes
-        WHERE id = ?
-    """,(id,))
-
-
-    anterior = cursor.fetchone()[0]
-
-
-    cursor.execute("""
-        UPDATE integrantes
-        SET status = 'INATIVO'
-        WHERE id = ?
-    """,(id,))
+        anterior = db.execute(
+            text("""
+                SELECT status
+                FROM integrantes
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()[0]
 
 
-    conexao.commit()
+        db.execute(
+            text("""
+                UPDATE integrantes
+                SET status = 'INATIVO'
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
 
-    conexao.close()
+
+        db.commit()
 
 
-    registrar_historico(
-        id,
-        "INATIVAÇÃO",
-        anterior,
-        "INATIVO"
-    )
+        registrar_historico(
+            id,
+            "INATIVAÇÃO",
+            anterior,
+            "INATIVO"
+        )
 
 
-    return redirect(f"/admin/integrante/{id}")
+        return redirect(
+            f"/admin/integrante/{id}"
+        )
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print("Erro ao inativar:", e)
+
+        return f"Erro: {e}"
+
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/integrante/<int:id>/reativar")
 def reativar_integrante(id):
 
-    conexao = sqlite3.connect(BANCO)
+    db = SessionLocal()
 
-    cursor = conexao.cursor()
+    try:
 
-
-    cursor.execute("""
-        SELECT status
-        FROM integrantes
-        WHERE id = ?
-    """,(id,))
-
-
-    anterior = cursor.fetchone()[0]
-
-
-    cursor.execute("""
-        UPDATE integrantes
-        SET status = 'APROVADO'
-        WHERE id = ?
-    """,(id,))
+        anterior = db.execute(
+            text("""
+                SELECT status
+                FROM integrantes
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()[0]
 
 
-    conexao.commit()
+        db.execute(
+            text("""
+                UPDATE integrantes
+                SET status = 'APROVADO'
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
 
-    conexao.close()
+
+        db.commit()
 
 
-    registrar_historico(
-        id,
-        "REATIVAÇÃO",
-        anterior,
-        "APROVADO"
-    )
+        registrar_historico(
+            id,
+            "REATIVAÇÃO",
+            anterior,
+            "APROVADO"
+        )
 
 
-    return redirect(f"/admin/integrante/{id}")
+        return redirect(
+            f"/admin/integrante/{id}"
+        )
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print("Erro ao reativar:", e)
+
+        return f"Erro: {e}"
+
+
+    finally:
+
+        db.close()
 
 @app.route("/salvar_cadastro", methods=["POST"])
 def salvar_cadastro():
 
+    db = SessionLocal()
 
-    conexao = sqlite3.connect(BANCO)
+    try:
 
-    cursor = conexao.cursor()
-
-    # ==============================
-    # VERIFICAR CPF DUPLICADO
-    # ==============================
-
-    cpf = request.form.get("cpf")
+        print("Conectado ao PostgreSQL")
 
 
-    cursor.execute(
-        """
-        SELECT nome 
-        FROM integrantes
-        WHERE cpf = ?
-        """,
-        (cpf,)
-    )
+        # ==============================
+        # VERIFICAR CPF DUPLICADO
+        # ==============================
+
+        cpf = request.form.get("cpf")
 
 
-    cpf_existente = cursor.fetchone()
+        cpf_existente = db.execute(
+            text("""
+                SELECT nome
+                FROM integrantes
+                WHERE cpf = :cpf
+            """),
+            {
+                "cpf": cpf
+            }
+        ).fetchone()
 
 
-    if cpf_existente:
+        if cpf_existente:
 
-        conexao.close()
+            return render_template(
+                "cadastro/erro.html"
+            )
 
-        return render_template(
-            "cadastro/erro.html",
+
+        # ==============================
+        # GERAR CÓDIGO DO INTEGRANTE
+        # ==============================
+
+        ultimo_id = db.execute(
+            text("""
+                SELECT MAX(id)
+                FROM integrantes
+            """)
+        ).scalar()
+
+
+        if ultimo_id:
+            total = ultimo_id + 1
+        else:
+            total = 1
+
+
+        codigo_integrante = f"BN{total:06d}"
+
+
+        # ==============================
+        # DATA CADASTRO
+        # ==============================
+
+        data_cadastro = datetime.now(
+            ZoneInfo("America/Sao_Paulo")
+        ).strftime(
+            "%d/%m/%Y %H:%M"
         )
 
 
-    # ==============================
-    # GERAR CÓDIGO DO INTEGRANTE
-    # ==============================
+        # ==============================
+        # DADOS DO FORMULÁRIO
+        # ==============================
 
-    cursor.execute(
-        """
-        SELECT MAX(id)
-        FROM integrantes
-        """
-    )
-
-    ultimo_id = cursor.fetchone()[0]
-
-    if ultimo_id:
-        total = ultimo_id + 1
-    else:
-        total = 1
+        nome_integrante = request.form.get(
+            "nome",
+            ""
+        ).title()
 
 
-    codigo_integrante = f"BN{total:06d}"
+        db.execute(
+            text("""
+            INSERT INTO integrantes
+
+            (
+
+            codigo_integrante,
+            nome,
+            cpf,
+            data_nascimento,
+
+            telefone,
+            email,
+
+            cep,
+            rua,
+            numero,
+            complemento,
+            bairro,
+            cidade,
+            estado,
+
+            alergia_medicamento,
+            descricao_alergia,
+
+            calcado,
+            estuda,
+            local_estudo,
+
+            trabalha,
+            profissao,
+
+            experiencia_banda,
+            descricao_experiencia,
+
+            responsavel,
+            telefone_responsavel,
+
+            data_cadastro,
+            status
+
+            )
+
+            VALUES
+
+            (
+
+            :codigo_integrante,
+            :nome,
+            :cpf,
+            :data_nascimento,
+
+            :telefone,
+            :email,
+
+            :cep,
+            :rua,
+            :numero,
+            :complemento,
+            :bairro,
+            :cidade,
+            :estado,
+
+            :alergia_medicamento,
+            :descricao_alergia,
+
+            :calcado,
+            :estuda,
+            :local_estudo,
+
+            :trabalha,
+            :profissao,
+
+            :experiencia_banda,
+            :descricao_experiencia,
+
+            :responsavel,
+            :telefone_responsavel,
+
+            :data_cadastro,
+            :status
+
+            )
+
+            """),
+            {
+
+            "codigo_integrante": codigo_integrante,
+
+            "nome": nome_integrante,
+
+            "cpf": request.form.get("cpf"),
+
+            "data_nascimento": request.form.get("data_nascimento"),
+
+            "telefone": request.form.get("telefone"),
+
+            "email": request.form.get("email"),
+
+            "cep": request.form.get("cep"),
+
+            "rua": request.form.get("rua"),
+
+            "numero": request.form.get("numero"),
+
+            "complemento": request.form.get("complemento"),
+
+            "bairro": request.form.get("bairro"),
+
+            "cidade": request.form.get("cidade"),
+
+            "estado": request.form.get("estado"),
+
+            "alergia_medicamento": request.form.get("alergia_medicamento"),
+
+            "descricao_alergia": request.form.get("descricao_alergia"),
+
+            "calcado": request.form.get("calcado"),
+
+            "estuda": request.form.get("estuda"),
+
+            "local_estudo": request.form.get("local_estudo"),
+
+            "trabalha": request.form.get("trabalha"),
+
+            "profissao": request.form.get("profissao"),
+
+            "experiencia_banda": request.form.get("experiencia_banda"),
+
+            "descricao_experiencia": request.form.get("descricao_experiencia"),
+
+            "responsavel": request.form.get("responsavel"),
+
+            "telefone_responsavel": request.form.get("telefone_responsavel"),
+
+            "data_cadastro": data_cadastro,
+
+            "status": "PENDENTE"
+
+            }
+
+        )
 
 
-
-    # ==============================
-    # DATA CADASTRO
-    # ==============================
-
-    data_cadastro = datetime.now(
-        ZoneInfo("America/Sao_Paulo")
-    ).strftime(
-        "%d/%m/%Y %H:%M"
-    )
+        db.commit()
 
 
-    # ==============================
-    # DADOS DO FORMULÁRIO
-    # ==============================
-
-    nome_integrante = request.form.get("nome","").title()
-
-    dados = (
-
-        codigo_integrante,
-
-        nome_integrante,
-        request.form.get("cpf"),
-        request.form.get("data_nascimento"),
-
-        request.form.get("telefone"),
-        request.form.get("email"),
-
-        request.form.get("cep"),
-        request.form.get("rua"),
-        request.form.get("numero"),
-        request.form.get("complemento"),
-        request.form.get("bairro"),
-        request.form.get("cidade"),
-        request.form.get("estado"),
+        return render_template(
+            "cadastro/sucesso.html",
+            codigo=codigo_integrante
+        )
 
 
-        request.form.get("alergia_medicamento"),
-        request.form.get("descricao_alergia"),
+    except Exception as e:
+
+        db.rollback()
+
+        print("ERRO AO SALVAR:", e)
+
+        return f"Erro ao salvar cadastro: {e}"
 
 
-        request.form.get("calcado"),
-        request.form.get("estuda"),
-        request.form.get("local_estudo"),
+    finally:
 
-        request.form.get("trabalha"),
-        request.form.get("profissao"),
-
-        request.form.get("experiencia_banda"),
-        request.form.get("descricao_experiencia"),
-
-
-        request.form.get("responsavel"),
-        request.form.get("telefone_responsavel"),
-
-
-        data_cadastro,
-
-        "PENDENTE"
-
-    )
-
-
-    cursor.execute(
-    """
-
-    INSERT INTO integrantes
-
-    (
-
-    codigo_integrante,
-
-    nome,
-    cpf,
-    data_nascimento,
-
-    telefone,
-    email,
-
-    cep,
-    rua,
-    numero,
-    complemento,
-    bairro,
-    cidade,
-    estado,
-
-
-    alergia_medicamento,
-    descricao_alergia,
-
-
-    calcado,
-    estuda,
-    local_estudo,
-
-    trabalha,
-    profissao,
-
-    experiencia_banda,
-    descricao_experiencia,
-
-
-    responsavel,
-    telefone_responsavel,
-
-
-    data_cadastro,
-
-    status
-
-    )
-
-
-VALUES
-
-(
-    ?,?,?,?,?,?,?,?,?,?,
-    ?,?,?,?,?,?,?,?,?,?,
-    ?,?,?,?,?,?
-)
-
-    """,
-
-    dados
-
-    )
-
-
-    conexao.commit()
-
-    conexao.close()
-
-
-
-    return render_template(
-    "cadastro/sucesso.html",
-    codigo=codigo_integrante
-    )
+        db.close()
 
 @app.route("/admin/exportar/pdf")
 def exportar_pdf():
@@ -836,11 +902,7 @@ def exportar_pdf():
         return redirect("/login")
 
 
-    conexao = sqlite3.connect(BANCO)
-
-    conexao.row_factory = sqlite3.Row
-
-    cursor = conexao.cursor()
+    db = SessionLocal()
 
 
     # ==============================
@@ -852,59 +914,56 @@ def exportar_pdf():
 
     if status_filtro:
 
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    codigo_integrante,
+                    nome,
+                    cpf,
+                    data_nascimento,
+                    cidade,
+                    estado,
+                    status
 
-        cursor.execute("""
-            SELECT
-                codigo_integrante,
-                nome,
-                cpf,
-                data_nascimento,
-                cidade,
-                estado,
-                status
+                FROM integrantes
 
-            FROM integrantes
+                WHERE status = :status
 
-            WHERE status = ?
-
-            ORDER BY nome
-
-        """,(status_filtro,))
+                ORDER BY nome
+            """),
+            {
+                "status": status_filtro
+            }
+        ).mappings().all()
 
 
     else:
 
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    codigo_integrante,
+                    nome,
+                    cpf,
+                    data_nascimento,
+                    cidade,
+                    estado,
+                    status
 
-        cursor.execute("""
-            SELECT
-                codigo_integrante,
-                nome,
-                cpf,
-                data_nascimento,
-                cidade,
-                estado,
-                status
+                FROM integrantes
 
-            FROM integrantes
-
-            ORDER BY LOWER(nome)
-
-        """)
-
-
-    integrantes = cursor.fetchall()
+                ORDER BY LOWER(nome)
+            """)
+        ).mappings().all()
 
 
-    conexao.close()
-
-
+    db.close()
 
     # ==============================
     # CRIA PDF
     # ==============================
 
     arquivo = BytesIO()
-
 
     from reportlab.lib.pagesizes import A4
 
@@ -916,7 +975,6 @@ def exportar_pdf():
         leftMargin=40,
         rightMargin=40
     )
-
 
     elementos = []
 
@@ -1048,10 +1106,7 @@ def exportar_pdf():
 
     ]
 
-
-
     for pessoa in integrantes:
-
 
         dados.append(
         [
@@ -1068,7 +1123,6 @@ def exportar_pdf():
         )
 
 
-
     from reportlab.lib import colors
 
 
@@ -1083,8 +1137,6 @@ def exportar_pdf():
             65
         ]
     )
-
-
 
     tabela.setStyle(
 
@@ -1170,18 +1222,11 @@ def exportar_pdf():
         estilos["Normal"]
     )
 
-
     elementos.append(rodape)
-
-
 
     pdf.build(elementos)
 
-
-
     arquivo.seek(0)
-
-
 
     return send_file(
 
@@ -1202,36 +1247,31 @@ def exportar_excel():
         return redirect("/login")
 
 
-    conexao = sqlite3.connect(BANCO)
-
-    conexao.row_factory = sqlite3.Row
-
-    cursor = conexao.cursor()
+    db = SessionLocal()
 
 
-    cursor.execute("""
-        SELECT
-            codigo_integrante,
-            nome,
-            cpf,
-            data_nascimento,
-            telefone,
-            email,
-            cidade,
-            estado,
-            status,
-            data_cadastro
+    integrantes = db.execute(
+        text("""
+            SELECT
+                codigo_integrante,
+                nome,
+                cpf,
+                data_nascimento,
+                telefone,
+                email,
+                cidade,
+                estado,
+                status,
+                data_cadastro
 
-        FROM integrantes
+            FROM integrantes
 
-        ORDER BY nome
-    """)
-
-
-    integrantes = cursor.fetchall()
+            ORDER BY nome
+        """)
+    ).mappings().all()
 
 
-    conexao.close()
+    db.close()
 
 
 
@@ -1331,4 +1371,4 @@ def exportar_excel():
 
 if __name__ == "__main__":
 
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)

@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Documentação Técnica - SGI Brilho Negro</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 15mm;
+            background-color: #ffffff;
+            @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 8pt;
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                color: #64748b;
+            }
+            @bottom-left {
+                content: "SGI Brilho Negro v1.0 — Associação Cultural de Percussão Rudimentar Brilho Negro";
+                font-size: 8pt;
+                font-family: 'Helvetica Neue', Arial, sans-serif;
+                color: #64748b;
+            }
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.5;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Card */
+        .header-card {
+            background-color: #0f172a;
+            color: #ffffff;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .header-card h1 {
+            margin: 0 0 6px 0;
+            font-size: 20pt;
+            color: #38bdf8;
+            letter-spacing: -0.5px;
+        }
+
+        .header-card .subtitle {
+            font-size: 13pt;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            font-weight: 300;
+        }
+
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            border-top: 1px solid #334155;
+            padding-top: 10px;
+        }
+
+        .meta-table td {
+            font-size: 9pt;
+            color: #cbd5e1;
+            padding: 4px 0;
+        }
+
+        .meta-table td strong {
+            color: #f8fafc;
+        }
+
+        h2 {
+            font-size: 13pt;
+            color: #0f172a;
+            border-left: 4px solid #2563eb;
+            padding-left: 10px;
+            margin-top: 22px;
+            margin-bottom: 10px;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            font-size: 11pt;
+            color: #1e40af;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        code, pre {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 8.5pt;
+            line-height: 1.4;
+            color: #0f172a;
+            overflow-x: auto;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+
+        .inline-code {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 9pt;
+            border: 1px solid #e2e8f0;
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            margin-bottom: 14px;
+            font-size: 9.5pt;
+            page-break-inside: avoid;
+        }
+
+        table.data-table th {
+            background-color: #1e293b;
+            color: #ffffff;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 10px;
+            border: 1px solid #1e293b;
+        }
+
+        table.data-table td {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+        }
+
+        table.data-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            font-size: 8pt;
+            font-weight: bold;
+            border-radius: 4px;
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .callout {
+            background-color: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 9.5pt;
+        }
+
+        .callout-warning {
+            background-color: #fefce8;
+            border-left: 4px solid #ca8a04;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 9.5pt;
+        }
+
+        .flowchart {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 14px;
+            border-radius: 6px;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            page-break-inside: avoid;
+        }
+
+        .grid-2col {
+            display: flex;
+            gap: 15px;
+        }
+
+        .grid-2col > div {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-card">
+        <h1>SGI Brilho Negro</h1>
+        <div class="subtitle">Sistema de Gestão de Integrantes — Documentação Técnica</div>
+        <table class="meta-table">
+            <tr>
+                <td width="50%"><strong>Cliente:</strong> Associação Cultural de Percussão Rudimentar Brilho Negro</td>
+                <td width="50%"><strong>Versão:</strong> 1.0</td>
+            </tr>
+            <tr>
+                <td><strong>Desenvolvimento:</strong> Jadson Roberto Silva do Nascimento</td>
+                <td><strong>Data de Conclusão:</strong> Agosto de 2026</td>
+            </tr>
+        </table>
+    </div>
+
+    <h2>1. Identificação do Projeto</h2>
+    <p>O <strong>SGI Brilho Negro</strong> é uma solução web desenvolvida sob medida para informatizar, padronizar e otimizar o ciclo completo de cadastro e controle de integrantes da <strong>Associação Cultural de Percussão Rudimentar Brilho Negro</strong>.</p>
+
+    <h2>2. Objetivo</h2>
+    <p>O SGI Brilho Negro substitui totalmente os formulários físicos e cadastros em papel, centralizando todas as informações cadastrais em um banco de dados relacional e fornecendo recursos avançados de gestão administrativa, emissão de relatórios profissionais em PDF e exportação de dados para planilhas em Excel.</p>
+
+    <h2>3. Tecnologias Utilizadas</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="30%">Tecnologia</th>
+                <th width="70%">Finalidade</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="inline-code">Python 3</span></td><td>Linguagem principal de desenvolvimento Backend.</td></tr>
+            <tr><td><span class="inline-code">Flask</span></td><td>Micro-framework web para gerenciamento de rotas e sessões.</td></tr>
+            <tr><td><span class="inline-code">SQLite</span></td><td>Banco de dados relacional embutido.</td></tr>
+            <tr><td><span class="inline-code">HTML5</span></td><td>Estruturação semântica das páginas web.</td></tr>
+            <tr><td><span class="inline-code">CSS3</span></td><td>Estilização visual e customização de temas.</td></tr>
+            <tr><td><span class="inline-code">Bootstrap 5</span></td><td>Framework front-end para responsividade e componentes visuais.</td></tr>
+            <tr><td><span class="inline-code">JavaScript</span></td><td>Injeção de dinamismo e controle do Wizard de cadastro em etapas.</td></tr>
+            <tr><td><span class="inline-code">ReportLab</span></td><td>Geração dinâmica e programmatic de relatórios em formato PDF.</td></tr>
+            <tr><td><span class="inline-code">OpenPyXL</span></td><td>Geração e exportação de relatórios em planilhas Excel (.xlsx).</td></tr>
+            <tr><td><span class="inline-code">Git</span></td><td>Sistema de controle de versionamento de código-fonte.</td></tr>
+            <tr><td><span class="inline-code">GitHub</span></td><td>Repositório remoto e controle de código.</td></tr>
+            <tr><td><span class="inline-code">Render</span></td><td>Plataforma PaaS para hospedagem e deploy contínuo na nuvem.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>4. Estrutura do Projeto</h2>
+    <p>Organização de diretórios e arquivos da aplicação <span class="inline-code">Projeto_Brilho_Negro</span>:</p>
+
+<pre>
+Projeto_Brilho_Negro/
+│
+├── app.py                      # Núcleo da aplicação backend e rotas
+├── brilhonegro.db              # Arquivo de banco de dados SQLite
+├── requirements.txt            # Lista de dependências Python para o servidor
+├── runtime.txt                 # Definição da versão do Python no Render
+├── Procfile                    # Comando de inicialização do servidor WSGI no Render
+├── .gitignore                  # Regras de exclusão de arquivos no Git
+│
+├── docs/                       # Documentação técnica do projeto
+│   ├── documentacao_tecnica_sgi_brilho_negro.pdf
+│   └── documentacao_tecnica_sgi_brilho_negro.html
+│
+├── static/                     # Arquivos estáticos servidos pelo Flask
+│   ├── css/                    # Estilos CSS adicionais
+│   ├── img/                    # Ativos de imagem
+│   │   ├── logo.png            # Logotipo principal do sistema
+│   │   └── logo_relatorio.PNG  # Imagem de cabeçalho para documentos PDF
+│   └── js/                     # Scripts de controle do Wizard
+│
+└── templates/                  # Camada de Visão (Jinja2 / HTML)
+    ├── admin/                  # Painel administrativo restrito
+    │   ├── editar.html         # Edição de dados do integrante
+    │   ├── ficha.html          # Visualização individual completa
+    │   ├── integrantes.html    # Tabela geral com filtros e ações
+    │   └── login.html          # Autenticação de administradores
+    │
+    ├── cadastro/               # Módulo público de auto-cadastro
+    │   ├── cadastro.html       # Formulário Wizard em 7 etapas
+    │   ├── erro.html           # Tela de alerta e tratamento de erros
+    │   └── sucesso.html        # Confirmação com código gerado
+    │
+    ├── layout/                 # Templates base e parciais
+    │   └── base.html           # Estrutura HTML comum
+    │
+    └── index.html              # Página inicial da aplicação
+</pre>
+
+    <h2>5. Descrição dos Arquivos de Raiz</h2>
+    <ul>
+        <li><span class="inline-code">app.py</span>: Arquivo principal do sistema. Responsável pelas rotas, autenticação, lógica de cadastro/edição, exportações em Excel e PDF, e integração com o SQLite.</li>
+        <li><span class="inline-code">brilhonegro.db</span>: Banco de dados SQLite contendo os registros unificados dos integrantes.</li>
+        <li><span class="inline-code">requirements.txt</span>: Relação das bibliotecas utilizadas no ambiente.</li>
+        <li><span class="inline-code">runtime.txt</span>: Especifica a versão exata do Python para a plataforma Render.</li>
+        <li><span class="inline-code">Procfile</span>: Define a instrução de execução da aplicação no servidor de produção.</li>
+        <li><span class="inline-code">.gitignore</span>: Previne o versionamento de arquivos sensíveis ou temporários.</li>
+    </ul>
+
+    <h2>6. Estrutura das Pastas e Templates</h2>
+    <p>O projeto está dividido entre recursos estáticos e templates parametrizados:</p>
+    <ul>
+        <li><span class="inline-code">docs/</span>: Pasta destinada ao armazenamento da documentação técnica e manuais do sistema em formatos PDF e HTML.</li>
+        <li><span class="inline-code">static/</span>: Contém folhas de estilo (<span class="inline-code">css/</span>), scripts JS de navegação por abas/etapas (<span class="inline-code">js/</span>) e marcas gráficas da banda (<span class="inline-code">img/</span>).</li>
+        <li><span class="inline-code">templates/admin/</span>: Módulo exclusivo para gestores, contendo funcionalidades de listagem, consulta de fichas, alteração de status e login.</li>
+        <li><span class="inline-code">templates/cadastro/</span>: Módulo de autosserviço para os integrantes realizarem a inscrição inicial e receberem feedback visual.</li>
+        <li><span class="inline-code">templates/layout/</span>: Contém o <span class="inline-code">base.html</span> que padroniza o cabeçalho, navegação e rodapé de toda a aplicação.</li>
+    </ul>
+
+    <h2>7. Banco de Dados e Estrutura Relacional</h2>
+    <p>Tabela Principal: <span class="inline-code">integrantes</span></p>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="25%">Campo</th>
+                <th width="75%">Descrição / Conteúdo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="inline-code">Código</span></td><td>Identificador alfanumérico único gerado no formato <span class="inline-code">BN000001</span>.</td></tr>
+            <tr><td><span class="inline-code">Nome</span></td><td>Nome completo do integrante.</td></tr>
+            <tr><td><span class="inline-code">CPF</span></td><td>Cadastro de Pessoa Física (chave de validação de duplicidade).</td></tr>
+            <tr><td><span class="inline-code">Data Nascimento</span></td><td>Data de nascimento do integrante.</td></tr>
+            <tr><td><span class="inline-code">Gênero</span></td><td>Identificação de gênero.</td></tr>
+            <tr><td><span class="inline-code">Telefone</span></td><td>Número de contato com DDD.</td></tr>
+            <tr><td><span class="inline-code">Email</span></td><td>Endereço de e-mail.</td></tr>
+            <tr><td><span class="inline-code">Endereço</span></td><td>Campos unificados: <span class="inline-code">CEP</span>, <span class="inline-code">Rua</span>, <span class="inline-code">Número</span>, <span class="inline-code">Complemento</span>, <span class="inline-code">Bairro</span>, <span class="inline-code">Cidade</span>, <span class="inline-code">Estado</span>.</td></tr>
+            <tr><td><span class="inline-code">Saúde / Alergia</span></td><td>Indicador de alergia (<span class="inline-code">Alergia</span>) e campo descritivo (<span class="inline-code">Descrição alergia</span>).</td></tr>
+            <tr><td><span class="inline-code">Vestuário / Calçado</span></td><td>Numeração do calçado para uniformização.</td></tr>
+            <tr><td><span class="inline-code">Vida Escolar</span></td><td>Flags e campos de texto: <span class="inline-code">Estuda</span>, <span class="inline-code">Local estudo</span>.</td></tr>
+            <tr><td><span class="inline-code">Vida Profissional</span></td><td>Flags e campos de texto: <span class="inline-code">Trabalha</span>, <span class="inline-code">Profissão</span>.</td></tr>
+            <tr><td><span class="inline-code">Experiência Musical</span></td><td>Indicador de experiência prévia (<span class="inline-code">Experiência musical</span>) e detalhamento (<span class="inline-code">Descrição experiência</span>).</td></tr>
+            <tr><td><span class="inline-code">Responsável</span></td><td>Dados do responsável legal para menores: <span class="inline-code">Responsável</span>, <span class="inline-code">Telefone responsável</span>.</td></tr>
+            <tr><td><span class="inline-code">Controle Interno</span></td><td><span class="inline-code">Data cadastro</span> (ajustado ao fuso de Brasília) e <span class="inline-code">Status</span> do cadastro.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>8. Fluxo Operacional do Sistema</h2>
+    <div class="flowchart">
+[ Página Inicial ]
+        │
+        ▼
+[ Auto-Cadastro em 7 Etapas ]
+        │
+        ▼
+[ Validação de CPF Não Duplicado ] ──► (Já Cadastrado) ──► [ Exibe Tela de Alerta ]
+        │ (Novo CPF)
+        ▼
+[ Geração Automática do Código BN000001 ]
+        │
+        ▼
+[ Gravação no Banco SQLite ]
+        │
+        ▼
+[ Acesso ao Painel Administrativo pelo Gestor ]
+        │
+        ├──► [ Aprovar / Reprovar / Inativar / Editar ]
+        ├──► [ Exportar Planilha Excel ]
+        └──► [ Exportar Relatório PDF ]
+    </div>
+
+    <h2>9. Fluxo de Publicação e Deploy (CI/CD)</h2>
+    <p>O ciclo de atualização do sistema segue o fluxo automatizado de integração e deploy contínuo:</p>
+    <div class="flowchart">
+[ Alteração Local do Código ] ──► [ Execução e Testes: python app.py ]
+                                               │
+                                               ▼
+[ Git Add & Commit ] ──────────► [ Git Push para o GitHub ]
+                                               │
+                                               ▼
+[ Webhook Automático Render ] ─► [ Sistema Atualizado Online na Nuvem ]
+    </div>
+
+    <h2>10. Funcionalidades Implementadas</h2>
+
+    <h3>Cadastro Público</h3>
+    <ul>
+        <li>Formulário assistido (Wizard) dividido em 7 etapas intuitivas;</li>
+        <li>Validação e máscara dinâmica de campos em tempo de execução;</li>
+        <li>Geração automática do código único de identificação no padrão BN;</li>
+        <li>Gravação precisa da data/hora no fuso horário oficial de Brasília (<span class="inline-code">America/Sao_Paulo</span>).</li>
+    </ul>
+
+    <h3>Segurança e Controle</h3>
+    <ul>
+        <li>Área administrativa protegida por login e senha encriptados;</li>
+        <li>Sessão protegida para impedir acessos diretos via URL;</li>
+        <li>Bloqueio rigoroso de novos cadastros com CPFs já existentes no banco.</li>
+    </ul>
+
+    <h3>Administração e Relatórios</h3>
+    <ul>
+        <li>Gestão completa do ciclo de vida do integrante (Aprovar, Reprovar, Inativar, Editar e Excluir);</li>
+        <li>Exportação de relatórios em planilhas Excel (.xlsx) com formatação profissional;</li>
+        <li>Geração de fichas individuais e relatórios gerais em PDF com timbre, cabeçalho e marca d'água da fanfarra;</li>
+        <li>Filtro avançado por status e datas no padrão brasileiro (DD/MM/AAAA).</li>
+    </ul>
+
+    <h2>11. Regra de Negócio: Código do Integrante</h2>
+    <p>O código do integrante é a chave pública de identificação na Associação Cultural de Percussão Rudimentar Brilho Negro.</p>
+    <div class="callout">
+        <strong>Padrão de Código:</strong> <span class="inline-code">BN000001</span><br>
+        O código é gerado automaticamente combinando o prefixo institucional <strong>BN</strong> com o ID numérico sequencial da tabela SQLite formatado em 6 dígitos com zeros à esquerda.
+    </div>
+
+    <h2>12. Tratamento de Validações e Erros</h2>
+    <p>Ao tentar realizar um novo cadastro utilizando um CPF já existente na base de dados, a aplicação intercepta a requisição e redireciona para a tela personalizada <span class="inline-code">cadastro/erro.html</span> contendo a seguinte mensagem:</p>
+    
+    <div class="callout-warning">
+        <strong>⚠️ CPF já cadastrado</strong><br>
+        Este CPF já possui cadastro na Brilho Negro.<br>
+        <em>Caso precise atualizar alguma informação, procure a equipe responsável pelo cadastro.</em>
+    </div>
+
+    <h2>13. Roadmap e Melhorias Futuras</h2>
+    <p>Para as próximas versões da plataforma, estão mapeadas as seguintes expansões:</p>
+    
+    <div class="grid-2col">
+        <div>
+            <ul>
+                <li>Desenvolvimento do portal institucional com galeria de fotos e agenda;</li>
+                <li>Módulo de controle e inventário de instrumentos musicais;</li>
+                <li>Módulo de gestão financeira (mensalidades, rifas e fardamentos);</li>
+                <li>Emissão de carteirinha digital com leitor de QR Code;</li>
+            </ul>
+        </div>
+        <div>
+            <ul>
+                <li>Módulo de chamada, presença e frequência em ensaios e apresentações;</li>
+                <li>Desenvolvimento de aplicativos móveis nativos (Android e iOS);</li>
+                <li>Módulo de backup automático do banco SQLite para a nuvem;</li>
+                <li>Disparo automático de e-mails de confirmação e notificações.</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>14. Histórico do Desenvolvimento</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="20%">Etapa</th>
+                <th width="80%">Descrição da Entrega</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Etapa 1</td><td>Inicialização da estrutura do projeto Python e rotas base no Flask.</td></tr>
+            <tr><td>Etapa 2</td><td>Criação e modelagem da estrutura de dados SQLite.</td></tr>
+            <tr><td>Etapa 3</td><td>Desenvolvimento das rotas e processamento dos dados dos integrantes.</td></tr>
+            <tr><td>Etapa 4</td><td>Implementação do formulário dinâmico em 7 etapas (Wizard).</td></tr>
+            <tr><td>Etapa 5</td><td>Construção do painel administrativo e tabelas de gestão.</td></tr>
+            <tr><td>Etapa 6</td><td>Implementação da camada de autenticação, login e sessões seguras.</td></tr>
+            <tr><td>Etapa 7</td><td>Desenvolvimento do módulo de exportação para planilhas Excel via OpenPyXL.</td></tr>
+            <tr><td>Etapa 8</td><td>Construção do mecanismo de relatórios em PDF com layout profissional usando ReportLab.</td></tr>
+            <tr><td>Etapa 9</td><td>Configuração de ambiente na nuvem e hospedagem no Render.</td></tr>
+            <tr><td>Etapa 10</td><td>Integração contínua e versionamento conectado via GitHub.</td></tr>
+            <tr><td>Etapa 11</td><td>Ajuste de timezone para gravação rigorosa no Horário Oficial de Brasília.</td></tr>
+            <tr><td>Etapa 12</td><td>Implementação do filtro e bloqueio de CPF duplicado.</td></tr>
+            <tr><td>Etapa 13</td><td>Homologação final e lançamento da Versão 1.0 Oficial.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>15. Histórico de Versões</h2>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th width="20%">Versão</th>
+                <th width="20%">Data / Período</th>
+                <th width="60%">Descrição do Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Versão 1.0</strong></td>
+                <td>Agosto / 2026</td>
+                <td>Primeira versão oficial do SGI Brilho Negro lançada em produção.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
