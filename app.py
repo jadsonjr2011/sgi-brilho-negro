@@ -4,8 +4,8 @@ from openpyxl.styles import Font, Alignment
 from flask import send_file
 from io import BytesIO
 
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 
@@ -1035,10 +1035,10 @@ def exportar_pdf():
     pdf = SimpleDocTemplate(
         arquivo,
         pagesize=A4,
-        topMargin=30,
-        bottomMargin=40,
-        leftMargin=40,
-        rightMargin=40
+        topMargin=25,
+        bottomMargin=30,
+        leftMargin=35,
+        rightMargin=35
     )
 
     elementos = []
@@ -1371,12 +1371,81 @@ def pdf_integrante(id):
 
     estilos = getSampleStyleSheet()
 
+    # ==============================
+    # CABEÇALHO PADRÃO RELATÓRIO
+    # ==============================
+
+
+    logo = Image(
+        "static/img/logo_relatorio.PNG",
+        width=320,
+        height=79
+    )
+
+    logo.hAlign = "CENTER"
+
+
+    elementos.append(logo)
+
 
     elementos.append(
-        Paragraph(
-            "<b>BRILHO NEGRO</b><br/>Sistema de Gestão de Integrantes",
-            estilos["Title"]
+        Spacer(1,5)
+    )
+
+
+
+    titulo = Paragraph(
+        """
+        <b>BRILHO NEGRO</b><br/>
+        <font size="14">
+        Sistema de Gestão de Integrantes
+        </font>
+        """,
+        estilos["Title"]
+    )
+
+
+    elementos.append(titulo)
+
+    data_geracao = datetime.now().strftime(
+        "%d/%m/%Y %H:%M"
+    )
+
+
+    elementos.append(
+        Spacer(1,8)
+    )
+
+
+    informacao = Paragraph(
+        f"""
+        <font size="9">
+        Ficha individual do integrante<br/>
+        Gerado em: {data_geracao}
+        </font>
+        """,
+        estilos["Normal"]
+    )
+
+
+    elementos.append(informacao)
+
+
+    elementos.append(
+        Spacer(1,8)
+    )
+
+
+    elementos.append(
+        HRFlowable(
+            width="100%",
+            thickness=1
         )
+    )
+
+
+    elementos.append(
+        Spacer(1,15)
     )
 
 
@@ -1385,98 +1454,315 @@ def pdf_integrante(id):
     )
 
 
+
+    # ==========================
+    # FOTO + IDENTIFICAÇÃO
+    # ==========================
+
+
+    foto = ""
+
+
     if integrante["foto_url"]:
 
-        from reportlab.platypus import Image
 
-        foto = None
-
-
-        if integrante["foto_url"]:
-
-            resposta = requests.get(
+        resposta = requests.get(
             integrante["foto_url"]
         )
+
 
         imagem = BytesIO(
             resposta.content
         )
 
+
         foto = Image(
             imagem,
-            width=100,
-            height=100
-        )
-
-        elementos.append(foto)
-
-        elementos.append(
-            Spacer(1,15)
+            width=90,
+            height=90
         )
 
 
-    elementos.append(
-        Paragraph(
-            f"""
-            <b>Nome:</b> {integrante['nome']}<br/>
-            <b>Código:</b> {integrante['codigo_integrante']}<br/>
-            <b>Status:</b> {integrante['status']}
-            """,
-            estilos["Normal"]
-        )
+    estilo_nome = ParagraphStyle(
+        "NomeIntegrante",
+        parent=estilos["Normal"],
+        fontSize=15,
+        leading=18
     )
 
 
-    elementos.append(
-        Spacer(1,20)
+    identificacao = Paragraph(
+        f"""
+        <b>{integrante['nome']}</b><br/><br/>
+
+        <b>Código:</b> {integrante['codigo_integrante']}<br/>
+
+        <b>Status:</b> {integrante['status']}
+        """,
+        estilo_nome
     )
 
 
-    dados = [
 
-        ["CPF", integrante["cpf"] or ""],
-
-        ["Data nascimento", integrante["data_nascimento"] or ""],
-
-        ["Telefone", integrante["telefone"] or ""],
-
-        ["Email", integrante["email"] or ""],
-
-        ["Cidade", integrante["cidade"] or ""],
-
-        ["Estado", integrante["estado"] or ""],
-
-        ["Responsável", integrante["responsavel"] or ""],
-
-        ["Telefone responsável", integrante["telefone_responsavel"] or ""],
-
-        ["Calçado", integrante["calcado"] or ""],
-
-        ["Data cadastro", integrante["data_cadastro"] or ""],
-
-    ]
-
-
-    tabela = Table(
-        dados,
-        colWidths=[130,250]
+    cabecalho_integrante = Table(
+        [
+            [foto, identificacao]
+        ],
+        colWidths=[130,270]
     )
 
 
-    tabela.setStyle(
+    cabecalho_integrante.setStyle(
         TableStyle(
             [
-                ("GRID",(0,0),(-1,-1),0.5,colors.grey),
-                ("VALIGN",(0,0),(-1,-1),"TOP")
+                ("VALIGN",(0,0),(-1,-1),"TOP"),
+
+                (
+                    "BOX",
+                    (0,0),
+                    (-1,-1),
+                    0.5,
+                    colors.grey
+                ),
+
+                (
+                    "LEFTPADDING",
+                    (0,0),
+                    (-1,-1),
+                    10
+                ),
+
+                (
+                    "RIGHTPADDING",
+                    (0,0),
+                    (-1,-1),
+                    10
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0,0),
+                    (-1,-1),
+                    10
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0,0),
+                    (-1,-1),
+                    10
+                )
             ]
         )
     )
 
 
-    elementos.append(tabela)
+    elementos.append(
+        cabecalho_integrante
+    )
 
 
-    pdf.build(elementos)
+    elementos.append(
+        Spacer(1,20)
+    )  
+
+
+    # ==========================
+    # DADOS DA FICHA
+    # ==========================
+
+
+    estilo_secao = ParagraphStyle(
+        "Secao",
+        parent=estilos["Heading3"],
+        fontSize=12,
+        leading=14,
+        spaceAfter=5
+    )
+
+
+    def adicionar_secao(titulo_secao):
+
+        elementos.append(
+            Spacer(1,5)
+        )
+
+        elementos.append(
+            Paragraph(
+                f"<b>{titulo_secao}</b>",
+                estilo_secao
+            )
+        )
+
+        elementos.append(
+            HRFlowable(
+                width="100%",
+                thickness=0.5
+            )
+        )
+
+    estilo_dados = ParagraphStyle(
+        "Dados",
+        parent=estilos["Normal"],
+        fontSize=9,
+        leading=11
+    )
+
+    def adicionar_linha(texto):
+
+        elementos.append(
+            Paragraph(
+                texto,
+                estilos["Normal"]
+            )
+        )
+
+
+
+    # DADOS PESSOAIS
+
+    adicionar_secao("Dados Pessoais")
+
+
+    adicionar_linha(
+        f"""
+        <b>CPF:</b> {integrante['cpf'] or ''}<br/>
+        <b>Data nascimento:</b> {integrante['data_nascimento'] or ''}
+        """
+    )
+
+
+
+    # CONTATO
+
+    adicionar_secao("Contato")
+
+
+    adicionar_linha(
+        f"""
+        <b>Telefone:</b> {integrante['telefone'] or ''}<br/>
+        <b>Email:</b> {integrante['email'] or ''}
+        """
+    )
+
+
+
+    # ENDEREÇO
+
+    adicionar_secao("Endereço")
+
+
+    adicionar_linha(
+        f"""
+        <b>Rua:</b> {integrante['rua'] or ''}, 
+        Nº {integrante['numero'] or ''}<br/>
+
+        <b>Bairro:</b> {integrante['bairro'] or ''}<br/>
+
+        <b>Cidade:</b> {integrante['cidade'] or ''} -
+        {integrante['estado'] or ''}<br/>
+
+        <b>CEP:</b> {integrante['cep'] or ''}
+        """
+    )
+
+
+
+    # SAÚDE
+
+    adicionar_secao("Saúde")
+
+
+    adicionar_linha(
+        f"""
+        <b>Possui alergia:</b> {integrante['possui_alergia'] or ''}<br/>
+
+        <b>Alergia medicamentos:</b>
+        {integrante['alergia_medicamento'] or ''}
+        """
+    )
+
+
+
+    # RESPONSÁVEL
+
+    adicionar_secao("Responsável")
+
+
+    adicionar_linha(
+        f"""
+        <b>Nome:</b> {integrante['responsavel'] or 'Não informado'}<br/>
+
+        <b>Parentesco:</b> {integrante['parentesco'] or ''}<br/>
+
+        <b>Telefone:</b> {integrante['telefone_responsavel'] or ''}
+        """
+    )
+
+
+
+    # INFORMAÇÕES
+
+    adicionar_secao("Informações")
+
+
+    adicionar_linha(
+        f"""
+        <b>Calçado:</b> {integrante['calcado'] or ''}<br/>
+
+        <b>Estuda:</b> {integrante['estuda'] or ''}<br/>
+
+        <b>Trabalha:</b> {integrante['trabalha'] or ''}<br/>
+
+        <b>Profissão:</b> {integrante['profissao'] or ''}<br/>
+
+        <b>Experiência musical:</b>
+        {integrante['experiencia_banda'] or ''}
+        """
+    )
+
+
+
+    # CADASTRO
+
+    adicionar_secao("Cadastro")
+
+
+    adicionar_linha(
+        f"""
+        <b>Data cadastro:</b>
+        {integrante['data_cadastro'] or ''}
+        """
+    )
+
+    def rodape_pdf(canvas, doc):
+
+        canvas.saveState()
+
+        canvas.setFont(
+            "Helvetica",
+            8
+        )
+
+        texto = (
+            "SGI Brilho Negro | "
+            "Documento gerado automaticamente | "
+            f"Página {doc.page}"
+        )
+
+        canvas.drawCentredString(
+            A4[0] / 2,
+            20,
+            texto
+        )
+
+        canvas.restoreState()
+
+    pdf.build(
+        elementos,
+        onFirstPage=rodape_pdf,
+        onLaterPages=rodape_pdf
+    )
 
 
     arquivo.seek(0)
