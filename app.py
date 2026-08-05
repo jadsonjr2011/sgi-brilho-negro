@@ -3,15 +3,32 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from flask import send_file
 from io import BytesIO
+
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from database import SessionLocal
 from sqlalchemy import text
 from werkzeug.security import check_password_hash
-from reportlab.lib import colors
 
+import os
+import requests
+import cloudinary
+import cloudinary.uploader
+from dotenv import load_dotenv
+
+load_dotenv()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    secure=True
+)
 
 app = Flask(__name__)
 app.secret_key = "brilho_negro_2026"
@@ -299,6 +316,34 @@ def editar_integrante(id):
 
     if request.method == "POST":
 
+        integrante_atual = db.execute(
+            text("""
+                SELECT foto_url
+                FROM integrantes
+                WHERE id=:id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()
+
+
+        foto_url = integrante_atual.foto_url if integrante_atual else None
+
+
+
+        foto = request.files.get("foto")
+
+
+        if foto and foto.filename:
+
+            resultado = cloudinary.uploader.upload(
+                foto,
+                folder="brilho_negro/integrantes"
+            )
+
+            foto_url = resultado["secure_url"]
+        
         db.execute(
             text("""
             UPDATE integrantes SET
@@ -323,7 +368,8 @@ def editar_integrante(id):
                 bairro=:bairro,
                 cidade=:cidade,
                 estado=:estado,
-                cep=:cep
+                cep=:cep,
+                foto_url=:foto_url
 
             WHERE id=:id
             """),
@@ -347,6 +393,7 @@ def editar_integrante(id):
                 "cidade": request.form["cidade"],
                 "estado": request.form["estado"],
                 "cep": request.form["cep"],
+                "foto_url": foto_url,
                 "id": id
             }
         )
@@ -923,7 +970,6 @@ def exportar_pdf():
 
     db = SessionLocal()
 
-
     # ==============================
     # FILTRO
     # ==============================
@@ -1276,6 +1322,171 @@ def exportar_pdf():
 
         mimetype="application/pdf"
 
+    )
+
+@app.route("/admin/integrante/<int:id>/pdf")
+def pdf_integrante(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    integrante = db.execute(
+        text("""
+            SELECT *
+            FROM integrantes
+            WHERE id=:id
+        """),
+        {
+            "id": id
+        }
+    ).mappings().first()
+
+
+    db.close()
+
+
+    if not integrante:
+        return "Integrante não encontrado"
+
+
+    arquivo = BytesIO()
+
+
+    pdf = SimpleDocTemplate(
+        arquivo,
+        pagesize=A4,
+        topMargin=40,
+        bottomMargin=40,
+        leftMargin=40,
+        rightMargin=40
+    )
+
+
+    elementos = []
+
+
+    estilos = getSampleStyleSheet()
+
+
+    elementos.append(
+        Paragraph(
+            "<b>BRILHO NEGRO</b><br/>Sistema de Gestão de Integrantes",
+            estilos["Title"]
+        )
+    )
+
+
+    elementos.append(
+        Spacer(1,20)
+    )
+
+
+    if integrante["foto_url"]:
+
+        from reportlab.platypus import Image
+
+        foto = None
+
+
+        if integrante["foto_url"]:
+
+            resposta = requests.get(
+            integrante["foto_url"]
+        )
+
+        imagem = BytesIO(
+            resposta.content
+        )
+
+        foto = Image(
+            imagem,
+            width=100,
+            height=100
+        )
+
+        elementos.append(foto)
+
+        elementos.append(
+            Spacer(1,15)
+        )
+
+
+    elementos.append(
+        Paragraph(
+            f"""
+            <b>Nome:</b> {integrante['nome']}<br/>
+            <b>Código:</b> {integrante['codigo_integrante']}<br/>
+            <b>Status:</b> {integrante['status']}
+            """,
+            estilos["Normal"]
+        )
+    )
+
+
+    elementos.append(
+        Spacer(1,20)
+    )
+
+
+    dados = [
+
+        ["CPF", integrante["cpf"] or ""],
+
+        ["Data nascimento", integrante["data_nascimento"] or ""],
+
+        ["Telefone", integrante["telefone"] or ""],
+
+        ["Email", integrante["email"] or ""],
+
+        ["Cidade", integrante["cidade"] or ""],
+
+        ["Estado", integrante["estado"] or ""],
+
+        ["Responsável", integrante["responsavel"] or ""],
+
+        ["Telefone responsável", integrante["telefone_responsavel"] or ""],
+
+        ["Calçado", integrante["calcado"] or ""],
+
+        ["Data cadastro", integrante["data_cadastro"] or ""],
+
+    ]
+
+
+    tabela = Table(
+        dados,
+        colWidths=[130,250]
+    )
+
+
+    tabela.setStyle(
+        TableStyle(
+            [
+                ("GRID",(0,0),(-1,-1),0.5,colors.grey),
+                ("VALIGN",(0,0),(-1,-1),"TOP")
+            ]
+        )
+    )
+
+
+    elementos.append(tabela)
+
+
+    pdf.build(elementos)
+
+
+    arquivo.seek(0)
+
+
+    return send_file(
+        arquivo,
+        as_attachment=True,
+        download_name=f"ficha_{integrante['codigo_integrante']}.pdf",
+        mimetype="application/pdf"
     )
 
 @app.route("/admin/exportar/excel")

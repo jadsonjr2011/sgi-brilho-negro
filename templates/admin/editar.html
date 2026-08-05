@@ -25,7 +25,7 @@ Editar Integrante
 <hr>
 
 
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     
 <label>
 CPF
@@ -47,6 +47,15 @@ name="nome"
 value="{{ integrante.nome }}"
 required>
 
+<label class="mt-3">
+Foto do Integrante
+</label>
+
+<input
+type="file"
+class="form-control"
+name="foto"
+accept="image/*">
 
 <label>
 Data de nascimento

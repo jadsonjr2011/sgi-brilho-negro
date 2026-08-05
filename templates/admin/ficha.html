@@ -19,20 +19,98 @@ Ficha do Integrante
 
 <hr>
 
+<div class="ficha-cabecalho">
 
-<h4>
-🔑 Código do Integrante
-</h4>
+
+    <div class="ficha-foto-area">
+
+        {% if integrante.foto_url %}
+
+            <img 
+            src="{{ integrante.foto_url }}"
+            alt="Foto do integrante"
+            class="foto-integrante">
+
+        {% else %}
+
+            <div class="sem-foto">
+                Sem foto
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <div class="ficha-identificacao">
+
+        <h3>
+            {{ integrante.nome }}
+        </h3>
+
+
+        <p class="codigo-integrante">
+
+            🔑 {{ integrante.codigo_integrante }}
+
+        </p>
+
+
+    </div>
+
+
+
+    <div class="ficha-acao">
+
+        <a 
+        href="/admin/integrante/{{ integrante.id }}/pdf"
+        class="btn btn-danger"
+        target="_blank">
+
+        📄 Imprimir Ficha
+
+        </a>
+
+    </div>
+
+
+</div>
+
+    <p>
+
+        Status:
+
+        {% if integrante.status == "PENDENTE" %}
+
+        <span class="badge bg-warning text-dark">
+            PENDENTE
+        </span>
+
+
+        {% elif integrante.status == "APROVADO" %}
+
+        <span class="badge bg-success">
+            APROVADO
+        </span>
+
+
+        {% elif integrante.status == "INATIVO" %}
+
+        <span class="badge bg-secondary">
+            INATIVO
+        </span>
+
+
+        {% endif %}
+
+    </p>
+
+
+</div>
+
 
 <hr>
-
-<p>
-<strong>
-{{ integrante.codigo_integrante }}
-</strong>
-</p>
-
-
 
 <h4>
 👤 Dados Pessoais
@@ -260,39 +338,6 @@ Nenhum responsável informado.
 {{ integrante.data_cadastro }}
 </p>
 
-<h4 class="mt-4">
-Status:
-</h4>
-
-
-{% if integrante.status == "PENDENTE" %}
-
-<span class="badge bg-warning text-dark">
-PENDENTE
-</span>
-
-{% elif integrante.status == "APROVADO" %}
-
-<span class="badge bg-success">
-APROVADO
-</span>
-
-{% elif integrante.status == "INATIVO" %}
-
-<span class="badge bg-secondary">
-INATIVO
-</span>
-
-{% elif integrante.status == "REPROVADO" %}
-
-<span class="badge bg-danger">
-REPROVADO
-</span>
-
-{% endif %}
-
-
-
 <div class="mt-4">
 
 
@@ -306,7 +351,14 @@ class="btn btn-brilho">
 
 </a>
 
+<a 
+href="/admin/integrante/{{ integrante.id }}/pdf"
+class="btn btn-danger"
+target="_blank">
 
+📄 Gerar Ficha PDF
+
+</a>
 
 <!-- APROVAÇÃO SOMENTE PENDENTE -->
 
