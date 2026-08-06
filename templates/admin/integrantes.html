@@ -16,59 +16,122 @@
 👥 Integrantes cadastrados
 </h2>
 
-<div class="row align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center flex-wrap mt-4 mb-3">
 
-    <div class="col-md-6">
+    <div class="d-flex flex-wrap gap-2">
 
-        <form 
-        action="/admin/exportar/pdf"
-        method="get"
-        class="d-flex align-items-center gap-2">
+        <a href="/admin/viagens"
+           class="btn btn-primary">
 
-            <select 
-            name="status"
-            class="form-select"
-            style="width:220px;">
+            🚌 Viagens
 
-                <option value="">
-                    Todos os integrantes
-                </option>
+        </a>
 
-                <option value="PENDENTE">
-                    Pendentes
-                </option>
+        <a href="#"
+           class="btn btn-outline-warning disabled">
 
-                <option value="APROVADO">
-                    Aprovados
-                </option>
+            🎺 Instrumentos
 
-                <option value="REPROVADO">
-                    Reprovados
-                </option>
+        </a>
 
-                <option value="INATIVO">
-                    Inativos
-                </option>
+        <a href="#"
+           class="btn btn-outline-info disabled">
 
-            </select>
+            📅 Ensaios
 
+        </a>
 
-            <button 
-            type="submit"
-            class="btn btn-danger">
+        <button
+            class="btn btn-outline-light"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCarteirinhas">
 
-                📄 Exportar PDF
+                🪪 Carteirinhas
 
-            </button>
+        </button>
 
-        </form>
+        <a href="#"
+           class="btn btn-outline-secondary disabled">
+
+            📄 Documentos
+
+        </a>
+
+        <a href="#"
+           class="btn btn-outline-success disabled">
+
+            📊 Relatórios
+
+        </a>
 
     </div>
 
+    <a href="/logout"
+       class="btn btn-danger">
 
-    <div class="col-md-6 text-end">
+        🚪 Sair
 
-        <a 
+    </a>
+
+</div>
+
+<form
+id="formExportarPdf"
+action="/admin/exportar/pdf"
+method="get">
+
+<div class="row align-items-end mb-4">
+
+    <div class="col-md-4">
+
+        <label class="form-label">
+
+            Exportar PDF
+
+        </label>
+
+        <select
+        name="status"
+        class="form-select">
+
+            <option value="">
+                Todos os integrantes
+            </option>
+
+            <option value="PENDENTE">
+                Pendentes
+            </option>
+
+            <option value="APROVADO">
+                Aprovados
+            </option>
+
+            <option value="REPROVADO">
+                Reprovados
+            </option>
+
+            <option value="INATIVO">
+                Inativos
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="col-md-auto">
+
+        <button
+        class="btn btn-danger">
+
+            📄 Exportar PDF
+
+        </button>
+
+    </div>
+
+    <div class="col-md-auto">
+
+        <a
         href="/admin/exportar/excel"
         class="btn btn-success">
 
@@ -80,35 +143,26 @@
 
 </div>
 
-</div>
-
-<hr>
-
-
-<div class="text-end mb-3">
-
-<a href="/logout" class="btn btn-danger">
-Sair
-</a>
-
-</div>
-
-
+</form>
 
 <div class="row text-center mb-4">
 
 
 <div class="col-md-4">
 
-<div class="card-bn">
+<div class="card-resumo">
 
-<h3>
-👥 {{ total }}
-</h3>
+<div class="icone">
+👥
+</div>
 
-<p>
+<div class="numero">
+{{ total }}
+</div>
+
+<div class="descricao">
 Total de Integrantes
-</p>
+</div>
 
 </div>
 
@@ -118,15 +172,19 @@ Total de Integrantes
 
 <div class="col-md-4">
 
-<div class="card-bn">
+<div class="card-resumo">
 
-<h3>
-⏳ {{ pendentes }}
-</h3>
+<div class="icone">
+⏳
+</div>
 
-<p>
+<div class="numero">
+{{ pendentes }}
+</div>
+
+<div class="descricao">
 Pendentes
-</p>
+</div>
 
 </div>
 
@@ -136,19 +194,91 @@ Pendentes
 
 <div class="col-md-4">
 
-<div class="card-bn">
+<div class="card-resumo">
 
-<h3>
-✅ {{ aprovados }}
-</h3>
+<div class="icone">
+✅
+</div>
 
-<p>
+<div class="numero">
+{{ aprovados }}
+</div>
+
+<div class="descricao">
 Aprovados
-</p>
-
 </div>
 
 </div>
+
+</div>
+
+
+</div>
+
+<!-- FILTROS -->
+
+<div class="row mb-4">
+
+
+    <div class="col-md-8">
+
+        <label class="form-label">
+            🔎 Pesquisar integrante
+        </label>
+
+        <input 
+        type="text"
+        id="pesquisaIntegrante"
+        class="form-control"
+        placeholder="Digite nome, código ou cidade..."
+        onkeyup="filtrarIntegrantes()">
+
+    </div>
+
+
+
+    <div class="col-md-4">
+
+        <label class="form-label">
+            Status
+        </label>
+
+
+        <select 
+        id="filtroStatus"
+        class="form-select"
+        onchange="filtrarIntegrantes()">
+
+
+            <option value="">
+                Todos
+            </option>
+
+
+            <option value="PENDENTE">
+                Pendentes
+            </option>
+
+
+            <option value="APROVADO">
+                Aprovados
+            </option>
+
+
+            <option value="REPROVADO">
+                Reprovados
+            </option>
+
+
+            <option value="INATIVO">
+                Inativos
+            </option>
+
+
+        </select>
+
+
+    </div>
 
 
 </div>
@@ -191,7 +321,7 @@ Aprovados
 {% for pessoa in integrantes %}
 
 
-<tr>
+<tr class="linha-integrante">
 
 
 <td>
@@ -274,5 +404,256 @@ Ver
 
 </div>
 
+<script>
+
+function filtrarIntegrantes(){
+
+    let texto = document
+        .getElementById("pesquisaIntegrante")
+        .value
+        .toLowerCase();
+
+    let status = document
+        .getElementById("filtroStatus")
+        .value
+        .toLowerCase();
+
+    let linhas = document
+        .querySelectorAll(".linha-integrante");
+
+    linhas.forEach(function(linha){
+
+        let conteudo = linha.innerText.toLowerCase();
+
+        let atendeTexto =
+            conteudo.includes(texto);
+
+        let atendeStatus =
+            status === "" ||
+            conteudo.includes(status);
+
+        if(atendeTexto && atendeStatus){
+
+            linha.style.display = "";
+
+        }else{
+
+            linha.style.display = "none";
+
+        }
+
+    });
+
+}
+
+</script>
+
+<div class="modal fade"
+     id="modalCarteirinhas"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+
+        <div class="modal-content bg-dark text-white">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    🪪 Carteirinhas
+                </h5>
+
+                <button
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body text-center">
+
+                <p class="text-secondary">
+                    Selecione um integrante.
+                </p>
+
+                <select
+                    class="form-select mb-4"
+                    id="integranteCarteirinha"
+                    onchange="carregarCarteirinha()">
+
+                    <option value="">
+                        Escolha um integrante
+                    </option>
+
+                    {% for pessoa in integrantes %}
+
+                    <option value="{{ pessoa.id }}">
+                        {{ pessoa.codigo_integrante }} - {{ pessoa.nome }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+                <div id="previewCarteirinha" class="d-flex justify-content-center">
+
+                    <div id="carteirinhaBN" class="card shadow" style="width:340px;border-radius:18px;overflow:hidden;display:none;">
+
+                        <div class="bg-dark text-white text-center p-3">
+
+                            <img src="/static/img/logo_relatorio.PNG"
+                                style="max-width:180px;">
+
+                            <h5 class="mt-2 mb-0">
+                                BRILHO NEGRO
+                            </h5>
+
+                            <small>
+                                Associação Cultural de Percussão Rudimentar
+                            </small>
+
+                        </div>
+
+                        <div class="bg-white text-center p-4">
+
+                            <img id="fotoCarteirinha"
+                                src="/static/img/sem_foto.png"
+                                style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:4px solid #222;">
+
+                            <h4 id="nomeCarteirinha"
+                                class="mt-3 mb-1 text-dark">
+                                Nome
+                            </h4>
+
+                            <div id="codigoCarteirinha"
+                                class="text-secondary">
+                                BN000000
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-success"
+                    onclick="baixarCarteirinha()">
+
+                    ⬇ Baixar PDF
+
+                </button>
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function carregarCarteirinha(){
+
+    let id = document.getElementById(
+        "integranteCarteirinha"
+    ).value;
+
+
+    if(!id){
+
+        document.getElementById(
+            "carteirinhaBN"
+        ).style.display="none";
+
+        return;
+
+    }
+
+
+    fetch(
+        "/admin/api/integrante/" + id
+    )
+
+    .then(response => response.json())
+
+    .then(dados => {
+
+
+        document.getElementById(
+            "nomeCarteirinha"
+        ).innerHTML = dados.nome;
+
+
+        document.getElementById(
+            "codigoCarteirinha"
+        ).innerHTML = dados.codigo;
+
+
+        if(dados.foto){
+
+            document.getElementById(
+                "fotoCarteirinha"
+            ).src = dados.foto;
+
+        }else{
+
+            document.getElementById(
+                "fotoCarteirinha"
+            ).src = "/static/img/sem_foto.png";
+
+        }
+
+
+        document.getElementById(
+            "carteirinhaBN"
+        ).style.display="block";
+
+
+    });
+
+
+}
+
+</script>
+
+<script>
+
+function baixarCarteirinha(){
+
+    let id = document.getElementById(
+        "integranteCarteirinha"
+    ).value;
+
+
+    if(!id){
+
+        alert("Selecione um integrante.");
+
+        return;
+
+    }
+
+
+    window.open(
+        "/admin/carteirinha/pdf/" + id,
+        "_blank"
+    );
+
+}
+
+</script>
 
 {% endblock %}

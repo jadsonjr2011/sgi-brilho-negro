@@ -1,0 +1,181 @@
+{% extends 'layout/base.html' %}
+
+
+{% block titulo %}
+Integrantes da Viagem
+{% endblock %}
+
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+
+<h2 class="titulo">
+🚌 {{ viagem.evento }}
+</h2>
+
+
+<p>
+📍 Destino:
+<b>{{ viagem.destino }}</b>
+</p>
+
+
+<p>
+📅 
+{{ viagem.data_saida }}
+até
+{{ viagem.data_retorno }}
+</p>
+
+
+<hr>
+
+
+<h3 class="titulo">
+👥 Selecionar integrantes
+</h3>
+
+
+
+<form method="POST"
+action="/admin/viagem/{{ viagem.id }}/integrantes/salvar">
+
+
+
+<div class="table-responsive">
+
+
+<table class="table table-dark table-hover">
+
+
+<thead>
+
+<tr>
+
+<th></th>
+<th>Código</th>
+<th>Nome</th>
+<th>Cidade</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+
+
+<tbody>
+
+
+{% for pessoa in integrantes %}
+
+
+<tr>
+
+
+<td>
+
+<input 
+type="checkbox"
+name="integrantes"
+value="{{ pessoa.id }}"
+
+{% if pessoa.id in selecionados %}
+checked
+{% endif %}
+
+>
+
+
+</td>
+
+
+<td>
+{{ pessoa.codigo_integrante }}
+</td>
+
+
+<td>
+{{ pessoa.nome }}
+</td>
+
+
+<td>
+{{ pessoa.cidade }}
+</td>
+
+
+<td>
+
+{% if pessoa.status == "PENDENTE" %}
+
+<span class="badge bg-warning text-dark">
+PENDENTE
+</span>
+
+
+{% elif pessoa.status == "APROVADO" %}
+
+<span class="badge bg-success">
+APROVADO
+</span>
+
+
+{% else %}
+
+<span class="badge bg-danger">
+{{ pessoa.status }}
+</span>
+
+
+{% endif %}
+
+
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</tbody>
+
+
+</table>
+
+
+</div>
+
+
+
+<button class="btn btn-brilho">
+
+💾 Salvar participantes
+
+</button>
+
+
+
+<a 
+href="/admin/viagens"
+class="btn btn-secondary">
+
+⬅ Voltar
+
+</a>
+
+
+</form>
+
+
+
+</div>
+
+
+{% endblock %}

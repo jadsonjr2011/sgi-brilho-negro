@@ -3,13 +3,23 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from flask import send_file
 from io import BytesIO
+from utils.pdf_carteirinha import gerar_pdf_carteirinha
 
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, HRFlowable
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    Image,
+    HRFlowable,
+    PageBreak
+)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 
-from datetime import datetime
+from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from database import SessionLocal
 from sqlalchemy import text
@@ -19,7 +29,9 @@ import os
 import requests
 import cloudinary
 import cloudinary.uploader
+from utils.pdf_viagem import gerar_documentos_viagem
 from dotenv import load_dotenv
+from datetime import datetime, date
 
 load_dotenv()
 
@@ -1925,6 +1937,371 @@ def exportar_excel():
 
     )
 
+@app.route("/admin/viagens")
+def viagens():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    lista = db.execute(
+        text("""
+            SELECT
+                v.*,
+
+                COUNT(vi.integrante_id) AS total_participantes
+
+            FROM viagens v
+
+            LEFT JOIN viagem_integrantes vi
+            ON vi.viagem_id = v.id
+
+            GROUP BY v.id
+
+            ORDER BY v.data_saida DESC
+        """)
+    ).mappings().all()
+
+
+    db.close()
+
+
+    return render_template(
+        "admin/viagens.html",
+        viagens=lista
+    )
+
+
+@app.route("/admin/viagens/nova", methods=["POST"])
+def nova_viagem():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    db.execute(
+        text("""
+            INSERT INTO viagens
+            (
+                evento,
+                destino,
+                data_saida,
+                data_retorno,
+                responsavel,
+                observacoes
+            )
+
+            VALUES
+            (
+                :evento,
+                :destino,
+                :data_saida,
+                :data_retorno,
+                :responsavel,
+                :observacoes
+            )
+        """),
+        {
+            "evento": request.form["evento"],
+            "destino": request.form["destino"],
+            "data_saida": request.form["data_saida"],
+            "data_retorno": request.form["data_retorno"] or None,
+            "responsavel": request.form["responsavel"],
+            "observacoes": request.form["observacoes"]
+        }
+    )
+
+
+    db.commit()
+
+    db.close()
+
+
+    return redirect("/admin/viagens")
+
+
+@app.route("/admin/viagem/<int:id>/integrantes")
+def integrantes_viagem(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    viagem = db.execute(
+        text("""
+            SELECT *
+            FROM viagens
+            WHERE id=:id
+        """),
+        {
+            "id": id
+        }
+    ).mappings().first()
+
+
+
+    integrantes = db.execute(
+        text("""
+            SELECT
+                id,
+                codigo_integrante,
+                nome,
+                cidade,
+                status
+
+            FROM integrantes
+
+            ORDER BY nome
+        """)
+    ).mappings().all()
+
+
+
+    selecionados = db.execute(
+        text("""
+            SELECT integrante_id
+            FROM viagem_integrantes
+            WHERE viagem_id=:id
+        """),
+        {
+            "id": id
+        }
+    ).scalars().all()
+
+
+
+    participantes = db.execute(
+        text("""
+            SELECT
+                i.id,
+                i.codigo_integrante,
+                i.nome,
+                i.cidade,
+                i.status
+
+            FROM viagem_integrantes v
+
+            JOIN integrantes i
+            ON i.id = v.integrante_id
+
+            WHERE v.viagem_id=:id
+
+            ORDER BY i.nome
+        """),
+        {
+            "id": id
+        }
+    ).mappings().all()
+
+
+
+    db.close()
+
+
+    return render_template(
+        "admin/integrantes_viagem.html",
+        viagem=viagem,
+        integrantes=integrantes,
+        selecionados=selecionados,
+        participantes=participantes
+    )
+
+@app.route("/admin/viagem/<int:id>/integrantes/salvar", methods=["POST"])
+def salvar_integrantes_viagem(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    # Remove os integrantes atuais dessa viagem
+    db.execute(
+        text("""
+            DELETE FROM viagem_integrantes
+            WHERE viagem_id=:id
+        """),
+        {
+            "id": id
+        }
+    )
+
+
+    integrantes = request.form.getlist("integrantes")
+
+
+    for integrante_id in integrantes:
+
+        db.execute(
+            text("""
+                INSERT INTO viagem_integrantes
+                (
+                    viagem_id,
+                    integrante_id
+                )
+                VALUES
+                (
+                    :viagem_id,
+                    :integrante_id
+                )
+            """),
+            {
+                "viagem_id": id,
+                "integrante_id": integrante_id
+            }
+        )
+
+
+    db.commit()
+
+    db.close()
+
+
+    return redirect(
+        f"/admin/viagem/{id}/integrantes"
+    )
+
+@app.route("/admin/viagem/<int:id>")
+def detalhe_viagem(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    viagem = db.execute(
+        text("""
+            SELECT *
+            FROM viagens
+            WHERE id=:id
+        """),
+        {
+            "id": id
+        }
+    ).mappings().first()
+
+
+
+    participantes = db.execute(
+        text("""
+            SELECT
+                i.codigo_integrante,
+                i.nome,
+                i.cidade,
+                i.status
+
+            FROM viagem_integrantes vi
+
+            INNER JOIN integrantes i
+            ON i.id = vi.integrante_id
+
+            WHERE vi.viagem_id=:id
+
+            ORDER BY i.nome
+        """),
+        {
+            "id": id
+        }
+    ).mappings().all()
+
+
+
+    db.close()
+
+
+
+    return render_template(
+        "admin/detalhe_viagem.html",
+        viagem=viagem,
+        participantes=participantes
+    )
+
+@app.route("/admin/viagem/<int:id>/documentos")
+def documentos_viagem(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    return gerar_documentos_viagem(id)
+
+@app.route("/admin/carteirinhas")
+def admin_carteirinhas():
+
+    db = SessionLocal()
+
+    integrantes = db.execute(text("""
+        SELECT
+            id,
+            codigo_integrante,
+            nome,
+            foto,
+            status
+        FROM integrantes
+        WHERE status = 'APROVADO'
+        ORDER BY nome
+    """)).mappings().all()
+
+    db.close()
+
+    return render_template(
+        "admin/carteirinhas.html",
+        integrantes=integrantes
+    )
+
+@app.route("/admin/api/integrante/<int:id>")
+def api_integrante(id):
+
+    db = SessionLocal()
+
+    integrante = db.execute(
+        text("""
+            SELECT
+                id,
+                codigo_integrante,
+                nome,
+                foto_url,
+                tipo_sanguineo
+            FROM integrantes
+            WHERE id=:id
+        """),
+        {
+            "id": id
+        }
+    ).mappings().first()
+
+    db.close()
+
+
+    if not integrante:
+
+        return {
+            "erro": "Integrante não encontrado"
+        }, 404
+
+
+    return {
+        "nome": integrante["nome"],
+        "codigo": integrante["codigo_integrante"],
+        "foto": integrante["foto_url"],
+        "tipo_sanguineo": integrante["tipo_sanguineo"]
+    }
+
+@app.route("/admin/carteirinha/pdf/<int:id>")
+def baixar_carteirinha_pdf(id):
+
+    return gerar_pdf_carteirinha(id)
 
 if __name__ == "__main__":
 

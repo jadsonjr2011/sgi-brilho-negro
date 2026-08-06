@@ -1,0 +1,138 @@
+{% extends 'layout/base.html' %}
+
+
+{% block titulo %}
+Detalhes da Viagem
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+
+<h2 class="titulo">
+🚌 {{ viagem.evento }}
+</h2>
+
+
+<hr>
+
+
+<p>
+<b>📍 Destino:</b>
+{{ viagem.destino }}
+</p>
+
+
+<p>
+<b>📅 Saída:</b>
+{{ viagem.data_saida.strftime('%d/%m/%Y') }}
+</p>
+
+
+<p>
+<b>📅 Retorno:</b>
+
+{% if viagem.data_retorno %}
+{{ viagem.data_retorno.strftime('%d/%m/%Y') }}
+{% else %}
+-
+{% endif %}
+
+</p>
+
+
+<p>
+<b>👤 Responsável:</b>
+{{ viagem.responsavel }}
+</p>
+
+
+<p>
+<b>📝 Observações:</b>
+{{ viagem.observacoes or '-' }}
+</p>
+
+<a 
+href="/admin/viagem/{{ viagem.id }}/documentos"
+class="btn btn-danger mb-3">
+
+📄 Gerar Documentos da Viagem
+
+</a>
+
+<hr>
+
+
+<h3 class="titulo">
+👥 Participantes
+</h3>
+
+
+<table class="table table-dark table-hover">
+
+
+<tr>
+
+<th>Código</th>
+<th>Nome</th>
+<th>Cidade</th>
+
+</tr>
+
+
+{% for pessoa in participantes %}
+
+<tr>
+
+<td>
+{{ pessoa.codigo_integrante }}
+</td>
+
+
+<td>
+{{ pessoa.nome }}
+</td>
+
+
+<td>
+{{ pessoa.cidade }}
+</td>
+
+
+</tr>
+
+
+{% else %}
+
+<tr>
+
+<td colspan="3" class="text-center">
+
+Nenhum participante cadastrado
+
+</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+
+<a href="/admin/viagens"
+class="btn btn-secondary">
+
+⬅ Voltar
+
+</a>
+
+
+</div>
+
+
+{% endblock %}

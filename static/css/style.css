@@ -278,3 +278,67 @@ footer{
     align-items:center;
 
 }
+
+/* ===========================
+   CARDS RESUMO ADMIN
+=========================== */
+
+.card-resumo{
+
+    background:rgba(28,31,38,.92);
+
+    border:1px solid rgba(212,175,55,.20);
+
+    border-radius:15px;
+
+    padding:12px;
+
+    height:110px;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    transition:.3s;
+
+}
+
+
+.card-resumo:hover{
+
+    transform:translateY(-3px);
+
+    border-color:#d4af37;
+
+}
+
+
+.card-resumo .icone{
+
+    font-size:22px;
+
+}
+
+
+.card-resumo .numero{
+
+    font-size:30px;
+
+    font-weight:800;
+
+    color:#d4af37;
+
+}
+
+
+.card-resumo .descricao{
+
+    color:#cfcfcf;
+
+    font-size:14px;
+
+}
