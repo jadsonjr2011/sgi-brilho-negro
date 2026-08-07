@@ -25,6 +25,7 @@ from zoneinfo import ZoneInfo
 from database import SessionLocal
 from sqlalchemy import text
 from werkzeug.security import check_password_hash
+from collections import Counter
 
 import os
 import requests
@@ -1099,6 +1100,21 @@ def exportar_pdf():
     db.close()
 
     # ==============================
+    # DISTRIBUIÇÃO POR FUNÇÃO
+    # ==============================
+
+    distribuicao_funcao = {}
+
+    for pessoa in integrantes:
+
+        funcao = pessoa["funcao"] or "Integrantes sem função definida"
+
+        if funcao in distribuicao_funcao:
+            distribuicao_funcao[funcao] += 1
+        else:
+            distribuicao_funcao[funcao] = 1
+
+    # ==============================
     # CRIA PDF
     # ==============================
 
@@ -1204,11 +1220,26 @@ def exportar_pdf():
 
 
 
+    texto_funcoes = "<br/>".join(
+        [
+            f"{funcao}: {quantidade}"
+            for funcao, quantidade in distribuicao_funcao.items()
+        ]
+    )
+
+
     informacoes = Paragraph(
 
         f"""
         Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}<br/>
-        Filtro: {filtro_texto}<br/>
+        Filtro: {filtro_texto}<br/><br/>
+
+        <b>Distribuição por Função:</b><br/>
+
+        {texto_funcoes}
+
+        <br/><br/>
+
         Total encontrado: {len(integrantes)}
         """,
 
