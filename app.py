@@ -46,6 +46,10 @@ cloudinary.config(
 app = Flask(__name__)
 app.secret_key = "brilho_negro_2026"
 
+@app.template_filter('moeda')
+def moeda(valor):
+    return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
 # ==============================
 # HISTÓRICO DE ALTERAÇÕES
 # ==============================
