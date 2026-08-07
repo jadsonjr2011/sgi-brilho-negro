@@ -349,3 +349,296 @@ footer{
     font-size:14px;
 
 }
+
+/* =====================================
+   AJUSTES COMPLEMENTARES
+   BRILHO NEGRO
+===================================== */
+
+
+/* ===========================
+   TITULO NAVBAR
+=========================== */
+
+.titulo-navbar{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+
+.titulo-navbar strong{
+
+    color:white;
+
+}
+
+
+.titulo-navbar small{
+
+    color:#cfcfcf;
+
+}
+
+
+
+/* ===========================
+   MELHORIA MOBILE
+=========================== */
+
+
+@media (max-width:768px){
+
+
+    .container{
+
+        padding-left:10px;
+
+        padding-right:10px;
+
+    }
+
+
+
+    .navbar .navbar-brand img{
+
+        width:40px;
+
+    }
+
+
+
+    .navbar .navbar-brand strong{
+
+        font-size:16px;
+
+    }
+
+
+
+    .navbar .navbar-brand small{
+
+        font-size:10px;
+
+    }
+
+
+
+    .card-bn{
+
+        padding:15px 12px;
+
+    }
+
+
+
+    .titulo{
+
+        font-size:1.35rem;
+
+    }
+
+
+
+    /* BOTÕES */
+
+    .btn{
+
+        max-width:100%;
+
+    }
+
+
+
+    .btn-inicial{
+
+        width:100%;
+
+    }
+
+
+
+    .btn-brilho{
+
+        width:100%;
+
+    }
+
+
+
+    /* TABELAS */
+
+    .table-responsive{
+
+        overflow-x:auto;
+
+        -webkit-overflow-scrolling:touch;
+
+    }
+
+
+
+    .table-responsive table{
+
+        min-width:650px;
+
+    }
+
+
+
+    /* FORMULÁRIOS */
+
+    .row > [class*="col-"]{
+
+        margin-bottom:15px;
+
+    }
+
+
+
+    /* CARDS ADMIN */
+
+    .card-resumo{
+
+        height:auto;
+
+        min-height:120px;
+
+    }
+
+
+
+    /* FICHA INTEGRANTE */
+
+    .ficha-cabecalho{
+
+        flex-direction:column;
+
+        text-align:center;
+
+        gap:20px;
+
+    }
+
+
+
+    .ficha-foto-area{
+
+        width:120px;
+
+        height:120px;
+
+    }
+
+
+
+    .ficha-acao{
+
+        width:100%;
+
+        align-items:center;
+
+    }
+
+
+
+    .ficha-acao .btn{
+
+        width:100%;
+
+    }
+
+
+
+}
+
+/* =====================================
+   AJUSTE BOTÕES INICIAIS MOBILE
+===================================== */
+
+@media (max-width:768px){
+
+    .area-botoes-inicial{
+
+        display:flex;
+
+        flex-direction:column;
+
+        gap:15px;
+
+        width:100%;
+
+        align-items:center;
+
+    }
+
+
+    .area-botoes-inicial .btn{
+
+        width:100%;
+
+        max-width:320px;
+
+    }
+
+}
+
+/* =====================================
+   BOTÕES DA TELA INICIAL
+===================================== */
+
+.area-botoes-inicial{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:20px;
+
+}
+
+
+/* CELULAR */
+
+@media (max-width:768px){
+
+    .area-botoes-inicial{
+
+        flex-direction:column;
+
+        align-items:center;
+
+        gap:15px;
+
+    }
+
+
+    .area-botoes-inicial .btn-inicial{
+
+        width:100%;
+
+        max-width:320px;
+
+    }
+
+}
+
+.texto-inicial{
+    max-width:600px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+
+@media(max-width:768px){
+
+    .texto-inicial{
+
+        font-size:14px;
+        line-height:1.5;
+
+    }
+
+}

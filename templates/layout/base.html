@@ -23,37 +23,31 @@
 
         <a class="navbar-brand d-flex align-items-center" href="/">
 
-            <img
-                src="{{ url_for('static', filename='img/logo.png') }}"
-                width="50"
-                class="me-3">
+        <img
+            src="{{ url_for('static', filename='img/logo.png') }}"
+            width="50"
+            class="me-2">
 
-            <div>
+        <div class="titulo-navbar">
 
-                <strong>
+            <strong>
+                Brilho Negro
+            </strong>
 
-                    Brilho Negro
+            <small>
+                Sistema de Gestão
+            </small>
 
-                </strong>
+        </div>
 
-                <br>
-
-                <small>
-
-                    Sistema de Gestão de Integrantes
-
-                </small>
-
-            </div>
-
-        </a>
+    </a>
 
     </div>
 
 </nav>
 
 
-<div class="container mt-3 mb-0">
+<div class="container-fluid container-md mt-3 mb-0">
 
     {% block conteudo %}
 
@@ -62,7 +56,7 @@
 </div>
 
 
-<footer class="text-center text-secondary py-1">
+<footer class="text-center text-secondary py-2 mt-4">
 
     © 2026 - Brilho Negro
 
