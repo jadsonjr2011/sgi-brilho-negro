@@ -2661,6 +2661,34 @@ def movimentacoes_financeiro():
         saldo=saldo
     )
 
+@app.route("/admin/financeiro/excluir/<int:id>", methods=["POST"])
+def excluir_movimentacao_financeiro(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    db.execute(
+        text("""
+            DELETE FROM financeiro
+            WHERE id = :id
+        """),
+        {
+            "id": id
+        }
+    )
+
+
+    db.commit()
+
+    db.close()
+
+
+    return redirect("/admin/financeiro/movimentacoes")
+
 @app.route("/admin/financeiro/prestacao")
 def prestacao_financeira():
 
