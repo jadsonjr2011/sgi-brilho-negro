@@ -642,3 +642,1001 @@ footer{
     }
 
 }
+
+/* =====================================
+   TELA FINANCEIRO
+===================================== */
+
+.financeiro-container{
+    width:100%;
+}
+
+
+/* ===========================
+   CABEÇALHO
+=========================== */
+
+.financeiro-cabecalho{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+    margin-bottom:10px;
+
+}
+
+.financeiro-voltar{
+
+    white-space:nowrap;
+
+}
+
+
+/* ===========================
+   CARDS RESUMO
+=========================== */
+
+.financeiro-resumo{
+
+    row-gap:15px;
+
+}
+
+
+.financeiro-resumo .card-resumo{
+
+    width:100%;
+
+}
+
+
+/* ===========================
+   BOTÕES
+=========================== */
+
+.financeiro-acoes{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:15px;
+
+    flex-wrap:wrap;
+
+}
+
+
+.financeiro-acoes .btn{
+
+    min-width:210px;
+
+}
+
+
+/* ===========================
+   MODAL
+=========================== */
+
+.financeiro-modal-acoes{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:10px;
+
+}
+
+
+/* ===========================
+   CELULAR
+=========================== */
+
+@media (max-width:768px){
+
+    .financeiro-container{
+
+        padding:15px 12px;
+
+    }
+
+
+    /* Cabeçalho */
+
+    .financeiro-cabecalho{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+        text-align:center;
+
+        gap:15px;
+
+    }
+
+
+    .financeiro-cabecalho .titulo{
+
+        font-size:1.5rem;
+
+    }
+
+
+    .financeiro-voltar{
+
+        width:100%;
+
+    }
+
+
+    /* Cards */
+
+    .financeiro-resumo{
+
+        margin-top:20px !important;
+
+    }
+
+
+    .financeiro-resumo > div{
+
+        width:100%;
+
+    }
+
+
+    .financeiro-resumo .card-resumo{
+
+        margin-bottom:0;
+
+        min-height:105px;
+
+    }
+
+
+    /* Botões */
+
+    .financeiro-acoes{
+
+        flex-direction:column;
+
+        width:100%;
+
+        gap:12px;
+
+        margin-top:30px !important;
+
+    }
+
+
+    .financeiro-acoes .btn{
+
+        width:100%;
+
+        min-width:0;
+
+        margin:0 !important;
+
+    }
+
+
+    /* Modal */
+
+    .modal-dialog{
+
+        margin:10px;
+
+    }
+
+
+    .modal-content{
+
+        border-radius:15px;
+
+    }
+
+
+    .modal-body{
+
+        padding:18px 15px;
+
+    }
+
+
+    .modal-footer{
+
+        padding:15px;
+
+    }
+
+
+    .financeiro-modal-acoes{
+
+        flex-direction:column-reverse;
+
+    }
+
+
+    .financeiro-modal-acoes .btn{
+
+        width:100%;
+
+    }
+
+
+    /* Formulário */
+
+    .modal .row > [class*="col-"]{
+
+        margin-bottom:0;
+
+    }
+
+
+    .modal .form-control,
+    .modal .form-select{
+
+        width:100%;
+
+    }
+
+}
+
+/* =====================================
+   TELA VIAGENS
+===================================== */
+
+.viagens-container{
+    width:100%;
+}
+
+
+/* ===========================
+   CABEÇALHO
+=========================== */
+
+.viagens-cabecalho{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:20px;
+
+    margin-bottom:25px;
+
+}
+
+
+.viagens-titulo-area{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+
+.viagens-voltar{
+
+    white-space:nowrap;
+
+}
+
+
+.viagens-nova{
+
+    white-space:nowrap;
+
+}
+
+
+/* ===========================
+   TABELA
+=========================== */
+
+.viagens-tabela{
+
+    width:100%;
+
+    overflow-x:auto;
+
+    -webkit-overflow-scrolling:touch;
+
+}
+
+
+.viagens-tabela table{
+
+    min-width:900px;
+
+    margin-bottom:0;
+
+}
+
+
+.viagens-tabela th{
+
+    white-space:nowrap;
+
+}
+
+
+.viagens-tabela td{
+
+    white-space:nowrap;
+
+}
+
+
+/* ===========================
+   AÇÕES
+=========================== */
+
+.viagens-acoes{
+
+    display:flex;
+
+    gap:6px;
+
+    align-items:center;
+
+}
+
+
+/* ===========================
+   MODAL
+=========================== */
+
+.viagens-modal-acoes{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    gap:10px;
+
+}
+
+
+/* ===========================
+   CELULAR
+=========================== */
+
+@media (max-width:768px){
+
+    .viagens-container{
+
+        padding:15px 12px;
+
+    }
+
+
+    /* Cabeçalho */
+
+    .viagens-cabecalho{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+        gap:15px;
+
+        margin-bottom:20px;
+
+    }
+
+
+    .viagens-titulo-area{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+        text-align:center;
+
+        gap:12px;
+
+    }
+
+
+    .viagens-titulo-area .titulo{
+
+        font-size:1.5rem;
+
+    }
+
+
+    .viagens-voltar{
+
+        width:100%;
+
+    }
+
+
+    .viagens-nova{
+
+        width:100%;
+
+    }
+
+
+    /* Tabela */
+
+    .viagens-tabela{
+
+        margin-left:0;
+
+        margin-right:0;
+
+    }
+
+
+    .viagens-tabela table{
+
+        min-width:900px;
+
+    }
+
+
+    /* Modal */
+
+    .modal-dialog{
+
+        margin:10px;
+
+    }
+
+
+    .modal-content{
+
+        border-radius:15px;
+
+    }
+
+
+    .modal-body{
+
+        padding:18px 15px;
+
+    }
+
+
+    .viagens-modal-acoes{
+
+        flex-direction:column-reverse;
+
+        padding:15px;
+
+        gap:10px;
+
+    }
+
+
+    .viagens-modal-acoes .btn{
+
+        width:100%;
+
+    }
+
+
+    /* Campos */
+
+    .modal .row > [class*="col-"]{
+
+        margin-bottom:0;
+
+    }
+
+
+    .modal .form-control,
+    .modal .form-select{
+
+        width:100%;
+
+    }
+
+}
+
+/* =====================================
+   INTEGRANTES DA VIAGEM
+===================================== */
+
+.viagem-integrantes-container{
+    width:100%;
+}
+
+
+/* ===========================
+   CABEÇALHO
+=========================== */
+
+.viagem-integrantes-cabecalho{
+    margin-bottom:10px;
+}
+
+
+.viagem-dados{
+    color:#cfcfcf;
+}
+
+
+.viagem-integrantes-titulo{
+    font-size:1.5rem;
+    margin-top:20px;
+    margin-bottom:5px;
+}
+
+
+.viagem-integrantes-ajuda{
+    margin-bottom:20px;
+}
+
+
+/* ===========================
+   TABELA
+=========================== */
+
+.viagem-integrantes-tabela{
+
+    width:100%;
+
+    overflow-x:auto;
+
+    -webkit-overflow-scrolling:touch;
+
+}
+
+
+.viagem-integrantes-tabela table{
+
+    min-width:700px;
+
+    margin-bottom:0;
+
+}
+
+
+.viagem-integrantes-tabela th{
+
+    white-space:nowrap;
+
+}
+
+
+.viagem-integrantes-tabela td{
+
+    white-space:nowrap;
+
+}
+
+
+/* ===========================
+   CHECKBOX
+=========================== */
+
+.viagem-checkbox{
+
+    width:20px;
+    height:20px;
+
+    cursor:pointer;
+
+}
+
+
+/* ===========================
+   AÇÕES
+=========================== */
+
+.viagem-integrantes-acoes{
+
+    display:flex;
+
+    gap:12px;
+
+    margin-top:25px;
+
+}
+
+
+/* ===========================
+   CELULAR
+=========================== */
+
+@media (max-width:768px){
+
+    .viagem-integrantes-container{
+
+        padding:15px 12px;
+
+    }
+
+
+    .viagem-integrantes-cabecalho{
+
+        text-align:center;
+
+    }
+
+
+    .viagem-integrantes-cabecalho .titulo{
+
+        font-size:1.5rem;
+
+    }
+
+
+    .viagem-dados{
+
+        font-size:14px;
+
+    }
+
+
+    .viagem-integrantes-titulo{
+
+        font-size:1.3rem;
+
+        text-align:center;
+
+    }
+
+
+    .viagem-integrantes-ajuda{
+
+        text-align:center;
+
+        font-size:13px;
+
+    }
+
+
+    /* Tabela com rolagem */
+
+    .viagem-integrantes-tabela{
+
+        margin-left:0;
+
+        margin-right:0;
+
+    }
+
+
+    .viagem-integrantes-tabela table{
+
+        min-width:700px;
+
+    }
+
+
+    /* Checkbox maior para toque */
+
+    .viagem-checkbox{
+
+        width:22px;
+        height:22px;
+
+    }
+
+
+    /* Botões */
+
+    .viagem-integrantes-acoes{
+
+        flex-direction:column;
+
+        gap:10px;
+
+    }
+
+
+    .viagem-integrantes-acoes .btn{
+
+        width:100%;
+
+    }
+
+}
+
+/* =====================================
+   ADMIN INTEGRANTES - MOBILE
+===================================== */
+
+
+.area-menu-admin{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+
+
+.botoes-admin{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+}
+
+
+
+.botao-sair{
+
+    flex-shrink:0;
+
+}
+
+
+
+/* CELULAR */
+
+@media(max-width:768px){
+
+
+    .area-menu-admin{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+
+
+    .botoes-admin{
+
+        display:grid;
+
+        grid-template-columns:1fr 1fr;
+
+        gap:10px;
+
+    }
+
+
+
+    .botoes-admin .btn{
+
+        width:100%;
+
+        font-size:14px;
+
+        padding:10px 5px;
+
+    }
+
+
+
+    .botao-sair .btn{
+
+        width:100%;
+
+    }
+
+
+
+    /* CARDS RESUMO */
+
+    .card-resumo{
+
+        margin-bottom:15px;
+
+    }
+
+
+
+    /* FILTROS */
+
+    #formExportarPdf .row{
+
+        display:flex;
+
+        flex-direction:column;
+
+    }
+
+
+
+    #formExportarPdf .btn{
+
+        width:100%;
+
+        margin-top:10px;
+
+    }
+
+
+
+    /* TITULO LISTA */
+
+    .titulo{
+
+        font-size:1.25rem;
+
+    }
+
+
+
+    /* TABELA */
+
+    .table-responsive{
+
+        border-radius:10px;
+
+    }
+
+
+
+    table{
+
+        font-size:14px;
+
+    }
+
+
+
+    .linha-integrante .btn{
+
+        width:100%;
+
+        margin-top:5px;
+
+    }
+
+
+
+}
+
+/* =====================================
+   FICHA INTEGRANTE MOBILE
+===================================== */
+
+
+.area-acoes-ficha{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+}
+
+
+.area-acoes-ficha .btn{
+
+    white-space:nowrap;
+
+}
+
+
+
+/* CELULAR */
+
+@media(max-width:768px){
+
+
+    .ficha-cabecalho{
+
+        gap:15px;
+
+    }
+
+
+    .ficha-identificacao h3{
+
+        font-size:22px;
+
+    }
+
+
+    .ficha-acao{
+
+        width:100%;
+
+    }
+
+
+    .ficha-acao .d-flex{
+
+        flex-direction:column;
+
+        width:100%;
+
+    }
+
+
+    .ficha-acao .btn{
+
+        width:100%;
+
+    }
+
+
+
+    .area-acoes-ficha{
+
+        flex-direction:column;
+
+    }
+
+
+    .area-acoes-ficha .btn{
+
+        width:100%;
+
+    }
+
+
+}
+
+/* =====================================
+   EDITAR INTEGRANTE
+===================================== */
+
+
+.area-acoes-edicao{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:15px;
+
+}
+
+
+.area-acoes-edicao .btn{
+
+    min-width:220px;
+
+}
+
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+
+    .area-acoes-edicao{
+
+        flex-direction:column;
+
+        align-items:center;
+
+    }
+
+
+    .area-acoes-edicao .btn{
+
+        width:100%;
+
+        max-width:320px;
+
+    }
+
+
+}

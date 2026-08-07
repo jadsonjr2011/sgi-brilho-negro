@@ -1,33 +1,41 @@
 {% extends 'layout/base.html' %}
 
-
 {% block titulo %}
 Viagens
 {% endblock %}
 
-
 {% block conteudo %}
 
+<div class="card-bn viagens-container">
 
-<div class="card-bn">
+```
+<!-- ===========================
+     CABEÇALHO
+============================ -->
 
+<div class="viagens-cabecalho">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="viagens-titulo-area">
 
-    <div>
+        <a href="/admin"
+           class="btn btn-secondary viagens-voltar">
 
-        <a href="/admin" class="btn btn-secondary mb-2">
             ← Voltar
+
         </a>
 
         <h2 class="titulo mb-0">
+
             🚌 Viagens
+
         </h2>
 
     </div>
 
+
     <button
-        class="btn btn-brilho"
+        type="button"
+        class="btn btn-brilho viagens-nova"
         data-bs-toggle="modal"
         data-bs-target="#modalViagem">
 
@@ -38,310 +46,324 @@ Viagens
 </div>
 
 
+<!-- ===========================
+     TABELA
+============================ -->
 
-<div class="table-responsive">
+<div class="table-responsive viagens-tabela">
 
+    <table class="table table-dark table-hover align-middle">
 
-<table class="table table-dark table-hover">
+        <thead>
 
+            <tr>
 
-<thead>
+                <th>Evento</th>
 
-<tr>
+                <th>Destino</th>
 
-<th>Evento</th>
+                <th>Saída</th>
 
-<th>Destino</th>
+                <th>Retorno</th>
 
-<th>Saída</th>
+                <th>Responsável</th>
 
-<th>Retorno</th>
+                <th>Participantes</th>
 
-<th>Responsável</th>
+                <th>Ações</th>
 
-<th>Participantes</th>
+            </tr>
 
-<th>Ações</th>
+        </thead>
 
-</tr>
 
-</thead>
+        <tbody>
 
+            {% for viagem in viagens %}
 
-<tbody>
+            <tr>
 
+                <td>
+                    {{ viagem.evento }}
+                </td>
 
-{% for viagem in viagens %}
 
+                <td>
+                    {{ viagem.destino }}
+                </td>
 
-<tr>
 
+                <td>
+                    {{ viagem.data_saida.strftime('%d/%m/%Y') }}
+                </td>
 
-<td>
-{{ viagem.evento }}
-</td>
 
+                <td>
 
-<td>
-{{ viagem.destino }}
-</td>
+                    {% if viagem.data_retorno %}
 
+                        {{ viagem.data_retorno.strftime('%d/%m/%Y') }}
 
-<td>
-{{ viagem.data_saida.strftime('%d/%m/%Y') }}
-</td>
+                    {% else %}
 
+                        -
 
-<td>
+                    {% endif %}
 
-{% if viagem.data_retorno %}
+                </td>
 
-{{ viagem.data_retorno.strftime('%d/%m/%Y') }}
 
-{% else %}
+                <td>
+                    {{ viagem.responsavel }}
+                </td>
 
--
 
-{% endif %}
+                <td>
+                    👥 {{ viagem.total_participantes }}
+                </td>
 
-</td>
 
+                <td>
 
-<td>
-{{ viagem.responsavel }}
-</td>
+                    <div class="viagens-acoes">
 
-<td>
-👥 {{ viagem.total_participantes }}
-</td>
+                        <a
+                            href="/admin/viagem/{{ viagem.id }}/integrantes"
+                            class="btn btn-sm btn-brilho">
 
-<td>
+                            👥 Integrantes
 
-<a 
-href="/admin/viagem/{{ viagem.id }}/integrantes"
-class="btn btn-sm btn-brilho">
+                        </a>
 
-👥 Integrantes
 
-</a>
+                        <a
+                            href="/admin/viagem/{{ viagem.id }}"
+                            class="btn btn-sm btn-brilho">
 
+                            Ver
 
-<a 
-href="/admin/viagem/{{ viagem.id }}"
-class="btn btn-sm btn-brilho">
+                        </a>
 
-Ver
+                    </div>
 
-</a>
+                </td>
 
+            </tr>
 
-</td>
 
-</tr>
+            {% else %}
 
+            <tr>
 
-{% else %}
+                <td colspan="7"
+                    class="text-center">
 
+                    Nenhuma viagem cadastrada
 
-<tr>
+                </td>
 
-<td colspan="6"
-class="text-center">
+            </tr>
 
-Nenhuma viagem cadastrada
+            {% endfor %}
 
-</td>
+        </tbody>
 
-</tr>
+    </table>
 
-
-{% endfor %}
-
-
-</tbody>
-
-
-</table>
-
+</div>
+```
 
 </div>
 
+<!-- =====================================================
+     MODAL NOVA VIAGEM
+===================================================== -->
+
+<div class="modal fade"
+     id="modalViagem"
+     tabindex="-1"
+     aria-hidden="true">
+
+```
+<div class="modal-dialog modal-dialog-centered">
+
+
+    <div class="modal-content bg-dark text-white">
+
+
+        <!-- CABEÇALHO -->
+
+        <div class="modal-header">
+
+            <h5 class="modal-title">
+
+                🚌 Nova Viagem
+
+            </h5>
+
+
+            <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Fechar">
+
+            </button>
+
+        </div>
+
+
+
+        <!-- FORMULÁRIO -->
+
+        <form
+            method="POST"
+            action="/admin/viagens/nova">
+
+
+            <div class="modal-body">
+
+
+                <!-- EVENTO -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Evento
+                    </label>
+
+                    <input
+                        type="text"
+                        name="evento"
+                        class="form-control"
+                        required>
+
+                </div>
+
+
+
+                <!-- DESTINO -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Destino
+                    </label>
+
+                    <input
+                        type="text"
+                        name="destino"
+                        class="form-control"
+                        required>
+
+                </div>
+
+
+
+                <!-- DATAS -->
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            Data saída
+                        </label>
+
+                        <input
+                            type="date"
+                            name="data_saida"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            Data retorno
+                        </label>
+
+                        <input
+                            type="date"
+                            name="data_retorno"
+                            class="form-control">
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- RESPONSÁVEL -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        Responsável
+                    </label>
+
+                    <input
+                        type="text"
+                        name="responsavel"
+                        class="form-control">
+
+                </div>
+
+
+
+                <!-- OBSERVAÇÕES -->
+
+                <div class="mb-2">
+
+                    <label class="form-label">
+                        Observações
+                    </label>
+
+                    <textarea
+                        name="observacoes"
+                        class="form-control"
+                        rows="3"></textarea>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- RODAPÉ -->
+
+            <div class="modal-footer viagens-modal-acoes">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-brilho">
+
+                    💾 Salvar
+
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
 
 </div>
-
-<!-- MODAL NOVA VIAGEM -->
-
-<div class="modal fade" id="modalViagem" tabindex="-1">
-
-
-<div class="modal-dialog">
-
-
-<div class="modal-content bg-dark text-white">
-
-
-<div class="modal-header">
-
-<h5 class="modal-title">
-🚌 Nova Viagem
-</h5>
-
-
-<button 
-type="button"
-class="btn-close btn-close-white"
-data-bs-dismiss="modal">
-
-</button>
-
-</div>
-
-
-
-<form method="POST" action="/admin/viagens/nova">
-
-
-
-<div class="modal-body">
-
-
-<div class="mb-3">
-
-<label class="form-label">
-Evento
-</label>
-
-<input 
-type="text"
-name="evento"
-class="form-control"
-required>
-
-</div>
-
-
-
-<div class="mb-3">
-
-<label class="form-label">
-Destino
-</label>
-
-<input 
-type="text"
-name="destino"
-class="form-control"
-required>
-
-</div>
-
-
-
-<div class="row">
-
-
-<div class="col-md-6">
-
-<label class="form-label">
-Data saída
-</label>
-
-<input 
-type="date"
-name="data_saida"
-class="form-control"
-required>
-
-</div>
-
-
-
-<div class="col-md-6">
-
-<label class="form-label">
-Data retorno
-</label>
-
-<input 
-type="date"
-name="data_retorno"
-class="form-control">
-
-</div>
-
-
-</div>
-
-
-
-<div class="mb-3 mt-3">
-
-<label class="form-label">
-Responsável
-</label>
-
-<input 
-type="text"
-name="responsavel"
-class="form-control">
-
-</div>
-
-
-
-
-<div class="mb-3">
-
-<label class="form-label">
-Observações
-</label>
-
-<textarea
-name="observacoes"
-class="form-control"
-rows="3"></textarea>
-
-</div>
-
-
-</div>
-
-
-
-<div class="modal-footer">
-
-
-<button 
-type="button"
-class="btn btn-secondary"
-data-bs-dismiss="modal">
-
-Cancelar
-
-</button>
-
-
-
-<button 
-type="submit"
-class="btn btn-brilho">
-
-💾 Salvar
-
-</button>
-
-
-</div>
-
-
-</form>
-
-
-</div>
-
-
-</div>
-
+```
 
 </div>
 

@@ -89,9 +89,15 @@ value="{{ integrante.email }}">
 
 
 
-<h4 class="mt-4">
+<div class="mt-4 mb-3">
+
+<h4 class="titulo">
 🏠 Endereço
 </h4>
+
+<hr>
+
+</div>
 
 <hr>
 
@@ -422,21 +428,25 @@ name="descricao_experiencia">{{ integrante.descricao_experiencia or '' }}</texta
 <div class="text-center mt-5">
 
 
-<button
-class="btn btn-brilho">
+<div class="area-acoes-edicao mt-5">
 
-💾 Salvar Alterações
+    <button
+    class="btn btn-brilho">
 
-</button>
+        💾 Salvar Alterações
+
+    </button>
 
 
-<a
-href="/admin/integrante/{{ integrante.id }}"
-class="btn btn-secondary ms-2">
+    <a
+    href="/admin/integrante/{{ integrante.id }}"
+    class="btn btn-secondary">
 
-Cancelar
+        Cancelar
 
-</a>
+    </a>
+
+</div>
 
 
 </div>
