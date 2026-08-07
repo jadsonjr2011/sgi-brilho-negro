@@ -27,8 +27,15 @@
 
         </a>
 
+        <a href="/admin/financeiro"
+            class="btn btn-outline-warning">
+
+            💰 Financeiro
+
+        </a>
+
         <a href="#"
-           class="btn btn-outline-warning disabled">
+           class="btn btn-outline-secondary disabled">
 
             🎺 Instrumentos
 
@@ -82,41 +89,92 @@ method="get">
 
 <div class="row align-items-end mb-4">
 
-    <div class="col-md-4">
+    <div class="col-md-3">
 
-        <label class="form-label">
+    <label class="form-label">
 
-            Exportar PDF
+        Status
 
-        </label>
+    </label>
 
-        <select
-        name="status"
-        class="form-select">
 
-            <option value="">
-                Todos os integrantes
-            </option>
+    <select
+    name="status"
+    class="form-select">
 
-            <option value="PENDENTE">
-                Pendentes
-            </option>
+        <option value="">
+            Todos
+        </option>
 
-            <option value="APROVADO">
-                Aprovados
-            </option>
+        <option value="PENDENTE">
+            Pendentes
+        </option>
 
-            <option value="REPROVADO">
-                Reprovados
-            </option>
+        <option value="APROVADO">
+            Aprovados
+        </option>
 
-            <option value="INATIVO">
-                Inativos
-            </option>
+        <option value="REPROVADO">
+            Reprovados
+        </option>
 
-        </select>
+        <option value="INATIVO">
+            Inativos
+        </option>
+
+    </select>
+
+</div>
+
+
+<div class="col-md-3">
+
+    <label class="form-label">
+
+        Função
+
+    </label>
+
+
+    <select
+    name="funcao"
+    class="form-select">
+
+
+        <option value="">
+            Todas
+        </option>
+
+
+        <option value="Músico">
+            Músico
+        </option>
+
+
+        <option value="CC Música">
+            CC Música
+        </option>
+
+
+        <option value="Instrutor">
+            Instrutor
+        </option>
+
+
+        <option value="Apoio">
+            Apoio
+        </option>
+
+
+        <option value="Dança">
+            Dança
+        </option>
+
+
+    </select>
 
     </div>
+
 
     <div class="col-md-auto">
 
@@ -141,7 +199,7 @@ method="get">
 
     </div>
 
-</div>
+    </div>
 
 </form>
 
@@ -230,7 +288,7 @@ Aprovados
         type="text"
         id="pesquisaIntegrante"
         class="form-control"
-        placeholder="Digite nome, código ou cidade..."
+        placeholder="Digite nome, código, cidade ou função..."
         onkeyup="filtrarIntegrantes()">
 
     </div>
@@ -303,6 +361,8 @@ Aprovados
 
 <th>Cidade</th>
 
+<th>Função</th>
+
 <th>Status</th>
 
 <th>Cadastro</th>
@@ -338,6 +398,11 @@ Aprovados
 {{ pessoa.cidade }}
 </td>
 
+<td>
+
+{{ pessoa.funcao or '-' }}
+
+</td>
 
 <td>
 

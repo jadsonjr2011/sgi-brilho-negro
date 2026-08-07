@@ -4,6 +4,7 @@ from openpyxl.styles import Font, Alignment
 from flask import send_file
 from io import BytesIO
 from utils.pdf_carteirinha import gerar_pdf_carteirinha
+from utils.pdf_financeiro import gerar_pdf_financeiro
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -355,6 +356,8 @@ def editar_integrante(id):
             )
 
             foto_url = resultado["secure_url"]
+
+        print("FUNÇÃO RECEBIDA:", request.form.get("funcao"))
         
         db.execute(
             text("""
@@ -381,7 +384,19 @@ def editar_integrante(id):
                 cidade=:cidade,
                 estado=:estado,
                 cep=:cep,
-                foto_url=:foto_url
+                foto_url=:foto_url,
+
+                calcado=:calcado,
+                estuda=:estuda,
+                local_estudo=:local_estudo,
+
+                trabalha=:trabalha,
+                profissao=:profissao,
+
+                experiencia_banda=:experiencia_banda,
+                descricao_experiencia=:descricao_experiencia,
+
+                funcao=:funcao
 
             WHERE id=:id
             """),
@@ -406,7 +421,15 @@ def editar_integrante(id):
                 "estado": request.form["estado"],
                 "cep": request.form["cep"],
                 "foto_url": foto_url,
-                "id": id
+                "id": id,
+                "calcado": request.form.get("calcado"),
+                "estuda": request.form.get("estuda"),
+                "local_estudo": request.form.get("local_estudo"),
+                "trabalha": request.form.get("trabalha"),
+                "profissao": request.form.get("profissao"),
+                "experiencia_banda": request.form.get("experiencia_banda"),
+                "descricao_experiencia": request.form.get("descricao_experiencia"),
+                "funcao": request.form.get("funcao")
             }
         )
 
@@ -485,6 +508,19 @@ def aprovar_integrante(id):
             "APROVADO"
         )
 
+
+        # NOVO:
+        # se vier parâmetro voltar=pendentes
+        # retorna para lista de pendentes
+
+        if request.args.get("voltar") == "pendentes":
+
+            return redirect(
+                "/admin?status=PENDENTE"
+            )
+
+
+        # comportamento antigo permanece
 
         return redirect(
             f"/admin/integrante/{id}"
@@ -841,6 +877,7 @@ def salvar_cadastro():
 
             experiencia_banda,
             descricao_experiencia,
+            funcao,
 
             responsavel,
             telefone_responsavel,
@@ -882,6 +919,7 @@ def salvar_cadastro():
 
             :experiencia_banda,
             :descricao_experiencia,
+            :funcao,
 
             :responsavel,
             :telefone_responsavel,
@@ -938,6 +976,8 @@ def salvar_cadastro():
 
             "descricao_experiencia": request.form.get("descricao_experiencia"),
 
+            "funcao": request.form.get("funcao"),
+
             "responsavel": request.form.get("responsavel"),
 
             "telefone_responsavel": request.form.get("telefone_responsavel"),
@@ -988,50 +1028,68 @@ def exportar_pdf():
 
     status_filtro = request.args.get("status")
 
+    funcao_filtro = request.args.get("funcao")
+
+
+    condicoes = []
+
+    parametros = {}
+
 
     if status_filtro:
 
-        integrantes = db.execute(
-            text("""
-                SELECT
-                    codigo_integrante,
-                    nome,
-                    cpf,
-                    data_nascimento,
-                    cidade,
-                    estado,
-                    status
+        condicoes.append(
+            "status = :status"
+        )
 
-                FROM integrantes
-
-                WHERE status = :status
-
-                ORDER BY nome
-            """),
-            {
-                "status": status_filtro
-            }
-        ).mappings().all()
+        parametros["status"] = status_filtro
 
 
-    else:
 
-        integrantes = db.execute(
-            text("""
-                SELECT
-                    codigo_integrante,
-                    nome,
-                    cpf,
-                    data_nascimento,
-                    cidade,
-                    estado,
-                    status
+    if funcao_filtro:
 
-                FROM integrantes
+        condicoes.append(
+            "funcao = :funcao"
+        )
 
-                ORDER BY LOWER(nome)
-            """)
-        ).mappings().all()
+        parametros["funcao"] = funcao_filtro
+
+
+
+    where = ""
+
+    if condicoes:
+
+        where = "WHERE " + " AND ".join(condicoes)
+
+
+
+    integrantes = db.execute(
+
+        text(f"""
+
+            SELECT
+
+                codigo_integrante,
+                nome,
+                cpf,
+                data_nascimento,
+                cidade,
+                estado,
+                status,
+                funcao
+
+            FROM integrantes
+
+            {where}
+
+            ORDER BY LOWER(nome)
+
+        """),
+
+        parametros
+
+    ).mappings().all()
 
 
     db.close()
@@ -1180,18 +1238,39 @@ def exportar_pdf():
     )
 
 
+    estilo_cabecalho = ParagraphStyle(
+        "CabecalhoTabela",
+        parent=estilos["Normal"],
+        fontSize=8,
+        leading=10,
+        alignment=1,
+        fontName="Helvetica-Bold"
+    )
+
+    estilo_centro = ParagraphStyle(
+        "Centro",
+        parent=estilos["Normal"],
+        fontSize=8,
+        leading=10,
+        alignment=1
+    )
+
+
+
     dados = [
 
         [
-            Paragraph("Código", estilo_tabela),
-            Paragraph("Integrante", estilo_tabela),
-            Paragraph("CPF", estilo_tabela),
-            Paragraph("Data nascimento", estilo_tabela),
-            Paragraph("Cidade/UF", estilo_tabela),
-            Paragraph("Status", estilo_tabela)
+            Paragraph("Código", estilo_cabecalho),
+            Paragraph("Integrante", estilo_cabecalho),
+            Paragraph("CPF", estilo_cabecalho),
+            Paragraph("Data nascimento", estilo_cabecalho),
+            Paragraph("Cidade/UF", estilo_cabecalho),
+            Paragraph("Função", estilo_cabecalho),
+            Paragraph("Status", estilo_cabecalho)
         ]
 
     ]
+
 
 
     for pessoa in integrantes:
@@ -1206,7 +1285,7 @@ def exportar_pdf():
             [
                 Paragraph(
                     str(pessoa["codigo_integrante"]),
-                    estilo_tabela
+                    estilo_centro
                 ),
 
                 Paragraph(
@@ -1216,22 +1295,27 @@ def exportar_pdf():
 
                 Paragraph(
                     pessoa["cpf"],
-                    estilo_tabela
+                    estilo_centro
                 ),
 
                 Paragraph(
                     data_nascimento,
-                    estilo_tabela
+                    estilo_centro
                 ),
 
-             Paragraph(
+                Paragraph(
                     f'{pessoa["cidade"]}/{pessoa["estado"]}',
                     estilo_tabela
                 ),
 
                 Paragraph(
+                    pessoa["funcao"] or "-",
+                    estilo_centro
+                ),
+
+                Paragraph(
                     pessoa["status"],
-                    estilo_tabela
+                    estilo_centro
                 )
             ]
         )
@@ -1241,11 +1325,12 @@ def exportar_pdf():
     tabela = Table(
         dados,
         colWidths=[
-            55,   # código
-            150,  # nome
-            85,   # cpf
-            75,   # nascimento
-            95,   # cidade
+            50,   # código
+            130,  # nome
+            80,   # cpf
+            70,   # nascimento
+            80,   # cidade
+            70,   # função
             55    # status
         ],
         repeatRows=1
@@ -1325,15 +1410,10 @@ def exportar_pdf():
     arquivo.seek(0)
 
     return send_file(
-
         arquivo,
-
         as_attachment=True,
-
         download_name="relatorio_integrantes_brilho_negro.pdf",
-
         mimetype="application/pdf"
-
     )
 
 @app.route("/admin/integrante/<int:id>/pdf")
@@ -1465,7 +1545,99 @@ def pdf_integrante(id):
         Spacer(1,20)
     )
 
+    # ===========================
+    # RESUMO FINANCEIRO
+    # ===========================
 
+    resumo = [
+        ["Receitas", f"R$ {receitas:,.2f}"],
+        ["Despesas", f"R$ {despesas:,.2f}"],
+        ["Saldo", f"R$ {saldo:,.2f}"]
+    ]
+
+    tabela = Table(
+        resumo,
+        colWidths=[140,120]
+    )
+
+    tabela.setStyle(TableStyle([
+
+        ("GRID",(0,0),(-1,-1),0.5,colors.grey),
+
+        ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#EAEAEA")),
+
+        ("FONTNAME",(0,0),(-1,-1),"Helvetica-Bold"),
+
+        ("ALIGN",(1,0),(1,-1),"RIGHT"),
+
+        ("BOTTOMPADDING",(0,0),(-1,-1),8)
+
+    ]))
+
+    elementos.append(tabela)
+
+    elementos.append(Spacer(1,18))
+
+    # ===========================
+    # TÍTULO DA TABELA
+    # ===========================
+
+    elementos.append(
+        Paragraph(
+            "<b>MOVIMENTAÇÕES FINANCEIRAS</b>",
+            estilos["Heading2"]
+        )
+    )
+
+    elementos.append(Spacer(1,8))
+
+    # ===========================
+    # TABELA DAS MOVIMENTAÇÕES
+    # ===========================
+
+    dados = [
+        [
+            "Data",
+            "Tipo",
+            "Categoria",
+            "Descrição",
+            "Valor"
+        ]
+    ]
+
+    for item in movimentacoes:
+        dados.append(
+            [
+                item.data_movimento.strftime("%d/%m/%Y"),
+                item.tipo,
+                item.categoria,
+                item.descricao,
+                f'R$ {item.valor:,.2f}'.replace(",", "X").replace(".", ",").replace("X", ".")
+            ]
+        )
+
+    tabela = Table(
+        dados,
+        colWidths=[70,70,110,170,80]
+    )
+
+    tabela.setStyle(
+        TableStyle(
+            [
+                ("GRID",(0,0),(-1,-1),0.5,colors.grey),
+                ("BACKGROUND",(0,0),(-1,0),colors.lightgrey),
+                ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+                ("ALIGN",(0,0),(-1,0),"CENTER"),
+                ("ALIGN",(4,1),(4,-1),"RIGHT"),
+                ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+                ("BOTTOMPADDING",(0,0),(-1,0),8),
+            ]
+        )
+    )
+
+    elementos.append(tabela)
+
+    elementos.append(Spacer(1,15))
 
     # ==========================
     # FOTO + IDENTIFICAÇÃO
@@ -1815,6 +1987,7 @@ def exportar_excel():
             parentesco,
             telefone_responsavel,
             calcado,
+            funcao,
             status,
             data_cadastro,
             calcado
@@ -1858,6 +2031,7 @@ def exportar_excel():
         "Parentesco",
         "Telefone Responsável",
         "Tamanho Calçado",
+        "funcao",
         "Status",
         "Data Cadastro"
 
@@ -1897,6 +2071,7 @@ def exportar_excel():
             pessoa["parentesco"],
             pessoa["telefone_responsavel"],
             pessoa["calcado"],
+            pessoa["funcao"],
             pessoa["status"],
             pessoa["data_cadastro"]
 
@@ -2258,6 +2433,331 @@ def admin_carteirinhas():
     return render_template(
         "admin/carteirinhas.html",
         integrantes=integrantes
+    )
+
+@app.route("/admin/financeiro")
+def financeiro():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    receitas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='RECEITA'
+        """)
+    ).scalar()
+
+
+    despesas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='DESPESA'
+        """)
+    ).scalar()
+
+
+    saldo = receitas - despesas
+
+
+    db.close()
+
+    movimento_ok = request.args.get("novo")
+
+    return render_template(
+        "admin/financeiro.html",
+        receitas=f"{receitas:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        despesas=f"{despesas:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        saldo=f"{saldo:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+        movimento_ok=movimento_ok
+    )
+
+@app.route("/admin/financeiro/nova", methods=["GET","POST"])
+def nova_movimentacao():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    if request.method == "POST":
+
+        valor = request.form["valor"]
+
+        valor = valor.replace(".", "")
+        valor = valor.replace(",", ".")        
+
+        db.execute(
+            text("""
+                INSERT INTO financeiro
+                (
+                    temporada,
+                    tipo,
+                    categoria,
+                    descricao,
+                    valor,
+                    data_movimento,
+                    observacao
+                )
+
+                VALUES
+                (
+                    :temporada,
+                    :tipo,
+                    :categoria,
+                    :descricao,
+                    :valor,
+                    :data_movimento,
+                    :observacao
+                )
+            """),
+            {
+
+                "temporada": request.form.get("temporada"),
+                "tipo": request.form["tipo"],
+                "categoria": request.form["categoria"],
+                "descricao": request.form["descricao"],
+                "valor": valor,
+                "data_movimento": request.form["data_movimento"],
+                "observacao": request.form["observacao"]
+
+            }
+        )
+
+
+        db.commit()
+        db.close()
+
+
+        return redirect("/admin/financeiro?novo=ok")
+
+
+    db.close()
+
+
+    return render_template(
+        "admin/nova_movimentacao.html"
+    )
+
+@app.route("/admin/financeiro/movimentacoes")
+def movimentacoes_financeiro():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    temporada = request.args.get("temporada", "")
+    tipo = request.args.get("tipo", "")
+    categoria = request.args.get("categoria", "")
+
+
+    query = """
+        SELECT
+            id,
+            temporada,
+            data_movimento,
+            tipo,
+            categoria,
+            descricao,
+            valor,
+            observacao
+
+        FROM financeiro
+
+        WHERE 1=1
+    """
+
+
+    parametros = {}
+
+
+    if temporada:
+
+        query += """
+            AND temporada = :temporada
+        """
+
+        parametros["temporada"] = temporada
+
+
+
+    if tipo:
+
+        query += """
+            AND tipo = :tipo
+        """
+
+        parametros["tipo"] = tipo
+
+
+
+    if categoria:
+
+        query += """
+            AND categoria ILIKE :categoria
+        """
+
+        parametros["categoria"] = f"%{categoria}%"
+
+
+
+    query += """
+        ORDER BY data_movimento DESC, id DESC
+    """
+
+
+
+    movimentacoes = db.execute(
+        text(query),
+        parametros
+    ).fetchall()
+
+
+
+    receitas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='RECEITA'
+        """)
+    ).scalar()
+
+
+
+    despesas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='DESPESA'
+        """)
+    ).scalar()
+
+
+
+    saldo = receitas - despesas
+
+
+
+    db.close()
+
+
+
+    return render_template(
+        "admin/movimentacoes.html",
+        movimentacoes=movimentacoes,
+        receitas=receitas,
+        despesas=despesas,
+        saldo=saldo
+    )
+
+@app.route("/admin/financeiro/prestacao")
+def prestacao_financeira():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+
+    db = SessionLocal()
+
+
+    movimentacoes = db.execute(
+        text("""
+            SELECT *
+            FROM financeiro
+            ORDER BY data_movimento
+        """)
+    ).fetchall()
+
+
+
+    receitas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='RECEITA'
+        """)
+    ).scalar()
+
+
+
+    despesas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='DESPESA'
+        """)
+    ).scalar()
+
+
+
+    saldo = receitas - despesas
+
+
+
+    total_doacoes = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='RECEITA'
+            AND categoria ILIKE '%Doação%'
+        """)
+    ).scalar()
+
+
+
+    total_patrocinios = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor),0)
+            FROM financeiro
+            WHERE tipo='RECEITA'
+            AND categoria ILIKE '%Patrocínio%'
+        """)
+    ).scalar()
+
+
+
+    quantidade_movimentos = db.execute(
+        text("""
+            SELECT COUNT(*)
+            FROM financeiro
+        """)
+    ).scalar()
+
+
+
+    db.close()
+
+
+
+    pdf = gerar_pdf_financeiro(
+        movimentacoes,
+        receitas,
+        despesas,
+        saldo,
+        total_doacoes,
+        total_patrocinios,
+        quantidade_movimentos,
+        "2026"
+    )
+
+
+
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        download_name="Prestacao_Contas_2026.pdf",
+        as_attachment=False
     )
 
 @app.route("/admin/api/integrante/<int:id>")

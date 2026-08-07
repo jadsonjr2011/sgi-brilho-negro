@@ -213,7 +213,7 @@ Nome do responsável
 <input
 class="form-control"
 name="responsavel"
-value="{{ integrante.responsavel or '' }}"
+value="{{ integrante.responsavel or '' }}">
 
 
 <label>
@@ -223,7 +223,7 @@ Parentesco
 <input
 class="form-control"
 name="parentesco"
-value="{{ integrante.parentesco or '' }}"
+value="{{ integrante.parentesco or '' }}">
 
 
 <label>
@@ -233,7 +233,185 @@ Telefone do responsável
 <input
 class="form-control"
 name="telefone_responsavel"
-value="{{ integrante.telefone_responsavel or '' }}"
+value="{{ integrante.telefone_responsavel or '' }}">
+
+<h4 class="mt-4">
+🎺 Informações do Integrante
+</h4>
+
+<hr>
+
+
+<label>
+Número do calçado
+</label>
+
+<input
+class="form-control"
+type="number"
+name="calcado"
+value="{{ integrante.calcado or '' }}">
+
+
+
+<label class="mt-3">
+Função na Banda
+</label>
+
+<select
+class="form-select"
+name="funcao">
+
+
+<option value="">
+Selecione
+</option>
+
+
+<option value="Músico"
+{% if integrante.funcao == "Músico" %}selected{% endif %}>
+🎺 Músico
+</option>
+
+
+<option value="Corpo Coreográfico"
+{% if integrante.funcao == "Corpo Coreográfico" %}selected{% endif %}>
+💃 Corpo Coreográfico
+</option>
+
+
+<option value="Apoio"
+{% if integrante.funcao == "Apoio" %}selected{% endif %}>
+🛠️ Apoio
+</option>
+
+
+<option value="Maestro"
+{% if integrante.funcao == "Maestro" %}selected{% endif %}>
+🥁 Maestro
+</option>
+
+
+<option value="Instrutor"
+{% if integrante.funcao == "Instrutor" %}selected{% endif %}>
+🎼 Instrutor
+</option>
+
+
+</select>
+
+
+
+<label class="mt-3">
+Estuda atualmente?
+</label>
+
+
+<select
+class="form-select"
+name="estuda">
+
+
+<option value="Sim"
+{% if integrante.estuda == "Sim" %}selected{% endif %}>
+Sim
+</option>
+
+
+<option value="Não"
+{% if integrante.estuda == "Não" %}selected{% endif %}>
+Não
+</option>
+
+
+</select>
+
+
+
+<label class="mt-3">
+Local de estudo
+</label>
+
+
+<input
+class="form-control"
+name="local_estudo"
+value="{{ integrante.local_estudo or '' }}">
+
+
+
+<label class="mt-3">
+Trabalha atualmente?
+</label>
+
+
+<select
+class="form-select"
+name="trabalha">
+
+
+<option value="Sim"
+{% if integrante.trabalha == "Sim" %}selected{% endif %}>
+Sim
+</option>
+
+
+<option value="Não"
+{% if integrante.trabalha == "Não" %}selected{% endif %}>
+Não
+</option>
+
+
+</select>
+
+
+
+<label class="mt-3">
+Profissão
+</label>
+
+
+<input
+class="form-control"
+name="profissao"
+value="{{ integrante.profissao or '' }}">
+
+
+
+<label class="mt-3">
+Experiência musical
+</label>
+
+
+<select
+class="form-select"
+name="experiencia_banda">
+
+
+<option value="Sim"
+{% if integrante.experiencia_banda == "Sim" %}selected{% endif %}>
+Sim
+</option>
+
+
+<option value="Não"
+{% if integrante.experiencia_banda == "Não" %}selected{% endif %}>
+Não
+</option>
+
+
+</select>
+
+
+
+<label class="mt-3">
+Descrição da experiência
+</label>
+
+
+<textarea
+class="form-control"
+name="descricao_experiencia">{{ integrante.descricao_experiencia or '' }}</textarea>
 
 <div class="text-center mt-5">
 

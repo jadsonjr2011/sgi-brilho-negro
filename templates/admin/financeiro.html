@@ -1,0 +1,396 @@
+{% extends 'layout/base.html' %}
+
+
+{% block titulo %}
+Financeiro
+{% endblock %}
+
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+{% if request.args.get('novo') == 'ok' %}
+
+<div class="alert alert-success text-center">
+    ✅ Movimentação cadastrada com sucesso!
+</div>
+
+{% endif %}    
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+
+    <h2 class="titulo">
+        💰 Financeiro
+    </h2>
+
+
+    <a href="/admin"
+       class="btn btn-secondary">
+
+        ⬅ Voltar
+
+    </a>
+
+
+</div>
+
+
+<hr>
+
+
+<div class="row text-center mt-4">
+
+
+<div class="col-md-4">
+
+<div class="card-resumo">
+
+<div class="icone">
+💵
+</div>
+
+<div class="numero">
+R$ {{ saldo }}
+</div>
+
+<div class="descricao">
+Saldo Atual
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-md-4">
+
+<div class="card-resumo">
+
+<div class="icone">
+⬆️
+</div>
+
+<div class="numero">
+R$ {{ receitas }}
+</div>
+
+<div class="descricao">
+Receitas
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="col-md-4">
+
+<div class="card-resumo">
+
+<div class="icone">
+⬇️
+</div>
+
+<div class="numero">
+R$ {{ despesas }}
+</div>
+
+<div class="descricao">
+Despesas
+</div>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<div class="text-center mt-5">
+
+
+<button
+class="btn btn-success"
+data-bs-toggle="modal"
+data-bs-target="#modalMovimentacao">
+
+➕ Nova Movimentação
+
+</button>
+
+
+<a href="/admin/financeiro/movimentacoes"
+class="btn btn-info ms-2">
+
+📋 Ver Movimentações
+
+</a>
+
+
+<a 
+href="/admin/financeiro/prestacao"
+target="_blank"
+class="btn btn-primary ms-2">
+
+📄 Prestação de Contas
+
+</a>
+
+
+</div>
+
+
+
+</div>
+
+<div class="modal fade"
+id="modalMovimentacao"
+tabindex="-1">
+
+
+<div class="modal-dialog modal-lg">
+
+
+<div class="modal-content bg-dark text-white">
+
+
+<div class="modal-header">
+
+<h5 class="modal-title">
+
+💰 Nova Movimentação
+
+</h5>
+
+
+<button
+class="btn-close btn-close-white"
+data-bs-dismiss="modal">
+
+</button>
+
+</div>
+
+
+
+<form
+method="POST"
+action="/admin/financeiro/nova">
+
+
+
+<div class="modal-body">
+
+
+<div class="row">
+
+
+<div class="col-md-4">
+
+<label class="form-label">
+📅 Temporada
+</label>
+
+
+<select
+name="temporada"
+class="form-select">
+
+<option>
+2026
+</option>
+
+<option>
+2027
+</option>
+
+</select>
+
+</div>
+
+
+
+<div class="col-md-4">
+
+
+<label class="form-label">
+Tipo
+</label>
+
+
+<select
+name="tipo"
+class="form-select">
+
+
+<option value="DESPESA">
+Despesa
+</option>
+
+
+<option value="RECEITA">
+Receita
+</option>
+
+
+</select>
+
+
+</div>
+
+
+
+<div class="col-md-4">
+
+<label class="form-label">
+Data
+</label>
+
+
+<input
+type="date"
+name="data_movimento"
+class="form-control"
+required>
+
+
+</div>
+
+
+</div>
+
+
+
+<hr>
+
+
+
+<label class="form-label">
+Categoria
+</label>
+
+
+<input
+type="text"
+name="categoria"
+class="form-control"
+placeholder="Ex: Transporte, Uniforme, Evento"
+required>
+
+
+
+<label class="form-label mt-3">
+Descrição
+</label>
+
+
+<input
+type="text"
+name="descricao"
+class="form-control"
+placeholder="Descrição da movimentação"
+required>
+
+
+
+<label class="form-label mt-3">
+Valor
+</label>
+
+
+<input
+type="text"
+name="valor"
+class="form-control"
+placeholder="0,00"
+required>
+
+
+
+<label class="form-label mt-3">
+Observação
+</label>
+
+
+<textarea
+name="observacao"
+class="form-control"></textarea>
+
+
+
+</div>
+
+
+
+<div class="modal-footer">
+
+
+<button
+type="submit"
+class="btn btn-success">
+
+💾 Salvar
+
+</button>
+
+
+
+<button
+type="button"
+class="btn btn-secondary"
+data-bs-dismiss="modal">
+
+Cancelar
+
+</button>
+
+
+</div>
+
+
+</form>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+{% if request.args.get('novo') == 'ok' %}
+
+<script>
+
+window.addEventListener("load", function(){
+
+    const modalElemento = document.getElementById(
+        "modalMovimentacao"
+    );
+
+    if(modalElemento){
+
+        const modal = new bootstrap.Modal(
+            modalElemento
+        );
+
+        modal.show();
+
+    }
+
+});
+
+</script>
+
+{% endif %}
+
+{% endblock %}

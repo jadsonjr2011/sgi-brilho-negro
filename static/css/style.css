@@ -272,11 +272,18 @@ footer{
 
 
 .ficha-acao {
-
     display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+}
 
-    align-items:center;
-
+.ficha-acao .btn {
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    white-space: nowrap;
 }
 
 /* ===========================
