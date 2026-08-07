@@ -166,11 +166,10 @@ Financeiro
 
 <div class="modal fade"
      id="modalMovimentacao"
-     tabindex="-1"
-     aria-hidden="true">
+     tabindex="-1">
 
-```
-<div class="modal-dialog modal-lg modal-dialog-centered">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
 
 
     <div class="modal-content bg-dark text-white">
@@ -202,8 +201,9 @@ Financeiro
         <!-- FORMULÁRIO -->
 
         <form
-            method="POST"
-            action="/admin/financeiro/nova">
+        method="POST"
+        action="/admin/financeiro/nova"
+        onsubmit="return validarCategoria()">
 
 
             <div class="modal-body">
@@ -223,15 +223,20 @@ Financeiro
 
                         <select
                             name="temporada"
-                            class="form-select">
+                            class="form-select"
+                            required>
 
-                            <option>
-                                2026
-                            </option>
+                        <option value="">
+                            Selecione a temporada
+                        </option>
 
-                            <option>
-                                2027
-                            </option>
+                        <option value="2026">
+                            2026
+                        </option>
+
+                        <option value="2027">
+                            2027
+                        </option>
 
                         </select>
 
@@ -248,22 +253,30 @@ Financeiro
 
                         <select
                             name="tipo"
-                            class="form-select">
+                            id="tipoMovimento"
+                            class="form-select"
+                            onchange="atualizarCategorias()"
+                            required>
 
 
-                            <option value="DESPESA">
-                                Despesa
-                            </option>
+                        <option value="">
+                            Selecione o tipo
+                        </option>
 
 
-                            <option value="RECEITA">
-                                Receita
-                            </option>
+                        <option value="DESPESA">
+                            Despesa
+                        </option>
+
+
+                        <option value="RECEITA">
+                            Receita
+                        </option>
 
 
                         </select>
 
-                    </div>
+                </div>
 
 
 
@@ -300,12 +313,13 @@ Financeiro
                     </label>
 
 
-                    <input
-                        type="text"
+                    <select
                         name="categoria"
-                        class="form-control"
-                        placeholder="Ex: Transporte, Uniforme, Evento"
+                        id="categoriaMovimento"
+                        class="form-select"
                         required>
+
+                    </select>
 
                 </div>
 
@@ -437,5 +451,236 @@ window.addEventListener("load", function(){
 </script>
 
 {% endif %}
+
+<script>
+
+function atualizarCategorias(){
+
+    let tipo = document.getElementById(
+        "tipoMovimento"
+    ).value;
+
+
+    let categoria = document.getElementById(
+        "categoriaMovimento"
+    );
+
+
+    categoria.innerHTML = `
+        <option value="">
+            Selecione a categoria
+        </option>
+    `;
+
+
+    let listaCategorias = [];
+
+
+    if(tipo === "DESPESA"){
+
+        listaCategorias = [
+
+            "Transporte",
+            "Uniforme",
+            "Instrumentos",
+            "Manutenção",
+            "Alimentação",
+            "Eventos",
+            "Documentação",
+            "Espaço / Sede",
+            "Tecnologia",
+            "Materiais",
+            "Taxas",
+            "Outros"
+
+        ];
+
+
+    } else {
+
+
+        listaCategorias = [
+
+            "Patrocínio",
+            "Doação",
+            "Mensalidade",
+            "Evento",
+            "Premiação",
+            "Rifas",
+            "Outros"
+
+        ];
+
+    }
+
+
+
+    listaCategorias.forEach(function(categoriaTexto){
+
+
+        let option = document.createElement(
+            "option"
+        );
+
+
+        option.value = categoriaTexto;
+
+
+        option.textContent = categoriaTexto;
+
+
+        categoria.appendChild(option);
+
+
+    });
+
+
+}
+
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        atualizarCategorias();
+
+    }
+);
+
+
+</script>
+
+<script>
+
+function atualizarCategorias(){
+
+    let tipo = document.getElementById(
+        "tipoMovimento"
+    ).value;
+
+
+    let categoria = document.getElementById(
+        "categoriaMovimento"
+    );
+
+
+    categoria.innerHTML = `
+        <option value="">
+            Selecione a categoria
+        </option>
+    `;
+
+
+
+    let listaCategorias = [];
+
+
+    if(tipo === "DESPESA"){
+
+
+        listaCategorias = [
+
+            "Transporte",
+            "Uniforme",
+            "Instrumentos",
+            "Manutenção",
+            "Alimentação",
+            "Eventos",
+            "Documentação",
+            "Espaço / Sede",
+            "Tecnologia",
+            "Materiais",
+            "Taxas",
+            "Outros"
+
+        ];
+
+
+    }else{
+
+
+        listaCategorias = [
+
+            "Patrocínio",
+            "Doação",
+            "Mensalidade",
+            "Evento",
+            "Premiação",
+            "Rifas",
+            "Outros"
+
+        ];
+
+
+    }
+
+
+
+    listaCategorias.forEach(function(item){
+
+
+        let option = document.createElement(
+            "option"
+        );
+
+
+        option.value = item;
+
+        option.textContent = item;
+
+
+        categoria.appendChild(option);
+
+
+    });
+
+
+}
+
+
+
+function validarCategoria(){
+
+
+    let categoria = document.getElementById(
+        "categoriaMovimento"
+    ).value;
+
+
+
+    if(categoria === ""){
+
+
+        alert(
+            "Selecione uma categoria."
+        );
+
+
+        return false;
+
+
+    }
+
+
+    return true;
+
+
+}
+
+
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        atualizarCategorias();
+
+    }
+);
+
+
+</script>
 
 {% endblock %}
