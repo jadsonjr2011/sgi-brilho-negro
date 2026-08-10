@@ -1,0 +1,450 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Prestação de Conta
+{% endblock %}
+
+{% block conteudo %}
+
+<h2>
+📝 Prestação de Conta
+</h2>
+
+<hr>
+
+<h4>🎟️ Rifa</h4>
+
+<p>
+    {{ vendedor.rifa_nome }}
+</p>
+
+<h4>📅 Temporada</h4>
+
+<p>
+    {{ vendedor.temporada_nome or "-" }}
+</p>
+
+<h4>👤 Vendedor</h4>
+
+<p>
+    {{ vendedor.nome }}
+    <br>
+    🎺 Função:
+    {{ vendedor.funcao or "-" }}
+</p>
+
+<hr>
+
+<div class="row">
+
+    <div class="col-md-4">
+
+        <div class="alert alert-secondary">
+
+            📦 <b>Números entregues</b>
+
+            <br>
+
+            <span id="totalNumeros">
+                {{ vendedor.quantidade_numeros }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="alert alert-success">
+
+            🎫 <b>Números vendidos</b>
+
+            <br>
+
+            <span id="totalVendidos">
+                {{ vendedor.quantidade_vendida or 0 }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="alert alert-warning">
+
+            📦 <b>Números devolvidos</b>
+
+            <br>
+
+            <span id="totalDevolvidos">
+                {{ vendedor.quantidade_devolvida or 0 }}
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<hr>
+
+
+<h4>
+🎫 Selecione os números vendidos
+</h4>
+
+<p class="text-secondary">
+
+    Marque somente os números que realmente foram vendidos.
+
+    <br>
+
+    Os números que não forem marcados serão considerados devolvidos.
+
+</p>
+
+
+<div class="row">
+
+
+{% for numero in numeros %}
+
+<div class="col-6 col-md-3 col-lg-2 mb-3">
+
+    <label
+        class="card bg-dark text-white border-secondary p-3 text-center"
+        style="cursor:pointer;">
+
+        <input
+            type="checkbox"
+            class="form-check-input numero-vendido"
+            name="numeros_vendidos"
+            value="{{ numero.id }}"
+            form="formPrestacao"
+
+            {% if numero.status == "VENDIDO" %}
+                checked
+            {% endif %}
+        >
+
+        <br>
+
+        <span style="font-size:24px;">
+
+            🎫
+
+        </span>
+
+        <br>
+
+        <b>
+
+            Nº {{ numero.numero }}
+
+        </b>
+
+        <br>
+
+        {% if numero.status == "VENDIDO" %}
+
+            <span class="text-success">
+                🟢 Vendido
+            </span>
+
+        {% elif numero.status == "DEVOLVIDO" %}
+
+            <span class="text-warning">
+                🟡 Devolvido
+            </span>
+
+        {% else %}
+
+            <span class="text-secondary">
+                ⚪ Disponível
+            </span>
+
+        {% endif %}
+
+    </label>
+
+</div>
+
+{% endfor %}
+
+
+</div>
+
+
+<hr>
+
+
+<div class="row">
+
+    <div class="col-md-4">
+
+        <div class="alert alert-success">
+
+            💰 <b>Valor das vendas</b>
+
+            <br>
+
+            R$
+
+            <span id="valorVendas">
+                {{ "%.2f"|format(
+                    (vendedor.quantidade_vendida or 0)
+                    * vendedor.valor_numero
+                ) }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="alert alert-info">
+
+            💵 <b>Valor entregue</b>
+
+            <br>
+
+            R$
+
+            <span id="valorDevido">
+                {{ "%.2f"|format(
+                    (vendedor.quantidade_vendida or 0)
+                    * vendedor.valor_numero
+                ) }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="alert alert-secondary">
+
+            📦 <b>Saldo a prestar</b>
+
+            <br>
+
+            R$
+
+            <span id="saldoPendente">
+                {{ "%.2f"|format(
+                    vendedor.saldo_pendente or 0
+                ) }}
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<hr>
+
+
+<form
+    method="POST"
+    id="formPrestacao"
+    action="/admin/rifas/vendedor/{{ vendedor.id }}/prestar-conta"
+>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+
+        💵 Valor entregue
+
+    </label>
+
+    <input
+        type="text"
+        class="form-control"
+        name="valor_entregue"
+        placeholder="0,00"
+        value="{{ "%.2f"|format(vendedor.valor_entregue or 0) }}"
+    >
+
+</div>
+
+
+<div class="mb-3">
+
+    <label class="form-label">
+
+        📝 Observação
+
+    </label>
+
+    <textarea
+        class="form-control"
+        name="observacao"
+        rows="3"
+        placeholder="Observações da prestação..."
+    >{{ vendedor.observacao or "" }}</textarea>
+
+</div>
+
+
+<div class="alert alert-primary">
+
+    <b>Resumo:</b>
+
+    <br><br>
+
+    🎫 Vendidos:
+    <span id="resumoVendidos">
+        {{ vendedor.quantidade_vendida or 0 }}
+    </span>
+
+    <br>
+
+    📦 Devolvidos:
+    <span id="resumoDevolvidos">
+        {{ vendedor.quantidade_devolvida or 0 }}
+    </span>
+
+    <br>
+
+    💰 Valor:
+    R$
+    <span id="resumoValor">
+
+        {{ "%.2f"|format(
+            (vendedor.quantidade_vendida or 0)
+            * vendedor.valor_numero
+        ) }}
+
+    </span>
+
+</div>
+
+
+<div class="modal-footer">
+
+    <button
+        type="submit"
+        class="btn btn-success"
+    >
+
+        💾 Confirmar Prestação
+
+    </button>
+
+
+    <a
+        href="/admin/rifas/{{ vendedor.rifa_id }}/vendedores"
+        class="btn btn-secondary"
+    >
+
+        ⬅ Voltar
+
+    </a>
+
+</div>
+
+
+</form>
+
+
+<script>
+
+const checkboxes = document.querySelectorAll(
+    ".numero-vendido"
+);
+
+const valorNumero = Number(
+    "{{ vendedor.valor_numero }}"
+);
+
+
+function atualizarResumo() {
+
+    let vendidos = 0;
+
+
+    checkboxes.forEach(function(checkbox) {
+
+        if (checkbox.checked) {
+
+            vendidos++;
+
+        }
+
+    });
+
+
+    let total = checkboxes.length;
+
+    let devolvidos = total - vendidos;
+
+    let valor = vendidos * valorNumero;
+
+
+    document.getElementById(
+        "totalVendidos"
+    ).innerText = vendidos;
+
+
+    document.getElementById(
+        "totalDevolvidos"
+    ).innerText = devolvidos;
+
+
+    document.getElementById(
+        "valorVendas"
+    ).innerText =
+        valor.toFixed(2).replace(".", ",");
+
+
+    document.getElementById(
+        "valorDevido"
+    ).innerText =
+        valor.toFixed(2).replace(".", ",");
+
+
+    document.getElementById(
+        "resumoVendidos"
+    ).innerText = vendidos;
+
+
+    document.getElementById(
+        "resumoDevolvidos"
+    ).innerText = devolvidos;
+
+
+    document.getElementById(
+        "resumoValor"
+    ).innerText =
+        valor.toFixed(2).replace(".", ",");
+
+}
+
+
+checkboxes.forEach(function(checkbox) {
+
+    checkbox.addEventListener(
+        "change",
+        atualizarResumo
+    );
+
+});
+
+
+atualizarResumo();
+
+</script>
+
+{% endblock %}

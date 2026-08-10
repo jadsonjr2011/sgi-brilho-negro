@@ -108,30 +108,53 @@ Ficha do Integrante
 
     <p>
 
-        Status:
+    <strong>Status Cadastro:</strong>
 
-        {% if integrante.status == "PENDENTE" %}
+    {% if integrante.status == "PENDENTE" %}
 
-        <span class="badge bg-warning text-dark">
-            PENDENTE
-        </span>
-
-
-        {% elif integrante.status == "APROVADO" %}
-
-        <span class="badge bg-success">
-            APROVADO
-        </span>
+    <span class="badge bg-warning text-dark">
+        PENDENTE
+    </span>
 
 
-        {% elif integrante.status == "INATIVO" %}
+    {% elif integrante.status == "APROVADO" %}
 
-        <span class="badge bg-secondary">
-            INATIVO
-        </span>
+    <span class="badge bg-success">
+        APROVADO
+    </span>
 
 
-        {% endif %}
+    {% elif integrante.status == "REPROVADO" %}
+
+    <span class="badge bg-danger">
+        REPROVADO
+    </span>
+
+
+    {% endif %}
+
+    </p>
+
+
+    <p>
+
+    <strong>Situação:</strong>
+
+    {% if integrante.situacao == "ATIVO" %}
+
+    <span class="badge bg-primary">
+        ATIVO
+    </span>
+
+
+    {% elif integrante.situacao == "INATIVO" %}
+
+    <span class="badge bg-secondary">
+        INATIVO
+    </span>
+
+
+    {% endif %}
 
     </p>
 
@@ -433,29 +456,38 @@ onclick="return confirm('Tem certeza que deseja excluir este integrante?')">
 
 </a>
 
-{% if integrante.status == "APROVADO" %}
+
+
+<!-- CONTROLE DE SITUAÇÃO -->
+
+{% if integrante.situacao == "ATIVO" %}
+
 
 <a 
 href="/admin/integrante/{{ integrante.id }}/inativar"
 class="btn btn-secondary"
 onclick="return confirm('Deseja inativar este integrante?')">
 
-⏸ Inativar Cadastro
+⏸ Inativar Integrante
 
 </a>
 
-{% elif integrante.status == "INATIVO" %}
+
+{% elif integrante.situacao == "INATIVO" %}
+
 
 <a 
 href="/admin/integrante/{{ integrante.id }}/reativar"
 class="btn btn-success"
 onclick="return confirm('Deseja reativar este integrante?')">
 
-▶️ Reativar Cadastro
+▶️ Reativar Integrante
 
 </a>
 
+
 {% endif %}
+
 
 </div>
 

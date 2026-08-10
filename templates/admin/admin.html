@@ -1,0 +1,1602 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Área Administrativa
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ===================================================== */
+/* MENU ADMINISTRATIVO                                   */
+/* ===================================================== */
+
+.area-menu-admin {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding: 18px;
+
+    background: rgba(255, 255, 255, 0.03);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+}
+
+
+.botoes-admin {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    flex: 1;
+
+}
+
+
+.grupo-admin {
+
+    width: 100%;
+
+    margin-top: 8px;
+
+    margin-bottom: 2px;
+
+}
+
+
+.grupo-admin:first-child {
+
+    margin-top: 0;
+
+}
+
+
+.grupo-admin-titulo {
+
+    color: #888;
+
+    font-size: 0.75rem;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+
+    margin-bottom: 6px;
+
+}
+
+
+/* ===================================================== */
+/* CARDS DE RESUMO                                       */
+/* ===================================================== */
+
+.card-resumo {
+
+    height: 100%;
+
+    padding: 20px;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    transition: all 0.2s ease;
+
+}
+
+
+.card-resumo:hover {
+
+    transform: translateY(-2px);
+
+    background: rgba(255, 255, 255, 0.07);
+
+}
+
+
+.card-resumo .icone {
+
+    font-size: 1.8rem;
+
+    margin-bottom: 5px;
+
+}
+
+
+.card-resumo .numero {
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+
+}
+
+
+.card-resumo .descricao {
+
+    color: #aaa;
+
+    font-size: 0.9rem;
+
+    margin-top: 5px;
+
+}
+
+
+.card-resumo .detalhe {
+
+    color: #777;
+
+    font-size: 0.75rem;
+
+    margin-top: 6px;
+
+}
+
+
+/* ===================================================== */
+/* PAINÉIS SECUNDÁRIOS                                  */
+/* ===================================================== */
+
+.painel-admin {
+
+    height: 100%;
+
+    padding: 20px;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+}
+
+
+.painel-admin-titulo {
+
+    font-size: 1.1rem;
+
+    font-weight: 600;
+
+    margin-bottom: 15px;
+
+}
+
+
+/* ===================================================== */
+/* ALERTAS                                               */
+/* ===================================================== */
+
+.alerta-admin {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    padding: 12px 14px;
+
+    margin-bottom: 8px;
+
+    background: rgba(220, 53, 69, 0.08);
+
+    border: 1px solid rgba(220, 53, 69, 0.25);
+
+    border-radius: 9px;
+
+}
+
+
+.alerta-admin:last-child {
+
+    margin-bottom: 0;
+
+}
+
+
+.alerta-admin-texto {
+
+    font-size: 0.9rem;
+
+}
+
+
+.alerta-admin-numero {
+
+    font-weight: 700;
+
+    color: #dc3545;
+
+}
+
+
+/* ===================================================== */
+/* ACESSO RÁPIDO                                        */
+/* ===================================================== */
+
+.acesso-rapido {
+
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 8px;
+
+}
+
+
+.acesso-rapido a {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 55px;
+
+    text-decoration: none;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+
+    border-radius: 9px;
+
+    color: #ddd;
+
+    background: rgba(255, 255, 255, 0.03);
+
+    transition: all 0.2s ease;
+
+}
+
+
+.acesso-rapido a:hover {
+
+    background: rgba(255, 255, 255, 0.08);
+
+    color: #fff;
+
+}
+
+
+/* ===================================================== */
+/* ANIVERSARIANTES                                      */
+/* ===================================================== */
+
+.aniversariantes-cabecalho {
+
+    display: grid;
+
+    grid-template-columns: 90px 2fr 1.5fr 1.5fr;
+
+    gap: 15px;
+
+    padding: 10px 18px;
+
+    margin-bottom: 8px;
+
+    color: #888;
+
+    font-size: 0.75rem;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+}
+
+
+.aniversariantes-lista {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+}
+
+
+.aniversariante-item {
+
+    display: grid;
+
+    grid-template-columns: 90px 2fr 1.5fr 1.5fr;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 14px 18px;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+
+    transition: all 0.2s ease;
+
+}
+
+
+.aniversariante-item:hover {
+
+    background: rgba(255, 255, 255, 0.08);
+
+    transform: translateY(-1px);
+
+}
+
+
+.aniversariante-dia {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.dia-numero {
+
+    font-size: 1.4rem;
+
+    font-weight: bold;
+
+    color: #ffc107;
+
+    line-height: 1;
+
+}
+
+
+.dia-label {
+
+    font-size: 0.65rem;
+
+    color: #888;
+
+    margin-top: 4px;
+
+}
+
+
+.aniversariante-integrante strong {
+
+    font-size: 1rem;
+
+    color: #fff;
+
+}
+
+
+.aniversariante-cidade,
+.aniversariante-funcao {
+
+    color: #ccc;
+
+    font-size: 0.9rem;
+
+}
+
+
+.mobile-label {
+
+    display: none;
+
+}
+
+
+/* ===================================================== */
+/* RESPONSIVIDADE                                        */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+    .area-menu-admin {
+
+        flex-direction: column;
+
+    }
+
+
+    .botoes-admin {
+
+        width: 100%;
+
+    }
+
+
+    .botao-sair {
+
+        width: 100%;
+
+    }
+
+
+    .botao-sair a {
+
+        width: 100%;
+
+    }
+
+
+    .aniversariantes-cabecalho {
+
+        display: none;
+
+    }
+
+
+    .aniversariante-item {
+
+        grid-template-columns: 65px 1fr;
+
+        gap: 10px 15px;
+
+        padding: 14px;
+
+    }
+
+
+    .aniversariante-dia {
+
+        grid-row: span 3;
+
+    }
+
+
+    .aniversariante-integrante,
+    .aniversariante-cidade,
+    .aniversariante-funcao {
+
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 2px;
+
+    }
+
+
+    .mobile-label {
+
+        display: block;
+
+        font-size: 0.7rem;
+
+        color: #888;
+
+        text-transform: uppercase;
+
+    }
+
+
+    .acesso-rapido {
+
+        grid-template-columns: 1fr 1fr;
+
+    }
+
+}
+
+</style>
+
+<!-- ===================================================== -->
+
+<!-- TÍTULO                                                -->
+
+<!-- ===================================================== -->
+
+<h2 class="titulo text-center">
+    🏠 Painel Administrativo
+</h2>
+
+<!-- ===================================================== -->
+
+<!-- MENU ADMINISTRATIVO                                   -->
+
+<!-- ===================================================== -->
+
+<div class="area-menu-admin mt-4 mb-4">
+
+
+<div class="botoes-admin">
+
+
+    <!-- GESTÃO -->
+
+    <div class="grupo-admin">
+
+        <div class="grupo-admin-titulo">
+            🎺 Gestão
+        </div>
+
+    </div>
+
+
+    <a href="/integrantes"
+       class="btn btn-outline-primary">
+
+        👥 Integrantes
+
+    </a>
+
+
+    <button
+        class="btn btn-outline-light"
+        data-bs-toggle="modal"
+        data-bs-target="#modalCarteirinhas">
+
+        🪪 Carteirinhas
+
+    </button>
+
+
+    <a href="#"
+       class="btn btn-outline-secondary disabled">
+
+        🎺 Instrumentos
+
+    </a>
+
+
+    <!-- ORGANIZAÇÃO -->
+
+    <div class="grupo-admin">
+
+        <div class="grupo-admin-titulo">
+            📅 Organização
+        </div>
+
+    </div>
+
+
+    <a href="/admin/viagens"
+       class="btn btn-primary">
+
+        🚌 Viagens
+
+    </a>
+
+
+    <button
+        type="button"
+        class="btn btn-outline-info"
+        data-bs-toggle="modal"
+        data-bs-target="#modalTemporadas">
+
+        📅 Temporadas
+
+    </button>
+
+
+    <a href="#"
+       class="btn btn-outline-info disabled">
+
+        📅 Ensaios
+
+    </a>
+
+
+    <!-- FINANCEIRO -->
+
+    <div class="grupo-admin">
+
+        <div class="grupo-admin-titulo">
+            💰 Financeiro
+        </div>
+
+    </div>
+
+
+    <a href="/admin/financeiro"
+       class="btn btn-outline-warning">
+
+        💰 Financeiro
+
+    </a>
+
+
+    <a href="/admin/rifas"
+       class="btn btn-outline-success">
+
+        🎟️ Rifas
+
+    </a>
+
+
+    <!-- RELATÓRIOS -->
+
+    <div class="grupo-admin">
+
+        <div class="grupo-admin-titulo">
+            📊 Relatórios
+        </div>
+
+    </div>
+
+
+    <button
+        class="btn btn-outline-success"
+        data-bs-toggle="modal"
+        data-bs-target="#modalRelatorios">
+
+        📊 Relatórios
+
+    </button>
+
+
+    <a href="#"
+       class="btn btn-outline-secondary disabled">
+
+        📄 Documentos
+
+    </a>
+
+
+</div>
+
+
+<!-- SAIR -->
+
+<div class="botao-sair">
+
+    <a href="/logout"
+       class="btn btn-danger">
+
+        🚪 Sair
+
+    </a>
+
+</div>
+
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- CARDS DE RESUMO                                      -->
+
+<!-- ===================================================== -->
+
+<div class="row text-center g-3 mb-4">
+
+
+<!-- TOTAL -->
+
+<div class="col-md-4">
+
+    <div class="card-resumo">
+
+        <div class="icone">
+            👥
+        </div>
+
+        <div class="numero">
+            {{ total }}
+        </div>
+
+        <div class="descricao">
+            Total de Integrantes
+        </div>
+
+        <div class="detalhe">
+            Total cadastrado
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- PENDENTES -->
+
+<div class="col-md-4">
+
+    <div class="card-resumo">
+
+        <div class="icone">
+            ⏳
+        </div>
+
+        <div class="numero">
+            {{ pendentes }}
+        </div>
+
+        <div class="descricao">
+            Pendentes
+        </div>
+
+        <div class="detalhe">
+            Aguardando análise
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- APROVADOS -->
+
+<div class="col-md-4">
+
+    <div class="card-resumo">
+
+        <div class="icone">
+            ✅
+        </div>
+
+        <div class="numero">
+            {{ aprovados }}
+        </div>
+
+        <div class="descricao">
+            Aprovados
+        </div>
+
+        <div class="detalhe">
+            Cadastros aprovados
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- ATENÇÃO + ACESSO RÁPIDO                              -->
+
+<!-- ===================================================== -->
+
+<div class="row g-3 mb-4">
+
+
+<!-- ===================================================== -->
+
+<!-- ATENÇÃO / SITUAÇÃO DO SISTEMA                         -->
+
+<!-- ===================================================== -->
+
+<div class="col-md-6">
+
+
+<div class="painel-admin">
+
+    <div class="painel-admin-titulo">
+        ⚠️ Situação do sistema
+    </div>
+
+
+    <!-- INTEGRANTES PENDENTES -->
+
+    {% if pendentes > 0 %}
+
+    <div class="alerta-admin">
+
+        <div class="alerta-admin-texto">
+
+            🔴 Integrantes aguardando aprovação
+
+        </div>
+
+        <div class="alerta-admin-numero">
+
+            {{ pendentes }}
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="alerta-admin"
+         style="background: rgba(25, 135, 84, 0.08);
+                border-color: rgba(25, 135, 84, 0.25);">
+
+        <div class="alerta-admin-texto">
+
+            🟢 Nenhum integrante aguardando aprovação
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- TEMPORADA ATIVA -->
+
+    {% set temporada_ativa = temporadas
+        |selectattr("status", "equalto", "ATIVA")
+        |list %}
+
+
+    {% if temporada_ativa %}
+
+    <div class="alerta-admin"
+         style="background: rgba(13, 202, 240, 0.08);
+                border-color: rgba(13, 202, 240, 0.25);">
+
+        <div class="alerta-admin-texto">
+
+            📅 Temporada ativa:
+            <strong>
+                {{ temporada_ativa[0].nome }}
+            </strong>
+
+        </div>
+
+        <div style="color: #0dcaf0;">
+
+            🟢
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="alerta-admin"
+         style="background: rgba(255, 193, 7, 0.08);
+                border-color: rgba(255, 193, 7, 0.25);">
+
+        <div class="alerta-admin-texto">
+
+            🟡 Nenhuma temporada está ativa
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ANIVERSARIANTES -->
+
+    {% if aniversariantes %}
+
+    <div class="alerta-admin"
+         style="background: rgba(255, 193, 7, 0.08);
+                border-color: rgba(255, 193, 7, 0.25);">
+
+        <div class="alerta-admin-texto">
+
+            🎂 Aniversariantes neste mês
+
+        </div>
+
+        <div style="color: #ffc107; font-weight: 700;">
+
+            {{ aniversariantes|length }}
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="alerta-admin"
+         style="background: rgba(255, 255, 255, 0.03);
+                border-color: rgba(255, 255, 255, 0.08);">
+
+        <div class="alerta-admin-texto text-secondary">
+
+            🎂 Nenhum aniversariante neste mês
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+</div>
+
+
+</div>
+
+
+
+<!-- ACESSO RÁPIDO -->
+
+<div class="col-md-6">
+
+    <div class="painel-admin">
+
+        <div class="painel-admin-titulo">
+            ⚡ Acesso rápido
+        </div>
+
+
+        <div class="acesso-rapido">
+
+
+            <a href="/integrantes">
+
+                👥 Novo integrante
+
+            </a>
+
+
+            <a href="/admin/viagens">
+
+                🚌 Nova viagem
+
+            </a>
+
+
+            <a href="/admin/rifas">
+
+                🎟️ Nova rifa
+
+            </a>
+
+
+            <a href="#"
+               data-bs-toggle="modal"
+               data-bs-target="#modalRelatorios">
+
+                📊 Relatórios
+
+            </a>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- ANIVERSARIANTES DO MÊS                               -->
+
+<!-- ===================================================== -->
+
+<div class="card-bn mt-4 mb-4">
+
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <h3 class="titulo mb-0">
+
+        🎂 Aniversariantes de {{ mes_nome }}
+
+    </h3>
+
+
+    {% if aniversariantes %}
+
+    <span class="badge bg-warning text-dark">
+
+        {{ aniversariantes|length }}
+
+        aniversariante{% if aniversariantes|length != 1 %}s{% endif %}
+
+    </span>
+
+    {% endif %}
+
+</div>
+
+
+{% if aniversariantes %}
+
+
+<!-- CABEÇALHO -->
+
+<div class="aniversariantes-cabecalho">
+
+    <div>
+        Dia
+    </div>
+
+    <div>
+        Integrante
+    </div>
+
+    <div>
+        Cidade
+    </div>
+
+    <div>
+        Função
+    </div>
+
+</div>
+
+
+<!-- LISTA -->
+
+<div class="aniversariantes-lista">
+
+
+    {% for pessoa in aniversariantes %}
+
+
+    <div class="aniversariante-item">
+
+
+        <!-- DIA -->
+
+        <div class="aniversariante-dia">
+
+            <span class="dia-numero">
+
+                {{ pessoa.aniversario }}
+
+            </span>
+
+            <span class="dia-label">
+
+                DIA
+
+            </span>
+
+        </div>
+
+
+        <!-- INTEGRANTE -->
+
+        <div class="aniversariante-integrante">
+
+            <span class="mobile-label">
+                Integrante
+            </span>
+
+            <strong>
+
+                {{ pessoa.nome }}
+
+            </strong>
+
+        </div>
+
+
+        <!-- CIDADE -->
+
+        <div class="aniversariante-cidade">
+
+            <span class="mobile-label">
+                Cidade
+            </span>
+
+            <span>
+
+                {{ pessoa.cidade or '-' }}
+
+            </span>
+
+        </div>
+
+
+        <!-- FUNÇÃO -->
+
+        <div class="aniversariante-funcao">
+
+            <span class="mobile-label">
+                Função
+            </span>
+
+            <span>
+
+                {{ pessoa.funcao or '-' }}
+
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+    {% endfor %}
+
+
+</div>
+
+
+{% else %}
+
+
+<div class="text-center text-secondary py-4">
+
+    <div style="font-size: 2rem;">
+        🎂
+    </div>
+
+    <div class="mt-2">
+
+        Nenhum aniversariante cadastrado neste mês.
+
+    </div>
+
+</div>
+
+
+{% endif %}
+
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- MODAL DE RELATÓRIOS                                  -->
+
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalRelatorios"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+<div class="modal-dialog modal-lg">
+
+    <div class="modal-content bg-dark text-white">
+
+
+        <div class="modal-header">
+
+            <h5 class="modal-title">
+
+                📊 Central de Relatórios
+
+            </h5>
+
+
+            <button
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal">
+
+            </button>
+
+        </div>
+
+
+        <form
+            action="/admin/exportar/pdf"
+            method="get"
+            target="_blank">
+
+
+            <div class="modal-body">
+
+
+                <h4 class="titulo text-center mb-3">
+
+                    👥 Relatório de Integrantes
+
+                </h4>
+
+
+                <p class="text-secondary text-center">
+
+                    Selecione os filtros desejados para gerar o relatório.
+
+                </p>
+
+
+                <hr>
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            Status
+                        </label>
+
+
+                        <select
+                            name="status"
+                            class="form-select">
+
+
+                            <option value="">
+                                Todos
+                            </option>
+
+
+                            <option value="PENDENTE">
+                                Pendentes
+                            </option>
+
+
+                            <option value="APROVADO">
+                                Aprovados
+                            </option>
+
+
+                            <option value="REPROVADO">
+                                Reprovados
+                            </option>
+
+
+                            <option value="INATIVO">
+                                Inativos
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+                            Função
+                        </label>
+
+
+                        <select
+                            name="funcao"
+                            class="form-select">
+
+
+                            <option value="">
+                                Todas
+                            </option>
+
+
+                            <option value="Músico">
+                                Músico
+                            </option>
+
+
+                            <option value="CC Música">
+                                CC Música
+                            </option>
+
+
+                            <option value="Instrutor">
+                                Instrutor
+                            </option>
+
+
+                            <option value="Apoio">
+                                Apoio
+                            </option>
+
+
+                            <option value="Dança">
+                                Dança
+                            </option>
+
+
+                            <option value="Capitão-mor">
+                                Capitão-mor
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <div class="modal-footer">
+
+
+                <button
+                    type="submit"
+                    class="btn btn-danger">
+
+                    📄 Exportar PDF
+
+                </button>
+
+
+                <a
+                    href="/admin/exportar/excel"
+                    class="btn btn-success">
+
+                    📊 Exportar Excel
+
+                </a>
+
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- MODAL DE TEMPORADAS                                  -->
+
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalTemporadas"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+<div class="modal-dialog modal-lg modal-dialog-centered">
+
+    <div class="modal-content bg-dark text-white">
+
+
+        <div class="modal-header">
+
+            <h5 class="modal-title">
+
+                📅 Gerenciar Temporadas
+
+            </h5>
+
+
+            <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal">
+
+            </button>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="/admin/temporadas/nova">
+
+
+            <div class="modal-body">
+
+
+                <div class="row">
+
+
+                    <div class="col-md-6 mb-3">
+
+                        <label class="form-label">
+
+                            📅 Nome da Temporada
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="nome"
+                            class="form-control"
+                            placeholder="Ex: Temporada 2027"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+                            Ano
+                        </label>
+
+
+                        <input
+                            type="number"
+                            name="ano"
+                            class="form-control"
+                            placeholder="2027"
+                            required>
+
+                    </div>
+
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+                            Status
+                        </label>
+
+
+                        <select
+                            name="status"
+                            class="form-select">
+
+
+                            <option value="ATIVA">
+                                🟢 ATIVA
+                            </option>
+
+
+                            <option value="PLANEJADA">
+                                ⚪ PLANEJADA
+                            </option>
+
+
+                            <option value="ENCERRADA">
+                                🔴 ENCERRADA
+                            </option>
+
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+
+                <hr>
+
+
+                <h6>
+                    📋 Temporadas cadastradas
+                </h6>
+
+
+                <table class="table table-dark">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Nome
+                            </th>
+
+                            <th>
+                                Ano
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% for temporada in temporadas %}
+
+
+                        <tr>
+
+                            <td>
+                                {{ temporada.nome }}
+                            </td>
+
+
+                            <td>
+                                {{ temporada.ano }}
+                            </td>
+
+
+                            <td>
+
+
+                                {% if temporada.status == "ATIVA" %}
+
+                                    🟢 ATIVA
+
+                                {% elif temporada.status == "ENCERRADA" %}
+
+                                    🔴 ENCERRADA
+
+                                {% else %}
+
+                                    ⚪ PLANEJADA
+
+                                {% endif %}
+
+
+                            </td>
+
+                        </tr>
+
+
+                        {% endfor %}
+
+
+                    </tbody>
+
+                </table>
+
+
+            </div>
+
+
+            <div class="modal-footer">
+
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    💾 Salvar Temporada
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

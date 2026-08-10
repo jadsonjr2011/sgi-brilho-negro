@@ -1,0 +1,736 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Vendedores da Rifa
+{% endblock %}
+
+{% block conteudo %}
+
+<h2>👥 Vendedores da Rifa</h2>
+
+<hr>
+
+<h5>🎟️ {{ rifa.nome }}</h5>
+
+<p>
+    🏆 Prêmio:
+    {{ rifa.premio }}
+</p>
+
+<p>
+    💰 Valor por número:
+    R$ {{ "%.2f"|format(rifa.valor_numero) }}
+</p>
+
+<hr>
+
+<h4>📊 Resumo da Campanha</h4>
+
+<p>
+    🎫 Números distribuídos:
+    {{ resumo.numeros_distribuidos }}
+</p>
+
+<p>
+    🎟️ Números vendidos:
+    {{ resumo.numeros_vendidos }}
+</p>
+
+<p>
+    📦 Números devolvidos:
+    {{ resumo.numeros_distribuidos - resumo.numeros_vendidos }}
+</p>
+
+<p>
+    💵 Valor prestado:
+    R$ {{ "%.2f"|format(resumo.valor_recebido) }}
+</p>
+
+<hr>
+
+<h4>👥 Vendedores da Campanha</h4>
+
+{% if vendedores %}
+
+<div class="table-responsive">
+
+<table class="table table-dark table-striped">
+
+<thead>
+<tr>
+    <th>Nome</th>
+    <th>Função</th>
+    <th>Quantidade</th>
+    <th>Vendidos</th>
+    <th>Recebido</th>
+    <th>Prestação</th>
+    <th>Status</th>
+    <th>Ação</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for vendedor in vendedores %}
+
+<tr>
+
+<td>
+    👤 {{ vendedor.nome }}
+</td>
+
+<td>
+    🎺 {{ vendedor.funcao or "-" }}
+</td>
+
+<td>
+    {{ vendedor.quantidade_numeros }}
+</td>
+
+<td>
+    {{ vendedor.quantidade_vendida }}
+</td>
+
+<td>
+    R$ {{ "%.2f"|format(vendedor.valor_entregue or 0) }}
+</td>
+
+<td>
+
+{% if vendedor.status_prestacao == "PENDENTE" %}
+
+
+🟡 Pendente
+
+
+{% elif vendedor.status_prestacao == "PRESTADO" %}
+
+
+🟢 Prestado
+
+
+{% elif vendedor.status_prestacao == "PARCIAL" %}
+
+
+🟠 Parcial
+
+
+{% else %}
+
+
+⚪ -
+
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if vendedor.status == "ATIVO" %}
+
+
+🟢 ATIVO
+
+
+{% else %}
+
+
+{{ vendedor.status }}
+
+
+{% endif %}
+
+</td>
+
+<td>
+
+<button
+ type="button"
+ class="btn btn-success btn-sm"
+ data-bs-toggle="modal"
+ data-bs-target="#modalPrestacao{{ vendedor.id }}">
+
+
+💰 Prestar Conta
+
+
+</button>
+
+<a
+ href="/admin/rifas/vendedor/{{ vendedor.id }}/remover"
+ class="btn btn-danger btn-sm"
+ onclick="return confirm('Remover este vendedor da campanha?')">
+
+
+❌
+
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% else %}
+
+<p class="text-secondary">
+    Nenhum vendedor vinculado.
+</p>
+
+{% endif %}
+
+<!-- ===================================================== -->
+
+<!-- MODAIS DE PRESTAÇÃO -->
+
+<!-- FORA DA TABLE/TBODY -->
+
+<!-- ===================================================== -->
+
+{% for vendedor in vendedores %}
+
+<div
+    class="modal fade"
+    id="modalPrestacao{{ vendedor.id }}"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+<div class="modal-dialog modal-dialog-centered modal-lg">
+
+    <div class="modal-content bg-dark text-white">
+
+        <form
+            method="POST"
+            action="/admin/rifas/vendedor/{{ vendedor.id }}/prestar-conta">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    📝 Prestação de Conta
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <p>
+                    🎟️ <b>Rifa:</b><br>
+                    {{ rifa.nome }}
+                </p>
+
+                <p>
+                    👤 <b>Vendedor:</b><br>
+                    {{ vendedor.nome }}
+                </p>
+
+                <p>
+                    🎺 <b>Função:</b><br>
+                    {{ vendedor.funcao or "-" }}
+                </p>
+
+                <hr>
+
+                <h6 class="mb-3">
+                    🎫 Números recebidos
+                </h6>
+
+                <p class="text-secondary">
+                    Marque os números que foram vendidos.
+                </p>
+
+                <div
+                    class="d-flex flex-wrap gap-2 mb-4"
+                    id="numeros{{ vendedor.id }}">
+
+                    {% for numero in vendedor.numeros %}
+
+                    <div>
+
+                        <input
+                            type="checkbox"
+                            class="btn-check numero-check-{{ vendedor.id }}"
+                            name="numeros_vendidos"
+                            value="{{ numero.id }}"
+                            id="numero{{ vendedor.id }}_{{ numero.numero }}"
+
+                            {% if numero.status == "VENDIDO" %}
+                                checked
+                            {% endif %}
+
+                        >
+
+                        <label
+                            class="btn btn-outline-light"
+                            for="numero{{ vendedor.id }}_{{ numero.numero }}">
+
+                            {{ numero.numero }}
+
+                        </label>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                <!--
+                    IMPORTANTE:
+                    O backend atual lê "quantidade_vendida".
+                    Por isso mantemos este campo oculto.
+                    O JavaScript atualiza automaticamente.
+                -->
+
+                <input
+                    type="hidden"
+                    name="quantidade_vendida"
+                    id="quantidadeVendidaInput{{ vendedor.id }}"
+                    value="{{ vendedor.quantidade_vendida or 0 }}">
+
+
+                <hr>
+
+                <div class="alert alert-secondary">
+
+                    <p class="mb-2">
+                        📦 <b>Números entregues:</b>
+
+                        {{ vendedor.quantidade_numeros }}
+                    </p>
+
+                    <p class="mb-2">
+                        🎫 <b>Números vendidos:</b>
+
+                        <span id="qtdVendida{{ vendedor.id }}">
+                            {{ vendedor.quantidade_vendida or 0 }}
+                        </span>
+                    </p>
+
+                    <p class="mb-2">
+                        📦 <b>Números devolvidos:</b>
+
+                        <span id="qtdDevolvida{{ vendedor.id }}">
+                            {{ vendedor.quantidade_numeros - (vendedor.quantidade_vendida or 0) }}
+                        </span>
+                    </p>
+
+                    <p class="mb-0">
+                        💰 <b>Valor das vendas:</b>
+
+                        R$
+
+                        <span id="valorVenda{{ vendedor.id }}">
+                            {{ "%.2f"|format((vendedor.quantidade_vendida or 0) * rifa.valor_numero)|replace(".", ",") }}
+                        </span>
+
+                    </p>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- VALOR ENTREGUE -->
+                <!-- ================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        💵 Valor entregue
+                    </label>
+
+                    <input
+                        type="text"
+                        class="form-control"
+                        name="valor_entregue"
+                        id="valorEntregue{{ vendedor.id }}"
+                        value="{{ '%.2f'|format(vendedor.valor_entregue or 0) | replace('.', ',') }}"
+                        placeholder="0,00">
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- SALDO -->
+                <!-- ================================= -->
+
+                <div class="alert alert-warning">
+
+                    💰 <b>Saldo a prestar:</b>
+
+                    R$
+
+                    <span id="saldo{{ vendedor.id }}">
+                        {{ "%.2f"|format(vendedor.saldo_pendente or 0)|replace(".", ",") }}
+                    </span>
+
+                </div>
+
+
+                <!-- ================================= -->
+                <!-- OBSERVAÇÃO -->
+                <!-- ================================= -->
+
+                <div class="mb-3">
+
+                    <label class="form-label">
+                        📝 Observação
+                    </label>
+
+                    <textarea
+                        class="form-control"
+                        name="observacao"
+                        rows="3">{{ vendedor.observacao or "" }}</textarea>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    💾 Confirmar Prestação
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+</div>
+
+{% endfor %}
+
+<hr>
+
+<!-- ================================================= -->
+<!-- AÇÕES -->
+<!-- ================================================= -->
+
+<div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+
+    <!-- VOLTAR -->
+    <a
+        href="/admin/rifas/{{ rifa.id }}"
+        class="btn btn-secondary">
+
+        ⬅ Voltar para a Rifa
+
+    </a>
+
+
+    <!-- ADICIONAR VENDEDORES -->
+    {% if rifa.status == "ATIVA" %}
+
+    <button
+        type="button"
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#modalAdicionarVendedores">
+
+        ➕ Adicionar Vendedores
+
+    </button>
+
+    {% else %}
+
+    <div class="alert alert-warning mb-0 flex-grow-1">
+
+        🔒 <strong>Rifa Finalizada</strong>
+
+        <br>
+
+        Esta rifa está finalizada e não pode mais receber novos vendedores.
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+
+<!-- ===================================================== -->
+
+<!-- MODAL ADICIONAR VENDEDORES -->
+
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalAdicionarVendedores"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+<div class="modal-dialog modal-lg modal-dialog-centered">
+
+    <div class="modal-content bg-dark text-white">
+
+        <form
+            method="POST"
+            action="/admin/rifas/{{ rifa.id }}/vendedores">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    👥 Adicionar Vendedores
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <p>
+                    Selecione os integrantes:
+                </p>
+
+                {% for pessoa in integrantes %}
+
+                <div class="row align-items-center mb-3">
+
+                    <div class="col-md-1">
+
+                        <input
+                            type="checkbox"
+                            class="form-check-input"
+                            name="integrantes"
+                            value="{{ pessoa.id }}">
+
+                    </div>
+
+
+                    <div class="col-md-5">
+
+                        👤 {{ pessoa.nome }}
+
+                        <br>
+
+                        🎺 {{ pessoa.funcao or "-" }}
+
+                    </div>
+
+
+                    <div class="col-md-3">
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="quantidade_{{ pessoa.id }}"
+                            value="{{ rifa.quantidade_por_integrante }}"
+                            min="1">
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    💾 Salvar Distribuição
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+</div>
+
+<!-- ===================================================== -->
+
+<!-- JAVASCRIPT PRESTAÇÃO -->
+
+<!-- ===================================================== -->
+
+<script>
+
+{% for vendedor in vendedores %}
+
+(function () {
+
+    const checks = document.querySelectorAll(
+        ".numero-check-{{ vendedor.id }}"
+    );
+
+    const quantidadeVendida = document.getElementById(
+        "qtdVendida{{ vendedor.id }}"
+    );
+
+    const quantidadeVendidaInput = document.getElementById(
+        "quantidadeVendidaInput{{ vendedor.id }}"
+    );
+
+    const quantidadeDevolvida = document.getElementById(
+        "qtdDevolvida{{ vendedor.id }}"
+    );
+
+    const valorVenda = document.getElementById(
+        "valorVenda{{ vendedor.id }}"
+    );
+
+    const valorEntregue = document.getElementById(
+        "valorEntregue{{ vendedor.id }}"
+    );
+
+    const saldo = document.getElementById(
+        "saldo{{ vendedor.id }}"
+    );
+
+    const valorNumero = Number(
+        "{{ rifa.valor_numero }}"
+    );
+
+
+    function calcularPrestacao() {
+
+        let vendidos = 0;
+
+        checks.forEach(function (check) {
+
+            if (check.checked) {
+                vendidos++;
+            }
+
+        });
+
+
+        const entregues =
+            {{ vendedor.quantidade_numeros }};
+
+
+        const devolvidos =
+            entregues - vendidos;
+
+
+        const valor =
+            vendidos * valorNumero;
+
+
+        let entregue = Number(
+            (valorEntregue.value || "0")
+                .replace(",", ".")
+        );
+
+
+        let saldoCalculado =
+            valor - entregue;
+
+
+        if (saldoCalculado < 0) {
+            saldoCalculado = 0;
+        }
+
+
+        quantidadeVendida.innerText =
+            vendidos;
+
+
+        quantidadeVendidaInput.value =
+            vendidos;
+
+
+        quantidadeDevolvida.innerText =
+            devolvidos;
+
+
+        valorVenda.innerText =
+            valor
+                .toFixed(2)
+                .replace(".", ",");
+
+
+        saldo.innerText =
+            saldoCalculado
+                .toFixed(2)
+                .replace(".", ",");
+
+    }
+
+
+    checks.forEach(function (check) {
+
+        check.addEventListener(
+            "change",
+            calcularPrestacao
+        );
+
+    });
+
+
+    valorEntregue.addEventListener(
+        "input",
+        calcularPrestacao
+    );
+
+
+    calcularPrestacao();
+
+})();
+
+{% endfor %}
+
+</script>
+
+{% endblock %}

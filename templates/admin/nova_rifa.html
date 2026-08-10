@@ -1,0 +1,188 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Nova Rifa
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="financeiro-cabecalho">
+
+    <h2 class="titulo mb-0">
+        🎟️ Nova Rifa
+    </h2>
+
+
+    <a href="/admin/rifas"
+       class="btn btn-secondary">
+
+        ⬅ Voltar
+
+    </a>
+
+
+</div>
+
+
+<hr>
+
+
+<div class="card bg-dark text-white p-4">
+
+
+<form method="POST"
+      action="/admin/rifas/nova">
+
+
+    <div class="row">
+
+
+        <!-- NOME -->
+
+        <div class="col-md-6 mb-3">
+
+            <label class="form-label">
+                🎟️ Nome da Rifa
+            </label>
+
+
+            <input
+                type="text"
+                name="nome"
+                class="form-control"
+                placeholder="Ex: Rifa Brilho Negro 2026"
+                required>
+
+        </div>
+
+
+
+        <!-- PRÊMIO -->
+
+        <div class="col-md-6 mb-3">
+
+            <label class="form-label">
+                🏆 Prêmio
+            </label>
+
+
+            <input
+                type="text"
+                name="premio"
+                class="form-control"
+                placeholder="Ex: Cesta de Natal"
+                required>
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="row">
+
+
+        <!-- VALOR -->
+
+        <div class="col-md-4 mb-3">
+
+            <label class="form-label">
+                💰 Valor por número
+            </label>
+
+
+            <input
+                type="text"
+                name="valor_numero"
+                class="form-control"
+                placeholder="Ex: 2,00"
+                inputmode="decimal"
+                required>
+
+        </div>
+
+
+
+        <!-- QUANTIDADE -->
+
+        <div class="col-md-4 mb-3">
+
+            <label class="form-label">
+                🔢 Quantidade por integrante
+            </label>
+
+
+            <input
+                type="number"
+                name="quantidade_por_integrante"
+                class="form-control"
+                placeholder="Ex: 40"
+                required>
+
+        </div>
+
+
+
+        <!-- DATA -->
+
+        <div class="col-md-4 mb-3">
+
+            <label class="form-label">
+                📅 Data do sorteio
+            </label>
+
+
+            <input
+                type="date"
+                name="data_sorteio"
+                class="form-control">
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- OBSERVAÇÃO -->
+
+    <div class="mb-3">
+
+
+        <label class="form-label">
+            📝 Observação
+        </label>
+
+
+        <textarea
+            name="observacao"
+            class="form-control"
+            rows="3"
+            placeholder="Informações adicionais"></textarea>
+
+
+    </div>
+
+
+
+
+    <button
+        type="submit"
+        class="btn btn-success">
+
+        💾 Salvar Rifa
+
+    </button>
+
+
+</form>
+
+
+</div>
+
+
+
+{% endblock %}

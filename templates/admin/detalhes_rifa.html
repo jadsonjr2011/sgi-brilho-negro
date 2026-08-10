@@ -1,0 +1,1633 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+{{ rifa.nome }}
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="container-fluid px-2 px-md-3">
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO -->
+<!-- ===================================================== -->
+
+<div class="d-flex flex-column flex-lg-row
+            justify-content-between
+            align-items-lg-center
+            gap-3
+            mb-4">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+            🎟️ {{ rifa.nome }}
+        </h2>
+
+        <div class="text-secondary">
+            📅 {{ rifa.temporada_nome or "-" }}
+        </div>
+
+    </div>
+
+
+    <!-- BOTÕES -->
+
+    <div class="d-flex flex-column flex-sm-row gap-2">
+
+        <!-- NÚMEROS -->
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#modalNumeros">
+
+            🎫 Números
+
+        </button>
+
+        <!-- GERAR RIFA -->
+
+        <a
+            href="/admin/rifas/{{ rifa.id }}/gerar-pdf"
+            class="btn btn-success">
+
+            📄 Gerar Rifa
+
+        </a>
+
+        <!-- VENDEDORES -->
+
+        {% if rifa.status == "ATIVA" %}
+
+        <a
+            href="/admin/rifas/{{ rifa.id }}/vendedores"
+            class="btn btn-warning">
+
+            👥 Gerenciar Vendedores
+
+        </a>
+
+        {% else %}
+
+        <a
+            href="/admin/rifas/{{ rifa.id }}/vendedores"
+            class="btn btn-outline-secondary">
+
+            👥 Consultar Vendedores
+
+        </a>
+
+        {% endif %}
+
+
+        <!-- VOLTAR -->
+
+        <a
+            href="/admin/rifas"
+            class="btn btn-secondary">
+
+            ⬅ Voltar
+
+        </a>
+
+    </div>
+
+</div>
+
+
+    <!-- ===================================================== -->
+    <!-- AVISO DE RIFA FINALIZADA -->
+    <!-- ===================================================== -->
+
+    {% if rifa.status == "FINALIZADA" %}
+
+    <div
+        class="alert alert-warning d-flex align-items-start gap-2"
+        role="alert">
+
+        <div>
+            <strong>
+                🔒 Rifa Finalizada
+            </strong>
+
+            <br>
+
+            Esta rifa está finalizada e não pode mais receber novos
+            vendedores, alterar números ou realizar novas prestações.
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- ERRO -->
+    <!-- ===================================================== -->
+
+    {% if request.args.get('erro') == 'rifa_finalizada' %}
+
+    <div
+        class="alert alert-warning alert-dismissible fade show"
+        role="alert">
+
+        <strong>
+            ⚠️ Rifa finalizada
+        </strong>
+
+        <br>
+
+        Esta rifa está finalizada e não pode mais receber novos
+        vendedores.
+
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Fechar">
+        </button>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ===================================================== -->
+    <!-- INFORMAÇÕES PRINCIPAIS -->
+    <!-- ===================================================== -->
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <!-- PRÊMIO -->
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <small class="text-secondary">
+                        🏆 Prêmio
+                    </small>
+
+                    <div class="fw-bold mt-1">
+                        {{ rifa.premio }}
+                    </div>
+
+                </div>
+
+
+                <!-- VALOR -->
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <small class="text-secondary">
+                        💰 Valor por número
+                    </small>
+
+                    <div class="fw-bold mt-1">
+
+                        R$
+                        {{ "%.2f"|format(rifa.valor_numero or 0)|replace(".", ",") }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- SORTEIO -->
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <small class="text-secondary">
+                        📅 Sorteio
+                    </small>
+
+                    <div class="fw-bold mt-1">
+
+                        {{
+                            rifa.data_sorteio.strftime("%d/%m/%Y")
+                            if rifa.data_sorteio
+                            else "-"
+                        }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="col-12 col-sm-6 col-lg-3">
+
+                    <small class="text-secondary">
+                        Status
+                    </small>
+
+                    <div class="fw-bold mt-1">
+
+                        {% if rifa.status == "ATIVA" %}
+
+                            <span class="text-success">
+                                🟢 ATIVA
+                            </span>
+
+                        {% elif rifa.status == "FINALIZADA" %}
+
+                            <span class="text-warning">
+                                🔒 FINALIZADA
+                            </span>
+
+                        {% elif rifa.status == "CANCELADA" %}
+
+                            <span class="text-danger">
+                                🔴 CANCELADA
+                            </span>
+
+                        {% else %}
+
+                            <span>
+                                ⚪ {{ rifa.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- RESUMO DOS NÚMEROS -->
+    <!-- ===================================================== -->
+
+    <h4 class="mb-3">
+        🎫 Números
+    </h4>
+
+
+    <div class="row g-3 mb-4">
+
+
+        <!-- DISTRIBUÍDOS -->
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🎫 Distribuídos
+                    </small>
+
+                    <h3 class="mb-0 mt-1">
+
+                        {{ resumo_numeros.total_numeros or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- VENDIDOS -->
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🟢 Vendidos
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-success">
+
+                        {{ resumo_numeros.numeros_vendidos or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DISPONÍVEIS -->
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🔵 Disponíveis
+                    </small>
+
+                    <h3 class="mb-0 mt-1">
+
+                        {{ resumo_numeros.numeros_disponiveis or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DEVOLVIDOS -->
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        📦 Devolvidos
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-warning">
+
+                        {{ resumo_numeros.numeros_devolvidos or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- STATUS DA CAMPANHA -->
+    <!-- ===================================================== -->
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center
+                        gap-3">
+
+                <div>
+
+                    <small class="text-secondary">
+                        📌 Status da campanha
+                    </small>
+
+                    <h4 class="mb-0 mt-1">
+
+                        {% if rifa.status == "ATIVA" %}
+
+                            🟢 Rifa Ativa
+
+                        {% elif rifa.status == "FINALIZADA" %}
+
+                            🔒 Rifa Finalizada
+
+                        {% elif rifa.status == "CANCELADA" %}
+
+                            🔴 Rifa Cancelada
+
+                        {% else %}
+
+                            ⚪ {{ rifa.status }}
+
+                        {% endif %}
+
+                    </h4>
+
+                </div>
+
+
+                {% if rifa.status == "ATIVA" %}
+
+                <form
+                    method="POST"
+                    action="/admin/rifas/{{ rifa.id }}/finalizar"
+                    class="m-0 w-100 w-md-auto"
+                    onsubmit="return confirm(
+                        'Deseja realmente finalizar esta rifa? Depois da finalização, vendedores, números e prestações não poderão mais ser alterados.'
+                    );">
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning w-100">
+
+                        🔒 Finalizar Rifa
+
+                    </button>
+
+                </form>
+
+                {% elif rifa.status == "FINALIZADA" %}
+
+                <span class="badge bg-success fs-6 py-2 px-3">
+
+                    ✅ Campanha encerrada
+
+                </span>
+
+                {% endif %}
+
+                {% if rifa.status == "FINALIZADA" %}
+
+                <div class="mt-3">
+
+                    {% if rifa.numero_sorteado %}
+
+                            <div class="alert alert-success mb-0">
+
+                            <strong>
+                                🎉 Sorteio realizado
+                            </strong>
+
+                            <br>
+
+                            Número sorteado:
+                            <strong>
+                                {{ rifa.numero_sorteado }}
+                            </strong>
+
+                        </div>
+
+                    {% else %}
+
+                        <form
+                            method="POST"
+                            action="/admin/rifas/{{ rifa.id }}/sortear"
+                            class="m-0"
+                            onsubmit="return confirm(
+                                'Deseja realmente realizar o sorteio? Depois de realizado, não será possível sortear novamente.'
+                            );">
+
+                            <button
+                                type="submit"
+                                class="btn btn-success">
+
+                                🎲 Realizar Sorteio
+
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                </div>
+
+                {% endif %}    
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- PROGRESSO -->
+    <!-- ===================================================== -->
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between
+                        align-items-center
+                        mb-2">
+
+                <strong>
+                    📊 Progresso das vendas
+                </strong>
+
+                <strong>
+                    {{ "%.1f"|format(percentual_vendido or 0) }}%
+                </strong>
+
+            </div>
+
+
+            <div
+                class="progress"
+                style="height: 25px;">
+
+                <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    style="width: {{ percentual_vendido or 0 }}%;">
+
+                    {{ resumo_numeros.numeros_vendidos or 0 }}
+                    /
+                    {{ resumo_numeros.total_numeros or 0 }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- SORTEIO -->
+    <!-- ===================================================== -->
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center
+                        gap-3">
+
+                <div>
+
+                    <small class="text-secondary">
+                        🎲 Sorteio
+                    </small>
+
+                    <h4 class="mb-1 mt-1">
+                        Sorteio da Rifa
+                    </h4>
+
+                    {% if rifa.numero_sorteado %}
+
+                        <div class="text-success fw-bold">
+                            🎉 Sorteio realizado
+                        </div>
+
+                    {% else %}
+
+                        <div class="text-secondary">
+                            Nenhum sorteio realizado.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if not rifa.numero_sorteado
+                    and rifa.status == "FINALIZADA" %}
+
+                <form
+                    method="POST"
+                    ction="/admin/rifas/{{ rifa.id }}/sortear"
+                    class="m-0">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm(
+                            'Deseja realizar o sorteio desta rifa? O resultado não poderá ser alterado.'
+                        );">
+
+                        🎲 Realizar Sorteio
+
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if rifa.numero_sorteado %}
+
+            <hr>
+
+            <div class="row g-3">
+
+                <div class="col-12 col-md-4">
+
+                    <small class="text-secondary">
+                        🎫 Número sorteado
+                    </small>
+
+                    <div class="fs-3 fw-bold text-warning">
+
+                        {{ rifa.numero_sorteado }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-4">
+
+                    <small class="text-secondary">
+                        👥 Vendedor responsável
+                    </small>
+
+                    <div class="fw-bold">
+
+                        {{ vendedor_sorteado_nome or "-" }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-4">
+
+                    <small class="text-secondary">
+                        📅 Sorteio realizado
+                    </small>
+
+                    <div class="fw-bold">
+
+                        {{
+                            rifa.data_sorteio_realizado.strftime(
+                                "%d/%m/%Y %H:%M"
+                            )
+                            if rifa.data_sorteio_realizado
+                            else "-"
+                        }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- RESUMO FINANCEIRO -->
+    <!-- ===================================================== -->
+
+    <h4 class="mb-3">
+        💰 Resumo Financeiro
+    </h4>
+
+
+    <div class="row g-3 mb-4">
+
+
+        <!-- VALOR VENDIDO -->
+
+        <div class="col-12 col-md-4">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        💵 Valor vendido
+                    </small>
+
+                    <h3 class="mt-1">
+
+                        R$
+                        {{
+                            "%.2f"|format(
+                                resumo_financeiro.valor_vendido or 0
+                            )|replace(".", ",")
+                        }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- VALOR RECEBIDO -->
+
+        <div class="col-12 col-md-4">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🟢 Valor recebido
+                    </small>
+
+                    <h3 class="mt-1 text-success">
+
+                        R$
+                        {{
+                            "%.2f"|format(
+                                resumo_financeiro.valor_recebido or 0
+                            )|replace(".", ",")
+                        }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- VALOR PENDENTE -->
+
+        <div class="col-12 col-md-4">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🟡 Valor pendente
+                    </small>
+
+                    <h3 class="mt-1 text-warning">
+
+                        R$
+                        {{
+                            "%.2f"|format(
+                                resumo_financeiro.valor_pendente or 0
+                            )|replace(".", ",")
+                        }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- RESUMO DOS VENDEDORES -->
+    <!-- ===================================================== -->
+
+    <h4 class="mb-3">
+        👥 Resumo dos Vendedores
+    </h4>
+
+
+    <div class="row g-3 mb-4">
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        👥 Total
+                    </small>
+
+                    <h3 class="mb-0 mt-1">
+
+                        {{ resumo_vendedores.total_vendedores or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🟢 Prestados
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-success">
+
+                        {{ resumo_vendedores.vendedores_prestados or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🟡 Pendentes
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-warning">
+
+                        {{ resumo_vendedores.vendedores_pendentes or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-6 col-md-3">
+
+            <div class="card bg-dark text-white h-100 shadow-sm">
+
+                <div class="card-body">
+
+                    <small class="text-secondary">
+                        🟠 Parciais
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-warning">
+
+                        {{ resumo_vendedores.vendedores_parciais or 0 }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- VENDEDORES -->
+    <!-- ===================================================== -->
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="d-flex flex-column flex-md-row
+                        justify-content-between
+                        align-items-md-center
+                        gap-2
+                        mb-3">
+
+                <h4 class="mb-0">
+                    🏆 Vendedores
+                </h4>
+
+
+                {% if rifa.status == "ATIVA" %}
+
+                <a
+                    href="/admin/rifas/{{ rifa.id }}/vendedores"
+                    class="btn btn-outline-warning btn-sm">
+
+                    👥 Gerenciar vendedores
+
+                </a>
+
+                {% else %}
+
+                <a
+                    href="/admin/rifas/{{ rifa.id }}/vendedores"
+                    class="btn btn-outline-secondary btn-sm">
+
+                    🔒 Consultar vendedores
+
+                </a>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if vendedores %}
+
+            <!--
+                No celular a tabela poderá rolar
+                horizontalmente sem quebrar o layout.
+            -->
+
+            <div class="table-responsive">
+
+                <table
+                    class="table table-dark table-striped
+                           table-hover align-middle mb-0">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Vendedor</th>
+
+                            <th class="text-center">
+                                Qtd.
+                            </th>
+
+                            <th class="text-center">
+                                Vendidos
+                            </th>
+
+                            <th class="text-center">
+                                Devolvidos
+                            </th>
+
+                            <th>
+                                Valor vendido
+                            </th>
+
+                            <th>
+                                Entregue
+                            </th>
+
+                            <th>
+                                Saldo
+                            </th>
+
+                            <th>
+                                Prestação
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                    {% for vendedor in vendedores %}
+
+                        <tr>
+
+                            <!-- VENDEDOR -->
+
+                            <td>
+
+                                👤 {{ vendedor.nome }}
+
+                                {% if vendedor.funcao %}
+
+                                <br>
+
+                                <small class="text-secondary">
+
+                                    🎺 {{ vendedor.funcao }}
+
+                                </small>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <!-- QUANTIDADE -->
+
+                            <td class="text-center">
+
+                                {{ vendedor.quantidade_numeros or 0 }}
+
+                            </td>
+
+
+                            <!-- VENDIDOS -->
+
+                            <td class="text-center text-success fw-bold">
+
+                                {{ vendedor.quantidade_vendida or 0 }}
+
+                            </td>
+
+
+                            <!-- DEVOLVIDOS -->
+
+                            <td class="text-center">
+
+                                {{ vendedor.quantidade_devolvida or 0 }}
+
+                            </td>
+
+
+                            <!-- VALOR VENDIDO -->
+
+                            <td class="text-nowrap">
+
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        vendedor.valor_devido or 0
+                                    )|replace(".", ",")
+                                }}
+
+                            </td>
+
+
+                            <!-- ENTREGUE -->
+
+                            <td class="text-nowrap">
+
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        vendedor.valor_entregue or 0
+                                    )|replace(".", ",")
+                                }}
+
+                            </td>
+
+
+                            <!-- SALDO -->
+
+                            <td class="text-nowrap text-warning">
+
+                                R$
+                                {{
+                                    "%.2f"|format(
+                                        vendedor.saldo_pendente or 0
+                                    )|replace(".", ",")
+                                }}
+
+                            </td>
+
+
+                            <!-- PRESTAÇÃO -->
+
+                            <td class="text-nowrap">
+
+                                {% if vendedor.status_prestacao == "PRESTADO" %}
+
+                                    <span class="text-success">
+                                        🟢 Prestado
+                                    </span>
+
+                                {% elif vendedor.status_prestacao == "PARCIAL" %}
+
+                                    <span class="text-warning">
+                                        🟠 Parcial
+                                    </span>
+
+                                {% elif vendedor.status_prestacao == "PENDENTE" %}
+
+                                    <span class="text-warning">
+                                        🟡 Pendente
+                                    </span>
+
+                                {% else %}
+
+                                    ⚪ -
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <div class="text-secondary py-2">
+
+                Nenhum vendedor vinculado a esta rifa.
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- OBSERVAÇÃO -->
+    <!-- ===================================================== -->
+
+    {% if rifa.observacao %}
+
+    <div class="card bg-dark text-white shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="text-secondary small mb-1">
+                📝 Observação
+            </div>
+
+            <div>
+                {{ rifa.observacao }}
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- AJUSTES RESPONSIVOS -->
+<!-- ========================================================= -->
+
+<style>
+
+    /*
+     * Evita que números e valores quebrem
+     * de maneira estranha dentro da tabela.
+     */
+
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+
+
+    /*
+     * Mantém a tabela utilizável em telas pequenas.
+     */
+
+    .table-responsive table {
+        min-width: 950px;
+    }
+
+
+    /*
+     * Melhora os títulos no celular.
+     */
+
+    @media (max-width: 575.98px) {
+
+        .titulo {
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+        }
+
+        h4 {
+            font-size: 1.15rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+    }
+
+</style>
+
+<!-- ===================================================== -->
+<!-- MODAL - NÚMEROS DA RIFA -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalNumeros"
+    tabindex="-1"
+    aria-labelledby="modalNumerosLabel"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- ========================================= -->
+            <!-- CABEÇALHO -->
+            <!-- ========================================= -->
+
+            <div class="modal-header">
+
+                <div>
+
+                    <h5
+                        class="modal-title"
+                        id="modalNumerosLabel">
+
+                        🎫 Números da Rifa
+
+                    </h5>
+
+                    <small class="text-secondary">
+
+                        {{ rifa.nome }}
+
+                    </small>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- CORPO -->
+            <!-- ========================================= -->
+
+            <div class="modal-body">
+
+
+                <!-- ===================================== -->
+                <!-- RESUMO -->
+                <!-- ===================================== -->
+
+                <div class="row g-2 mb-4">
+
+
+                    <!-- TOTAL -->
+
+                    <div class="col-6 col-md-3">
+
+                        <div class="card bg-secondary text-white h-100">
+
+                            <div class="card-body">
+
+                                <small>
+                                    🎫 Total
+                                </small>
+
+                                <h4 class="mb-0">
+
+                                    {{ resumo_numeros.total_numeros or 0 }}
+
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- VENDIDOS -->
+
+                    <div class="col-6 col-md-3">
+
+                        <div class="card bg-success text-white h-100">
+
+                            <div class="card-body">
+
+                                <small>
+                                    🟢 Vendidos
+                                </small>
+
+                                <h4 class="mb-0">
+
+                                    {{ resumo_numeros.numeros_vendidos or 0 }}
+
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DISPONÍVEIS -->
+
+                    <div class="col-6 col-md-3">
+
+                        <div class="card bg-primary text-white h-100">
+
+                            <div class="card-body">
+
+                                <small>
+                                    🔵 Disponíveis
+                                </small>
+
+                                <h4 class="mb-0">
+
+                                    {{ resumo_numeros.numeros_disponiveis or 0 }}
+
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DEVOLVIDOS -->
+
+                    <div class="col-6 col-md-3">
+
+                        <div class="card bg-warning text-dark h-100">
+
+                            <div class="card-body">
+
+                                <small>
+                                    📦 Devolvidos
+                                </small>
+
+                                <h4 class="mb-0">
+
+                                    {{ resumo_numeros.numeros_devolvidos or 0 }}
+
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ===================================== -->
+                <!-- PESQUISA -->
+                <!-- ===================================== -->
+
+                <div class="mb-3">
+
+                    <input
+                        type="text"
+                        id="pesquisaNumero"
+                        class="form-control"
+                        placeholder="🔎 Pesquisar número ou vendedor...">
+
+                </div>
+
+
+                <!-- ===================================== -->
+                <!-- NÚMEROS -->
+                <!-- ===================================== -->
+
+                {% if numeros %}
+
+                <div
+                    class="row g-2"
+                    id="listaNumeros">
+
+
+                    {% for numero in numeros %}
+
+                    <div
+                        class="col-6 col-sm-4 col-md-3 col-lg-2 numero-item"
+                        data-numero="{{ numero.numero }}"
+                        data-vendedor="{{ numero.vendedor_nome or '' }}">
+
+
+                        {% if numero.status == "VENDIDO" %}
+
+                        <div
+                            class="card border-success bg-success bg-opacity-25
+                                   text-white h-100 numero-card">
+
+                            <div class="card-body text-center p-2">
+
+                                <div class="fs-5 fw-bold">
+
+                                    {{ "%03d"|format(numero.numero) }}
+
+                                </div>
+
+                                <small class="text-success">
+
+                                    🟢 VENDIDO
+
+                                </small>
+
+                                {% if numero.vendedor_nome %}
+
+                                <div
+                                    class="small text-truncate mt-1"
+                                    title="{{ numero.vendedor_nome }}">
+
+                                    👤 {{ numero.vendedor_nome }}
+
+                                </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        {% elif numero.status == "DEVOLVIDO" %}
+
+                        <div
+                            class="card border-warning bg-warning bg-opacity-25
+                                   text-white h-100 numero-card">
+
+                            <div class="card-body text-center p-2">
+
+                                <div class="fs-5 fw-bold">
+
+                                    {{ "%03d"|format(numero.numero) }}
+
+                                </div>
+
+                                <small class="text-warning">
+
+                                    📦 DEVOLVIDO
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        {% else %}
+
+                        <div
+                            class="card border-primary bg-primary bg-opacity-25
+                                   text-white h-100 numero-card">
+
+                            <div class="card-body text-center p-2">
+
+                                <div class="fs-5 fw-bold">
+
+                                    {{ "%03d"|format(numero.numero) }}
+
+                                </div>
+
+                                <small class="text-primary">
+
+                                    🔵 DISPONÍVEL
+
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                {% else %}
+
+                <div class="text-center text-secondary py-5">
+
+                    <div class="fs-1">
+                        🎫
+                    </div>
+
+                    <p class="mb-0">
+                        Nenhum número foi distribuído ainda.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- RODAPÉ -->
+            <!-- ========================================= -->
+
+            <div class="modal-footer">
+
+                {% if rifa.status == "FINALIZADA" %}
+
+                <span class="text-warning me-auto">
+
+                    🔒 Rifa finalizada — somente consulta
+
+                </span>
+
+                {% endif %}
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- PESQUISA DOS NÚMEROS -->
+<!-- ===================================================== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const pesquisa =
+        document.getElementById("pesquisaNumero");
+
+    if (!pesquisa) {
+        return;
+    }
+
+
+    pesquisa.addEventListener("input", function () {
+
+        const termo =
+            this.value
+                .toLowerCase()
+                .trim();
+
+
+        const itens =
+            document.querySelectorAll(".numero-item");
+
+
+        itens.forEach(function (item) {
+
+            const numero =
+                item.dataset.numero
+                    .toLowerCase();
+
+            const vendedor =
+                item.dataset.vendedor
+                    .toLowerCase();
+
+
+            if (
+                numero.includes(termo) ||
+                vendedor.includes(termo)
+            ) {
+
+                item.style.display = "";
+
+            } else {
+
+                item.style.display = "none";
+
+            }
+
+        });
+
+    });
+
+});
+
+</script>
+
+
+
+{% endblock %}
+

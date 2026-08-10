@@ -1,361 +1,300 @@
 {% extends 'layout/base.html' %}
 
-
 {% block titulo %}
-Área Administrativa
+Integrantes Cadastrados
 {% endblock %}
-
 
 {% block conteudo %}
 
-
 <div class="card-bn">
+
+    <!-- VOLTAR -->
+
+<div class="mb-3">
+
+    <a href="/admin"
+       class="btn btn-outline-light">
+
+        ← Voltar ao Painel
+
+    </a>
+
+</div>
 
 
 <h2 class="titulo text-center">
-👥 Integrantes cadastrados
+
+    👥 Integrantes cadastrados
+
 </h2>
 
-<div class="area-menu-admin mt-4 mb-3">
 
-    <div class="botoes-admin">
+    <!-- ========================================== -->
+    <!-- CARDS DE RESUMO                            -->
+    <!-- ========================================== -->
 
-        <a href="/admin/viagens"
-           class="btn btn-primary">
+    <div class="row text-center mb-4 mt-4">
 
-            🚌 Viagens
+        <div class="col-md-4">
 
-        </a>
+            <div class="card-resumo">
 
-        <a href="/admin/financeiro"
-            class="btn btn-outline-warning">
+                <div class="icone">
+                    👥
+                </div>
 
-            💰 Financeiro
+                <div class="numero">
+                    {{ total }}
+                </div>
 
-        </a>
+                <div class="descricao">
+                    Total de Integrantes
+                </div>
 
-        <a href="#"
-           class="btn btn-outline-secondary disabled">
-
-            🎺 Instrumentos
-
-        </a>
-
-        <a href="#"
-           class="btn btn-outline-info disabled">
-
-            📅 Ensaios
-
-        </a>
-
-        <button
-            class="btn btn-outline-light"
-            data-bs-toggle="modal"
-            data-bs-target="#modalCarteirinhas">
-
-                🪪 Carteirinhas
-
-        </button>
-
-        <a href="#"
-           class="btn btn-outline-secondary disabled">
-
-            📄 Documentos
-
-        </a>
-
-        <button
-            class="btn btn-outline-success"
-            data-bs-toggle="modal"
-            data-bs-target="#modalRelatorios">
-
-            📊 Relatórios
-
-        </button>
+            </div>
 
         </div>
 
 
-        <div class="botao-sair">
+        <div class="col-md-4">
 
-            <a href="/logout"
-            class="btn btn-danger">
+            <div class="card-resumo">
 
-                🚪 Sair
+                <div class="icone">
+                    ⏳
+                </div>
 
-            </a>
+                <div class="numero">
+                    {{ pendentes }}
+                </div>
+
+                <div class="descricao">
+                    Pendentes
+                </div>
+
+            </div>
 
         </div>
 
 
-</div>
+        <div class="col-md-4">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    ✅
+                </div>
+
+                <div class="numero">
+                    {{ aprovados }}
+                </div>
+
+                <div class="descricao">
+                    Aprovados
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- FILTROS                                               -->
+    <!-- ===================================================== -->
+
+    <div class="row mb-4 mt-4">
+
+        <div class="col-md-8">
+
+            <label class="form-label">
+                🔎 Pesquisar integrante
+            </label>
+
+            <input
+                type="text"
+                id="pesquisaIntegrante"
+                class="form-control"
+                placeholder="Digite nome, código, cidade ou função..."
+                onkeyup="filtrarIntegrantes()">
+
+        </div>
 
 
-<div class="row text-center mb-4">
+        <div class="col-md-4">
 
+            <label class="form-label">
+                Status
+            </label>
 
-<div class="col-md-4">
+            <select
+                id="filtroStatus"
+                class="form-select"
+                onchange="filtrarIntegrantes()">
 
-<div class="card-resumo">
+                <option value="">
+                    Todos
+                </option>
 
-<div class="icone">
-👥
-</div>
+                <option value="PENDENTE">
+                    Pendentes
+                </option>
 
-<div class="numero">
-{{ total }}
-</div>
+                <option value="APROVADO">
+                    Aprovados
+                </option>
 
-<div class="descricao">
-Total de Integrantes
-</div>
+                <option value="REPROVADO">
+                    Reprovados
+                </option>
 
-</div>
+                <option value="INATIVO">
+                    Inativos
+                </option>
 
-</div>
+            </select>
 
-
-
-<div class="col-md-4">
-
-<div class="card-resumo">
-
-<div class="icone">
-⏳
-</div>
-
-<div class="numero">
-{{ pendentes }}
-</div>
-
-<div class="descricao">
-Pendentes
-</div>
-
-</div>
-
-</div>
-
-
-
-<div class="col-md-4">
-
-<div class="card-resumo">
-
-<div class="icone">
-✅
-</div>
-
-<div class="numero">
-{{ aprovados }}
-</div>
-
-<div class="descricao">
-Aprovados
-</div>
-
-</div>
-
-</div>
-
-
-</div>
-
-<!-- FILTROS -->
-
-<div class="row mb-4">
-
-
-    <div class="col-md-8">
-
-        <label class="form-label">
-            🔎 Pesquisar integrante
-        </label>
-
-        <input 
-        type="text"
-        id="pesquisaIntegrante"
-        class="form-control"
-        placeholder="Digite nome, código, cidade ou função..."
-        onkeyup="filtrarIntegrantes()">
+        </div>
 
     </div>
 
 
+    <!-- ===================================================== -->
+    <!-- LISTA                                                  -->
+    <!-- ===================================================== -->
 
-    <div class="col-md-4">
+    <h3 class="titulo mt-4 mb-3">
 
-        <label class="form-label">
-            Status
-        </label>
+        📋 Lista de integrantes cadastrados
 
-
-        <select 
-        id="filtroStatus"
-        class="form-select"
-        onchange="filtrarIntegrantes()">
+    </h3>
 
 
-            <option value="">
-                Todos
-            </option>
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Código
+                    </th>
+
+                    <th>
+                        Integrante
+                    </th>
+
+                    <th>
+                        Cidade
+                    </th>
+
+                    <th>
+                        Função
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Cadastro
+                    </th>
+
+                    <th>
+                        Ações
+                    </th>
+
+                </tr>
+
+            </thead>
 
 
-            <option value="PENDENTE">
-                Pendentes
-            </option>
+            <tbody>
+
+                {% for pessoa in integrantes %}
+
+                <tr class="linha-integrante">
+
+                    <td>
+                        {{ pessoa.codigo_integrante }}
+                    </td>
 
 
-            <option value="APROVADO">
-                Aprovados
-            </option>
+                    <td>
+                        {{ pessoa.nome }}
+                    </td>
 
 
-            <option value="REPROVADO">
-                Reprovados
-            </option>
+                    <td>
+                        {{ pessoa.cidade }}
+                    </td>
 
 
-            <option value="INATIVO">
-                Inativos
-            </option>
+                    <td>
+                        {{ pessoa.funcao or '-' }}
+                    </td>
 
 
-        </select>
+                    <td>
 
+                        {% if pessoa.status == "PENDENTE" %}
+
+                            <span class="badge bg-warning text-dark">
+                                PENDENTE
+                            </span>
+
+                        {% elif pessoa.status == "APROVADO" %}
+
+                            <span class="badge bg-success">
+                                APROVADO
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+                                {{ pessoa.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ pessoa.data_cadastro }}
+                    </td>
+
+
+                    <td>
+
+                        <a
+                            href="/admin/integrante/{{ pessoa.id }}"
+                            class="btn btn-sm btn-brilho">
+
+                            Ver
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
 
     </div>
 
-
-</div>
-
-<h3 class="titulo mt-4 mb-3">
-👥 Lista de integrantes cadastrados
-</h3>
-
-<div class="table-responsive">
-
-
-<table class="table table-dark table-hover">
-
-
-<thead>
-
-<tr>
-
-<th>Código</th>
-
-<th>Integrante</th>
-
-<th>Cidade</th>
-
-<th>Função</th>
-
-<th>Status</th>
-
-<th>Cadastro</th>
-
-<th>Ações</th>
-
-</tr>
-
-</thead>
-
-
-
-<tbody>
-
-
-{% for pessoa in integrantes %}
-
-
-<tr class="linha-integrante">
-
-
-<td>
-{{ pessoa.codigo_integrante }}
-</td>
-
-
-<td>
-{{ pessoa.nome }}
-</td>
-
-
-<td>
-{{ pessoa.cidade }}
-</td>
-
-<td>
-
-{{ pessoa.funcao or '-' }}
-
-</td>
-
-<td>
-
-{% if pessoa.status == "PENDENTE" %}
-
-<span class="badge bg-warning text-dark">
-PENDENTE
-</span>
-
-{% elif pessoa.status == "APROVADO" %}
-
-<span class="badge bg-success">
-APROVADO
-</span>
-
-{% else %}
-
-<span class="badge bg-danger">
-{{ pessoa.status }}
-</span>
-
-{% endif %}
-
-
-</td>
-
-
-<td>
-
-{{ pessoa.data_cadastro }}
-
-</td>
-
-
-<td>
-
-
-<a 
-href="/admin/integrante/{{ pessoa.id }}"
-class="btn btn-sm btn-brilho">
-
-Ver
-
-</a>
-
-
-</td>
-
-
-</tr>
-
-
-{% endfor %}
-
-
-</tbody>
-
-
-</table>
-
-
 </div>
 
 
-</div>
+<!-- ========================================================= -->
+<!-- FILTRO                                                    -->
+<!-- ========================================================= -->
 
 <script>
 
@@ -366,24 +305,31 @@ function filtrarIntegrantes(){
         .value
         .toLowerCase();
 
+
     let status = document
         .getElementById("filtroStatus")
         .value
         .toLowerCase();
 
+
     let linhas = document
         .querySelectorAll(".linha-integrante");
 
+
     linhas.forEach(function(linha){
 
-        let conteudo = linha.innerText.toLowerCase();
+        let conteudo =
+            linha.innerText.toLowerCase();
+
 
         let atendeTexto =
             conteudo.includes(texto);
 
+
         let atendeStatus =
             status === "" ||
             conteudo.includes(status);
+
 
         if(atendeTexto && atendeStatus){
 
@@ -401,451 +347,5 @@ function filtrarIntegrantes(){
 
 </script>
 
-<!-- ===============================
-     MODAL RELATÓRIOS
-================================ -->
-
-
-<div class="modal fade"
-     id="modalRelatorios"
-     tabindex="-1">
-
-
-<div class="modal-dialog modal-lg">
-
-
-<div class="modal-content bg-dark text-white">
-
-
-<div class="modal-header">
-
-<h5 class="modal-title">
-
-📊 Central de Relatórios
-
-</h5>
-
-
-<button
-class="btn-close btn-close-white"
-data-bs-dismiss="modal">
-
-</button>
-
-
-</div>
-
-
-
-<form
-action="/admin/exportar/pdf"
-method="get"
-target="_blank">
-
-
-<div class="modal-body">
-
-
-<h4 class="titulo text-center mb-3">
-
-👥 Relatório de Integrantes
-
-</h4>
-
-
-<p class="text-secondary text-center">
-
-Selecione os filtros desejados para gerar o relatório.
-
-</p>
-
-
-
-<hr>
-
-
-
-<div class="row">
-
-
-<div class="col-md-6 mb-3">
-
-
-<label class="form-label">
-
-Status
-
-</label>
-
-
-<select
-name="status"
-class="form-select">
-
-
-<option value="">
-Todos
-</option>
-
-
-<option value="PENDENTE">
-Pendentes
-</option>
-
-
-<option value="APROVADO">
-Aprovados
-</option>
-
-
-<option value="REPROVADO">
-Reprovados
-</option>
-
-
-<option value="INATIVO">
-Inativos
-</option>
-
-
-</select>
-
-
-</div>
-
-
-
-
-<div class="col-md-6 mb-3">
-
-
-<label class="form-label">
-
-Função
-
-</label>
-
-
-<select
-name="funcao"
-class="form-select">
-
-
-<option value="">
-Todas
-</option>
-
-
-<option value="Músico">
-Músico
-</option>
-
-
-<option value="CC Música">
-CC Música
-</option>
-
-
-<option value="Instrutor">
-Instrutor
-</option>
-
-
-<option value="Apoio">
-Apoio
-</option>
-
-
-<option value="Dança">
-Dança
-</option>
-
-<option value="Capitão-mor">
-Capitão-mor    
-</option>
-
-
-</select>
-
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-
-<div class="modal-footer">
-
-
-<button
-type="submit"
-class="btn btn-danger">
-
-
-📄 Exportar PDF
-
-
-</button>
-
-
-
-<a
-href="/admin/exportar/excel"
-class="btn btn-success">
-
-
-📊 Exportar Excel
-
-
-</a>
-
-
-
-<button
-type="button"
-class="btn btn-secondary"
-data-bs-dismiss="modal">
-
-
-Fechar
-
-
-</button>
-
-
-</div>
-
-
-</form>
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-<script>
-
-function carregarCarteirinha(){
-
-    let id = document.getElementById(
-        "integranteCarteirinha"
-    ).value;
-
-
-    if(!id){
-
-        document.getElementById(
-            "carteirinhaBN"
-        ).style.display="none";
-
-        return;
-
-    }
-
-
-    fetch(
-        "/admin/api/integrante/" + id
-    )
-
-    .then(response => response.json())
-
-    .then(dados => {
-
-
-        document.getElementById(
-            "nomeCarteirinha"
-        ).innerHTML = dados.nome;
-
-
-        document.getElementById(
-            "codigoCarteirinha"
-        ).innerHTML = dados.codigo;
-
-
-        if(dados.foto){
-
-            document.getElementById(
-                "fotoCarteirinha"
-            ).src = dados.foto;
-
-        }else{
-
-            document.getElementById(
-                "fotoCarteirinha"
-            ).src = "/static/img/sem_foto.png";
-
-        }
-
-
-        document.getElementById(
-            "carteirinhaBN"
-        ).style.display="block";
-
-
-    });
-
-
-}
-
-</script>
-
-<script>
-
-function baixarCarteirinha(){
-
-    let id = document.getElementById(
-        "integranteCarteirinha"
-    ).value;
-
-
-    if(!id){
-
-        alert("Selecione um integrante.");
-
-        return;
-
-    }
-
-
-    window.open(
-        "/admin/carteirinha/pdf/" + id,
-        "_blank"
-    );
-
-}
-
-</script>
-
-<!-- ===============================
-     MODAL RELATÓRIOS
-================================ -->
-
-
-<div class="modal fade"
-     id="modalRelatorios"
-     tabindex="-1">
-
-
-    <div class="modal-dialog">
-
-
-        <div class="modal-content bg-dark text-white">
-
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    📊 Central de Relatórios
-                </h5>
-
-
-                <button
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-
-
-            </div>
-
-
-
-            <div class="modal-body text-center">
-
-
-                <h4 class="titulo mb-3">
-                    👥 Integrantes
-                </h4>
-
-
-
-                <p class="text-secondary">
-                    Exportação dos integrantes cadastrados.
-                </p>
-
-
-
-                <form
-                action="/admin/exportar/pdf"
-                method="get"
-                target="_blank">
-
-
-                    <div class="mb-3">
-
-
-                        <button
-                        class="btn btn-danger w-100">
-
-
-                            📄 Exportar PDF
-
-
-                        </button>
-
-
-                    </div>
-
-
-                </form>
-
-
-
-                <a
-                href="/admin/exportar/excel"
-                class="btn btn-success w-100">
-
-
-                    📊 Exportar Excel
-
-
-                </a>
-
-
-
-                <hr>
-
-
-                <small class="text-secondary">
-
-                    Novos relatórios serão adicionados nesta central.
-
-                </small>
-
-
-            </div>
-
-
-
-            <div class="modal-footer">
-
-
-                <button
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-
-                    Fechar
-
-                </button>
-
-
-            </div>
-
-
-        </div>
-
-
-    </div>
-
-
-</div>
 
 {% endblock %}

@@ -1,0 +1,673 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Rifas
+{% endblock %}
+
+{% block conteudo %}
+
+<!-- ========================================================= -->
+
+<!-- CABEÇALHO -->
+
+<!-- ========================================================= -->
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+
+
+<h2 class="titulo mb-0">
+    🎟️ Rifas
+</h2>
+
+<div class="d-flex flex-column flex-sm-row gap-2">
+
+    <a
+        href="/admin"
+        class="btn btn-secondary">
+
+        ⬅ Voltar
+
+    </a>
+
+    <button
+        type="button"
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#modalNovaRifa">
+
+        ➕ Nova Rifa
+
+    </button>
+
+</div>
+
+
+</div>
+
+<!-- ========================================================= -->
+
+<!-- MENSAGENS -->
+
+<!-- ========================================================= -->
+
+{% if request.args.get('novo') == 'ok' %}
+
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+
+
+✅ Rifa cadastrada com sucesso!
+
+<button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert">
+</button>
+
+
+</div>
+
+{% endif %}
+
+{% if request.args.get('excluido') == 'ok' %}
+
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+
+
+🗑️ Rifa excluída com sucesso!
+
+<button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert">
+</button>
+
+
+</div>
+
+{% endif %}
+
+{% if request.args.get('finalizada') == 'ok' %}
+
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+
+
+🏁 Rifa finalizada com sucesso!
+
+<button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert">
+</button>
+
+
+</div>
+
+{% endif %}
+
+{% if request.args.get('erro') == 'rifa_finalizada' %}
+
+<div class="alert alert-warning alert-dismissible fade show" role="alert">
+
+
+⚠️ Esta rifa está finalizada e não pode mais receber novos vendedores.
+
+<button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert">
+</button>
+
+
+</div>
+
+{% endif %}
+
+<!-- ========================================================= -->
+
+<!-- LISTAGEM DAS RIFAS -->
+
+<!-- ========================================================= -->
+
+{% if rifas %}
+
+<div class="row g-4">
+
+{% for rifa in rifas %}
+
+<div class="col-12 col-md-6 col-xl-4">
+
+
+<div class="card bg-dark text-white h-100 shadow-sm">
+
+    <div class="card-body d-flex flex-column">
+
+
+        <!-- ================================================= -->
+        <!-- INFORMAÇÕES -->
+        <!-- ================================================= -->
+
+        <h5 class="card-title">
+
+            🎟️ {{ rifa.nome }}
+
+        </h5>
+
+
+        <hr>
+
+
+        <div class="mb-3">
+
+            <div class="text-secondary small">
+                🏆 Prêmio
+            </div>
+
+            <div>
+                {{ rifa.premio }}
+            </div>
+
+        </div>
+
+
+        <div class="mb-3">
+
+            <div class="text-secondary small">
+                📅 Temporada
+            </div>
+
+            <div>
+                {{ rifa.temporada_nome or "-" }}
+            </div>
+
+        </div>
+
+
+        <div class="row g-3 mb-3">
+
+            <div class="col-6">
+
+                <div class="text-secondary small">
+                    💰 Valor
+                </div>
+
+                <div>
+                    R$ {{ "%.2f"|format(rifa.valor_numero) }}
+                </div>
+
+            </div>
+
+
+            <div class="col-6">
+
+                <div class="text-secondary small">
+                    🔢 Quantidade
+                </div>
+
+                <div>
+                    {{ rifa.quantidade_por_integrante }}
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="mb-3">
+
+            <div class="text-secondary small">
+                📅 Sorteio
+            </div>
+
+            <div>
+
+                {{ rifa.data_sorteio.strftime("%d/%m/%Y")
+                   if rifa.data_sorteio
+                   else "-" }}
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- STATUS -->
+        <!-- ================================================= -->
+
+        <div class="mb-3">
+
+            <div class="text-secondary small">
+                Status
+            </div>
+
+
+            {% if rifa.status == "ATIVA" %}
+
+            <span class="badge bg-success">
+
+                🟢 Ativa
+
+            </span>
+
+            {% else %}
+
+            <span class="badge bg-danger">
+
+                🔴 {{ rifa.status }}
+
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- AÇÕES -->
+        <!-- ================================================= -->
+
+        <div class="mt-auto pt-2">
+
+
+            <!-- ================================================= -->
+            <!-- GERENCIAR VENDEDORES -->
+            <!-- ================================================= -->
+
+            {% if rifa.status == "ATIVA" %}
+
+            <a
+                href="/admin/rifas/{{ rifa.id }}/vendedores"
+                class="btn btn-outline-warning w-100 mb-3">
+
+                👥 Gerenciar Vendedores
+
+            </a>
+
+            {% else %}
+
+            <button
+                type="button"
+                class="btn btn-outline-secondary w-100 mb-3"
+                onclick="alert('⚠️ Esta rifa está finalizada e não pode mais receber novos vendedores.')">
+
+                🔒 Rifa Finalizada
+
+            </button>
+
+            {% endif %}
+
+
+            <!-- ================================================= -->
+            <!-- VER / EXCLUIR -->
+            <!-- ================================================= -->
+
+            <div class="d-flex flex-column flex-sm-row gap-2">
+
+
+                <a
+                    href="/admin/rifas/{{ rifa.id }}"
+                    class="btn btn-primary flex-fill">
+
+                    👁️ Ver Rifa
+
+                </a>
+
+
+                <form
+                    action="/admin/rifas/excluir/{{ rifa.id }}"
+                    method="POST"
+                    class="flex-fill"
+                    onsubmit="return confirm('Deseja realmente excluir a rifa {{ rifa.nome }}? Esta ação não poderá ser desfeita.');">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-danger w-100">
+
+                        🗑️ Excluir
+
+                    </button>
+
+
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% else %}
+
+<!-- ========================================================= -->
+
+<!-- SEM RIFAS -->
+
+<!-- ========================================================= -->
+
+<div class="alert alert-secondary">
+
+
+🎟️ Nenhuma rifa cadastrada.
+
+
+</div>
+
+{% endif %}
+
+<!-- ========================================================= -->
+
+<!-- MODAL NOVA RIFA -->
+
+<!-- ========================================================= -->
+
+<div
+    class="modal fade"
+    id="modalNovaRifa"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+<div class="modal-dialog modal-lg modal-dialog-centered">
+
+
+    <div class="modal-content bg-dark text-white">
+
+
+        <!-- ================================================= -->
+        <!-- CABEÇALHO -->
+        <!-- ================================================= -->
+
+        <div class="modal-header">
+
+            <h5 class="modal-title">
+
+                🎟️ Nova Rifa
+
+            </h5>
+
+
+            <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Fechar">
+
+            </button>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- FORMULÁRIO -->
+        <!-- ================================================= -->
+
+        <form
+            method="POST"
+            action="/admin/rifas/nova">
+
+
+            <div class="modal-body">
+
+
+                <!-- ================================================= -->
+                <!-- IDENTIFICAÇÃO -->
+                <!-- ================================================= -->
+
+                <h6 class="text-warning mb-3">
+
+                    📋 Informações da Rifa
+
+                </h6>
+
+
+                <div class="row g-3">
+
+
+                    <!-- NOME -->
+
+                    <div class="col-12 col-md-6">
+
+                        <label class="form-label">
+
+                            🎟️ Nome da Rifa
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="nome"
+                            class="form-control"
+                            placeholder="Ex: Rifa Brilho Negro 2026"
+                            required>
+
+                    </div>
+
+
+                    <!-- TEMPORADA -->
+
+                    <div class="col-12 col-md-6">
+
+                        <label class="form-label">
+
+                            📅 Temporada
+
+                        </label>
+
+
+                        <select
+                            name="temporada_id"
+                            class="form-select"
+                            required>
+
+
+                            <option value="">
+
+                                Selecione a temporada
+
+                            </option>
+
+
+                            {% for temporada in temporadas %}
+
+                            <option value="{{ temporada.id }}">
+
+                                {{ temporada.nome }}
+
+                            </option>
+
+                            {% endfor %}
+
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- PRÊMIO -->
+
+                    <div class="col-12 col-md-6">
+
+                        <label class="form-label">
+
+                            🏆 Prêmio
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="premio"
+                            class="form-control"
+                            placeholder="Ex: Cesta de Natal"
+                            required>
+
+                    </div>
+
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- CONFIGURAÇÕES -->
+                <!-- ================================================= -->
+
+                <h6 class="text-warning mb-3">
+
+                    ⚙️ Configurações
+
+                </h6>
+
+
+                <div class="row g-3">
+
+
+                    <!-- VALOR -->
+
+                    <div class="col-12 col-md-4">
+
+                        <label class="form-label">
+
+                            💰 Valor por número
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="valor_numero"
+                            class="form-control"
+                            placeholder="Ex: 2,00"
+                            inputmode="decimal"
+                            required>
+
+                    </div>
+
+
+                    <!-- QUANTIDADE -->
+
+                    <div class="col-12 col-md-4">
+
+                        <label class="form-label">
+
+                            🔢 Quantidade por integrante
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            name="quantidade_por_integrante"
+                            class="form-control"
+                            placeholder="Ex: 40"
+                            min="1"
+                            required>
+
+                    </div>
+
+
+                    <!-- DATA -->
+
+                    <div class="col-12 col-md-4">
+
+                        <label class="form-label">
+
+                            📅 Data do sorteio
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            name="data_sorteio"
+                            class="form-control">
+
+                    </div>
+
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- OBSERVAÇÃO -->
+                <!-- ================================================= -->
+
+                <div>
+
+                    <label class="form-label">
+
+                        📝 Observação
+
+                    </label>
+
+
+                    <textarea
+                        name="observacao"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Informações adicionais"></textarea>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- RODAPÉ -->
+            <!-- ================================================= -->
+
+            <div class="modal-footer d-flex flex-column flex-sm-row gap-2">
+
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    💾 Salvar Rifa
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+</div>
+
+{% endblock %}

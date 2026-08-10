@@ -218,150 +218,6 @@ def admin():
 
     try:
 
-        # ==========================================
-        # RESUMO DOS INTEGRANTES
-        # ==========================================
-
-        total = db.execute(
-            text("""
-                SELECT COUNT(*)
-                FROM integrantes
-            """)
-        ).scalar()
-
-
-        pendentes = db.execute(
-            text("""
-                SELECT COUNT(*)
-                FROM integrantes
-                WHERE status = 'PENDENTE'
-            """)
-        ).scalar()
-
-
-        aprovados = db.execute(
-            text("""
-                SELECT COUNT(*)
-                FROM integrantes
-                WHERE status = 'APROVADO'
-            """)
-        ).scalar()
-
-
-        # ==========================================
-        # TEMPORADAS
-        # ==========================================
-
-        temporadas = db.execute(
-            text("""
-                SELECT *
-                FROM temporadas
-                ORDER BY ano DESC
-            """)
-        ).mappings().all()
-
-
-        # ==========================================
-        # ANIVERSARIANTES DO MÊS
-        # ==========================================
-
-        mes_atual = datetime.now(
-            ZoneInfo("America/Sao_Paulo")
-        ).month
-
-
-        aniversariantes = db.execute(
-            text("""
-                SELECT
-                    id,
-                    codigo_integrante,
-                    nome,
-                    data_nascimento,
-                    cidade,
-                    funcao,
-
-                    TO_CHAR(
-                        CAST(data_nascimento AS DATE),
-                        'DD/MM'
-                    ) AS aniversario
-
-                FROM integrantes
-
-                WHERE data_nascimento IS NOT NULL
-                AND data_nascimento <> ''
-
-                AND EXTRACT(
-                    MONTH FROM CAST(data_nascimento AS DATE)
-                ) = :mes
-
-                ORDER BY
-                    EXTRACT(
-                        DAY FROM CAST(data_nascimento AS DATE)
-                    ),
-                    LOWER(nome)
-            """),
-            {
-                "mes": mes_atual
-            }
-        ).mappings().all()
-
-
-        # ==========================================
-        # NOME DO MÊS
-        # ==========================================
-
-        meses = [
-            "",
-            "Janeiro",
-            "Fevereiro",
-            "Março",
-            "Abril",
-            "Maio",
-            "Junho",
-            "Julho",
-            "Agosto",
-            "Setembro",
-            "Outubro",
-            "Novembro",
-            "Dezembro"
-        ]
-
-        mes_nome = meses[mes_atual]
-
-
-    finally:
-
-        db.close()
-
-
-    # ==========================================
-    # RETORNO DA PÁGINA
-    # ==========================================
-
-    return render_template(
-        "admin/admin.html",
-        total=total,
-        pendentes=pendentes,
-        aprovados=aprovados,
-        temporadas=temporadas,
-        aniversariantes=aniversariantes,
-        mes_nome=mes_nome
-    )
-
-@app.route("/integrantes")
-def integrantes():
-
-    if "admin" not in session:
-        return redirect("/login")
-
-    db = SessionLocal()
-
-    try:
-
-        # ==========================================
-        # LISTA DE INTEGRANTES
-        # ==========================================
-
         integrantes = db.execute(
             text("""
                 SELECT *
@@ -371,10 +227,6 @@ def integrantes():
         ).fetchall()
 
 
-        # ==========================================
-        # RESUMO DOS INTEGRANTES
-        # ==========================================
-
         total = db.execute(
             text("""
                 SELECT COUNT(*)
@@ -400,6 +252,13 @@ def integrantes():
             """)
         ).scalar()
 
+        temporadas = db.execute(
+            text("""
+                SELECT *
+                FROM temporadas
+                ORDER BY ano DESC
+            """)
+        ).mappings().all()
 
     finally:
 
@@ -411,7 +270,8 @@ def integrantes():
         integrantes=integrantes,
         total=total,
         pendentes=pendentes,
-        aprovados=aprovados
+        aprovados=aprovados,
+        temporadas=temporadas
     )
 
 @app.route("/admin/integrante/<int:id>")
