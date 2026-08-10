@@ -462,29 +462,25 @@ onclick="return confirm('Tem certeza que deseja excluir este integrante?')">
 
 {% if integrante.situacao == "ATIVO" %}
 
+<a
+    href="/admin/integrante/{{ integrante.id }}/inativar"
+    class="btn btn-warning"
+    onclick="return confirm('Tem certeza que deseja inativar este integrante?');">
 
-<a 
-href="/admin/integrante/{{ integrante.id }}/inativar"
-class="btn btn-secondary"
-onclick="return confirm('Deseja inativar este integrante?')">
-
-⏸ Inativar Integrante
+    ⏸️ Inativar Integrante
 
 </a>
-
 
 {% elif integrante.situacao == "INATIVO" %}
 
+<a
+    href="/admin/integrante/{{ integrante.id }}/reativar"
+    class="btn btn-success"
+    onclick="return confirm('Deseja reativar este integrante?');">
 
-<a 
-href="/admin/integrante/{{ integrante.id }}/reativar"
-class="btn btn-success"
-onclick="return confirm('Deseja reativar este integrante?')">
-
-▶️ Reativar Integrante
+    ▶️ Reativar Integrante
 
 </a>
-
 
 {% endif %}
 

@@ -6,14 +6,15 @@ Integrantes Cadastrados
 
 {% block conteudo %}
 
-<div class="card-bn">
-
-    <!-- VOLTAR -->
+<!-- ========================================== -->
+<!-- VOLTAR                                     -->
+<!-- ========================================== -->
 
 <div class="mb-3">
 
-    <a href="/admin"
-       class="btn btn-outline-light">
+    <a
+        href="/admin"
+        class="btn btn-outline-light">
 
         ← Voltar ao Painel
 
@@ -22,6 +23,10 @@ Integrantes Cadastrados
 </div>
 
 
+<!-- ========================================== -->
+<!-- TÍTULO                                     -->
+<!-- ========================================== -->
+
 <h2 class="titulo text-center">
 
     👥 Integrantes cadastrados
@@ -29,313 +34,450 @@ Integrantes Cadastrados
 </h2>
 
 
-    <!-- ========================================== -->
-    <!-- CARDS DE RESUMO                            -->
-    <!-- ========================================== -->
+<!-- ========================================== -->
+<!-- CARDS DE RESUMO                            -->
+<!-- ========================================== -->
 
-    <div class="row text-center mb-4 mt-4">
+<div class="row text-center mb-4 mt-4">
 
-        <div class="col-md-4">
+    <div class="col-md-4 mb-3">
 
-            <div class="card-resumo">
+        <div class="card-resumo">
 
-                <div class="icone">
-                    👥
-                </div>
-
-                <div class="numero">
-                    {{ total }}
-                </div>
-
-                <div class="descricao">
-                    Total de Integrantes
-                </div>
-
+            <div class="icone">
+                👥
             </div>
 
-        </div>
-
-
-        <div class="col-md-4">
-
-            <div class="card-resumo">
-
-                <div class="icone">
-                    ⏳
-                </div>
-
-                <div class="numero">
-                    {{ pendentes }}
-                </div>
-
-                <div class="descricao">
-                    Pendentes
-                </div>
-
+            <div class="numero">
+                {{ total }}
             </div>
 
-        </div>
-
-
-        <div class="col-md-4">
-
-            <div class="card-resumo">
-
-                <div class="icone">
-                    ✅
-                </div>
-
-                <div class="numero">
-                    {{ aprovados }}
-                </div>
-
-                <div class="descricao">
-                    Aprovados
-                </div>
-
+            <div class="descricao">
+                Total de Integrantes
             </div>
 
         </div>
 
     </div>
 
-    <!-- ===================================================== -->
-    <!-- FILTROS                                               -->
-    <!-- ===================================================== -->
 
-    <div class="row mb-4 mt-4">
+    <div class="col-md-4 mb-3">
 
-        <div class="col-md-8">
+        <div class="card-resumo">
 
-            <label class="form-label">
-                🔎 Pesquisar integrante
-            </label>
+            <div class="icone">
+                ⏳
+            </div>
 
-            <input
-                type="text"
-                id="pesquisaIntegrante"
-                class="form-control"
-                placeholder="Digite nome, código, cidade ou função..."
-                onkeyup="filtrarIntegrantes()">
+            <div class="numero">
+                {{ pendentes }}
+            </div>
 
-        </div>
-
-
-        <div class="col-md-4">
-
-            <label class="form-label">
-                Status
-            </label>
-
-            <select
-                id="filtroStatus"
-                class="form-select"
-                onchange="filtrarIntegrantes()">
-
-                <option value="">
-                    Todos
-                </option>
-
-                <option value="PENDENTE">
-                    Pendentes
-                </option>
-
-                <option value="APROVADO">
-                    Aprovados
-                </option>
-
-                <option value="REPROVADO">
-                    Reprovados
-                </option>
-
-                <option value="INATIVO">
-                    Inativos
-                </option>
-
-            </select>
+            <div class="descricao">
+                Pendentes
+            </div>
 
         </div>
 
     </div>
 
 
-    <!-- ===================================================== -->
-    <!-- LISTA                                                  -->
-    <!-- ===================================================== -->
+    <div class="col-md-4 mb-3">
 
-    <h3 class="titulo mt-4 mb-3">
+        <div class="card-resumo">
 
-        📋 Lista de integrantes cadastrados
+            <div class="icone">
+                ✅
+            </div>
 
-    </h3>
+            <div class="numero">
+                {{ aprovados }}
+            </div>
 
+            <div class="descricao">
+                Aprovados
+            </div>
 
-    <div class="table-responsive">
-
-        <table class="table table-dark table-hover">
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Código
-                    </th>
-
-                    <th>
-                        Integrante
-                    </th>
-
-                    <th>
-                        Cidade
-                    </th>
-
-                    <th>
-                        Função
-                    </th>
-
-                    <th>
-                        Status
-                    </th>
-
-                    <th>
-                        Cadastro
-                    </th>
-
-                    <th>
-                        Ações
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-                {% for pessoa in integrantes %}
-
-                <tr class="linha-integrante">
-
-                    <td>
-                        {{ pessoa.codigo_integrante }}
-                    </td>
-
-
-                    <td>
-                        {{ pessoa.nome }}
-                    </td>
-
-
-                    <td>
-                        {{ pessoa.cidade }}
-                    </td>
-
-
-                    <td>
-                        {{ pessoa.funcao or '-' }}
-                    </td>
-
-
-                    <td>
-
-                        {% if pessoa.status == "PENDENTE" %}
-
-                            <span class="badge bg-warning text-dark">
-                                PENDENTE
-                            </span>
-
-                        {% elif pessoa.status == "APROVADO" %}
-
-                            <span class="badge bg-success">
-                                APROVADO
-                            </span>
-
-                        {% else %}
-
-                            <span class="badge bg-danger">
-                                {{ pessoa.status }}
-                            </span>
-
-                        {% endif %}
-
-                    </td>
-
-
-                    <td>
-                        {{ pessoa.data_cadastro }}
-                    </td>
-
-
-                    <td>
-
-                        <a
-                            href="/admin/integrante/{{ pessoa.id }}"
-                            class="btn btn-sm btn-brilho">
-
-                            Ver
-
-                        </a>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
+        </div>
 
     </div>
 
 </div>
 
 
-<!-- ========================================================= -->
-<!-- FILTRO                                                    -->
-<!-- ========================================================= -->
+<!-- ========================================== -->
+<!-- FILTROS                                    -->
+<!-- ========================================== -->
+
+<div class="row mb-4 mt-4">
+
+    <!-- PESQUISA -->
+
+    <div class="col-md-6 mb-3">
+
+        <label class="form-label">
+
+            🔎 Pesquisar integrante
+
+        </label>
+
+        <input
+            type="text"
+            id="pesquisaIntegrante"
+            class="form-control"
+            placeholder="Digite nome, código, cidade ou função..."
+            onkeyup="filtrarIntegrantes()">
+
+    </div>
+
+
+    <!-- STATUS CADASTRO -->
+
+    <div class="col-md-3 mb-3">
+
+        <label class="form-label">
+
+            Status Cadastro
+
+        </label>
+
+        <select
+            id="filtroStatus"
+            class="form-select"
+            onchange="filtrarIntegrantes()">
+
+            <option value="">
+                Todos
+            </option>
+
+            <option value="PENDENTE">
+                Pendentes
+            </option>
+
+            <option value="APROVADO">
+                Aprovados
+            </option>
+
+            <option value="REPROVADO">
+                Reprovados
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- SITUAÇÃO -->
+
+    <div class="col-md-3 mb-3">
+
+        <label class="form-label">
+
+            Situação
+
+        </label>
+
+        <select
+            id="filtroSituacao"
+            class="form-select"
+            onchange="filtrarIntegrantes()">
+
+            <option value="">
+                Todas
+            </option>
+
+            <option value="ATIVO">
+                Ativos
+            </option>
+
+            <option value="INATIVO">
+                Inativos
+            </option>
+
+        </select>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================== -->
+<!-- TÍTULO DA LISTA                            -->
+<!-- ========================================== -->
+
+<h3 class="titulo mt-4 mb-3">
+
+    📋 Lista de integrantes cadastrados
+
+</h3>
+
+
+<!-- ========================================== -->
+<!-- TABELA                                    -->
+<!-- ========================================== -->
+
+<div class="table-responsive">
+
+    <table class="table table-dark table-hover">
+
+        <thead>
+
+            <tr>
+
+                <th>
+                    Código
+                </th>
+
+                <th>
+                    Integrante
+                </th>
+
+                <th>
+                    Cidade
+                </th>
+
+                <th>
+                    Função
+                </th>
+
+                <th>
+                    Status Cadastro
+                </th>
+
+                <th>
+                    Situação
+                </th>
+
+                <th>
+                    Cadastro
+                </th>
+
+                <th>
+                    Ações
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            {% for pessoa in integrantes %}
+
+            <tr
+                class="linha-integrante"
+                data-status="{{ pessoa.status }}"
+                data-situacao="{{ pessoa.situacao }}">
+
+                <!-- CÓDIGO -->
+
+                <td>
+
+                    {{ pessoa.codigo_integrante }}
+
+                </td>
+
+
+                <!-- NOME -->
+
+                <td>
+
+                    {{ pessoa.nome }}
+
+                </td>
+
+
+                <!-- CIDADE -->
+
+                <td>
+
+                    {{ pessoa.cidade or '-' }}
+
+                </td>
+
+
+                <!-- FUNÇÃO -->
+
+                <td>
+
+                    {{ pessoa.funcao or '-' }}
+
+                </td>
+
+
+                <!-- STATUS CADASTRO -->
+
+                <td>
+
+                    {% if pessoa.status == "PENDENTE" %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            PENDENTE
+
+                        </span>
+
+                    {% elif pessoa.status == "APROVADO" %}
+
+                        <span class="badge bg-success">
+
+                            APROVADO
+
+                        </span>
+
+                    {% elif pessoa.status == "REPROVADO" %}
+
+                        <span class="badge bg-danger">
+
+                            REPROVADO
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-secondary">
+
+                            {{ pessoa.status or '-' }}
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+
+                <!-- SITUAÇÃO -->
+
+                <td>
+
+                    {% if pessoa.situacao == "ATIVO" %}
+
+                        <span class="badge bg-primary">
+
+                            ATIVO
+
+                        </span>
+
+                    {% elif pessoa.situacao == "INATIVO" %}
+
+                        <span class="badge bg-secondary">
+
+                            INATIVO
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-dark">
+
+                            {{ pessoa.situacao or '-' }}
+
+                        </span>
+
+                    {% endif %}
+
+                </td>
+
+
+                <!-- DATA CADASTRO -->
+
+                <td>
+
+                    {{ pessoa.data_cadastro }}
+
+                </td>
+
+
+                <!-- AÇÕES -->
+
+                <td>
+
+                    <a
+                        href="/admin/integrante/{{ pessoa.id }}"
+                        class="btn btn-sm btn-brilho">
+
+                        Ver
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- ========================================== -->
+<!-- JAVASCRIPT DOS FILTROS                     -->
+<!-- ========================================== -->
 
 <script>
 
-function filtrarIntegrantes(){
+function filtrarIntegrantes() {
 
-    let texto = document
+    const pesquisa = document
         .getElementById("pesquisaIntegrante")
         .value
-        .toLowerCase();
+        .toLowerCase()
+        .trim();
 
 
-    let status = document
+    const filtroStatus = document
         .getElementById("filtroStatus")
-        .value
-        .toLowerCase();
+        .value;
 
 
-    let linhas = document
-        .querySelectorAll(".linha-integrante");
+    const filtroSituacao = document
+        .getElementById("filtroSituacao")
+        .value;
 
 
-    linhas.forEach(function(linha){
-
-        let conteudo =
-            linha.innerText.toLowerCase();
-
-
-        let atendeTexto =
-            conteudo.includes(texto);
+    const linhas = document.querySelectorAll(
+        ".linha-integrante"
+    );
 
 
-        let atendeStatus =
-            status === "" ||
-            conteudo.includes(status);
+    linhas.forEach(function(linha) {
+
+        const texto = linha.textContent
+            .toLowerCase();
 
 
-        if(atendeTexto && atendeStatus){
+        const status = linha.dataset.status;
+
+        const situacao = linha.dataset.situacao;
+
+
+        const correspondePesquisa =
+            texto.includes(pesquisa);
+
+
+        const correspondeStatus =
+            filtroStatus === "" ||
+            status === filtroStatus;
+
+
+        const correspondeSituacao =
+            filtroSituacao === "" ||
+            situacao === filtroSituacao;
+
+
+        if (
+            correspondePesquisa &&
+            correspondeStatus &&
+            correspondeSituacao
+        ) {
 
             linha.style.display = "";
 
-        }else{
+        } else {
 
             linha.style.display = "none";
 

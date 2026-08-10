@@ -289,6 +289,9 @@ def admin():
 
                 WHERE data_nascimento IS NOT NULL
                 AND data_nascimento <> ''
+                AND status = 'APROVADO'
+                AND situacao = 'ATIVO'
+
 
                 AND EXTRACT(
                     MONTH FROM CAST(data_nascimento AS DATE)
@@ -401,6 +404,15 @@ def integrantes():
         ).scalar()
 
 
+        inativos = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM integrantes
+                WHERE situacao = 'INATIVO'
+            """)
+        ).scalar()
+
+
     finally:
 
         db.close()
@@ -411,7 +423,8 @@ def integrantes():
         integrantes=integrantes,
         total=total,
         pendentes=pendentes,
-        aprovados=aprovados
+        aprovados=aprovados,
+        inativos=inativos
     )
 
 @app.route("/admin/integrante/<int:id>")
@@ -809,20 +822,22 @@ def inativar_integrante(id):
 
         anterior = db.execute(
             text("""
-                SELECT status
+                SELECT situacao
                 FROM integrantes
                 WHERE id = :id
             """),
             {
                 "id": id
             }
-        ).fetchone()[0]
+        ).scalar()
 
+        if anterior == "INATIVO":
+            return redirect(f"/admin/integrante/{id}")
 
         db.execute(
             text("""
                 UPDATE integrantes
-                SET status = 'INATIVO'
+                SET situacao = 'INATIVO'
                 WHERE id = :id
             """),
             {
@@ -830,9 +845,7 @@ def inativar_integrante(id):
             }
         )
 
-
         db.commit()
-
 
         registrar_historico(
             id,
@@ -841,11 +854,9 @@ def inativar_integrante(id):
             "INATIVO"
         )
 
-
         return redirect(
             f"/admin/integrante/{id}"
         )
-
 
     except Exception as e:
 
@@ -854,7 +865,6 @@ def inativar_integrante(id):
         print("Erro ao inativar:", e)
 
         return f"Erro: {e}"
-
 
     finally:
 
@@ -869,20 +879,22 @@ def reativar_integrante(id):
 
         anterior = db.execute(
             text("""
-                SELECT status
+                SELECT situacao
                 FROM integrantes
                 WHERE id = :id
             """),
             {
                 "id": id
             }
-        ).fetchone()[0]
+        ).scalar()
 
+        if anterior == "ATIVO":
+            return redirect(f"/admin/integrante/{id}")
 
         db.execute(
             text("""
                 UPDATE integrantes
-                SET status = 'APROVADO'
+                SET situacao = 'ATIVO'
                 WHERE id = :id
             """),
             {
@@ -890,22 +902,18 @@ def reativar_integrante(id):
             }
         )
 
-
         db.commit()
-
 
         registrar_historico(
             id,
             "REATIVAÇÃO",
             anterior,
-            "APROVADO"
+            "ATIVO"
         )
-
 
         return redirect(
             f"/admin/integrante/{id}"
         )
-
 
     except Exception as e:
 
@@ -914,7 +922,6 @@ def reativar_integrante(id):
         print("Erro ao reativar:", e)
 
         return f"Erro: {e}"
-
 
     finally:
 
