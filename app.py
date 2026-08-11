@@ -639,35 +639,26 @@ def aprovar_integrante(id):
     try:
 
         # Buscar status atual
-
         anterior = db.execute(
             text("""
                 SELECT status
                 FROM integrantes
                 WHERE id = :id
             """),
-            {
-                "id": id
-            }
+            {"id": id}
         ).fetchone()[0]
 
-
         # Atualizar status
-
         db.execute(
             text("""
                 UPDATE integrantes
                 SET status = 'APROVADO'
                 WHERE id = :id
             """),
-            {
-                "id": id
-            }
+            {"id": id}
         )
 
-
         db.commit()
-
 
         registrar_historico(
             id,
@@ -676,23 +667,17 @@ def aprovar_integrante(id):
             "APROVADO"
         )
 
-
-        # NOVO:
-        # se vier parâmetro voltar=pendentes
-        # retorna para lista de pendentes
+        # ==========================================
+        # APROVOU → VOLTA PARA INTEGRANTES
+        # ==========================================
 
         if request.args.get("voltar") == "pendentes":
+            return redirect("/integrantes")
 
-            return redirect(
-                "/admin/integrantes?status=PENDENTE"
-            )
-
-        # comportamento antigo permanece
-
+        # Comportamento normal
         return redirect(
             f"/admin/integrante/{id}"
         )
-
 
     except Exception as e:
 
@@ -701,7 +686,6 @@ def aprovar_integrante(id):
         print("Erro ao aprovar:", e)
 
         return f"Erro: {e}"
-
 
     finally:
 
