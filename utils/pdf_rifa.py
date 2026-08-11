@@ -18,6 +18,12 @@ from reportlab.platypus import (
     PageBreak,
 )
 
+# =========================================================
+# CACHE DA LOGO
+# =========================================================
+
+_logo_cache = {}
+
 class TabelaRifaComLogo(Table):
 
     def draw(self):
@@ -34,10 +40,34 @@ class TabelaRifaComLogo(Table):
         # VERIFICA LOGO
         # =====================================================
 
-        if not getattr(self, "caminho_logo", None):
+        caminho_logo = getattr(
+            self,
+            "caminho_logo",
+            None
+        )
+
+        if not caminho_logo:
             return
 
-        if not os.path.exists(self.caminho_logo):
+        if not os.path.exists(caminho_logo):
+            return
+
+        # =====================================================
+        # CARREGA A LOGO UMA ÚNICA VEZ
+        # =====================================================
+
+        try:
+
+            if caminho_logo not in _logo_cache:
+
+                _logo_cache[caminho_logo] = ImageReader(
+                    caminho_logo
+                )
+
+            logo = _logo_cache[caminho_logo]
+
+        except Exception:
+
             return
 
         canvas.saveState()
@@ -74,7 +104,7 @@ class TabelaRifaComLogo(Table):
         )
 
         canvas.drawImage(
-            self.caminho_logo,
+            logo,
             x_canhoto,
             y,
             width=tamanho_logo,
@@ -89,11 +119,14 @@ class TabelaRifaComLogo(Table):
 
         x_principal = (
             largura_canhoto_local
-            + (largura_principal_local - tamanho_logo) / 2
+            + (
+                largura_principal_local
+                - tamanho_logo
+            ) / 2
         )
 
         canvas.drawImage(
-            self.caminho_logo,
+            logo,
             x_principal,
             y,
             width=tamanho_logo,
