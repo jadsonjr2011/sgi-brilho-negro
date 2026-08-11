@@ -520,9 +520,28 @@ Vendedores da Rifa
 
             <div class="modal-body">
 
-                <p>
-                    Selecione os integrantes:
-                </p>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+
+                    <p class="mb-0">
+                        Selecione os integrantes:
+                    </p>
+
+                    <div class="form-check">
+                        <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="selecionarTodosVendedores">
+
+                        <label
+                            class="form-check-label"
+                            for="selecionarTodosVendedores">
+
+                            ☑ Selecionar todos
+
+                        </label>
+                    </div>
+
+                </div>
 
                 {% for pessoa in integrantes %}
 
@@ -730,6 +749,68 @@ Vendedores da Rifa
 })();
 
 {% endfor %}
+
+// ==========================================
+// SELECIONAR TODOS OS VENDEDORES
+// ==========================================
+
+const selecionarTodos =
+    document.getElementById("selecionarTodosVendedores");
+
+const checkboxesVendedores =
+    document.querySelectorAll(
+        'input[name="integrantes"]'
+    );
+
+
+if (selecionarTodos) {
+
+    selecionarTodos.addEventListener(
+        "change",
+        function () {
+
+            checkboxesVendedores.forEach(
+                function (checkbox) {
+
+                    checkbox.checked =
+                        selecionarTodos.checked;
+
+                }
+            );
+
+        }
+    );
+
+
+    // Atualiza "Selecionar todos"
+    // caso o usuário marque/desmarque individualmente
+
+    checkboxesVendedores.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                function () {
+
+                    const todosMarcados =
+                        Array.from(
+                            checkboxesVendedores
+                        ).every(
+                            function (item) {
+                                return item.checked;
+                            }
+                        );
+
+                    selecionarTodos.checked =
+                        todosMarcados;
+
+                }
+            );
+
+        }
+    );
+
+}
 
 </script>
 
