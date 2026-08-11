@@ -7,6 +7,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
+from collections import OrderedDict
 from reportlab.platypus import (
     Paragraph,
     SimpleDocTemplate,
@@ -14,8 +15,94 @@ from reportlab.platypus import (
     Table,
     TableStyle,
     Image,
+    PageBreak,
 )
 
+class TabelaRifaComLogo(Table):
+
+    def draw(self):
+
+        canvas = self.canv
+
+        # =====================================================
+        # DESENHA PRIMEIRO A TABELA COMPLETA
+        # =====================================================
+
+        super().draw()
+
+        # =====================================================
+        # VERIFICA LOGO
+        # =====================================================
+
+        if not getattr(self, "caminho_logo", None):
+            return
+
+        if not os.path.exists(self.caminho_logo):
+            return
+
+        canvas.saveState()
+
+        # =====================================================
+        # TAMANHO DA MARCA D'ÁGUA
+        # =====================================================
+
+        tamanho_logo = 41 * mm
+
+        # =====================================================
+        # TRANSPARÊNCIA
+        # =====================================================
+
+        try:
+            canvas.setFillAlpha(0.12)
+        except Exception:
+            pass
+
+        # =====================================================
+        # POSIÇÃO VERTICAL
+        # =====================================================
+
+        y = (
+            (altura_rifa_local - tamanho_logo) / 2
+        )
+
+        # =====================================================
+        # LOGO NO CANHOTO
+        # =====================================================
+
+        x_canhoto = (
+            (largura_canhoto_local - tamanho_logo) / 2
+        )
+
+        canvas.drawImage(
+            self.caminho_logo,
+            x_canhoto,
+            y,
+            width=tamanho_logo,
+            height=tamanho_logo,
+            preserveAspectRatio=True,
+            mask="auto",
+        )
+
+        # =====================================================
+        # LOGO NO BILHETE PRINCIPAL
+        # =====================================================
+
+        x_principal = (
+            largura_canhoto_local
+            + (largura_principal_local - tamanho_logo) / 2
+        )
+
+        canvas.drawImage(
+            self.caminho_logo,
+            x_principal,
+            y,
+            width=tamanho_logo,
+            height=tamanho_logo,
+            preserveAspectRatio=True,
+            mask="auto",
+        )
+
+        canvas.restoreState()
 
 def gerar_pdf_rifa(rifa, numeros):
     """
@@ -43,8 +130,8 @@ def gerar_pdf_rifa(rifa, numeros):
         pagesize=A4,
         rightMargin=7 * mm,
         leftMargin=7 * mm,
-        topMargin=7 * mm,
-        bottomMargin=7 * mm,
+        topMargin=2 * mm,
+        bottomMargin=2 * mm,
     )
 
     estilos = getSampleStyleSheet()
@@ -77,6 +164,34 @@ def gerar_pdf_rifa(rifa, numeros):
         fontSize=10,
         leading=12,
         textColor=colors.HexColor("#e67e22"),
+        spaceAfter=0,
+        spaceBefore=0,
+    )
+
+    # ---------------------------------------------------------
+    # VENDEDOR
+    # ---------------------------------------------------------
+
+    estilo_vendedor_label = ParagraphStyle(
+        "VendedorLabel",
+        parent=estilos["Normal"],
+        alignment=TA_LEFT,
+        fontName="Helvetica-Bold",
+        fontSize=6.5,
+        leading=8,
+        textColor=colors.HexColor("#6c757d"),
+        spaceAfter=0,
+        spaceBefore=0,
+    )
+
+    estilo_vendedor_nome = ParagraphStyle(
+        "VendedorNome",
+        parent=estilos["Normal"],
+        alignment=TA_LEFT,
+        fontName="Helvetica-Bold",
+        fontSize=9,
+        leading=10,
+        textColor=colors.HexColor("#1a252f"),
         spaceAfter=0,
         spaceBefore=0,
     )
@@ -259,8 +374,14 @@ def gerar_pdf_rifa(rifa, numeros):
     # C:\Users\jadson.silva\Documents\Projeto_Brilho_Negro
     # \static\img\logo_transparente.png
 
+    raiz_projeto = os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+
     caminho_logo = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)),
+            raiz_projeto,
         "static",
         "img",
         "logo_transparente.png",
@@ -295,242 +416,189 @@ def gerar_pdf_rifa(rifa, numeros):
     largura_principal = 143 * mm
 
     # Mantém exatamente o tamanho aprovado.
-    altura_rifa = 43 * mm
+    altura_rifa = 40 * mm
+
+    global largura_canhoto_local
+    global largura_principal_local
+    global altura_rifa_local
+
+    largura_canhoto_local = largura_canhoto
+    largura_principal_local = largura_principal
+    altura_rifa_local = altura_rifa
+
     # =========================================================
     # FUNÇÃO PARA CRIAR UMA RIFA
     # =========================================================
 
-    def criar_bilhete(numero):
+    def criar_bilhete(numero, mostrar_vendedor=False):
 
         numero_formatado = f"{int(numero['numero']):03d}"
+        vendedor_nome = (
+            numero.get("vendedor_nome")
+            or "SEM VENDEDOR"
+        )
 
         # =====================================================
         # CANHOTO
         # =====================================================
 
         conteudo_canhoto = [
+
+            # PRIMEIRA LINHA
+            Table(
+                [
+                    [
+                        Paragraph(
+                            "VENDEDOR",
+                            estilo_vendedor_label,
+                        ),
+                        Paragraph(
+                            f"Nº {numero_formatado}",
+                            ParagraphStyle(
+                                "NumeroCanhoto",
+                                parent=estilo_numero_grande,
+                                fontSize=10,
+                                leading=11,
+                                alignment=TA_LEFT,
+                                spaceAfter=0,
+                                spaceBefore=0,
+                            ),
+                        ),
+                    ]
+                ],
+                colWidths=[
+                    27 * mm,
+                    22 * mm,
+                ],
+                style=TableStyle([
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]),
+            ),
+
+            Spacer(1, 0.5 * mm),
+
+            # NOME DO VENDEDOR
             Paragraph(
-                "CANHOTO",
-                estilo_canhoto,
+                vendedor_nome,
+                estilo_vendedor_nome,
             ),
 
-            Spacer(
-                1,
-                0.8 * mm,
+            Spacer(1, 1.5 * mm),
+
+            # =====================================================
+            # CAMPOS DO CLIENTE (CORRIGIDO)
+            # =====================================================
+
+            # NOME (Texto na 1ª linha)
+            Table(
+                [[Paragraph("NOME:", estilo_campo)]],
+                colWidths=[49 * mm],
+                style=TableStyle([
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 1),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ]),
             ),
 
-            Paragraph(
-                "NOME:",
-                estilo_label,
+            # LINHA 1 DO NOME (Linha de preenchimento via Borda Inferior)
+            Table(
+                [[""]],
+                colWidths=[49 * mm],
+                rowHeights=[4.5 * mm],
+                style=TableStyle([
+                    ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]),
             ),
 
-            Paragraph(
-                "_____________________________",
-                estilo_campo,
+            # LINHA 2 DO NOME
+            Table(
+                [[""]],
+                colWidths=[49 * mm],
+                rowHeights=[4.5 * mm],
+                style=TableStyle([
+                    ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]),
             ),
 
-            Spacer(
-                1,
-                1 * mm,
+            Spacer(1, 1.5 * mm),
+
+            # TELEFONE
+            Table(
+                [[Paragraph("TEL:", estilo_campo)]],
+                colWidths=[49 * mm],
+                style=TableStyle([
+                    ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 1),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                ]),
             ),
 
-            Paragraph(
-                "TEL:",
-                estilo_label,
+            Spacer(1, 1.5 * mm),
+
+            # ENDEREÇO
+            Table(
+                [[Paragraph("ENDEREÇO:", estilo_campo)]],
+                colWidths=[49 * mm],
+                style=TableStyle([
+                    ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 1),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                ]),
             ),
 
-            Paragraph(
-                "_____________________________",
-                estilo_campo,
-            ),
-
-            Spacer(
-                1,
-                1 * mm,
-            ),
-
-            Paragraph(
-                "ENDEREÇO:",
-                estilo_label,
-            ),
-
-            Paragraph(
-                "_____________________________",
-                estilo_campo,
-            ),
-
-            Spacer(
-                1,
-                1 * mm,
-            ),
-
-            Paragraph(
-                "VENDEDOR:",
-                estilo_label,
-            ),
-
-            Paragraph(
-                "_____________________________",
-                estilo_campo,
-            ),
-
-            Spacer(
-                1,
-                1 * mm,
-            ),
-
-            Paragraph(
-                f"Nº {numero_formatado}",
-                estilo_numero_grande,
+            # LINHA EXTRA DO ENDEREÇO
+            Table(
+                [[""]],
+                colWidths=[49 * mm],
+                rowHeights=[4.5 * mm],
+                style=TableStyle([
+                    ("LINEBELOW", (0, 0), (-1, -1), 0.5, colors.black),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                ]),
             ),
         ]
 
+
+
         # =====================================================
-        # LOGO COMO MARCA D'ÁGUA NO CANHOTO
+        # CANHOTO
         # =====================================================
 
-        if os.path.exists(caminho_logo):
-
-            logo = Image(
-                caminho_logo,
-                width=28 * mm,
-                height=28 * mm,
-            )
-
-            # A logo fica centralizada no canhoto.
-            # Ela fica atrás visualmente do conteúdo.
-            #
-            # A transparência da própria PNG será responsável
-            # pelo efeito de marca d'água.
-
-            logo_marca = Table(
-                [
-                    [logo]
-                ],
-                colWidths=[
-                    largura_canhoto - 6 * mm
-                ],
-                rowHeights=[
-                    altura_rifa - 4 * mm
-                ],
-            )
-
-            logo_marca.setStyle(
-                TableStyle(
-                    [
-                        (
-                            "ALIGN",
-                            (0, 0),
-                            (-1, -1),
-                            "CENTER",
-                        ),
-                        (
-                            "VALIGN",
-                            (0, 0),
-                            (-1, -1),
-                            "MIDDLE",
-                        ),
-                        (
-                            "LEFTPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                        (
-                            "RIGHTPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                        (
-                            "TOPPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                        (
-                            "BOTTOMPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                    ]
-                )
-            )
-
-            # -------------------------------------------------
-            # SOBREPOSIÇÃO
-            # -------------------------------------------------
-            #
-            # A tabela abaixo coloca o conteúdo e a logo
-            # dentro do mesmo espaço do canhoto.
-            #
-            # A logo fica em uma camada visual separada.
-
-            canhoto = Table(
-                [
-                    [
-                        logo_marca,
-                        conteudo_canhoto,
-                    ]
-                ],
-                colWidths=[
-                    largura_canhoto - 6 * mm,
-                    0,
-                ],
-            )
-
-            canhoto.setStyle(
-                TableStyle(
-                    [
-                        (
-                            "VALIGN",
-                            (0, 0),
-                            (-1, -1),
-                            "TOP",
-                        ),
-                        (
-                            "LEFTPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                        (
-                            "RIGHTPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                        (
-                            "TOPPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                        (
-                            "BOTTOMPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-                    ]
-                )
-            )
-
-        else:
-            # Se a logo não for encontrada,
-            # o canhoto continua funcionando normalmente.
-            canhoto = conteudo_canhoto
+        canhoto = conteudo_canhoto
 
         # =====================================================
         # BILHETE PRINCIPAL
         # =====================================================
 
         header_esquerda = [
+
             Paragraph(
                 "RIFA",
                 estilo_rifa,
             ),
+
+            Spacer(1, 1 * mm),
 
             Paragraph(
                 str(nome_rifa),
@@ -581,7 +649,7 @@ def gerar_pdf_rifa(rifa, numeros):
                         "TOPPADDING",
                         (0, 0),
                         (-1, -1),
-                        1,
+                        2,
                     ),
                     (
                         "BOTTOMPADDING",
@@ -681,12 +749,6 @@ def gerar_pdf_rifa(rifa, numeros):
             TableStyle(
                 [
                     (
-                        "BACKGROUND",
-                        (0, 0),
-                        (-1, -1),
-                        colors.HexColor("#f8f9fa"),
-                    ),
-                    (
                         "LINEBEFORE",
                         (0, 0),
                         (0, 0),
@@ -736,11 +798,6 @@ def gerar_pdf_rifa(rifa, numeros):
                 [
                     Paragraph(
                         f"<b>Data:</b> {data_sorteio}",
-                        estilo_info,
-                    ),
-
-                    Paragraph(
-                        "<b>Extração:</b> Loteria Federal",
                         estilo_info,
                     ),
 
@@ -802,15 +859,21 @@ def gerar_pdf_rifa(rifa, numeros):
             [
                 [
                     Paragraph(
-                        "Guarde este bilhete para conferência. Boa sorte!",
+                        "Arrecadação destinada à aquisição dos calçados dos integrantes.",
                         estilo_footer,
                     ),
-
                     Paragraph(
                         f"Nº {numero_formatado}",
                         estilo_numero,
                     ),
-                ]
+                ],
+                [
+                    Paragraph(
+                        "Guarde este bilhete para conferência. Boa sorte!",
+                        estilo_footer,
+                    ),
+                    "",
+                ],
             ],
             colWidths=[
                 104 * mm,
@@ -858,6 +921,11 @@ def gerar_pdf_rifa(rifa, numeros):
                         (-1, -1),
                         0,
                     ),
+                    (
+                        "SPAN",
+                        (1, 0),
+                        (1, 1),
+                    ),
                 ]
             )
         )
@@ -871,14 +939,14 @@ def gerar_pdf_rifa(rifa, numeros):
 
             Spacer(
                 1,
-                1 * mm,
+                2 * mm,
             ),
 
             premio_box,
 
             Spacer(
                 1,
-                1 * mm,
+                2 * mm,
             ),
 
             info,
@@ -895,7 +963,7 @@ def gerar_pdf_rifa(rifa, numeros):
         # RIFA COMPLETA
         # =====================================================
 
-        tabela = Table(
+        tabela = TabelaRifaComLogo(
             [
                 [
                     canhoto,
@@ -910,6 +978,8 @@ def gerar_pdf_rifa(rifa, numeros):
                 altura_rifa
             ],
         )
+
+        tabela.caminho_logo = caminho_logo
 
         tabela.setStyle(
             TableStyle(
@@ -1006,21 +1076,63 @@ def gerar_pdf_rifa(rifa, numeros):
         return tabela
 
     # =========================================================
-    # 1 RIFA POR LINHA
+    # AGRUPAR NÚMEROS POR VENDEDOR
     # =========================================================
+
+    grupos_vendedores = OrderedDict()
 
     for numero in numeros_para_imprimir:
 
-        elementos.append(
-            criar_bilhete(numero)
+        vendedor_nome = (
+            numero.get("vendedor_nome")
+            or "SEM VENDEDOR"
         )
 
-        elementos.append(
-            Spacer(
-                1,
-                1 * mm,
+        if vendedor_nome not in grupos_vendedores:
+            grupos_vendedores[vendedor_nome] = []
+
+        grupos_vendedores[vendedor_nome].append(numero)
+
+
+    # =========================================================
+    # GERAR RIFAS SEPARADAS POR VENDEDOR
+    # =========================================================
+
+    primeiro_grupo = True
+
+    for vendedor_nome, numeros_vendedor in grupos_vendedores.items():
+
+        # -----------------------------------------------------
+        # NOVA PÁGINA PARA CADA VENDEDOR
+        # -----------------------------------------------------
+
+        if not primeiro_grupo:
+
+            elementos.append(
+                PageBreak()
             )
-        )
+
+        primeiro_grupo = False
+
+        # -----------------------------------------------------
+        # RIFAS DO VENDEDOR
+        # -----------------------------------------------------
+
+        for numero in numeros_vendedor:
+
+            elementos.append(
+                criar_bilhete(
+                    numero,
+                    mostrar_vendedor=True
+                )
+            )
+
+            elementos.append(
+                Spacer(
+                    1,
+                    1 * mm,
+                )
+            )
 
     # =========================================================
     # CASO NÃO TENHA NÚMEROS
@@ -1034,6 +1146,8 @@ def gerar_pdf_rifa(rifa, numeros):
                 estilo_rifa,
             )
         )
+
+    
 
     # =========================================================
     # GERAR PDF

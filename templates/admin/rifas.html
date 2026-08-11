@@ -45,9 +45,7 @@ Rifas
 </div>
 
 <!-- ========================================================= -->
-
 <!-- MENSAGENS -->
-
 <!-- ========================================================= -->
 
 {% if request.args.get('novo') == 'ok' %}
@@ -119,6 +117,22 @@ Rifas
 
 
 </div>
+
+{% if request.args.get('editado') == 'ok' %}
+
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+
+    ✏️ Rifa atualizada com sucesso!
+
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert">
+    </button>
+
+</div>
+
+{% endif %}
 
 {% endif %}
 
@@ -297,11 +311,12 @@ Rifas
 
 
             <!-- ================================================= -->
-            <!-- VER / EXCLUIR -->
+            <!-- VER / EDITAR / EXCLUIR -->
             <!-- ================================================= -->
 
             <div class="d-flex flex-column flex-sm-row gap-2">
 
+                <!-- VER RIFA -->
 
                 <a
                     href="/admin/rifas/{{ rifa.id }}"
@@ -312,12 +327,26 @@ Rifas
                 </a>
 
 
+                <!-- EDITAR RIFA -->
+
+                <button
+                    type="button"
+                    class="btn btn-warning flex-fill"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditarRifa{{ rifa.id }}">
+
+                    ✏️ Editar
+
+                </button>
+
+
+                <!-- EXCLUIR RIFA -->
+
                 <form
                     action="/admin/rifas/excluir/{{ rifa.id }}"
                     method="POST"
                     class="flex-fill"
                     onsubmit="return confirm('Deseja realmente excluir a rifa {{ rifa.nome }}? Esta ação não poderá ser desfeita.');">
-
 
                     <button
                         type="submit"
@@ -327,9 +356,7 @@ Rifas
 
                     </button>
 
-
                 </form>
-
 
             </div>
 
@@ -341,6 +368,292 @@ Rifas
 
 </div>
 
+<!-- ========================================================= -->
+<!-- MODAL EDITAR RIFA -->
+<!-- ========================================================= -->
+
+<div
+    class="modal fade"
+    id="modalEditarRifa{{ rifa.id }}"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- ================================================= -->
+            <!-- CABEÇALHO -->
+            <!-- ================================================= -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    ✏️ Editar Rifa
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+
+                </button>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- FORMULÁRIO -->
+            <!-- ================================================= -->
+
+            <form
+                method="POST"
+                action="/admin/rifas/{{ rifa.id }}/editar">
+
+                <div class="modal-body">
+
+
+                    <!-- ================================================= -->
+                    <!-- IDENTIFICAÇÃO -->
+                    <!-- ================================================= -->
+
+                    <h6 class="text-warning mb-3">
+
+                        📋 Informações da Rifa
+
+                    </h6>
+
+
+                    <div class="row g-3">
+
+
+                        <!-- NOME -->
+
+                        <div class="col-12 col-md-6">
+
+                            <label class="form-label">
+
+                                🎟️ Nome da Rifa
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="nome"
+                                class="form-control"
+                                value="{{ rifa.nome }}"
+                                required>
+
+                        </div>
+
+
+                        <!-- TEMPORADA -->
+
+                        <div class="col-12 col-md-6">
+
+                            <label class="form-label">
+
+                                📅 Temporada
+
+                            </label>
+
+                            <select
+                                name="temporada_id"
+                                class="form-select"
+                                required>
+
+                                {% for temporada in temporadas %}
+
+                                <option
+                                    value="{{ temporada.id }}"
+                                    {% if temporada.id == rifa.temporada_id %}
+                                    selected
+                                    {% endif %}>
+
+                                    {{ temporada.nome }}
+
+                                </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- PRÊMIO -->
+
+                        <div class="col-12 col-md-6">
+
+                            <label class="form-label">
+
+                                🏆 Prêmio
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="premio"
+                                class="form-control"
+                                value="{{ rifa.premio }}"
+                                required>
+
+                        </div>
+
+
+                        <!-- VALOR -->
+
+                        <div class="col-12 col-md-6">
+
+                            <label class="form-label">
+
+                                💰 Valor por número
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="valor_numero"
+                                class="form-control"
+                                value="{{ rifa.valor_numero }}"
+                                inputmode="decimal"
+                                required>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <hr class="my-4">
+
+
+                    <!-- ================================================= -->
+                    <!-- CONFIGURAÇÕES -->
+                    <!-- ================================================= -->
+
+                    <h6 class="text-warning mb-3">
+
+                        ⚙️ Configurações
+
+                    </h6>
+
+
+                    <div class="row g-3">
+
+
+                        <!-- QUANTIDADE -->
+
+                        <div class="col-12 col-md-6">
+
+                            <label class="form-label">
+
+                                🔢 Quantidade por integrante
+
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                value="{{ rifa.quantidade_por_integrante }}"
+                                disabled>
+
+                            <div class="form-text text-secondary">
+
+                                A quantidade não pode ser alterada
+                                após a criação da rifa.
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- DATA DO SORTEIO -->
+
+                        <div class="col-12 col-md-6">
+
+                            <label class="form-label">
+
+                                📅 Data do sorteio
+
+                            </label>
+
+                            <input
+                                type="date"
+                                name="data_sorteio"
+                                class="form-control"
+                                value="{{ rifa.data_sorteio.strftime('%Y-%m-%d') if rifa.data_sorteio else '' }}">
+
+                        </div>
+
+
+                    </div>
+
+
+                    <hr class="my-4">
+
+
+                    <!-- ================================================= -->
+                    <!-- OBSERVAÇÃO -->
+                    <!-- ================================================= -->
+
+                    <div>
+
+                        <label class="form-label">
+
+                            📝 Observação
+
+                        </label>
+
+                        <textarea
+                            name="observacao"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Informações adicionais">{{ rifa.observacao or '' }}</textarea>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- RODAPÉ -->
+                <!-- ================================================= -->
+
+                <div class="modal-footer d-flex flex-column flex-sm-row gap-2">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Salvar Alterações
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
 
 </div>
 

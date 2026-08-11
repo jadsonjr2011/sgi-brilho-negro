@@ -684,9 +684,8 @@ def aprovar_integrante(id):
         if request.args.get("voltar") == "pendentes":
 
             return redirect(
-                "/admin?status=PENDENTE"
+                "/admin/integrantes?status=PENDENTE"
             )
-
 
         # comportamento antigo permanece
 
@@ -3135,6 +3134,178 @@ def nova_rifa():
 
         db.close()
 
+@app.route("/admin/rifas/<int:id>/editar", methods=["POST"])
+def editar_rifa(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # BUSCAR RIFA
+        # ==========================================
+
+        rifa = db.execute(
+            text("""
+                SELECT
+                    id,
+                    status
+                FROM rifas
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+        if not rifa:
+            return "Rifa não encontrada", 404
+
+
+        # ==========================================
+        # PEGAR DADOS DO FORMULÁRIO
+        # ==========================================
+
+        nome = request.form.get("nome", "").strip()
+
+        premio = request.form.get("premio", "").strip()
+
+        valor_numero = request.form.get(
+            "valor_numero",
+            ""
+        ).strip()
+
+        data_sorteio = request.form.get(
+            "data_sorteio",
+            ""
+        ).strip()
+
+        observacao = request.form.get(
+            "observacao",
+            ""
+        ).strip()
+
+        temporada_id = request.form.get(
+            "temporada_id",
+            ""
+        ).strip()
+
+
+        # ==========================================
+        # VALIDAR CAMPOS OBRIGATÓRIOS
+        # ==========================================
+
+        if not nome:
+
+            return "O nome da rifa é obrigatório.", 400
+
+
+        if not premio:
+
+            return "O prêmio da rifa é obrigatório.", 400
+
+
+        if not valor_numero:
+
+            return "O valor do número é obrigatório.", 400
+
+
+        if not temporada_id:
+
+            return "A temporada é obrigatória.", 400
+
+
+        # ==========================================
+        # CONVERTER VALOR
+        # ==========================================
+
+        try:
+
+            valor_numero = valor_numero.replace(
+                ",",
+                "."
+            )
+
+            valor_numero = Decimal(
+                valor_numero
+            )
+
+        except Exception:
+
+            return (
+                "Valor do número inválido."
+            ), 400
+
+        # ==========================================
+        # ATUALIZAR RIFA
+        # ==========================================
+
+        db.execute(
+            text("""
+                UPDATE rifas
+
+                SET
+                    nome = :nome,
+                    premio = :premio,
+                    valor_numero = :valor_numero,
+                    data_sorteio = :data_sorteio,
+                    observacao = :observacao,
+                    temporada_id = :temporada_id
+
+                WHERE id = :id
+            """),
+            {
+                "nome": nome,
+                "premio": premio,
+                "valor_numero": valor_numero,
+                "data_sorteio": data_sorteio or None,
+                "observacao": observacao,
+                "temporada_id": temporada_id,
+                "id": id
+            }
+        )
+
+
+        # ==========================================
+        # SALVAR
+        # ==========================================
+
+        db.commit()
+
+
+        return redirect(
+            "/admin/rifas?editado=ok"
+        )
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "=========================================="
+        )
+
+        print(
+            "ERRO AO EDITAR RIFA:"
+        )
+
+        print(e)
+
+        print(
+            "=========================================="
+        )
+
+        raise
+
+
+    finally:
+
+        db.close() 
+
 @app.route("/admin/temporadas/nova", methods=["POST"])
 def nova_temporada():
 
@@ -3589,19 +3760,24 @@ def vendedores_rifa(id):
         numeros = db.execute(
             text("""
                 SELECT
-                    id,
-                    rifa_id,
-                    integrante_id,
-                    numero,
-                    status,
-                    data_venda,
-                    observacao
+                    rn.id,
+                    rn.rifa_id,
+                    rn.integrante_id,
+                    rn.numero,
+                    rn.status,
+                    rn.data_venda,
+                    rn.observacao,
 
-                FROM rifas_numeros
+                    i.nome AS vendedor
 
-                WHERE rifa_id = :rifa_id
+                FROM rifas_numeros rn
 
-                ORDER BY numero
+                LEFT JOIN integrantes i
+                    ON i.codigo_integrante = rn.integrante_id::text
+
+                WHERE rn.rifa_id = :rifa_id
+
+                ORDER BY rn.numero
             """),
             {
                 "rifa_id": id
@@ -4457,23 +4633,36 @@ def salvar_prestacao(id):
         # BUSCAR TODOS OS NÚMEROS DO VENDEDOR
         # ==========================================
 
+        # ==========================================
+        # BUSCAR NÚMEROS
+        # ==========================================
+
         numeros = db.execute(
             text("""
                 SELECT
-                    id,
-                    numero,
-                    status
+                    rn.id,
+                    rn.rifa_id,
+                    rn.integrante_id,
+                    rn.numero,
+                    rn.status,
+                    rn.data_venda,
+                    rn.observacao,
 
-                FROM rifas_numeros
+                    i.nome AS vendedor
 
-                WHERE rifa_id = :rifa_id
-                AND integrante_id = :integrante_id
+                FROM rifas_numeros rn
 
-                ORDER BY numero
+                LEFT JOIN integrantes i
+                    ON i.id = rn.integrante_id
+
+                WHERE rn.rifa_id = :rifa_id
+                AND rn.integrante_id = :integrante_id
+
+                ORDER BY rn.numero
             """),
             {
-                "rifa_id": prestacao.rifa_id,
-                "integrante_id": prestacao.integrante_id
+                "rifa_id": prestacao["rifa_id"],
+                "integrante_id": prestacao["integrante_id"]
             }
         ).mappings().all()
 
@@ -4496,7 +4685,7 @@ def salvar_prestacao(id):
 
         for numero in numeros:
 
-            if numero.id in numeros_vendidos_ids:
+            if numero["id"] in numeros_vendidos_ids:
 
                 # ------------------------------
                 # VENDIDO
@@ -5135,12 +5324,21 @@ def gerar_pdf_rifa_admin(id):
         numeros = db.execute(
             text("""
                 SELECT
-                    id,
-                    numero,
-                    status
-                FROM rifas_numeros
-                WHERE rifa_id = :rifa_id
-                ORDER BY numero
+                    rn.id,
+                    rn.numero,
+                    rn.status,
+                    rn.integrante_id,
+                    i.nome AS vendedor_nome
+                FROM rifas_numeros rn
+
+                LEFT JOIN integrantes i
+                    ON i.id = rn.integrante_id
+
+                WHERE rn.rifa_id = :rifa_id
+
+                ORDER BY
+                    COALESCE(i.nome, 'SEM VENDEDOR'),
+                    rn.numero
             """),
             {
                 "rifa_id": id
