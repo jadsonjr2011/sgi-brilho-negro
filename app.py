@@ -141,7 +141,54 @@ def inicio():
 @app.route("/cadastro")
 def cadastro():
 
-    return render_template("cadastro/cadastro.html")
+    db = SessionLocal()
+
+    try:
+
+        status = db.execute(
+            text("""
+                SELECT valor
+                FROM configuracoes
+                WHERE chave = 'inscricoes_status'
+            """)
+        ).scalar()
+
+        # Se não existir configuração,
+        # mantém o cadastro aberto.
+        if not status:
+            status = "ABERTA"
+
+        # ==========================================
+        # INSCRIÇÕES PAUSADAS
+        # ==========================================
+
+        if status == "PAUSADA":
+
+            return render_template(
+                "cadastro/pausado.html"
+            )
+
+        # ==========================================
+        # INSCRIÇÕES FECHADAS
+        # ==========================================
+
+        if status == "FECHADA":
+
+            return render_template(
+                "cadastro/fechado.html"
+            )
+
+        # ==========================================
+        # INSCRIÇÕES ABERTAS
+        # ==========================================
+
+        return render_template(
+            "cadastro/cadastro.html"
+        )
+
+    finally:
+
+        db.close()
 
 @app.route("/login", methods=["GET","POST"])
 def login():
@@ -260,6 +307,35 @@ def admin():
             """)
         ).mappings().all()
 
+        # ==========================================
+        # STATUS DAS INSCRIÇÕES
+        # ==========================================
+
+        status_inscricoes = db.execute(
+            text("""
+                SELECT valor
+                FROM configuracoes
+                WHERE chave = 'inscricoes_status'
+            """)
+        ).scalar()
+
+        status_inscricoes = status_inscricoes or "ABERTA"
+
+        # ==========================================
+        # VERIFICAR SE AS INSCRIÇÕES ESTÃO ABERTAS
+        # ==========================================
+
+        if status_inscricoes == "PAUSADA":
+
+            return render_template(
+                "cadastro/pausado.html"
+            )
+
+        if status_inscricoes == "FECHADA":
+
+            return render_template(
+                "cadastro/fechado.html"
+            )
 
         # ==========================================
         # ANIVERSARIANTES DO MÊS
@@ -348,7 +424,8 @@ def admin():
         aprovados=aprovados,
         temporadas=temporadas,
         aniversariantes=aniversariantes,
-        mes_nome=mes_nome
+        mes_nome=mes_nome,
+        status_inscricoes=status_inscricoes
     )
 
 @app.route("/integrantes")
@@ -483,6 +560,61 @@ def ver_integrante(id):
     finally:
 
         db.close()
+
+@app.route("/admin/inscricoes/status", methods=["POST"])
+def alterar_status_inscricoes():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    novo_status = request.form.get("status")
+
+    status_validos = [
+        "ABERTA",
+        "PAUSADA",
+        "FECHADA"
+    ]
+
+    if novo_status not in status_validos:
+        return "Status de inscrição inválido", 400
+
+    db = SessionLocal()
+
+    try:
+
+        db.execute(
+            text("""
+                UPDATE configuracoes
+                SET valor = :valor
+                WHERE chave = 'inscricoes_status'
+            """),
+            {
+                "valor": novo_status
+            }
+        )
+
+        db.commit()
+
+        print(
+            f"Status das inscrições alterado para: {novo_status}"
+        )
+
+        return redirect("/admin")
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO ALTERAR STATUS DAS INSCRIÇÕES:",
+            e
+        )
+
+        return f"Erro ao alterar status: {e}", 500
+
+    finally:
+
+        db.close()        
 
 @app.route("/admin/integrante/<int:id>/editar", methods=["GET","POST"])
 def editar_integrante(id):
@@ -919,6 +1051,31 @@ def salvar_cadastro():
 
         print("Conectado ao PostgreSQL")
 
+        # ==============================
+        # VERIFICAR STATUS DAS INSCRIÇÕES
+        # ==============================
+
+        status_inscricoes = db.execute(
+            text("""
+                SELECT valor
+                FROM configuracoes
+                WHERE chave = 'inscricoes_status'
+            """)
+        ).scalar()
+
+        if status_inscricoes != "ABERTA":
+
+            if status_inscricoes == "PAUSADA":
+
+                return render_template(
+                    "cadastro/pausado.html"
+                )
+
+            if status_inscricoes == "FECHADA":
+
+                return render_template(
+                    "cadastro/fechado.html"
+                )        
 
         # ==============================
         # VERIFICAR CPF DUPLICADO

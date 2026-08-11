@@ -550,6 +550,15 @@
 
     </a>
 
+    <button
+        type="button"
+        class="btn btn-outline-warning"
+        data-bs-toggle="modal"
+        data-bs-target="#modalInscricoes">
+
+        📝 Inscrições
+
+    </button>
 
     <button
         class="btn btn-outline-light"
@@ -1596,6 +1605,191 @@
     </div>
 
 </div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- MODAL DE CONTROLE DAS INSCRIÇÕES                     -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalInscricoes"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    📝 Controle de Inscrições
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                method="POST"
+                action="/admin/inscricoes/status">
+
+                <div class="modal-body">
+
+
+                    <!-- STATUS ATUAL -->
+
+                    <div class="text-center mb-4">
+
+                        <div class="text-secondary mb-2">
+                            Status atual
+                        </div>
+
+
+                        {% if status_inscricoes == "ABERTA" %}
+
+                            <span class="badge bg-success fs-6">
+                                🟢 ABERTA
+                            </span>
+
+
+                        {% elif status_inscricoes == "PAUSADA" %}
+
+                            <span class="badge bg-warning text-dark fs-6">
+                                🟡 PAUSADA
+                            </span>
+
+
+                        {% elif status_inscricoes == "FECHADA" %}
+
+                            <span class="badge bg-danger fs-6">
+                                🔴 FECHADA
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <!-- NOVO STATUS -->
+
+                    <label class="form-label">
+
+                        Alterar status das inscrições
+
+                    </label>
+
+
+                    <select
+                        name="status"
+                        class="form-select"
+                        required>
+
+
+                        <option
+                            value="ABERTA"
+                            {% if status_inscricoes == "ABERTA" %}
+                                selected
+                            {% endif %}>
+
+                            🟢 ABERTA
+
+                        </option>
+
+
+                        <option
+                            value="PAUSADA"
+                            {% if status_inscricoes == "PAUSADA" %}
+                                selected
+                            {% endif %}>
+
+                            🟡 PAUSADA
+
+                        </option>
+
+
+                        <option
+                            value="FECHADA"
+                            {% if status_inscricoes == "FECHADA" %}
+                                selected
+                            {% endif %}>
+
+                            🔴 FECHADA
+
+                        </option>
+
+
+                    </select>
+
+
+                    <!-- EXPLICAÇÃO -->
+
+                    <div class="alert alert-secondary mt-3 mb-0">
+
+                        <strong>🟢 ABERTA</strong>
+                        — permite novos cadastros.
+
+                        <br>
+
+                        <strong>🟡 PAUSADA</strong>
+                        — inscrições temporariamente bloqueadas.
+
+                        <br>
+
+                        <strong>🔴 FECHADA</strong>
+                        — período de inscrições encerrado.
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Salvar Status
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
 
 </div>
 
