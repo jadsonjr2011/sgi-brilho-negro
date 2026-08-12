@@ -322,22 +322,6 @@ def admin():
         status_inscricoes = status_inscricoes or "ABERTA"
 
         # ==========================================
-        # VERIFICAR SE AS INSCRIÇÕES ESTÃO ABERTAS
-        # ==========================================
-
-        if status_inscricoes == "PAUSADA":
-
-            return render_template(
-                "cadastro/pausado.html"
-            )
-
-        if status_inscricoes == "FECHADA":
-
-            return render_template(
-                "cadastro/fechado.html"
-            )
-
-        # ==========================================
         # ANIVERSARIANTES DO MÊS
         # ==========================================
 

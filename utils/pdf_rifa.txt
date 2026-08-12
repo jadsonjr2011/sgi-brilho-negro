@@ -1133,9 +1133,6 @@ def gerar_pdf_rifa(rifa, numeros):
 
     primeiro_grupo = True
 
-    # Quantidade de rifas que cabem em cada folha
-    RIFAS_POR_FOLHA = 7
-
     for vendedor_nome, numeros_vendedor in grupos_vendedores.items():
 
         # -----------------------------------------------------
@@ -1144,99 +1141,32 @@ def gerar_pdf_rifa(rifa, numeros):
 
         if not primeiro_grupo:
 
-            elementos.append(PageBreak())
+            elementos.append(
+                PageBreak()
+            )
 
         primeiro_grupo = False
 
         # -----------------------------------------------------
-        # QUANTIDADE TOTAL DE RIFAS DO VENDEDOR
+        # RIFAS DO VENDEDOR
         # -----------------------------------------------------
 
-        quantidade_rifas = len(numeros_vendedor)
+        for numero in numeros_vendedor:
 
-        # -----------------------------------------------------
-        # QUANTIDADE DE FOLHAS NECESSÁRIAS
-        #
-        # Exemplo:
-        # 21 rifas → 3 folhas
-        # 40 rifas → 6 folhas
-        # 50 rifas → 8 folhas
-        # -----------------------------------------------------
-
-        quantidade_folhas = (
-            quantidade_rifas + RIFAS_POR_FOLHA - 1
-        ) // RIFAS_POR_FOLHA
-
-        # -----------------------------------------------------
-        # ORGANIZAÇÃO PARA CORTE EMPILHADO
-        #
-        # A regra é:
-        #
-        # FOLHA 1 → 1, 4, 7, 10...
-        # FOLHA 2 → 2, 5, 8, 11...
-        # FOLHA 3 → 3, 6, 9, 12...
-        #
-        # Quando necessário:
-        #
-        # FOLHA 4 → 4, 8, 12...
-        #
-        # -----------------------------------------------------
-
-        paginas = []
-
-        for folha in range(quantidade_folhas):
-
-            pagina = []
-
-            for posicao in range(RIFAS_POR_FOLHA):
-
-                indice = (
-                    posicao * quantidade_folhas
-                    + folha
+            elementos.append(
+                criar_bilhete(
+                    numero,
+                    mostrar_vendedor=True
                 )
+            )
 
-                if indice < quantidade_rifas:
-
-                    pagina.append(
-                        numeros_vendedor[indice]
-                    )
-
-            paginas.append(pagina)
-
-        # -----------------------------------------------------
-        # GERA CADA FOLHA DO VENDEDOR
-        # -----------------------------------------------------
-
-        for numero_folha, pagina in enumerate(paginas):
-
-            # ---------------------------------------------
-            # PRIMEIRA FOLHA USA A PÁGINA ATUAL
-            # ---------------------------------------------
-
-            if numero_folha > 0:
-
-                elementos.append(PageBreak())
-
-            # ---------------------------------------------
-            # RIFAS DESTA FOLHA
-            # ---------------------------------------------
-
-            for numero in pagina:
-
-                elementos.append(
-                    criar_bilhete(
-                        numero,
-                        mostrar_vendedor=True
-                    )
+            elementos.append(
+                Spacer(
+                    1,
+                    1 * mm,
                 )
+            )
 
-                elementos.append(
-                    Spacer(
-                        1,
-                        1 * mm,
-                    )
-                )
-    
     # =========================================================
     # CASO NÃO TENHA NÚMEROS
     # =========================================================
