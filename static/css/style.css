@@ -1640,3 +1640,802 @@ footer{
 
 
 }
+
+/* =====================================
+   TELA INICIAL - BRILHO NEGRO
+===================================== */
+
+body:has(.tela-inicial){
+
+    margin:0;
+
+    padding:0;
+
+    overflow:hidden;
+
+}
+
+
+/* =====================================
+   NAVBAR COM A FOTO
+===================================== */
+
+.navbar-brilho{
+
+    position:relative;
+
+    z-index:10;
+
+    min-height:70px;
+
+    background-image:url("/static/img/brilho-negro.PNG") !important;
+
+    background-size:cover;
+
+    background-position:center 35%;
+
+    background-repeat:no-repeat;
+
+    border-bottom:2px solid #002D62;
+
+    overflow:hidden;
+
+}
+
+
+/* Escurecimento suave da navbar */
+
+.navbar-brilho::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(0,0,0,.28);
+
+    backdrop-filter:blur(3px);
+
+    -webkit-backdrop-filter:blur(3px);
+
+    z-index:0;
+
+}
+
+
+/* Conteúdo da navbar fica acima */
+
+.navbar-brilho .container{
+
+    position:relative;
+
+    z-index:2;
+
+}
+
+
+/* Texto da navbar */
+
+.navbar-brilho .titulo-navbar strong{
+
+    color:#ffffff;
+
+    text-shadow:0 2px 5px rgba(0,0,0,.9);
+
+}
+
+
+.navbar-brilho .titulo-navbar small{
+
+    color:#ffffff;
+
+    text-shadow:0 2px 5px rgba(0,0,0,.9);
+
+}
+
+
+/* =====================================
+   CONTAINER DA PÁGINA INICIAL
+===================================== */
+
+body:has(.tela-inicial) .container-fluid.container-md{
+
+    margin:0 !important;
+
+    padding:0 !important;
+
+    max-width:none !important;
+
+}
+
+
+/* =====================================
+   TELA INICIAL
+===================================== */
+
+.tela-inicial{
+
+    position:relative;
+
+    width:100vw;
+
+    height:calc(100vh - 70px);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    overflow:hidden;
+
+    margin-left:calc(50% - 50vw);
+
+}
+
+
+/* =====================================
+   FOTO PRINCIPAL
+===================================== */
+
+.fundo-brilho{
+
+    position:absolute;
+
+    inset:0;
+
+    background-image:url("/static/img/brilho-negro.PNG");
+
+    background-size:cover;
+
+    background-position:center;
+
+    background-repeat:no-repeat;
+
+    z-index:0;
+
+}
+
+
+/* =====================================
+   CONTEÚDO À DIREITA
+===================================== */
+
+.conteudo-inicial{
+
+    position:relative;
+
+    z-index:1;
+
+    width:50%;
+
+    max-width:850px;
+
+    margin-left:45%;
+
+    padding:40px 25px;
+
+    text-align:center;
+
+}
+
+
+/* =====================================
+   TEXTO
+===================================== */
+
+.tela-inicial .nome-banda{
+
+    color:#ffffff;
+
+    font-size:2.7rem;
+
+    font-weight:800;
+
+    letter-spacing:3px;
+
+    text-shadow:0 3px 10px rgba(0,0,0,.85);
+
+}
+
+
+.tela-inicial .titulo{
+
+    color:#ffffff;
+
+    font-size:2rem;
+
+    font-weight:700;
+
+    text-shadow:0 3px 10px rgba(0,0,0,.85);
+
+}
+
+
+.tela-inicial .subtitulo{
+
+    color:#ffffff;
+
+    text-shadow:0 2px 6px rgba(0,0,0,.85);
+
+}
+
+
+.tela-inicial .texto-inicial{
+
+    max-width:650px;
+
+    margin-left:auto;
+
+    margin-right:auto;
+
+    font-size:1.05rem;
+
+    line-height:1.6;
+
+}
+
+
+/* =====================================
+   BOTÕES
+===================================== */
+
+.tela-inicial .area-botoes-inicial{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+
+}
+
+
+.tela-inicial .btn-inicial{
+
+    width:260px;
+
+    padding:13px 25px;
+
+    border-radius:30px;
+
+    font-weight:bold;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.4);
+
+    transition:.25s;
+
+}
+
+
+.tela-inicial .btn-inicial:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:0 8px 20px rgba(0,0,0,.55);
+
+}
+
+
+/* =====================================
+   RODAPÉ
+===================================== */
+
+body:has(.tela-inicial) footer{
+
+    position:fixed;
+
+    bottom:0;
+
+    left:0;
+
+    width:100%;
+
+    margin:0 !important;
+
+    padding:5px 0 !important;
+
+    background:transparent;
+
+    color:#ffffff !important;
+
+    font-size:13px;
+
+    z-index:20;
+
+}
+
+
+/* =====================================
+   CELULAR
+===================================== */
+
+@media(max-width:768px){
+
+    .tela-inicial{
+
+        width:100vw;
+
+        height:calc(100vh - 60px);
+
+        min-height:calc(100vh - 60px);
+
+        margin-left:calc(50% - 50vw);
+
+    }
+
+
+    .conteudo-inicial{
+
+        width:100%;
+
+        max-width:100%;
+
+        margin-left:0;
+
+        padding:30px 18px;
+
+    }
+
+
+    .tela-inicial .nome-banda{
+
+        font-size:2rem;
+
+        letter-spacing:2px;
+
+    }
+
+
+    .tela-inicial .titulo{
+
+        font-size:1.4rem;
+
+    }
+
+
+    .tela-inicial .texto-inicial{
+
+        font-size:.9rem;
+
+    }
+
+
+    .tela-inicial .area-botoes-inicial{
+
+        flex-direction:column;
+
+        gap:12px;
+
+    }
+
+
+    .tela-inicial .btn-inicial{
+
+        width:100%;
+
+        max-width:320px;
+
+    }
+
+}
+
+/* =====================================
+   CELULAR
+===================================== */
+
+@media(max-width:768px){
+
+    .tela-inicial{
+
+        width:100vw;
+
+        height:calc(100vh - 60px);
+
+        min-height:calc(100vh - 60px);
+
+        margin-left:calc(50% - 50vw);
+
+    }
+
+
+    /* FOTO NO CELULAR */
+
+    .fundo-brilho{
+
+        background-size:cover;
+
+        background-position:center center;
+
+    }
+
+
+    .conteudo-inicial{
+
+        width:100%;
+
+        max-width:100%;
+
+        margin-left:0;
+
+        padding:30px 18px;
+
+    }
+
+
+    .tela-inicial .nome-banda{
+
+        font-size:2rem;
+
+        letter-spacing:2px;
+
+    }
+
+
+    .tela-inicial .titulo{
+
+        font-size:1.4rem;
+
+    }
+
+
+    .tela-inicial .texto-inicial{
+
+        font-size:.9rem;
+
+    }
+
+
+    .tela-inicial .area-botoes-inicial{
+
+        flex-direction:column;
+
+        gap:12px;
+
+    }
+
+
+    .tela-inicial .btn-inicial{
+
+        width:100%;
+
+        max-width:320px;
+
+    }
+
+}
+
+/* =====================================
+   LOGIN - BRILHO NEGRO
+===================================== */
+
+.login-brilho{
+
+    min-height:calc(100vh - 70px);
+
+    width:100vw;
+
+    margin-left:calc(50% - 50vw);
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    padding:40px 20px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    background-image:url("/static/img/brilho-negro.PNG");
+
+    background-size:cover;
+
+    background-position:center;
+
+    background-repeat:no-repeat;
+
+}
+
+
+/* Camada suave para melhorar a leitura */
+
+.login-brilho::before{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    background:rgba(0,0,0,.20);
+
+    z-index:0;
+
+}
+
+
+/* Card do login */
+
+.login-card{
+
+    position:relative;
+
+    z-index:1;
+
+    width:100%;
+
+    max-width:480px;
+
+    padding:35px 35px 30px;
+
+    border-radius:22px;
+
+    background:rgba(15,15,18,.82);
+
+    border:1px solid rgba(255,255,255,.15);
+
+    box-shadow:0 15px 40px rgba(0,0,0,.45);
+
+    backdrop-filter:blur(4px);
+
+    -webkit-backdrop-filter:blur(4px);
+
+}
+
+
+/* Título */
+
+.login-card h2{
+
+    color:#ffffff;
+
+    font-weight:700;
+
+    text-shadow:0 2px 8px rgba(0,0,0,.8);
+
+}
+
+
+/* Linha */
+
+.login-card hr{
+
+    border-color:rgba(255,255,255,.20);
+
+}
+
+
+/* Labels */
+
+.login-card label{
+
+    color:#ffffff;
+
+    font-weight:600;
+
+}
+
+
+/* Campos */
+
+.login-card .form-control{
+
+    background:rgba(42,45,52,.90);
+
+}
+
+
+/* Botões */
+
+.login-card .btn{
+
+    font-weight:600;
+
+}
+
+
+/* =====================================
+   LOGIN - CELULAR
+===================================== */
+
+@media(max-width:768px){
+
+    .login-brilho{
+
+        min-height:calc(100vh - 60px);
+
+        padding:25px 15px;
+
+        background-position:center center;
+
+    }
+
+
+    .login-card{
+
+        max-width:100%;
+
+        padding:28px 20px 25px;
+
+        border-radius:18px;
+
+    }
+
+
+    .login-card h2{
+
+        font-size:1.5rem;
+
+    }
+
+
+    .login-card .text-center.mt-4{
+
+        display:flex;
+
+        flex-direction:column;
+
+        gap:10px;
+
+    }
+
+
+    .login-card .text-center.mt-4 .btn{
+
+        width:100%;
+
+        margin-left:0 !important;
+
+    }
+
+}
+
+/* =====================================
+   LOGIN - AJUSTE FINAL SEM ROLAGEM
+===================================== */
+
+body:has(.login-brilho){
+
+    margin:0;
+
+    padding:0;
+
+    overflow:hidden;
+
+}
+
+
+/* Remove o espaço padrão do container */
+
+body:has(.login-brilho) .container-fluid.container-md{
+
+    margin:0 !important;
+
+    padding:0 !important;
+
+    max-width:none !important;
+
+}
+
+
+/* Área do login ocupa somente o espaço
+   que sobra abaixo da navbar */
+
+.login-brilho{
+
+    width:100vw;
+
+    height:calc(100vh - 70px);
+
+    min-height:0;
+
+    margin-left:calc(50% - 50vw);
+
+    padding:0 20px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    position:relative;
+
+    overflow:hidden;
+
+}
+
+
+/* Imagem ocupa toda a área */
+
+.login-brilho{
+
+    background-size:cover;
+
+    background-position:center center;
+
+    background-repeat:no-repeat;
+
+}
+
+
+/* =====================================
+   FOOTER NO LOGIN
+===================================== */
+
+body:has(.login-brilho) footer{
+
+    position:fixed;
+
+    bottom:0;
+
+    left:0;
+
+    width:100%;
+
+    margin:0 !important;
+
+    padding:5px 0 !important;
+
+    background:transparent;
+
+    color:#ffffff !important;
+
+    font-size:13px;
+
+    z-index:20;
+
+}
+
+
+/* =====================================
+   CELULAR
+===================================== */
+
+@media(max-width:768px){
+
+    body:has(.login-brilho){
+
+        overflow:hidden;
+
+    }
+
+
+    .login-brilho{
+
+        width:100vw;
+
+        height:calc(100vh - 60px);
+
+        min-height:0;
+
+        margin-left:calc(50% - 50vw);
+
+        padding:15px;
+
+        background-size:cover;
+
+        background-position:center center;
+
+    }
+
+
+    .login-card{
+
+        width:100%;
+
+        max-width:420px;
+
+        padding:25px 20px;
+
+    }
+
+}

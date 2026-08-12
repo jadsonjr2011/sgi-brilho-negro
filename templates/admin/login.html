@@ -1,102 +1,80 @@
 {% extends 'layout/base.html' %}
 
-
 {% block titulo %}
 Login Administrativo
 {% endblock %}
 
-
 {% block conteudo %}
 
+<div class="login-brilho">
 
-<div class="row justify-content-center">
+    <div class="login-card">
 
-<div class="col-md-5">
+        <h2 class="text-center">
+            🔐 Área Administrativa
+        </h2>
 
+        <hr>
 
-<div class="card-bn">
+        {% if erro %}
 
+        <div class="alert alert-danger">
+            {{ erro }}
+        </div>
 
-<h2 class="text-center">
-🔐 Área Administrativa
-</h2>
+        {% endif %}
 
+        <form method="POST">
 
-<hr>
+            <label>
+                Usuário
+            </label>
 
+            <input
+                class="form-control"
+                name="usuario"
+                required>
 
-{% if erro %}
+            <label class="mt-3">
+                Senha
+            </label>
 
-<div class="alert alert-danger">
+            <input
+                type="password"
+                class="form-control"
+                name="senha"
+                required>
 
-{{ erro }}
+            <button
+                type="submit"
+                class="btn btn-brilho w-100 mt-4">
 
-</div>
+                Entrar
 
-{% endif %}
+            </button>
 
+            <div class="text-center mt-4">
 
+                <a href="/cadastro"
+                   class="btn btn-outline-warning">
 
-<form method="POST">
+                    📝 Fazer Cadastro
 
+                </a>
 
-<label>
-Usuário
-</label>
+                <a href="/"
+                   class="btn btn-outline-secondary ms-2">
 
-<input
-class="form-control"
-name="usuario"
-required>
+                    🏠 Voltar ao Início
 
+                </a>
 
-<label class="mt-3">
-Senha
-</label>
+            </div>
 
-<input
-type="password"
-class="form-control"
-name="senha"
-required>
+        </form>
 
-
-
-<button
-class="btn btn-brilho w-100 mt-4">
-
-Entrar
-
-</button>
-
-<div class="text-center mt-4">
-
-
-<a href="/cadastro" class="btn btn-outline-warning">
-
-📝 Fazer Cadastro
-
-</a>
-
-
-<a href="/" class="btn btn-outline-secondary ms-2">
-
-🏠 Voltar ao Início
-
-</a>
-
+    </div>
 
 </div>
-
-</form>
-
-
-</div>
-
-
-</div>
-
-</div>
-
 
 {% endblock %}
