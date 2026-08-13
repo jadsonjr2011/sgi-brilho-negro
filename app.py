@@ -3824,14 +3824,25 @@ def vendedores_rifa(id):
         integrantes = db.execute(
             text("""
                 SELECT
-                    id,
-                    nome,
-                    funcao
-                FROM integrantes
-                WHERE status = 'APROVADO'
-                AND situacao = 'ATIVO'
-                ORDER BY nome
-            """)
+                    i.id,
+                    i.nome,
+                    i.funcao
+                FROM integrantes i
+                WHERE i.status = 'APROVADO'
+                AND i.situacao = 'ATIVO'
+
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM rifas_integrantes ri
+                    WHERE ri.rifa_id = :rifa_id
+                    AND ri.integrante_id = i.id
+                )
+
+                ORDER BY i.nome
+            """),
+            {
+                "rifa_id": id
+            }
         ).mappings().all()
 
 

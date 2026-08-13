@@ -2439,3 +2439,479 @@ body:has(.login-brilho) footer{
     }
 
 }
+
+/* ============================================
+   RESPONSIVIDADE FINAL - BRILHO NEGRO
+   Ajustes gerais para smartphones
+============================================ */
+
+@media (max-width: 768px){
+
+    /* ========================================
+       AJUSTE GERAL DA TELA
+    ======================================== */
+
+    html,
+    body{
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+    }
+
+    *{
+        max-width:100%;
+    }
+
+
+    /* ========================================
+       CONTAINERS
+    ======================================== */
+
+    .container,
+    .container-fluid{
+        width:100%;
+        max-width:100%;
+    }
+
+    .container{
+        padding-left:12px;
+        padding-right:12px;
+    }
+
+
+    /* ========================================
+       NAVBAR
+    ======================================== */
+
+    .navbar{
+        width:100%;
+        max-width:100%;
+    }
+
+    .navbar .container,
+    .navbar .container-fluid{
+        padding-left:12px;
+        padding-right:12px;
+    }
+
+    .navbar-brand{
+        min-width:0;
+        max-width:calc(100% - 60px);
+    }
+
+    .navbar-brand img{
+        max-width:45px;
+        height:auto;
+    }
+
+    .titulo-navbar{
+        min-width:0;
+    }
+
+    .titulo-navbar strong,
+    .titulo-navbar small{
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+
+    /* ========================================
+       TÍTULOS
+    ======================================== */
+
+    .titulo{
+        font-size:1.35rem;
+        line-height:1.3;
+    }
+
+    .subtitulo{
+        font-size:.95rem;
+        line-height:1.5;
+    }
+
+
+    /* ========================================
+       CARDS
+    ======================================== */
+
+    .card-bn{
+        width:100%;
+        max-width:100%;
+        padding:18px 14px;
+        border-radius:16px;
+    }
+
+    .card-resumo{
+        width:100%;
+        max-width:100%;
+        min-height:105px;
+        height:auto;
+    }
+
+
+    /* ========================================
+       BOTÕES
+    ======================================== */
+
+    .btn{
+        max-width:100%;
+        white-space:normal;
+    }
+
+    .btn-inicial,
+    .btn-brilho{
+        max-width:100%;
+    }
+
+
+    /* ========================================
+       FORMULÁRIOS
+    ======================================== */
+
+    .form-control,
+    .form-select{
+        width:100%;
+        max-width:100%;
+        min-height:46px;
+    }
+
+    textarea.form-control{
+        min-height:100px;
+    }
+
+
+    /* ========================================
+       ROW DO BOOTSTRAP
+    ======================================== */
+
+    .row{
+        margin-left:0;
+        margin-right:0;
+    }
+
+    .row > *{
+        max-width:100%;
+    }
+
+
+    /* ========================================
+       MODAIS
+    ======================================== */
+
+    .modal{
+        padding-left:0 !important;
+        padding-right:0 !important;
+    }
+
+    .modal-dialog{
+        width:auto;
+        max-width:none;
+        margin:10px;
+    }
+
+    .modal-content{
+        width:100%;
+        max-width:100%;
+        border-radius:16px;
+    }
+
+    .modal-header{
+        padding:15px;
+    }
+
+    .modal-body{
+        padding:15px;
+        overflow-x:hidden;
+    }
+
+    .modal-footer{
+        padding:15px;
+        gap:8px;
+    }
+
+    .modal-footer .btn{
+        max-width:100%;
+    }
+
+
+    /* ========================================
+       TABELAS
+    ======================================== */
+
+    .table-responsive{
+        width:100%;
+        max-width:100%;
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling:touch;
+    }
+
+    .table-responsive table{
+        margin-bottom:0;
+    }
+
+
+    /* ========================================
+       ÁREAS DE AÇÕES
+    ======================================== */
+
+    .area-acoes-ficha,
+    .area-acoes-edicao,
+    .financeiro-acoes,
+    .viagem-integrantes-acoes,
+    .viagens-acoes{
+        max-width:100%;
+    }
+
+
+    /* ========================================
+       FICHA DO INTEGRANTE
+    ======================================== */
+
+    .ficha-cabecalho{
+        width:100%;
+        max-width:100%;
+    }
+
+    .ficha-identificacao{
+        width:100%;
+        min-width:0;
+    }
+
+
+    /* ========================================
+       ADMIN
+    ======================================== */
+
+    .area-menu-admin{
+        width:100%;
+        max-width:100%;
+    }
+
+    .botoes-admin{
+        width:100%;
+        max-width:100%;
+    }
+
+
+    /* ========================================
+       TELA INICIAL
+    ======================================== */
+
+    body:has(.tela-inicial){
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+    }
+
+    body:has(.tela-inicial) .navbar-brilho{
+        width:100%;
+    }
+
+    .tela-inicial{
+        width:100%;
+        max-width:100%;
+        margin-left:0;
+        margin-right:0;
+    }
+
+    .conteudo-inicial{
+        width:100%;
+        max-width:100%;
+        margin-left:0;
+        margin-right:0;
+        padding-left:15px;
+        padding-right:15px;
+    }
+
+
+    /* ========================================
+       LOGIN
+    ======================================== */
+
+    body:has(.login-brilho){
+        width:100%;
+        max-width:100%;
+        overflow-x:hidden;
+    }
+
+    .login-brilho{
+        width:100%;
+        max-width:100%;
+        margin-left:0;
+        margin-right:0;
+        padding-left:15px;
+        padding-right:15px;
+    }
+
+    .login-card{
+        width:100%;
+        max-width:420px;
+    }
+
+}
+
+
+/* ============================================
+   CELULARES PEQUENOS
+   Até 576px
+============================================ */
+
+@media (max-width:576px){
+
+    .container{
+        padding-left:10px;
+        padding-right:10px;
+    }
+
+
+    /* ========================================
+       NAVBAR
+    ======================================== */
+
+    .navbar-brand{
+        max-width:calc(100% - 50px);
+    }
+
+    .navbar-brand img{
+        width:38px;
+    }
+
+    .titulo-navbar strong{
+        font-size:14px;
+    }
+
+    .titulo-navbar small{
+        font-size:9px;
+    }
+
+
+    /* ========================================
+       TÍTULOS
+    ======================================== */
+
+    .titulo{
+        font-size:1.2rem;
+    }
+
+
+    /* ========================================
+       CARDS
+    ======================================== */
+
+    .card-bn{
+        padding:15px 12px;
+    }
+
+
+    /* ========================================
+       BOTÕES
+    ======================================== */
+
+    .btn{
+        min-height:44px;
+    }
+
+
+    /* ========================================
+       MODAIS
+    ======================================== */
+
+    .modal-dialog{
+        margin:6px;
+    }
+
+    .modal-content{
+        border-radius:14px;
+    }
+
+    .modal-header{
+        padding:12px;
+    }
+
+    .modal-body{
+        padding:12px;
+    }
+
+    .modal-footer{
+        padding:12px;
+        flex-direction:column;
+    }
+
+    .modal-footer .btn{
+        width:100%;
+    }
+
+
+    /* ========================================
+       TELA INICIAL
+    ======================================== */
+
+    .tela-inicial .nome-banda{
+        font-size:1.7rem;
+        letter-spacing:1px;
+    }
+
+    .tela-inicial .titulo{
+        font-size:1.25rem;
+    }
+
+    .tela-inicial .texto-inicial{
+        font-size:.85rem;
+        line-height:1.5;
+    }
+
+    .tela-inicial .btn-inicial{
+        width:100%;
+        max-width:300px;
+    }
+
+
+    /* ========================================
+       LOGIN
+    ======================================== */
+
+    .login-card{
+        padding:22px 16px;
+        border-radius:16px;
+    }
+
+    .login-card h2{
+        font-size:1.35rem;
+    }
+
+}
+
+/* ============================================
+   FUNDO DA TELA INICIAL - AJUSTE MOBILE
+============================================ */
+
+@media (max-width:768px){
+
+    .fundo-brilho{
+        background-position:25% center;
+    }
+
+}
+
+/* ============================================
+   TELA INICIAL - MELHORAR LEITURA NO CELULAR
+============================================ */
+
+@media (max-width:768px){
+
+    .tela-inicial::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:rgba(0,0,0,.35);
+        z-index:1;
+    }
+
+    .conteudo-inicial{
+        position:relative;
+        z-index:2;
+    }
+
+}
