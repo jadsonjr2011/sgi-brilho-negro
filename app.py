@@ -5501,6 +5501,132 @@ def gerar_pdf_rifa_admin(id):
 
         db.close()        
 
+@app.route("/admin/rifas/<int:rifa_id>/vendedor/<int:integrante_id>/gerar-pdf")
+def gerar_pdf_rifa_vendedor(rifa_id, integrante_id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # BUSCAR RIFA
+        # ==========================================
+
+        rifa = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    premio,
+                    valor_numero,
+                    data_sorteio,
+                    status
+                FROM rifas
+                WHERE id = :rifa_id
+            """),
+            {
+                "rifa_id": rifa_id
+            }
+        ).mappings().first()
+
+        if not rifa:
+            return "Rifa não encontrada", 404
+
+
+        # ==========================================
+        # VERIFICAR SE O VENDEDOR PERTENCE À RIFA
+        # ==========================================
+
+        vendedor = db.execute(
+            text("""
+                SELECT
+                    ri.id,
+                    ri.integrante_id,
+                    i.nome
+                FROM rifas_integrantes ri
+
+                JOIN integrantes i
+                    ON i.id = ri.integrante_id
+
+                WHERE ri.rifa_id = :rifa_id
+                AND ri.integrante_id = :integrante_id
+            """),
+            {
+                "rifa_id": rifa_id,
+                "integrante_id": integrante_id
+            }
+        ).mappings().first()
+
+        if not vendedor:
+            return "Vendedor não encontrado nesta rifa", 404
+
+
+        # ==========================================
+        # BUSCAR SOMENTE OS NÚMEROS DO VENDEDOR
+        # ==========================================
+
+        numeros = db.execute(
+            text("""
+                SELECT
+                    rn.id,
+                    rn.numero,
+                    rn.status,
+                    rn.integrante_id,
+                    i.nome AS vendedor_nome
+
+                FROM rifas_numeros rn
+
+                LEFT JOIN integrantes i
+                    ON i.id = rn.integrante_id
+
+                WHERE rn.rifa_id = :rifa_id
+                AND rn.integrante_id = :integrante_id
+
+                ORDER BY rn.numero
+            """),
+            {
+                "rifa_id": rifa_id,
+                "integrante_id": integrante_id
+            }
+        ).mappings().all()
+
+
+        if not numeros:
+            return "Nenhum número encontrado para este vendedor", 404
+
+
+        # ==========================================
+        # GERAR PDF
+        # ==========================================
+
+        pdf = gerar_pdf_rifa(
+            rifa,
+            numeros
+        )
+
+
+        # ==========================================
+        # ENVIAR PDF
+        # ==========================================
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=(
+                f"rifa_{rifa['nome']}_"
+                f"{vendedor['nome']}.pdf"
+            )
+        )
+
+
+    finally:
+
+        db.close()
+
 @app.route("/admin/carteirinha/pdf/<int:id>")
 def baixar_carteirinha_pdf(id):
 

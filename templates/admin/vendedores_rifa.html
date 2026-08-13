@@ -143,30 +143,34 @@ Vendedores da Rifa
 
 </td>
 
-<td>
+<td class="text-nowrap">
 
-<button
- type="button"
- class="btn btn-success btn-sm"
- data-bs-toggle="modal"
- data-bs-target="#modalPrestacao{{ vendedor.id }}">
+    <a
+        href="/admin/rifas/{{ rifa.id }}/vendedor/{{ vendedor.integrante_id }}/gerar-pdf"
+        class="btn btn-primary btn-sm">
 
+        🖨️ Imprimir
 
-💰 Prestar Conta
+    </a>
 
+    <button
+        type="button"
+        class="btn btn-success btn-sm"
+        data-bs-toggle="modal"
+        data-bs-target="#modalPrestacao{{ vendedor.id }}">
 
-</button>
+        💰 Prestar Conta
 
-<a
- href="/admin/rifas/vendedor/{{ vendedor.id }}/remover"
- class="btn btn-danger btn-sm"
- onclick="return confirm('Remover este vendedor da campanha?')">
+    </button>
 
+    <a
+        href="/admin/rifas/vendedor/{{ vendedor.id }}/remover"
+        class="btn btn-danger btn-sm"
+        onclick="return confirm('Remover este vendedor da campanha?')">
 
-❌
+        ❌
 
-
-</a>
+    </a>
 
 </td>
 
