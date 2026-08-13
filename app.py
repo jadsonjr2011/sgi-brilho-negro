@@ -2434,9 +2434,11 @@ def viagens():
     if "admin" not in session:
         return redirect("/login")
 
-
     db = SessionLocal()
 
+    # ==========================================
+    # VIAGENS
+    # ==========================================
 
     lista = db.execute(
         text("""
@@ -2457,14 +2459,69 @@ def viagens():
     ).mappings().all()
 
 
+    # ==========================================
+    # INTEGRANTES APROVADOS E ATIVOS
+    # ==========================================
+
+    integrantes = db.execute(
+        text("""
+            SELECT
+                id,
+                codigo_integrante,
+                nome,
+                cidade,
+                status,
+                situacao
+
+            FROM integrantes
+
+            WHERE TRIM(status) = 'APROVADO'
+            AND TRIM(situacao) = 'ATIVO'
+
+            ORDER BY nome
+        """)
+    ).mappings().all()
+
+
+    # ==========================================
+    # INTEGRANTES JÁ SELECIONADOS POR VIAGEM
+    # ==========================================
+
+    selecionados = db.execute(
+        text("""
+            SELECT
+                viagem_id,
+                integrante_id
+
+            FROM viagem_integrantes
+        """)
+    ).mappings().all()
+
+
+    selecionados_por_viagem = {}
+
+    for item in selecionados:
+
+        viagem_id = item["viagem_id"]
+        integrante_id = item["integrante_id"]
+
+        if viagem_id not in selecionados_por_viagem:
+            selecionados_por_viagem[viagem_id] = []
+
+        selecionados_por_viagem[viagem_id].append(
+            integrante_id
+        )
+
+
     db.close()
 
 
     return render_template(
         "admin/viagens.html",
-        viagens=lista
+        viagens=lista,
+        integrantes=integrantes,
+        selecionados_por_viagem=selecionados_por_viagem
     )
-
 
 @app.route("/admin/viagens/nova", methods=["POST"])
 def nova_viagem():
@@ -2658,8 +2715,41 @@ def salvar_integrantes_viagem(id):
     db.close()
 
 
+    return redirect("/admin/viagens")
+
+@app.route(
+    "/admin/viagem/<int:viagem_id>/integrante/<int:integrante_id>/remover",
+    methods=["POST"]
+)
+def remover_integrante_viagem(viagem_id, integrante_id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        db.execute(
+            text("""
+                DELETE FROM viagem_integrantes
+                WHERE viagem_id = :viagem_id
+                AND integrante_id = :integrante_id
+            """),
+            {
+                "viagem_id": viagem_id,
+                "integrante_id": integrante_id
+            }
+        )
+
+        db.commit()
+
+    finally:
+
+        db.close()
+
     return redirect(
-        f"/admin/viagem/{id}/integrantes"
+        f"/admin/viagem/{viagem_id}"
     )
 
 @app.route("/admin/viagem/<int:id>")
@@ -2668,9 +2758,7 @@ def detalhe_viagem(id):
     if "admin" not in session:
         return redirect("/login")
 
-
     db = SessionLocal()
-
 
     viagem = db.execute(
         text("""
@@ -2683,11 +2771,10 @@ def detalhe_viagem(id):
         }
     ).mappings().first()
 
-
-
     participantes = db.execute(
         text("""
             SELECT
+                i.id,
                 i.codigo_integrante,
                 i.nome,
                 i.cidade,
@@ -2707,11 +2794,7 @@ def detalhe_viagem(id):
         }
     ).mappings().all()
 
-
-
     db.close()
-
-
 
     return render_template(
         "admin/detalhe_viagem.html",

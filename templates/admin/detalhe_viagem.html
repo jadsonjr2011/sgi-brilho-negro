@@ -118,6 +118,8 @@ Detalhes da Viagem
 
                 <th>Cidade</th>
 
+                <th>Ações</th>
+
             </tr>
 
         </thead>
@@ -142,6 +144,25 @@ Detalhes da Viagem
                     {{ pessoa.cidade }}
                 </td>
 
+                 <td>
+
+                    <form
+                        method="POST"
+                        action="/admin/viagem/{{ viagem.id }}/integrante/{{ pessoa.id }}/remover"
+                        onsubmit="return confirm('Tem certeza que deseja remover {{ pessoa.nome }} desta viagem?');">
+
+                        <button
+                            type="submit"
+                            class="btn btn-sm btn-danger">
+
+                            🗑️ Remover
+
+                        </button>
+
+                    </form>
+
+                </td>        
+
             </tr>
 
             {% else %}
@@ -149,7 +170,7 @@ Detalhes da Viagem
             <tr>
 
                 <td
-                    colspan="3"
+                    colspan="4"
                     class="text-center">
 
                     Nenhum participante cadastrado

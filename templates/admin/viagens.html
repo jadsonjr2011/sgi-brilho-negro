@@ -126,13 +126,18 @@ Viagens
 
                     <div class="viagens-acoes">
 
-                        <a
-                            href="/admin/viagem/{{ viagem.id }}/integrantes"
-                            class="btn btn-sm btn-brilho">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-brilho btn-abrir-integrantes"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalIntegrantes"
+                            data-viagem-id="{{ viagem.id }}"
+                            data-viagem-evento="{{ viagem.evento }}"
+                            data-url-salvar="/admin/viagem/{{ viagem.id }}/integrantes/salvar">
 
                             👥 Integrantes
 
-                        </a>
+                        </button>
 
 
                         <a
@@ -365,5 +370,471 @@ Viagens
 
 
 </div>
+
+<!-- =====================================================
+     MODAL INTEGRANTES DA VIAGEM
+===================================================== -->
+
+<div class="modal fade"
+     id="modalIntegrantes"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    👥 Integrantes
+
+                    <span
+                        id="nomeEventoIntegrantes"
+                        class="text-secondary">
+                    </span>
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                id="formIntegrantesViagem"
+                method="POST">
+
+                <div class="modal-body">
+
+
+                    <!-- PESQUISA -->
+
+                    <div class="mb-3">
+
+                        <input
+                            type="text"
+                            id="pesquisaIntegrantes"
+                            class="form-control"
+                            placeholder="🔎 Pesquisar integrante..."
+                            autocomplete="off">
+
+                    </div>
+
+
+                    <!-- CONTROLES -->
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <div>
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-light"
+                                id="selecionarTodosIntegrantes">
+
+                                ☑️ Selecionar todos
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                id="limparIntegrantes">
+
+                                Limpar seleção
+
+                            </button>
+
+                        </div>
+
+
+                        <span
+                            id="contadorIntegrantes"
+                            class="text-secondary">
+
+                            0 selecionados
+
+                        </span>
+
+                    </div>
+
+
+                    <!-- LISTA -->
+
+                    <div
+                        id="listaIntegrantes"
+                        style="
+                            max-height: 450px;
+                            overflow-y: auto;
+                        ">
+
+
+                        {% for integrante in integrantes %}
+
+                        <div
+                            class="integrante-item border-bottom border-secondary py-2"
+                            data-nome="{{ integrante.nome|lower }}"
+                            data-codigo="{{ integrante.codigo_integrante or '' }}">
+
+                            <div class="form-check">
+
+                                <input
+                                    class="form-check-input integrante-checkbox"
+                                    type="checkbox"
+                                    name="integrantes"
+                                    value="{{ integrante.id }}"
+                                    id="integrante_{{ integrante.id }}">
+
+                                <label
+                                    class="form-check-label w-100"
+                                    for="integrante_{{ integrante.id }}">
+
+                                    <strong>
+                                        {{ integrante.nome }}
+                                    </strong>
+
+                                    <br>
+
+                                    <small class="text-secondary">
+
+                                        {% if integrante.codigo_integrante %}
+                                            {{ integrante.codigo_integrante }}
+                                        {% endif %}
+
+                                        {% if integrante.cidade %}
+                                            — {{ integrante.cidade }}
+                                        {% endif %}
+
+                                    </small>
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                        {% else %}
+
+                        <div class="text-center text-secondary py-4">
+
+                            Nenhum integrante disponível.
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer viagens-modal-acoes">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-brilho">
+
+                        💾 Salvar participantes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    const modal = document.getElementById("modalIntegrantes");
+
+    const form = document.getElementById("formIntegrantesViagem");
+
+    const pesquisa = document.getElementById("pesquisaIntegrantes");
+
+    const contador = document.getElementById("contadorIntegrantes");
+
+    const nomeEvento = document.getElementById("nomeEventoIntegrantes");
+
+    const checkboxes = document.querySelectorAll(
+        ".integrante-checkbox"
+    );
+
+    const itens = document.querySelectorAll(
+        ".integrante-item"
+    );
+
+
+    // ==========================================
+    // PARTICIPANTES JÁ SELECIONADOS
+    // ==========================================
+
+    const selecionadosPorViagem =
+        {{ selecionados_por_viagem | tojson }};
+
+
+    // ==========================================
+    // ABRIR MODAL
+    // ==========================================
+
+    document.querySelectorAll(
+        ".btn-abrir-integrantes"
+    ).forEach(function (botao) {
+
+        botao.addEventListener(
+            "click",
+            function () {
+
+                const viagemId =
+                    this.dataset.viagemId;
+
+                const evento =
+                    this.dataset.viagemEvento;
+
+
+                // Nome do evento
+
+                nomeEvento.textContent =
+                    "— " + evento;
+
+
+                // URL para salvar
+
+                form.action = this.dataset.urlSalvar;
+
+
+                // Limpa todas as marcações
+
+                checkboxes.forEach(
+                    function (checkbox) {
+
+                        checkbox.checked = false;
+
+                    }
+                );
+
+
+                // Busca os selecionados dessa viagem
+
+                const selecionados =
+                    selecionadosPorViagem[viagemId] || [];
+
+
+                // Marca os integrantes
+
+                selecionados.forEach(
+                    function (integranteId) {
+
+                        const checkbox =
+                            document.getElementById(
+                                "integrante_" + integranteId
+                            );
+
+                        if (checkbox) {
+
+                            checkbox.checked = true;
+
+                        }
+
+                    }
+                );
+
+
+                // Limpa pesquisa
+
+                pesquisa.value = "";
+
+
+                itens.forEach(
+                    function (item) {
+
+                        item.style.display = "";
+
+                    }
+                );
+
+
+                atualizarContador();
+
+            }
+        );
+
+    });
+
+
+    // ==========================================
+    // PESQUISA
+    // ==========================================
+
+    pesquisa.addEventListener(
+        "input",
+        function () {
+
+            const termo =
+                this.value
+                .toLowerCase()
+                .trim();
+
+
+            itens.forEach(
+                function (item) {
+
+                    const nome =
+                        item.dataset.nome;
+
+                    const codigo =
+                        item.dataset.codigo
+                        .toLowerCase();
+
+
+                    if (
+                        nome.includes(termo)
+                        ||
+                        codigo.includes(termo)
+                    ) {
+
+                        item.style.display = "";
+
+                    } else {
+
+                        item.style.display = "none";
+
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+    // ==========================================
+    // SELECIONAR TODOS
+    // ==========================================
+
+    document.getElementById(
+        "selecionarTodosIntegrantes"
+    ).addEventListener(
+        "click",
+        function () {
+
+            checkboxes.forEach(
+                function (checkbox) {
+
+                    const item =
+                        checkbox.closest(
+                            ".integrante-item"
+                        );
+
+
+                    if (
+                        item.style.display !== "none"
+                    ) {
+
+                        checkbox.checked = true;
+
+                    }
+
+                }
+            );
+
+
+            atualizarContador();
+
+        }
+    );
+
+
+    // ==========================================
+    // LIMPAR SELEÇÃO
+    // ==========================================
+
+    document.getElementById(
+        "limparIntegrantes"
+    ).addEventListener(
+        "click",
+        function () {
+
+            checkboxes.forEach(
+                function (checkbox) {
+
+                    checkbox.checked = false;
+
+                }
+            );
+
+
+            atualizarContador();
+
+        }
+    );
+
+
+    // ==========================================
+    // CONTADOR
+    // ==========================================
+
+    checkboxes.forEach(
+        function (checkbox) {
+
+            checkbox.addEventListener(
+                "change",
+                atualizarContador
+            );
+
+        }
+    );
+
+
+    function atualizarContador() {
+
+        const selecionados =
+            document.querySelectorAll(
+                ".integrante-checkbox:checked"
+            ).length;
+
+
+        contador.textContent =
+            selecionados + " selecionado"
+            + (selecionados === 1 ? "" : "s");
+
+    }
+
+
+});
+
+</script>
 
 {% endblock %}

@@ -59,7 +59,52 @@ def adicionar_rodape(canvas, doc):
 
     largura, altura = A4
 
+    # ==========================================
+    # MARCA D'ÁGUA
+    # ==========================================
+
+    logo_path = os.path.join(
+        "static",
+        "img",
+        "logo_transparente.png"
+    )
+
+    if os.path.exists(logo_path):
+
+        canvas.saveState()
+
+        # Transparência da marca d'água
+        try:
+            canvas.setFillAlpha(0.10)
+        except:
+            pass
+
+        # Tamanho da marca d'água
+        largura_logo = 360
+        altura_logo = 360
+
+        # Centralizar na página
+        x = (largura - largura_logo) / 2
+        y = (altura - altura_logo) / 2
+
+        canvas.drawImage(
+            logo_path,
+            x,
+            y,
+            width=largura_logo,
+            height=altura_logo,
+            preserveAspectRatio=True,
+            mask="auto"
+        )
+
+        canvas.restoreState()
+
+    # ==========================================
+    # RODAPÉ
+    # ==========================================
+
     canvas.setStrokeColor(colors.grey)
+
     canvas.line(
         40,
         50,
