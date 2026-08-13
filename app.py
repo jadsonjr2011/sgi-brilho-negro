@@ -3,7 +3,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from flask import send_file
 from io import BytesIO
-from utils.pdf_carteirinha import gerar_pdf_carteirinha
+from utils.pdf_carteirinha import (
+    gerar_pdf_carteirinha,
+    gerar_pdf_todas_carteirinhas
+)
 from utils.pdf_financeiro import gerar_pdf_financeiro
 from utils.pdf_rifa import gerar_pdf_rifa
 from decimal import Decimal
@@ -294,6 +297,22 @@ def admin():
             """)
         ).scalar()
 
+        # ==========================================
+        # INTEGRANTES PARA CARTEIRINHAS
+        # ==========================================
+
+        integrantes_carteirinhas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    codigo_integrante,
+                    nome
+                FROM integrantes
+                WHERE status = 'APROVADO'
+                AND situacao = 'ATIVO'
+                ORDER BY LOWER(nome)
+            """)
+        ).mappings().all()
 
         # ==========================================
         # TEMPORADAS
@@ -409,7 +428,8 @@ def admin():
         temporadas=temporadas,
         aniversariantes=aniversariantes,
         mes_nome=mes_nome,
-        status_inscricoes=status_inscricoes
+        status_inscricoes=status_inscricoes,
+        integrantes_carteirinhas=integrantes_carteirinhas
     )
 
 @app.route("/integrantes")
@@ -5713,7 +5733,18 @@ def gerar_pdf_rifa_vendedor(rifa_id, integrante_id):
 @app.route("/admin/carteirinha/pdf/<int:id>")
 def baixar_carteirinha_pdf(id):
 
+    if "admin" not in session:
+        return redirect("/login")
+
     return gerar_pdf_carteirinha(id)
+
+@app.route("/admin/carteirinha/pdf/todas")
+def baixar_todas_carteirinhas_pdf():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    return gerar_pdf_todas_carteirinhas()    
 
 if __name__ == "__main__":
 

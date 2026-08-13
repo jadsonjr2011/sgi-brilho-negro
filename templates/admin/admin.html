@@ -1793,4 +1793,136 @@
 
 </div>
 
+<!-- ===================================================== -->
+<!-- MODAL DE CARTEIRINHAS                                -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalCarteirinhas"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    🪪 Carteirinhas de Integrantes
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <!-- CORPO -->
+
+            <div class="modal-body">
+
+                <p class="text-secondary mb-3">
+                    Selecione um integrante aprovado e ativo para gerar sua carteirinha.
+                </p>
+
+                <div class="d-flex justify-content-end mb-4">
+
+                    <a
+                            href="/admin/carteirinha/pdf/todas"
+                            target="_blank"
+                            class="btn btn-success">
+
+                            🪪 Gerar Todas as Carteirinhas
+
+                        </a>
+
+                    </div>
+
+                {% if integrantes_carteirinhas %}
+
+                    <div class="list-group">
+
+                        {% for integrante in integrantes_carteirinhas %}
+
+                            <div
+                                class="list-group-item list-group-item-action bg-dark text-white border-secondary d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <strong>
+                                        {{ integrante.nome }}
+                                    </strong>
+
+                                    <div class="small text-secondary">
+
+                                        Matrícula:
+                                        {{ integrante.codigo_integrante }}
+
+                                    </div>
+
+                                </div>
+
+
+                                <a
+                                    href="/admin/carteirinha/pdf/{{ integrante.id }}"
+                                    target="_blank"
+                                    class="btn btn-outline-light btn-sm">
+
+                                    📄 Gerar PDF
+
+                                </a>
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="text-center text-secondary py-4">
+
+                        <div style="font-size: 2rem;">
+                            🪪
+                        </div>
+
+                        <div class="mt-2">
+                            Nenhum integrante aprovado e ativo encontrado.
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- RODAPÉ -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}
