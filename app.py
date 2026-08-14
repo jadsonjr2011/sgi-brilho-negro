@@ -1348,23 +1348,18 @@ def exportar_pdf():
     if "admin" not in session:
         return redirect("/login")
 
-
     db = SessionLocal()
 
     # ==============================
-    # FILTRO
+    # FILTROS
     # ==============================
+
     status_filtro = request.args.get("status")
-
     situacao_filtro = request.args.get("situacao")
-
     funcao_filtro = request.args.get("funcao")
 
-
     condicoes = []
-
     parametros = {}
-
 
     if status_filtro:
 
@@ -1374,16 +1369,13 @@ def exportar_pdf():
 
         parametros["status"] = status_filtro
 
-
     if situacao_filtro:
 
         condicoes.append(
             "situacao = :situacao"
         )
 
-    parametros["situacao"] = situacao_filtro    
-
-
+        parametros["situacao"] = situacao_filtro
 
     if funcao_filtro:
 
@@ -1393,15 +1385,15 @@ def exportar_pdf():
 
         parametros["funcao"] = funcao_filtro
 
-
-
     where = ""
 
     if condicoes:
 
         where = "WHERE " + " AND ".join(condicoes)
 
-
+    # ==============================
+    # BUSCAR INTEGRANTES
+    # ==============================
 
     integrantes = db.execute(
 
@@ -1431,6 +1423,7 @@ def exportar_pdf():
 
     ).mappings().all()
 
+    total_apresentado = len(integrantes)
 
     db.close()
 
@@ -1442,11 +1435,18 @@ def exportar_pdf():
 
     for pessoa in integrantes:
 
-        funcao = pessoa["funcao"] or "Integrantes sem função definida"
+        funcao = (
+            pessoa["funcao"]
+            or
+            "Integrantes sem função definida"
+        )
 
         if funcao in distribuicao_funcao:
+
             distribuicao_funcao[funcao] += 1
+
         else:
+
             distribuicao_funcao[funcao] = 1
 
     # ==============================
@@ -1458,272 +1458,793 @@ def exportar_pdf():
     from reportlab.lib.pagesizes import A4
 
     pdf = SimpleDocTemplate(
+
         arquivo,
+
         pagesize=A4,
+
         topMargin=25,
+
         bottomMargin=30,
+
         leftMargin=35,
+
         rightMargin=35
+
     )
 
     elementos = []
 
-
     estilos = getSampleStyleSheet()
 
+    # ==============================
+    # IMPORTS DO REPORTLAB
+    # ==============================
 
+    from reportlab.platypus import (
+        Image,
+        HRFlowable,
+        Table,
+        TableStyle,
+        Paragraph,
+        Spacer
+    )
 
+    from reportlab.lib.styles import ParagraphStyle
+
+    # ==============================
     # LOGO
-
-    from reportlab.platypus import Image
-
+    # ==============================
 
     logo = Image(
+
         "static/img/logo_relatorio.PNG",
+
         width=320,
+
         height=79
+
     )
 
     logo.hAlign = "CENTER"
 
-
     elementos.append(logo)
 
-
     elementos.append(
-        Spacer(1,5)
+        Spacer(1, 5)
     )
 
-
+    # ==============================
+    # TÍTULO
+    # ==============================
 
     titulo = Paragraph(
+
         """
         <b>BRILHO NEGRO</b><br/>
         <font size="14">
         Sistema de Gestão de Integrantes
         </font>
         """,
-        estilos["Title"]
-    )
 
+        estilos["Title"]
+
+    )
 
     elementos.append(titulo)
 
-    from reportlab.platypus import HRFlowable
-
-
     elementos.append(
-        Spacer(1,8)
+        Spacer(1, 8)
     )
 
-
     elementos.append(
+
         HRFlowable(
-            width="100%",
-            thickness=1
-        )
-    )
 
+            width="100%",
+
+            thickness=1
+
+        )
+
+    )
 
     elementos.append(
-        Spacer(1,15)
+        Spacer(1, 15)
     )
-
 
     subtitulo = Paragraph(
-        "<b>Relatório de Integrantes</b>",
-        estilos["Heading2"]
-    )
 
+        "<b>Relatório de Integrantes</b>",
+
+        estilos["Heading2"]
+
+    )
 
     elementos.append(subtitulo)
 
-
-
     elementos.append(
-        Spacer(1,15)
+        Spacer(1, 15)
     )
 
+    # ==============================
+    # DATA
+    # ==============================
 
+    data_geracao = datetime.now().strftime(
+        "%d/%m/%Y %H:%M"
+    )
 
-    filtros_aplicados = []
+    # ==============================
+    # ESTILOS DOS RESUMOS
+    # ==============================
+
+    estilo_resumo = ParagraphStyle(
+
+        "ResumoRelatorio",
+
+        parent=estilos["Normal"],
+
+        fontSize=8.5,
+
+        leading=11
+
+    )
+
+    estilo_resumo_titulo = ParagraphStyle(
+
+        "ResumoTitulo",
+
+        parent=estilos["Normal"],
+
+        fontSize=9,
+
+        leading=11,
+
+        fontName="Helvetica-Bold"
+
+    )
+
+    estilo_funcao = ParagraphStyle(
+
+        "DistribuicaoFuncao",
+
+        parent=estilos["Normal"],
+
+        fontSize=8.5,
+
+        leading=11
+
+    )
+
+    # ==============================
+    # FILTROS APLICADOS
+    # ==============================
+
+    filtros_html = []
 
     if status_filtro:
-        filtros_aplicados.append(
-            f"Status: {status_filtro}"
-            )
+
+        filtros_html.append(
+            f"<b>Status Cadastro:</b> {status_filtro}"
+        )
 
     if situacao_filtro:
-        filtros_aplicados.append(
-            f"Situação: {situacao_filtro}"
+
+        filtros_html.append(
+            f"<b>Situação:</b> {situacao_filtro}"
         )
 
     if funcao_filtro:
-        filtros_aplicados.append(
-            f"Função: {funcao_filtro}"
+
+        filtros_html.append(
+            f"<b>Função:</b> {funcao_filtro}"
         )
 
+    if not filtros_html:
 
-    filtro_texto = (
-        " | ".join(filtros_aplicados)
-        if filtros_aplicados
-        else
-        "TODOS OS INTEGRANTES"
+        filtros_html.append(
+            "<b>Filtros:</b> Todos"
+        )
+
+    texto_filtros = "<br/>".join(
+        filtros_html
     )
 
+    # ==============================
+    # RESUMO DOS RESULTADOS
+    # ==============================
 
+    texto_resultados = f"""
 
-    texto_funcoes = "<br/>".join(
+        <b>Resultados da consulta</b><br/>
+
+        Total apresentado:
+        <b>{total_apresentado}</b>
+
+    """
+
+    # ==============================
+    # RESUMO EM 3 COLUNAS
+    # ==============================
+
+    resumo_dados = [
+
         [
-            f"{funcao}: {quantidade}"
-            for funcao, quantidade in distribuicao_funcao.items()
+
+            Paragraph(
+
+                f"""
+                <b>Gerado em</b><br/>
+                {data_geracao}
+                """,
+
+                estilo_resumo
+
+            ),
+
+            Paragraph(
+
+                f"""
+                <b>Filtros aplicados</b><br/>
+                {texto_filtros}
+                """,
+
+                estilo_resumo
+
+            ),
+
+            Paragraph(
+
+                texto_resultados,
+
+                estilo_resumo
+
+            )
+
         ]
-    )
 
+    ]
 
-    informacoes = Paragraph(
+    tabela_resumo = Table(
 
-        f"""
-        Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}<br/>
-        Filtro: {filtro_texto}<br/><br/>
+        resumo_dados,
 
-        <b>Distribuição por Função:</b><br/>
+        colWidths=[
 
-        {texto_funcoes}
+            160,
+            190,
+            150
 
-        <br/><br/>
-
-        Total encontrado: {len(integrantes)}
-        """,
-
-        estilos["Normal"]
+        ]
 
     )
 
+    tabela_resumo.setStyle(
 
-    elementos.append(informacoes)
+        TableStyle(
 
+            [
 
+                (
+
+                    "BOX",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    0.5,
+
+                    colors.grey
+
+                ),
+
+                (
+
+                    "INNERGRID",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    0.5,
+
+                    colors.lightgrey
+
+                ),
+
+                (
+
+                    "VALIGN",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    "TOP"
+
+                ),
+
+                (
+
+                    "LEFTPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    8
+
+                ),
+
+                (
+
+                    "RIGHTPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    8
+
+                ),
+
+                (
+
+                    "TOPPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    8
+
+                ),
+
+                (
+
+                    "BOTTOMPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    8
+
+                )
+
+            ]
+
+        )
+
+    )
 
     elementos.append(
-        Spacer(1,20)
+        tabela_resumo
     )
 
+    elementos.append(
+        Spacer(1, 15)
+    )
 
+    # ==============================
+    # DISTRIBUIÇÃO POR FUNÇÃO
+    # ==============================
+
+    elementos.append(
+
+        Paragraph(
+
+            "<b>Distribuição por Função</b>",
+
+            estilo_resumo_titulo
+
+        )
+
+    )
+
+    elementos.append(
+        Spacer(1, 6)
+    )
+
+    funcoes_lista = [
+
+        f"<b>{funcao}</b>: {quantidade}"
+
+        for funcao, quantidade
+        in distribuicao_funcao.items()
+
+    ]
+
+    colunas_funcoes = [
+
+        [],
+        [],
+        []
+
+    ]
+
+    for indice, funcao in enumerate(funcoes_lista):
+
+        colunas_funcoes[
+            indice % 3
+        ].append(funcao)
+
+    funcoes_colunas = []
+
+    for coluna in colunas_funcoes:
+
+        if coluna:
+
+            funcoes_colunas.append(
+
+                Paragraph(
+
+                    "<br/>".join(coluna),
+
+                    estilo_funcao
+
+                )
+
+            )
+
+        else:
+
+            funcoes_colunas.append(
+
+                Paragraph(
+
+                    "",
+
+                    estilo_funcao
+
+                )
+
+            )
+
+    tabela_funcoes = Table(
+
+        [funcoes_colunas],
+
+        colWidths=[
+
+            167,
+            167,
+            166
+
+        ]
+
+    )
+
+    tabela_funcoes.setStyle(
+
+        TableStyle(
+
+            [
+
+                (
+
+                    "BOX",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    0.5,
+
+                    colors.grey
+
+                ),
+
+                (
+
+                    "INNERGRID",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    0.5,
+
+                    colors.lightgrey
+
+                ),
+
+                (
+
+                    "VALIGN",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    "TOP"
+
+                ),
+
+                (
+
+                    "LEFTPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    8
+
+                ),
+
+                (
+
+                    "RIGHTPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    8
+
+                ),
+
+                (
+
+                    "TOPPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    7
+
+                ),
+
+                (
+
+                    "BOTTOMPADDING",
+
+                    (0, 0),
+
+                    (-1, -1),
+
+                    7
+
+                )
+
+            ]
+
+        )
+
+    )
+
+    elementos.append(
+        tabela_funcoes
+    )
+
+    elementos.append(
+        Spacer(1, 15)
+    )
+
+    # ==============================
+    # ESTILOS DA TABELA
+    # ==============================
+
+    estilo_tabela = ParagraphStyle(
+
+        "Tabela",
+
+        parent=estilos["Normal"],
+
+        fontSize=8,
+
+        leading=10
+
+    )
+
+    estilo_cabecalho = ParagraphStyle(
+
+        "CabecalhoTabela",
+
+        parent=estilos["Normal"],
+
+        fontSize=8,
+
+        leading=10,
+
+        alignment=1,
+
+        fontName="Helvetica-Bold"
+
+    )
+
+    estilo_centro = ParagraphStyle(
+
+        "Centro",
+
+        parent=estilos["Normal"],
+
+        fontSize=8,
+
+        leading=10,
+
+        alignment=1
+
+    )
+
+    # ==============================
+    # DADOS DA TABELA
+    # ==============================
+
+    dados = [
+
+        [
+
+            Paragraph(
+                "Código",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Integrante",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "CPF",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Data nascimento",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Cidade/UF",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Função",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Status",
+                estilo_cabecalho
+            )
+
+        ]
+
+    ]
+
+    for pessoa in integrantes:
+
+        if pessoa["data_nascimento"]:
+
+            try:
+
+                data_nascimento = datetime.strptime(
+
+                    str(pessoa["data_nascimento"]),
+
+                    "%Y-%m-%d"
+
+                ).strftime("%d/%m/%Y")
+
+            except ValueError:
+
+                data_nascimento = str(
+                    pessoa["data_nascimento"]
+                )
+
+        else:
+
+            data_nascimento = "-"
+
+        cidade = pessoa["cidade"] or "-"
+        estado = pessoa["estado"] or "-"
+
+        cidade_uf = f"{cidade}/{estado}"
+
+        dados.append(
+
+            [
+
+                Paragraph(
+
+                    str(
+                        pessoa["codigo_integrante"]
+                        or "-"
+                    ),
+
+                    estilo_centro
+
+                ),
+
+                Paragraph(
+
+                    (
+                        pessoa["nome"]
+                        or "-"
+                    ).title(),
+
+                    estilo_tabela
+
+                ),
+
+                Paragraph(
+
+                    str(
+                        pessoa["cpf"]
+                        or "-"
+                    ),
+
+                    estilo_centro
+
+                ),
+
+                Paragraph(
+
+                    data_nascimento,
+
+                    estilo_centro
+
+                ),
+
+                Paragraph(
+
+                    cidade_uf,
+
+                    estilo_tabela
+
+                ),
+
+                Paragraph(
+
+                    pessoa["funcao"]
+                    or "-",
+
+                    estilo_centro
+
+                ),
+
+                Paragraph(
+
+                    pessoa["status"]
+                    or "-",
+
+                    estilo_centro
+
+                )
+
+            ]
+
+        )
 
     # ==============================
     # TABELA
     # ==============================
 
-    from reportlab.lib.styles import ParagraphStyle
-
-
-    estilo_tabela = ParagraphStyle(
-        "Tabela",
-        parent=estilos["Normal"],
-        fontSize=8,
-        leading=10
-    )
-
-
-    estilo_cabecalho = ParagraphStyle(
-        "CabecalhoTabela",
-        parent=estilos["Normal"],
-        fontSize=8,
-        leading=10,
-        alignment=1,
-        fontName="Helvetica-Bold"
-    )
-
-    estilo_centro = ParagraphStyle(
-        "Centro",
-        parent=estilos["Normal"],
-        fontSize=8,
-        leading=10,
-        alignment=1
-    )
-
-
-
-    dados = [
-
-        [
-            Paragraph("Código", estilo_cabecalho),
-            Paragraph("Integrante", estilo_cabecalho),
-            Paragraph("CPF", estilo_cabecalho),
-            Paragraph("Data nascimento", estilo_cabecalho),
-            Paragraph("Cidade/UF", estilo_cabecalho),
-            Paragraph("Função", estilo_cabecalho),
-            Paragraph("Status", estilo_cabecalho)
-        ]
-
-    ]
-
-
-
-    for pessoa in integrantes:
-
-        data_nascimento = datetime.strptime(
-            pessoa["data_nascimento"],
-            "%Y-%m-%d"
-        ).strftime("%d/%m/%Y")
-
-
-        dados.append(
-            [
-                Paragraph(
-                    str(pessoa["codigo_integrante"]),
-                    estilo_centro
-                ),
-
-                Paragraph(
-                    pessoa["nome"].title(),
-                    estilo_tabela
-                ),
-
-                Paragraph(
-                    pessoa["cpf"],
-                    estilo_centro
-                ),
-
-                Paragraph(
-                    data_nascimento,
-                    estilo_centro
-                ),
-
-                Paragraph(
-                    f'{pessoa["cidade"]}/{pessoa["estado"]}',
-                    estilo_tabela
-                ),
-
-                Paragraph(
-                    pessoa["funcao"] or "-",
-                    estilo_centro
-                ),
-
-                Paragraph(
-                    pessoa["status"],
-                    estilo_centro
-                )
-            ]
-        )
-
-
-
     tabela = Table(
-        dados,
-        colWidths=[
-            50,   # código
-            130,  # nome
-            80,   # cpf
-            70,   # nascimento
-            80,   # cidade
-            70,   # função
-            55    # status
-        ],
-        repeatRows=1
-    )
 
+        dados,
+
+        colWidths=[
+
+            50,
+            130,
+            80,
+            70,
+            80,
+            70,
+            55
+
+        ],
+
+        repeatRows=1
+
+    )
 
     tabela.setStyle(
 
@@ -1732,39 +2253,65 @@ def exportar_pdf():
             [
 
                 (
+
                     "GRID",
-                    (0,0),
-                    (-1,-1),
+
+                    (0, 0),
+
+                    (-1, -1),
+
                     0.5,
+
                     colors.grey
+
                 ),
 
                 (
+
                     "BACKGROUND",
-                    (0,0),
-                    (-1,0),
+
+                    (0, 0),
+
+                    (-1, 0),
+
                     colors.lightgrey
+
                 ),
 
                 (
+
                     "FONTNAME",
-                    (0,0),
-                    (-1,0),
+
+                    (0, 0),
+
+                    (-1, 0),
+
                     "Helvetica-Bold"
+
                 ),
 
                 (
+
                     "ALIGN",
-                    (0,0),
-                    (-1,0),
+
+                    (0, 0),
+
+                    (-1, 0),
+
                     "CENTER"
+
                 ),
 
                 (
+
                     "VALIGN",
-                    (0,0),
-                    (-1,-1),
+
+                    (0, 0),
+
+                    (-1, -1),
+
                     "TOP"
+
                 )
 
             ]
@@ -1773,35 +2320,47 @@ def exportar_pdf():
 
     )
 
-
     elementos.append(tabela)
 
-
-
     elementos.append(
-        Spacer(1,20)
+        Spacer(1, 20)
     )
 
+    # ==============================
+    # RODAPÉ
+    # ==============================
 
     rodape = Paragraph(
+
         """
         SGI Brilho Negro<br/>
         Documento gerado automaticamente.
         """,
+
         estilos["Normal"]
+
     )
 
     elementos.append(rodape)
+
+    # ==============================
+    # GERAR PDF
+    # ==============================
 
     pdf.build(elementos)
 
     arquivo.seek(0)
 
     return send_file(
+
         arquivo,
+
         as_attachment=True,
+
         download_name="relatorio_integrantes_brilho_negro.pdf",
+
         mimetype="application/pdf"
+
     )
 
 @app.route("/admin/exportar/pdf/calcados")
@@ -1832,6 +2391,7 @@ def exportar_pdf_calcados():
 
         parametros["status"] = status_filtro
 
+
     if situacao_filtro:
 
         condicoes.append(
@@ -1839,6 +2399,7 @@ def exportar_pdf_calcados():
         )
 
         parametros["situacao"] = situacao_filtro
+
 
     if funcao_filtro:
 
@@ -1848,13 +2409,6 @@ def exportar_pdf_calcados():
 
         parametros["funcao"] = funcao_filtro
 
-    if excluir_funcao:
-
-        condicoes.append(
-            "funcao <> :excluir_funcao"
-        )
-
-    parametros["excluir_funcao"] = excluir_funcao    
 
     where = ""
 
@@ -1862,9 +2416,50 @@ def exportar_pdf_calcados():
 
         where = "WHERE " + " AND ".join(condicoes)
 
+
+    # ==============================
+    # TOTAL ANTES DA EXCLUSÃO
+    # ==============================
+
+    total_localizado = db.execute(
+
+        text(f"""
+            SELECT COUNT(*)
+            FROM integrantes
+            {where}
+        """),
+
+        parametros
+
+    ).scalar()
+
+
     # ==============================
     # BUSCAR INTEGRANTES
     # ==============================
+
+    condicoes_relatorio = list(condicoes)
+
+    parametros_relatorio = dict(parametros)
+
+    if excluir_funcao:
+
+        condicoes_relatorio.append(
+            "funcao <> :excluir_funcao"
+        )
+
+        parametros_relatorio["excluir_funcao"] = excluir_funcao
+
+
+    where_relatorio = ""
+
+    if condicoes_relatorio:
+
+        where_relatorio = (
+            "WHERE " +
+            " AND ".join(condicoes_relatorio)
+        )
+
 
     integrantes = db.execute(
 
@@ -1880,17 +2475,32 @@ def exportar_pdf_calcados():
 
             FROM integrantes
 
-            {where}
+            {where_relatorio}
 
             ORDER BY LOWER(nome)
 
         """),
 
-        parametros
+        parametros_relatorio
 
     ).mappings().all()
 
+
+    total_apresentado = len(integrantes)
+
+    total_excluido = (
+
+        total_localizado - total_apresentado
+
+        if excluir_funcao
+
+        else 0
+
+    )
+
+
     db.close()
+
 
     # ==============================
     # CRIA PDF
@@ -1901,17 +2511,26 @@ def exportar_pdf_calcados():
     from reportlab.lib.pagesizes import A4
 
     pdf = SimpleDocTemplate(
+
         arquivo,
+
         pagesize=A4,
+
         topMargin=25,
+
         bottomMargin=30,
+
         leftMargin=35,
+
         rightMargin=35
+
     )
+
 
     elementos = []
 
     estilos = getSampleStyleSheet()
+
 
     # ==============================
     # LOGO
@@ -1920,34 +2539,44 @@ def exportar_pdf_calcados():
     from reportlab.platypus import Image
 
     logo = Image(
+
         "static/img/logo_relatorio.PNG",
+
         width=320,
+
         height=79
+
     )
 
     logo.hAlign = "CENTER"
 
     elementos.append(logo)
 
+
     elementos.append(
         Spacer(1, 5)
     )
+
 
     # ==============================
     # TÍTULO
     # ==============================
 
     titulo = Paragraph(
+
         """
         <b>BRILHO NEGRO</b><br/>
         <font size="14">
         Sistema de Gestão de Integrantes
         </font>
         """,
+
         estilos["Title"]
+
     )
 
     elementos.append(titulo)
+
 
     from reportlab.platypus import HRFlowable
 
@@ -1955,112 +2584,400 @@ def exportar_pdf_calcados():
         Spacer(1, 8)
     )
 
+
     elementos.append(
+
         HRFlowable(
+
             width="100%",
+
             thickness=1
+
         )
+
     )
+
 
     elementos.append(
         Spacer(1, 15)
     )
 
+
     subtitulo = Paragraph(
+
         "<b>Relatório de Calçados</b>",
+
         estilos["Heading2"]
+
     )
 
     elementos.append(subtitulo)
 
+
+    elementos.append(
+        Spacer(1, 10)
+    )
+
+
+    # ==============================
+    # ESTILOS
+    # ==============================
+
+    from reportlab.lib.styles import ParagraphStyle
+
+    estilo_resumo = ParagraphStyle(
+
+        "ResumoCalcados",
+
+        parent=estilos["Normal"],
+
+        fontSize=8.5,
+
+        leading=11
+
+    )
+
+
+    estilo_resumo_cabecalho = ParagraphStyle(
+
+        "ResumoCabecalhoCalcados",
+
+        parent=estilos["Normal"],
+
+        fontSize=8,
+
+        leading=10,
+
+        alignment=1,
+
+        fontName="Helvetica-Bold"
+
+    )
+
+
+    # ==============================
+    # DATA
+    # ==============================
+
+    data_geracao = datetime.now().strftime(
+        "%d/%m/%Y %H:%M"
+    )
+
+
+    elementos.append(
+
+        Paragraph(
+
+            f"<b>Gerado em:</b> {data_geracao}",
+
+            estilos["Normal"]
+
+        )
+
+    )
+
+
+    elementos.append(
+        Spacer(1, 8)
+    )
+
+
+    # ==============================
+    # FILTROS
+    # ==============================
+
+    filtros_html = []
+
+
+    if status_filtro:
+
+        filtros_html.append(
+
+            f"<b>Status:</b> {status_filtro}"
+
+        )
+
+
+    if situacao_filtro:
+
+        filtros_html.append(
+
+            f"<b>Situação:</b> {situacao_filtro}"
+
+        )
+
+
+    if funcao_filtro:
+
+        filtros_html.append(
+
+            f"<b>Função:</b> {funcao_filtro}"
+
+        )
+
+
+    if not filtros_html:
+
+        filtros_html.append(
+
+            "<b>Todos os integrantes</b>"
+
+        )
+
+
+    texto_filtros = "<br/>".join(
+        filtros_html
+    )
+
+
+    # ==============================
+    # EXCLUSÃO
+    # ==============================
+
+    if excluir_funcao:
+
+        texto_exclusao = f"""
+
+            <b>Função excluída:</b><br/>
+
+            {excluir_funcao}
+
+        """
+
+    else:
+
+        texto_exclusao = """
+
+            <b>Nenhuma função excluída</b>
+
+        """
+
+
+    # ==============================
+    # RESULTADO
+    # ==============================
+
+    if excluir_funcao:
+
+        texto_resultado = f"""
+
+            <b>Total localizado:</b>
+            {total_localizado}
+
+            <br/>
+
+            <b>Excluídos:</b>
+            {total_excluido}
+
+            <br/>
+
+            <b>Apresentados:</b>
+            {total_apresentado}
+
+        """
+
+    else:
+
+        texto_resultado = f"""
+
+            <b>Total apresentado:</b>
+            {total_apresentado}
+
+        """
+
+
+    # ==============================
+    # RESUMO EM 3 COLUNAS
+    # ==============================
+
+    dados_resumo = [
+
+        [
+
+            Paragraph(
+                "FILTROS APLICADOS",
+                estilo_resumo_cabecalho
+            ),
+
+            Paragraph(
+                "EXCLUSÃO",
+                estilo_resumo_cabecalho
+            ),
+
+            Paragraph(
+                "RESULTADO",
+                estilo_resumo_cabecalho
+            )
+
+        ],
+
+        [
+
+            Paragraph(
+                texto_filtros,
+                estilo_resumo
+            ),
+
+            Paragraph(
+                texto_exclusao,
+                estilo_resumo
+            ),
+
+            Paragraph(
+                texto_resultado,
+                estilo_resumo
+            )
+
+        ]
+
+    ]
+
+
+    tabela_resumo = Table(
+
+        dados_resumo,
+
+        colWidths=[
+
+            170,
+
+            170,
+
+            170
+
+        ]
+
+    )
+
+
+    tabela_resumo.setStyle(
+
+        TableStyle(
+
+            [
+
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.5,
+                    colors.grey
+                ),
+
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    colors.lightgrey
+                ),
+
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "TOP"
+                ),
+
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, 0),
+                    "CENTER"
+                ),
+
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8
+                ),
+
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    7
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    7
+                )
+
+            ]
+
+        )
+
+    )
+
+
+    elementos.append(
+        tabela_resumo
+    )
+
+
     elementos.append(
         Spacer(1, 15)
     )
 
-    # ==============================
-    # FILTROS APLICADOS
-    # ==============================
-
-    filtros_aplicados = []
-
-    if status_filtro:
-
-        filtros_aplicados.append(
-            f"Status Cadastro: {status_filtro}"
-        )
-
-    if situacao_filtro:
-
-        filtros_aplicados.append(
-            f"Situação: {situacao_filtro}"
-        )
-
-    if funcao_filtro:
-
-        filtros_aplicados.append(
-            f"Função: {funcao_filtro}"
-        )
-
-    filtro_texto = (
-
-        " | ".join(filtros_aplicados)
-
-        if filtros_aplicados
-
-        else
-
-        "TODOS OS INTEGRANTES"
-
-    )
-
-    informacoes = Paragraph(
-
-        f"""
-        Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}<br/>
-        Filtro: {filtro_texto}<br/><br/>
-
-        <b>Total encontrado:</b> {len(integrantes)}
-        """,
-
-        estilos["Normal"]
-
-    )
-
-    elementos.append(informacoes)
-
-    elementos.append(
-        Spacer(1, 20)
-    )
 
     # ==============================
     # ESTILOS DA TABELA
     # ==============================
 
-    from reportlab.lib.styles import ParagraphStyle
-
     estilo_tabela = ParagraphStyle(
+
         "TabelaCalcado",
+
         parent=estilos["Normal"],
+
         fontSize=9,
+
         leading=11
+
     )
+
 
     estilo_cabecalho = ParagraphStyle(
+
         "CabecalhoCalcado",
+
         parent=estilos["Normal"],
+
         fontSize=9,
+
         leading=11,
+
         alignment=1,
+
         fontName="Helvetica-Bold"
+
     )
 
+
     estilo_centro = ParagraphStyle(
+
         "CentroCalcado",
+
         parent=estilos["Normal"],
+
         fontSize=9,
+
         leading=11,
+
         alignment=1
+
     )
+
 
     # ==============================
     # DADOS DA TABELA
@@ -2069,6 +2986,7 @@ def exportar_pdf_calcados():
     dados = [
 
         [
+
             Paragraph(
                 "Código Integrante",
                 estilo_cabecalho
@@ -2083,9 +3001,11 @@ def exportar_pdf_calcados():
                 "Calçado",
                 estilo_cabecalho
             )
+
         ]
 
     ]
+
 
     for pessoa in integrantes:
 
@@ -2094,25 +3014,43 @@ def exportar_pdf_calcados():
             [
 
                 Paragraph(
-                    str(pessoa["codigo_integrante"]),
+
+                    str(
+                        pessoa["codigo_integrante"]
+                    ),
+
                     estilo_centro
+
                 ),
 
                 Paragraph(
-                    (pessoa["nome"] or "").title(),
+
+                    (
+                        pessoa["nome"] or ""
+                    ).title(),
+
                     estilo_tabela
+
                 ),
 
                 Paragraph(
-                    str(pessoa["calcado"])
+
+                    str(
+                        pessoa["calcado"]
+                    )
+
                     if pessoa["calcado"]
+
                     else "-",
+
                     estilo_centro
+
                 )
 
             ]
 
         )
+
 
     # ==============================
     # TABELA
@@ -2123,13 +3061,19 @@ def exportar_pdf_calcados():
         dados,
 
         colWidths=[
-            110,   # código
-            300,   # integrante
-            70     # calçado
+
+            110,
+
+            300,
+
+            70
+
         ],
 
         repeatRows=1
+
     )
+
 
     tabela.setStyle(
 
@@ -2179,25 +3123,32 @@ def exportar_pdf_calcados():
 
     )
 
+
     elementos.append(tabela)
+
 
     elementos.append(
         Spacer(1, 20)
     )
+
 
     # ==============================
     # RODAPÉ
     # ==============================
 
     rodape = Paragraph(
+
         """
         SGI Brilho Negro<br/>
         Documento gerado automaticamente.
         """,
+
         estilos["Normal"]
+
     )
 
     elementos.append(rodape)
+
 
     # ==============================
     # GERAR PDF
@@ -2206,6 +3157,7 @@ def exportar_pdf_calcados():
     pdf.build(elementos)
 
     arquivo.seek(0)
+
 
     return send_file(
 
@@ -2217,7 +3169,7 @@ def exportar_pdf_calcados():
 
         mimetype="application/pdf"
 
-    )    
+    )
 
 @app.route("/admin/integrante/<int:id>/pdf")
 def pdf_integrante(id):
