@@ -2391,7 +2391,6 @@ def exportar_pdf_calcados():
 
         parametros["status"] = status_filtro
 
-
     if situacao_filtro:
 
         condicoes.append(
@@ -2399,7 +2398,6 @@ def exportar_pdf_calcados():
         )
 
         parametros["situacao"] = situacao_filtro
-
 
     if funcao_filtro:
 
@@ -2409,13 +2407,11 @@ def exportar_pdf_calcados():
 
         parametros["funcao"] = funcao_filtro
 
-
     where = ""
 
     if condicoes:
 
         where = "WHERE " + " AND ".join(condicoes)
-
 
     # ==============================
     # TOTAL ANTES DA EXCLUSÃO
@@ -2433,13 +2429,11 @@ def exportar_pdf_calcados():
 
     ).scalar()
 
-
     # ==============================
     # BUSCAR INTEGRANTES
     # ==============================
 
     condicoes_relatorio = list(condicoes)
-
     parametros_relatorio = dict(parametros)
 
     if excluir_funcao:
@@ -2450,7 +2444,6 @@ def exportar_pdf_calcados():
 
         parametros_relatorio["excluir_funcao"] = excluir_funcao
 
-
     where_relatorio = ""
 
     if condicoes_relatorio:
@@ -2459,7 +2452,6 @@ def exportar_pdf_calcados():
             "WHERE " +
             " AND ".join(condicoes_relatorio)
         )
-
 
     integrantes = db.execute(
 
@@ -2485,7 +2477,6 @@ def exportar_pdf_calcados():
 
     ).mappings().all()
 
-
     total_apresentado = len(integrantes)
 
     total_excluido = (
@@ -2498,9 +2489,67 @@ def exportar_pdf_calcados():
 
     )
 
-
     db.close()
 
+    # ==============================
+    # DISTRIBUIÇÃO POR CALÇADO
+    # ==============================
+
+    distribuicao_calcado = {}
+
+    for pessoa in integrantes:
+
+        calcado = pessoa["calcado"]
+
+        if calcado is None or str(calcado).strip() == "":
+
+            calcado = "Não informado"
+
+        else:
+
+            calcado = str(calcado).strip()
+
+        if calcado in distribuicao_calcado:
+
+            distribuicao_calcado[calcado] += 1
+
+        else:
+
+            distribuicao_calcado[calcado] = 1
+
+    # ==============================
+    # ORDENAÇÃO DOS CALÇADOS
+    # ==============================
+
+    def chave_calcado(item):
+
+        valor = item[0]
+
+        try:
+
+            return (
+                0,
+                float(valor)
+            )
+
+        except (ValueError, TypeError):
+
+            return (
+                1,
+                str(valor)
+            )
+
+    distribuicao_calcado = dict(
+
+        sorted(
+
+            distribuicao_calcado.items(),
+
+            key=chave_calcado
+
+        )
+
+    )
 
     # ==============================
     # CRIA PDF
@@ -2526,17 +2575,28 @@ def exportar_pdf_calcados():
 
     )
 
-
     elementos = []
 
     estilos = getSampleStyleSheet()
 
+    # ==============================
+    # IMPORTS
+    # ==============================
+
+    from reportlab.platypus import (
+        Image,
+        HRFlowable,
+        Table,
+        TableStyle,
+        Paragraph,
+        Spacer
+    )
+
+    from reportlab.lib.styles import ParagraphStyle
 
     # ==============================
     # LOGO
     # ==============================
-
-    from reportlab.platypus import Image
 
     logo = Image(
 
@@ -2552,11 +2612,9 @@ def exportar_pdf_calcados():
 
     elementos.append(logo)
 
-
     elementos.append(
         Spacer(1, 5)
     )
-
 
     # ==============================
     # TÍTULO
@@ -2577,13 +2635,9 @@ def exportar_pdf_calcados():
 
     elementos.append(titulo)
 
-
-    from reportlab.platypus import HRFlowable
-
     elementos.append(
         Spacer(1, 8)
     )
-
 
     elementos.append(
 
@@ -2597,11 +2651,9 @@ def exportar_pdf_calcados():
 
     )
 
-
     elementos.append(
         Spacer(1, 15)
     )
-
 
     subtitulo = Paragraph(
 
@@ -2613,17 +2665,13 @@ def exportar_pdf_calcados():
 
     elementos.append(subtitulo)
 
-
     elementos.append(
         Spacer(1, 10)
     )
 
-
     # ==============================
     # ESTILOS
     # ==============================
-
-    from reportlab.lib.styles import ParagraphStyle
 
     estilo_resumo = ParagraphStyle(
 
@@ -2636,7 +2684,6 @@ def exportar_pdf_calcados():
         leading=11
 
     )
-
 
     estilo_resumo_cabecalho = ParagraphStyle(
 
@@ -2654,6 +2701,33 @@ def exportar_pdf_calcados():
 
     )
 
+    estilo_distribuicao = ParagraphStyle(
+
+        "DistribuicaoCalcados",
+
+        parent=estilos["Normal"],
+
+        fontSize=8.5,
+
+        leading=11
+
+    )
+
+    estilo_distribuicao_cabecalho = ParagraphStyle(
+
+        "DistribuicaoCabecalhoCalcados",
+
+        parent=estilos["Normal"],
+
+        fontSize=8,
+
+        leading=10,
+
+        alignment=1,
+
+        fontName="Helvetica-Bold"
+
+    )
 
     # ==============================
     # DATA
@@ -2663,31 +2737,11 @@ def exportar_pdf_calcados():
         "%d/%m/%Y %H:%M"
     )
 
-
-    elementos.append(
-
-        Paragraph(
-
-            f"<b>Gerado em:</b> {data_geracao}",
-
-            estilos["Normal"]
-
-        )
-
-    )
-
-
-    elementos.append(
-        Spacer(1, 8)
-    )
-
-
     # ==============================
     # FILTROS
     # ==============================
 
     filtros_html = []
-
 
     if status_filtro:
 
@@ -2697,7 +2751,6 @@ def exportar_pdf_calcados():
 
         )
 
-
     if situacao_filtro:
 
         filtros_html.append(
@@ -2705,7 +2758,6 @@ def exportar_pdf_calcados():
             f"<b>Situação:</b> {situacao_filtro}"
 
         )
-
 
     if funcao_filtro:
 
@@ -2715,7 +2767,6 @@ def exportar_pdf_calcados():
 
         )
 
-
     if not filtros_html:
 
         filtros_html.append(
@@ -2724,11 +2775,9 @@ def exportar_pdf_calcados():
 
         )
 
-
     texto_filtros = "<br/>".join(
         filtros_html
     )
-
 
     # ==============================
     # EXCLUSÃO
@@ -2751,7 +2800,6 @@ def exportar_pdf_calcados():
             <b>Nenhuma função excluída</b>
 
         """
-
 
     # ==============================
     # RESULTADO
@@ -2784,7 +2832,6 @@ def exportar_pdf_calcados():
             {total_apresentado}
 
         """
-
 
     # ==============================
     # RESUMO EM 3 COLUNAS
@@ -2832,7 +2879,6 @@ def exportar_pdf_calcados():
 
     ]
 
-
     tabela_resumo = Table(
 
         dados_resumo,
@@ -2840,15 +2886,12 @@ def exportar_pdf_calcados():
         colWidths=[
 
             170,
-
             170,
-
             170
 
         ]
 
     )
-
 
     tabela_resumo.setStyle(
 
@@ -2919,16 +2962,381 @@ def exportar_pdf_calcados():
 
     )
 
-
     elementos.append(
         tabela_resumo
     )
-
 
     elementos.append(
         Spacer(1, 15)
     )
 
+    # ==============================
+    # DISTRIBUIÇÃO POR CALÇADO
+    # ==============================
+
+    elementos.append(
+
+        Paragraph(
+
+            "<b>Distribuição por Número de Calçado</b>",
+
+            estilo_resumo_cabecalho
+
+        )
+
+    )
+
+    elementos.append(
+        Spacer(1, 6)
+    )
+
+    # ==============================
+    # MONTAR DISTRIBUIÇÃO
+    # EM 3 COLUNAS
+    # ==============================
+
+    distribuicao_lista = [
+
+        (
+
+            str(calcado),
+
+            quantidade
+
+        )
+
+        for calcado, quantidade
+        in distribuicao_calcado.items()
+
+    ]
+
+    dados_calcados = [
+
+        [
+
+            Paragraph(
+                "CALÇADO",
+                estilo_distribuicao_cabecalho
+            ),
+
+            Paragraph(
+                "TOTAL",
+                estilo_distribuicao_cabecalho
+            ),
+
+            Paragraph(
+                "CALÇADO",
+                estilo_distribuicao_cabecalho
+            ),
+
+            Paragraph(
+                "TOTAL",
+                estilo_distribuicao_cabecalho
+            ),
+
+            Paragraph(
+                "CALÇADO",
+                estilo_distribuicao_cabecalho
+            ),
+
+            Paragraph(
+                "TOTAL",
+                estilo_distribuicao_cabecalho
+            )
+
+        ]
+
+    ]
+
+    # ==============================
+    # DISTRIBUIÇÃO EM 3 GRUPOS
+    # ==============================
+
+    grupos = [
+        [],
+        [],
+        []
+    ]
+
+    for indice, item in enumerate(distribuicao_lista):
+
+        grupos[indice % 3].append(item)
+
+    maior_quantidade = max(
+
+        [
+            len(grupo)
+            for grupo in grupos
+        ]
+
+        or [0]
+
+    )
+
+    for linha in range(maior_quantidade):
+
+        linha_dados = []
+
+        for grupo in grupos:
+
+            if linha < len(grupo):
+
+                calcado, quantidade = grupo[linha]
+
+                linha_dados.extend(
+
+                    [
+
+                        Paragraph(
+                            calcado,
+                            estilo_distribuicao
+                        ),
+
+                        Paragraph(
+                            f"<b>{quantidade}</b>",
+                            estilo_distribuicao
+                        )
+
+                    ]
+
+                )
+
+            else:
+
+                linha_dados.extend(
+
+                    [
+
+                        Paragraph(
+                            "",
+                            estilo_distribuicao
+                        ),
+
+                        Paragraph(
+                            "",
+                            estilo_distribuicao
+                        )
+
+                    ]
+
+                )
+
+        dados_calcados.append(
+            linha_dados
+        )
+
+    tabela_calcados = Table(
+
+        dados_calcados,
+
+        colWidths=[
+
+            70,
+            50,
+            70,
+            50,
+            70,
+            50
+
+        ]
+
+    )
+
+    # CENTRALIZA A TABELA NA PÁGINA
+    tabela_calcados.hAlign = "CENTER"
+
+    tabela_calcados.setStyle(
+
+        TableStyle(
+
+            [
+
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.5,
+                    colors.grey
+                ),
+
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    colors.lightgrey
+                ),
+
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "CENTER"
+                ),
+
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                )
+
+            ]
+
+        )
+
+    )
+
+    elementos.append(
+        tabela_calcados
+    )
+
+    # ==============================
+    # TOTAL GERAL DE CALÇADOS
+    # ==============================
+
+    total_calcados = sum(
+        distribuicao_calcado.values()
+    )
+
+    elementos.append(
+        Spacer(1, 5)
+    )
+
+    dados_total_calcados = [
+
+        [
+
+            Paragraph(
+                "<b>TOTAL GERAL DE CALÇADOS</b>",
+                estilo_distribuicao
+            ),
+
+            Paragraph(
+                f"<b>{total_calcados}</b>",
+                estilo_distribuicao
+            )
+
+        ]
+
+    ]
+
+    tabela_total_calcados = Table(
+
+        dados_total_calcados,
+
+        colWidths=[
+
+            170,
+            170
+
+        ]
+
+    )
+
+    tabela_total_calcados.setStyle(
+
+        TableStyle(
+
+            [
+
+                (
+                    "BOX",
+                    (0, 0),
+                    (-1, -1),
+                    0.5,
+                    colors.grey
+                ),
+
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, -1),
+                    colors.whitesmoke
+                ),
+
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "CENTER"
+                ),
+
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8
+                ),
+
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    6
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    6
+                )
+
+            ]
+
+        )
+
+    )
+
+    elementos.append(
+        tabela_total_calcados
+    )
+
+    elementos.append(
+        Spacer(1, 18)
+    )
 
     # ==============================
     # ESTILOS DA TABELA
@@ -2946,7 +3354,6 @@ def exportar_pdf_calcados():
 
     )
 
-
     estilo_cabecalho = ParagraphStyle(
 
         "CabecalhoCalcado",
@@ -2963,7 +3370,6 @@ def exportar_pdf_calcados():
 
     )
 
-
     estilo_centro = ParagraphStyle(
 
         "CentroCalcado",
@@ -2977,7 +3383,6 @@ def exportar_pdf_calcados():
         alignment=1
 
     )
-
 
     # ==============================
     # DADOS DA TABELA
@@ -3005,7 +3410,6 @@ def exportar_pdf_calcados():
         ]
 
     ]
-
 
     for pessoa in integrantes:
 
@@ -3051,7 +3455,6 @@ def exportar_pdf_calcados():
 
         )
 
-
     # ==============================
     # TABELA
     # ==============================
@@ -3063,9 +3466,7 @@ def exportar_pdf_calcados():
         colWidths=[
 
             110,
-
             300,
-
             70
 
         ],
@@ -3073,7 +3474,6 @@ def exportar_pdf_calcados():
         repeatRows=1
 
     )
-
 
     tabela.setStyle(
 
@@ -3123,14 +3523,11 @@ def exportar_pdf_calcados():
 
     )
 
-
     elementos.append(tabela)
-
 
     elementos.append(
         Spacer(1, 20)
     )
-
 
     # ==============================
     # RODAPÉ
@@ -3149,7 +3546,6 @@ def exportar_pdf_calcados():
 
     elementos.append(rodape)
 
-
     # ==============================
     # GERAR PDF
     # ==============================
@@ -3157,7 +3553,6 @@ def exportar_pdf_calcados():
     pdf.build(elementos)
 
     arquivo.seek(0)
-
 
     return send_file(
 
@@ -3169,549 +3564,6 @@ def exportar_pdf_calcados():
 
         mimetype="application/pdf"
 
-    )
-
-@app.route("/admin/integrante/<int:id>/pdf")
-def pdf_integrante(id):
-
-    if "admin" not in session:
-        return redirect("/login")
-
-
-    db = SessionLocal()
-
-
-    integrante = db.execute(
-        text("""
-            SELECT *
-            FROM integrantes
-            WHERE id=:id
-        """),
-        {
-            "id": id
-        }
-    ).mappings().first()
-
-
-    db.close()
-
-
-    if not integrante:
-        return "Integrante não encontrado"
-
-
-    arquivo = BytesIO()
-
-
-    pdf = SimpleDocTemplate(
-        arquivo,
-        pagesize=A4,
-        topMargin=40,
-        bottomMargin=40,
-        leftMargin=40,
-        rightMargin=40
-    )
-
-
-    elementos = []
-
-
-    estilos = getSampleStyleSheet()
-
-    # ==============================
-    # CABEÇALHO PADRÃO RELATÓRIO
-    # ==============================
-
-
-    logo = Image(
-        "static/img/logo_relatorio.PNG",
-        width=320,
-        height=79
-    )
-
-    logo.hAlign = "CENTER"
-
-
-    elementos.append(logo)
-
-
-    elementos.append(
-        Spacer(1,5)
-    )
-
-
-
-    titulo = Paragraph(
-        """
-        <b>BRILHO NEGRO</b><br/>
-        <font size="14">
-        Sistema de Gestão de Integrantes
-        </font>
-        """,
-        estilos["Title"]
-    )
-
-
-    elementos.append(titulo)
-
-    data_geracao = datetime.now().strftime(
-        "%d/%m/%Y %H:%M"
-    )
-
-
-    elementos.append(
-        Spacer(1,8)
-    )
-
-
-    informacao = Paragraph(
-        f"""
-        <font size="9">
-        Ficha individual do integrante<br/>
-        Gerado em: {data_geracao}
-        </font>
-        """,
-        estilos["Normal"]
-    )
-
-
-    elementos.append(informacao)
-
-
-    elementos.append(
-        Spacer(1,8)
-    )
-
-
-    elementos.append(
-        HRFlowable(
-            width="100%",
-            thickness=1
-        )
-    )
-
-
-    elementos.append(
-        Spacer(1,15)
-    )
-
-
-    elementos.append(
-        Spacer(1,20)
-    )
-
-    # ===========================
-    # RESUMO FINANCEIRO
-    # ===========================
-
-    resumo = [
-        ["Receitas", f"R$ {receitas:,.2f}"],
-        ["Despesas", f"R$ {despesas:,.2f}"],
-        ["Saldo", f"R$ {saldo:,.2f}"]
-    ]
-
-    tabela = Table(
-        resumo,
-        colWidths=[140,120]
-    )
-
-    tabela.setStyle(TableStyle([
-
-        ("GRID",(0,0),(-1,-1),0.5,colors.grey),
-
-        ("BACKGROUND",(0,0),(0,-1),colors.HexColor("#EAEAEA")),
-
-        ("FONTNAME",(0,0),(-1,-1),"Helvetica-Bold"),
-
-        ("ALIGN",(1,0),(1,-1),"RIGHT"),
-
-        ("BOTTOMPADDING",(0,0),(-1,-1),8)
-
-    ]))
-
-    elementos.append(tabela)
-
-    elementos.append(Spacer(1,18))
-
-    # ===========================
-    # TÍTULO DA TABELA
-    # ===========================
-
-    elementos.append(
-        Paragraph(
-            "<b>MOVIMENTAÇÕES FINANCEIRAS</b>",
-            estilos["Heading2"]
-        )
-    )
-
-    elementos.append(Spacer(1,8))
-
-    # ===========================
-    # TABELA DAS MOVIMENTAÇÕES
-    # ===========================
-
-    dados = [
-        [
-            "Data",
-            "Tipo",
-            "Categoria",
-            "Descrição",
-            "Valor"
-        ]
-    ]
-
-    for item in movimentacoes:
-        dados.append(
-            [
-                item.data_movimento.strftime("%d/%m/%Y"),
-                item.tipo,
-                item.categoria,
-                item.descricao,
-                f'R$ {item.valor:,.2f}'.replace(",", "X").replace(".", ",").replace("X", ".")
-            ]
-        )
-
-    tabela = Table(
-        dados,
-        colWidths=[70,70,110,170,80]
-    )
-
-    tabela.setStyle(
-        TableStyle(
-            [
-                ("GRID",(0,0),(-1,-1),0.5,colors.grey),
-                ("BACKGROUND",(0,0),(-1,0),colors.lightgrey),
-                ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
-                ("ALIGN",(0,0),(-1,0),"CENTER"),
-                ("ALIGN",(4,1),(4,-1),"RIGHT"),
-                ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
-                ("BOTTOMPADDING",(0,0),(-1,0),8),
-            ]
-        )
-    )
-
-    elementos.append(tabela)
-
-    elementos.append(Spacer(1,15))
-
-    # ==========================
-    # FOTO + IDENTIFICAÇÃO
-    # ==========================
-
-
-    foto = ""
-
-
-    if integrante["foto_url"]:
-
-
-        resposta = requests.get(
-            integrante["foto_url"]
-        )
-
-
-        imagem = BytesIO(
-            resposta.content
-        )
-
-
-        foto = Image(
-            imagem,
-            width=90,
-            height=90
-        )
-
-
-    estilo_nome = ParagraphStyle(
-        "NomeIntegrante",
-        parent=estilos["Normal"],
-        fontSize=15,
-        leading=18
-    )
-
-
-    identificacao = Paragraph(
-        f"""
-        <b>{integrante['nome']}</b><br/><br/>
-
-        <b>Código:</b> {integrante['codigo_integrante']}<br/>
-
-        <b>Status:</b> {integrante['status']}
-        """,
-        estilo_nome
-    )
-
-
-
-    cabecalho_integrante = Table(
-        [
-            [foto, identificacao]
-        ],
-        colWidths=[130,270]
-    )
-
-
-    cabecalho_integrante.setStyle(
-        TableStyle(
-            [
-                ("VALIGN",(0,0),(-1,-1),"TOP"),
-
-                (
-                    "BOX",
-                    (0,0),
-                    (-1,-1),
-                    0.5,
-                    colors.grey
-                ),
-
-                (
-                    "LEFTPADDING",
-                    (0,0),
-                    (-1,-1),
-                    10
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0,0),
-                    (-1,-1),
-                    10
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0,0),
-                    (-1,-1),
-                    10
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0,0),
-                    (-1,-1),
-                    10
-                )
-            ]
-        )
-    )
-
-
-    elementos.append(
-        cabecalho_integrante
-    )
-
-
-    elementos.append(
-        Spacer(1,20)
-    )  
-
-
-    # ==========================
-    # DADOS DA FICHA
-    # ==========================
-
-
-    estilo_secao = ParagraphStyle(
-        "Secao",
-        parent=estilos["Heading3"],
-        fontSize=12,
-        leading=14,
-        spaceAfter=5
-    )
-
-
-    def adicionar_secao(titulo_secao):
-
-        elementos.append(
-            Spacer(1,5)
-        )
-
-        elementos.append(
-            Paragraph(
-                f"<b>{titulo_secao}</b>",
-                estilo_secao
-            )
-        )
-
-        elementos.append(
-            HRFlowable(
-                width="100%",
-                thickness=0.5
-            )
-        )
-
-    estilo_dados = ParagraphStyle(
-        "Dados",
-        parent=estilos["Normal"],
-        fontSize=9,
-        leading=11
-    )
-
-    def adicionar_linha(texto):
-
-        elementos.append(
-            Paragraph(
-                texto,
-                estilos["Normal"]
-            )
-        )
-
-
-
-    # DADOS PESSOAIS
-
-    adicionar_secao("Dados Pessoais")
-
-
-    adicionar_linha(
-        f"""
-        <b>CPF:</b> {integrante['cpf'] or ''}<br/>
-        <b>Data nascimento:</b> {integrante['data_nascimento'] or ''}
-        """
-    )
-
-
-
-    # CONTATO
-
-    adicionar_secao("Contato")
-
-
-    adicionar_linha(
-        f"""
-        <b>Telefone:</b> {integrante['telefone'] or ''}<br/>
-        <b>Email:</b> {integrante['email'] or ''}
-        """
-    )
-
-
-
-    # ENDEREÇO
-
-    adicionar_secao("Endereço")
-
-
-    adicionar_linha(
-        f"""
-        <b>Rua:</b> {integrante['rua'] or ''}, 
-        Nº {integrante['numero'] or ''}<br/>
-
-        <b>Bairro:</b> {integrante['bairro'] or ''}<br/>
-
-        <b>Cidade:</b> {integrante['cidade'] or ''} -
-        {integrante['estado'] or ''}<br/>
-
-        <b>CEP:</b> {integrante['cep'] or ''}
-        """
-    )
-
-
-
-    # SAÚDE
-
-    adicionar_secao("Saúde")
-
-
-    adicionar_linha(
-        f"""
-        <b>Possui alergia:</b> {integrante['possui_alergia'] or ''}<br/>
-
-        <b>Alergia medicamentos:</b>
-        {integrante['alergia_medicamento'] or ''}
-        """
-    )
-
-
-
-    # RESPONSÁVEL
-
-    adicionar_secao("Responsável")
-
-
-    adicionar_linha(
-        f"""
-        <b>Nome:</b> {integrante['responsavel'] or 'Não informado'}<br/>
-
-        <b>Parentesco:</b> {integrante['parentesco'] or ''}<br/>
-
-        <b>Telefone:</b> {integrante['telefone_responsavel'] or ''}
-        """
-    )
-
-
-
-    # INFORMAÇÕES
-
-    adicionar_secao("Informações")
-
-
-    adicionar_linha(
-        f"""
-        <b>Calçado:</b> {integrante['calcado'] or ''}<br/>
-
-        <b>Estuda:</b> {integrante['estuda'] or ''}<br/>
-
-        <b>Trabalha:</b> {integrante['trabalha'] or ''}<br/>
-
-        <b>Profissão:</b> {integrante['profissao'] or ''}<br/>
-
-        <b>Experiência musical:</b>
-        {integrante['experiencia_banda'] or ''}
-        """
-    )
-
-
-
-    # CADASTRO
-
-    adicionar_secao("Cadastro")
-
-
-    adicionar_linha(
-        f"""
-        <b>Data cadastro:</b>
-        {integrante['data_cadastro'] or ''}
-        """
-    )
-
-    def rodape_pdf(canvas, doc):
-
-        canvas.saveState()
-
-        canvas.setFont(
-            "Helvetica",
-            8
-        )
-
-        texto = (
-            "SGI Brilho Negro | "
-            "Documento gerado automaticamente | "
-            f"Página {doc.page}"
-        )
-
-        canvas.drawCentredString(
-            A4[0] / 2,
-            20,
-            texto
-        )
-
-        canvas.restoreState()
-
-    pdf.build(
-        elementos,
-        onFirstPage=rodape_pdf,
-        onLaterPages=rodape_pdf
-    )
-
-
-    arquivo.seek(0)
-
-
-    return send_file(
-        arquivo,
-        as_attachment=True,
-        download_name=f"ficha_{integrante['codigo_integrante']}.pdf",
-        mimetype="application/pdf"
     )
 
 @app.route("/admin/exportar/excel")
