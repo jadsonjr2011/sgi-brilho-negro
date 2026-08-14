@@ -786,7 +786,8 @@ def editar_integrante(id):
 
     return render_template(
         "admin/editar.html",
-        integrante=integrante
+        integrante=integrante,
+        funcoes_banda=FUNCOES_BANDA
     )
 
 @app.route("/admin/aprovar/<int:id>")
