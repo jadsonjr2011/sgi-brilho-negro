@@ -253,11 +253,9 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
     elementos.append(
         Spacer(1,20)
     )
-
-def gerar_documentos_viagem(id):
+def gerar_documentos_viagem(id, integrante_id=None):
 
     db = SessionLocal()
-
 
     viagem = db.execute(
         text("""
@@ -270,38 +268,54 @@ def gerar_documentos_viagem(id):
         }
     ).mappings().first()
 
+    if integrante_id:
 
-    participantes = db.execute(
-        text("""
-            SELECT i.*
+        participantes = db.execute(
+            text("""
+                SELECT i.*
 
-            FROM viagem_integrantes vi
+                FROM viagem_integrantes vi
 
-            INNER JOIN integrantes i
-            ON i.id = vi.integrante_id
+                INNER JOIN integrantes i
+                ON i.id = vi.integrante_id
 
-            WHERE vi.viagem_id=:id
+                WHERE vi.viagem_id = :id
+                AND vi.integrante_id = :integrante_id
 
-            ORDER BY i.nome
-        """),
-        {
-            "id": id
-        }
-    ).mappings().all()
+                ORDER BY i.nome
+            """),
+            {
+                "id": id,
+                "integrante_id": integrante_id
+            }
+        ).mappings().all()
 
+    else:
+
+        participantes = db.execute(
+            text("""
+                SELECT i.*
+
+                FROM viagem_integrantes vi
+
+                INNER JOIN integrantes i
+                ON i.id = vi.integrante_id
+
+                WHERE vi.viagem_id=:id
+
+                ORDER BY i.nome
+            """),
+            {
+                "id": id
+            }
+        ).mappings().all()
 
     db.close()
 
-
     if not viagem:
-
         return "Viagem não encontrada"
 
-
-
     arquivo = BytesIO()
-
-
 
     pdf = SimpleDocTemplate(
         arquivo,
@@ -312,14 +326,9 @@ def gerar_documentos_viagem(id):
         bottomMargin=40
     )
 
-
-
     elementos = []
 
-
     estilos = getSampleStyleSheet()
-
-
 
     estiloInfo = ParagraphStyle(
         "Info",
@@ -327,44 +336,6 @@ def gerar_documentos_viagem(id):
         fontSize=12,
         leading=22
     )
-
-
-
-    # ==========================
-    # CAPA
-    # ==========================
-
-
-    adicionar_cabecalho(
-        elementos,
-        estilos,
-        "DOCUMENTAÇÃO DE VIAGEM"
-    )
-
-
-    elementos.append(
-        Paragraph(
-            f"<b>Evento:</b> {viagem['evento']}",
-            estiloInfo
-        )
-    )
-
-
-    elementos.append(
-        Paragraph(
-            f"<b>Destino:</b> {viagem['destino']}",
-            estiloInfo
-        )
-    )
-
-
-    elementos.append(
-        Paragraph(
-            f"<b>Saída:</b> {viagem['data_saida'].strftime('%d/%m/%Y')}",
-            estiloInfo
-        )
-    )
-
 
     retorno = "-"
 
@@ -374,43 +345,70 @@ def gerar_documentos_viagem(id):
             "%d/%m/%Y"
         )
 
+    # ==========================
+    # CAPA
+    # ==========================
 
-    elementos.append(
-        Paragraph(
-            f"<b>Retorno:</b> {retorno}",
-            estiloInfo
+    if not integrante_id:
+
+        adicionar_cabecalho(
+            elementos,
+            estilos,
+            "DOCUMENTAÇÃO DE VIAGEM"
         )
-    )
 
-
-    elementos.append(
-        Paragraph(
-            f"<b>Responsável:</b> {viagem['responsavel']}",
-            estiloInfo
+        elementos.append(
+            Paragraph(
+                f"<b>Evento:</b> {viagem['evento']}",
+                estiloInfo
+            )
         )
-    )
 
-
-    elementos.append(
-        Paragraph(
-            f"<b>Participantes:</b> {len(participantes)}",
-            estiloInfo
+        elementos.append(
+            Paragraph(
+                f"<b>Destino:</b> {viagem['destino']}",
+                estiloInfo
+            )
         )
-    )
 
-
-    elementos.append(
-        Spacer(1,20)
-    )
-
-
-    elementos.append(
-        Paragraph(
-            f"Documento emitido em {datetime.now().strftime('%d/%m/%Y %H:%M')}",
-            estiloInfo
+        elementos.append(
+            Paragraph(
+                f"<b>Saída:</b> {viagem['data_saida'].strftime('%d/%m/%Y')}",
+                estiloInfo
+            )
         )
-    )
 
+        elementos.append(
+            Paragraph(
+                f"<b>Retorno:</b> {retorno}",
+                estiloInfo
+            )
+        )
+
+        elementos.append(
+            Paragraph(
+                f"<b>Responsável:</b> {viagem['responsavel']}",
+                estiloInfo
+            )
+        )
+
+        elementos.append(
+            Paragraph(
+                f"<b>Participantes:</b> {len(participantes)}",
+                estiloInfo
+            )
+        )
+
+        elementos.append(
+            Spacer(1, 20)
+        )
+
+        elementos.append(
+            Paragraph(
+                f"Documento emitido em {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+                estiloInfo
+            )
+        )
 
 
     # ==========================
@@ -420,10 +418,11 @@ def gerar_documentos_viagem(id):
 
     for pessoa in participantes:
 
+        if not integrante_id:
 
-        elementos.append(
-            PageBreak()
-        )
+            elementos.append(
+                PageBreak()
+            )
 
 
 
@@ -615,9 +614,33 @@ def gerar_documentos_viagem(id):
 
 
 
+    if integrante_id and participantes:
+
+        nome_pessoa = participantes[0]["nome"]
+
+        nome_pessoa = (
+            nome_pessoa
+            .replace("/", "-")
+            .replace("\\", "-")
+            .replace(":", "-")
+            .replace("*", "")
+            .replace("?", "")
+            .replace('"', "")
+            .replace("<", "")
+            .replace(">", "")
+            .replace("|", "")
+        )
+
+        nome_arquivo = f"Termo_{nome_pessoa}.pdf"
+
+    else:
+
+        nome_arquivo = f"Viagem_{viagem['evento']}.pdf"
+
+
     return send_file(
         arquivo,
         as_attachment=True,
-        download_name=f"Viagem_{viagem['evento']}.pdf",
+        download_name=nome_arquivo,
         mimetype="application/pdf"
     )

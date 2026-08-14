@@ -146,6 +146,18 @@ Detalhes da Viagem
 
                  <td>
 
+                    <div class="d-flex gap-2 flex-wrap">
+
+                        <a
+                            href="/admin/viagem/{{ viagem.id }}/integrante/{{ pessoa.id }}/termo"
+                            target="_blank"
+                            class="btn btn-sm btn-primary">
+
+                            🖨️ Imprimir Termo
+
+                        </a>
+
+
                     <form
                         method="POST"
                         action="/admin/viagem/{{ viagem.id }}/integrante/{{ pessoa.id }}/remover"

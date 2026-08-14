@@ -2830,6 +2830,19 @@ def documentos_viagem(id):
 
     return gerar_documentos_viagem(id)
 
+@app.route(
+    "/admin/viagem/<int:viagem_id>/integrante/<int:integrante_id>/termo"
+)
+def termo_individual_viagem(viagem_id, integrante_id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    return gerar_documentos_viagem(
+        viagem_id,
+        integrante_id
+    )
+
 @app.route("/admin/carteirinhas")
 def admin_carteirinhas():
 
@@ -2853,6 +2866,8 @@ def admin_carteirinhas():
         "admin/carteirinhas.html",
         integrantes=integrantes
     )
+
+
 
 @app.route("/admin/financeiro")
 def financeiro():
