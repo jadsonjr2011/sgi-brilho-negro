@@ -2383,33 +2383,26 @@ def exportar_pdf_calcados():
     parametros = {}
 
     if status_filtro:
-
         condicoes.append(
             "status = :status"
         )
-
         parametros["status"] = status_filtro
 
     if situacao_filtro:
-
         condicoes.append(
             "situacao = :situacao"
         )
-
         parametros["situacao"] = situacao_filtro
 
     if funcao_filtro:
-
         condicoes.append(
             "funcao = :funcao"
         )
-
         parametros["funcao"] = funcao_filtro
 
     where = ""
 
     if condicoes:
-
         where = "WHERE " + " AND ".join(condicoes)
 
     # ==============================
@@ -2468,7 +2461,9 @@ def exportar_pdf_calcados():
 
             {where_relatorio}
 
-            ORDER BY LOWER(nome)
+            ORDER BY
+                LOWER(COALESCE(funcao, '')),
+                LOWER(nome)
 
         """),
 
@@ -2489,66 +2484,6 @@ def exportar_pdf_calcados():
     )
 
     db.close()
-
-    # ==============================
-    # DISTRIBUIÇÃO POR CALÇADO
-    # ==============================
-
-    distribuicao_calcado = {}
-
-    for pessoa in integrantes:
-
-        calcado = pessoa["calcado"]
-
-        if calcado is None or str(calcado).strip() == "":
-
-            calcado = "Não informado"
-
-        else:
-
-            calcado = str(calcado).strip()
-
-        if calcado in distribuicao_calcado:
-
-            distribuicao_calcado[calcado] += 1
-
-        else:
-
-            distribuicao_calcado[calcado] = 1
-
-    # ==============================
-    # ORDENAÇÃO DOS CALÇADOS
-    # ==============================
-
-    def chave_calcado(item):
-
-        valor = item[0]
-
-        try:
-
-            return (
-                0,
-                float(valor)
-            )
-
-        except (ValueError, TypeError):
-
-            return (
-                1,
-                str(valor)
-            )
-
-    distribuicao_calcado = dict(
-
-        sorted(
-
-            distribuicao_calcado.items(),
-
-            key=chave_calcado
-
-        )
-
-    )
 
     # ==============================
     # CRIA PDF
@@ -2700,31 +2635,59 @@ def exportar_pdf_calcados():
 
     )
 
-    estilo_distribuicao = ParagraphStyle(
+    estilo_funcao = ParagraphStyle(
 
-        "DistribuicaoCalcados",
+        "FuncaoCalcados",
+
+        parent=estilos["Heading3"],
+
+        fontSize=10,
+
+        leading=12,
+
+        fontName="Helvetica-Bold"
+
+    )
+
+    estilo_tabela = ParagraphStyle(
+
+        "TabelaCalcado",
 
         parent=estilos["Normal"],
 
-        fontSize=8.5,
+        fontSize=9,
 
         leading=11
 
     )
 
-    estilo_distribuicao_cabecalho = ParagraphStyle(
+    estilo_cabecalho = ParagraphStyle(
 
-        "DistribuicaoCabecalhoCalcados",
+        "CabecalhoCalcado",
 
         parent=estilos["Normal"],
 
-        fontSize=8,
+        fontSize=9,
 
-        leading=10,
+        leading=11,
 
         alignment=1,
 
         fontName="Helvetica-Bold"
+
+    )
+
+    estilo_centro = ParagraphStyle(
+
+        "CentroCalcado",
+
+        parent=estilos["Normal"],
+
+        fontSize=9,
+
+        leading=11,
+
+        alignment=1
 
     )
 
@@ -2745,33 +2708,25 @@ def exportar_pdf_calcados():
     if status_filtro:
 
         filtros_html.append(
-
             f"<b>Status:</b> {status_filtro}"
-
         )
 
     if situacao_filtro:
 
         filtros_html.append(
-
             f"<b>Situação:</b> {situacao_filtro}"
-
         )
 
     if funcao_filtro:
 
         filtros_html.append(
-
             f"<b>Função:</b> {funcao_filtro}"
-
         )
 
     if not filtros_html:
 
         filtros_html.append(
-
             "<b>Todos os integrantes</b>"
-
         )
 
     texto_filtros = "<br/>".join(
@@ -2966,18 +2921,70 @@ def exportar_pdf_calcados():
     )
 
     elementos.append(
-        Spacer(1, 15)
+        Spacer(1, 18)
     )
 
+    # =====================================================
+    # AGRUPAMENTO POR FUNÇÃO E TAMANHO
+    # =====================================================
+
+    grupos_funcoes = {}
+
+    for pessoa in integrantes:
+
+        funcao = pessoa["funcao"]
+
+        if funcao is None or str(funcao).strip() == "":
+            funcao = "FUNÇÃO NÃO INFORMADA"
+        else:
+            funcao = str(funcao).strip()
+
+        calcado = pessoa["calcado"]
+
+        if calcado is None or str(calcado).strip() == "":
+            calcado = "Não informado"
+        else:
+            calcado = str(calcado).strip()
+
+        if funcao not in grupos_funcoes:
+            grupos_funcoes[funcao] = {}
+
+        if calcado not in grupos_funcoes[funcao]:
+            grupos_funcoes[funcao][calcado] = 0
+
+        grupos_funcoes[funcao][calcado] += 1
+
     # ==============================
-    # DISTRIBUIÇÃO POR CALÇADO
+    # ORDENAR TAMANHOS
+    # ==============================
+
+    def chave_calcado(item):
+
+        valor = item[0]
+
+        try:
+
+            return (
+                0,
+                float(valor)
+            )
+
+        except (ValueError, TypeError):
+
+            return (
+                1,
+                str(valor).lower()
+            )
+
+    # ==============================
+    # TÍTULO DA SEÇÃO
     # ==============================
 
     elementos.append(
 
         Paragraph(
 
-            "<b>Distribuição por Número de Calçado</b>",
+            "<b>Distribuição de Calçados por Função</b>",
 
             estilo_resumo_cabecalho
 
@@ -2986,401 +2993,228 @@ def exportar_pdf_calcados():
     )
 
     elementos.append(
-        Spacer(1, 6)
+        Spacer(1, 10)
     )
 
     # ==============================
-    # MONTAR DISTRIBUIÇÃO
-    # EM 3 COLUNAS
+    # UMA TABELA PARA CADA FUNÇÃO
     # ==============================
 
-    distribuicao_lista = [
+    for funcao in sorted(
+        grupos_funcoes.keys(),
+        key=lambda x: str(x).lower()
+    ):
 
-        (
-
-            str(calcado),
-
-            quantidade
-
-        )
-
-        for calcado, quantidade
-        in distribuicao_calcado.items()
-
-    ]
-
-    dados_calcados = [
-
-        [
+        elementos.append(
 
             Paragraph(
-                "CALÇADO",
-                estilo_distribuicao_cabecalho
-            ),
 
-            Paragraph(
-                "TOTAL",
-                estilo_distribuicao_cabecalho
-            ),
+                f"<b>FUNÇÃO: {funcao.upper()}</b>",
 
-            Paragraph(
-                "CALÇADO",
-                estilo_distribuicao_cabecalho
-            ),
+                estilo_funcao
 
-            Paragraph(
-                "TOTAL",
-                estilo_distribuicao_cabecalho
-            ),
-
-            Paragraph(
-                "CALÇADO",
-                estilo_distribuicao_cabecalho
-            ),
-
-            Paragraph(
-                "TOTAL",
-                estilo_distribuicao_cabecalho
             )
 
-        ]
-
-    ]
-
-    # ==============================
-    # DISTRIBUIÇÃO EM 3 GRUPOS
-    # ==============================
-
-    grupos = [
-        [],
-        [],
-        []
-    ]
-
-    for indice, item in enumerate(distribuicao_lista):
-
-        grupos[indice % 3].append(item)
-
-    maior_quantidade = max(
-
-        [
-            len(grupo)
-            for grupo in grupos
-        ]
-
-        or [0]
-
-    )
-
-    for linha in range(maior_quantidade):
-
-        linha_dados = []
-
-        for grupo in grupos:
-
-            if linha < len(grupo):
-
-                calcado, quantidade = grupo[linha]
-
-                linha_dados.extend(
-
-                    [
-
-                        Paragraph(
-                            calcado,
-                            estilo_distribuicao
-                        ),
-
-                        Paragraph(
-                            f"<b>{quantidade}</b>",
-                            estilo_distribuicao
-                        )
-
-                    ]
-
-                )
-
-            else:
-
-                linha_dados.extend(
-
-                    [
-
-                        Paragraph(
-                            "",
-                            estilo_distribuicao
-                        ),
-
-                        Paragraph(
-                            "",
-                            estilo_distribuicao
-                        )
-
-                    ]
-
-                )
-
-        dados_calcados.append(
-            linha_dados
         )
 
-    tabela_calcados = Table(
+        elementos.append(
+            Spacer(1, 5)
+        )
 
-        dados_calcados,
-
-        colWidths=[
-
-            70,
-            50,
-            70,
-            50,
-            70,
-            50
-
-        ]
-
-    )
-
-    # CENTRALIZA A TABELA NA PÁGINA
-    tabela_calcados.hAlign = "CENTER"
-
-    tabela_calcados.setStyle(
-
-        TableStyle(
+        dados_funcao = [
 
             [
 
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
+                Paragraph(
+                    "TAMANHO",
+                    estilo_cabecalho
                 ),
 
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, 0),
-                    colors.lightgrey
+                Paragraph(
+                    "QUANTIDADE",
+                    estilo_cabecalho
+                )
+
+            ]
+
+        ]
+
+        distribuicao_funcao = grupos_funcoes[funcao]
+
+        itens_funcao = sorted(
+            distribuicao_funcao.items(),
+            key=chave_calcado
+        )
+
+        total_funcao = 0
+
+        for calcado, quantidade in itens_funcao:
+
+            total_funcao += quantidade
+
+            dados_funcao.append(
+
+                [
+
+                    Paragraph(
+                        str(calcado),
+                        estilo_centro
+                    ),
+
+                    Paragraph(
+                        f"<b>{quantidade}</b>",
+                        estilo_centro
+                    )
+
+                ]
+
+            )
+
+        # ==============================
+        # TOTAL DA FUNÇÃO
+        # ==============================
+
+        dados_funcao.append(
+
+            [
+
+                Paragraph(
+                    "<b>TOTAL</b>",
+                    estilo_centro
                 ),
 
-                (
-                    "ALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "CENTER"
-                ),
-
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE"
-                ),
-
-                (
-                    "LEFTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
+                Paragraph(
+                    f"<b>{total_funcao}</b>",
+                    estilo_centro
                 )
 
             ]
 
         )
 
-    )
+        tabela_funcao = Table(
 
-    elementos.append(
-        tabela_calcados
-    )
+            dados_funcao,
 
-    # ==============================
-    # TOTAL GERAL DE CALÇADOS
-    # ==============================
+            colWidths=[
 
-    total_calcados = sum(
-        distribuicao_calcado.values()
-    )
+                180,
+                180
 
-    elementos.append(
-        Spacer(1, 5)
-    )
+            ],
 
-    dados_total_calcados = [
+            repeatRows=1
 
-        [
+        )
 
-            Paragraph(
-                "<b>TOTAL GERAL DE CALÇADOS</b>",
-                estilo_distribuicao
-            ),
+        tabela_funcao.hAlign = "CENTER"
 
-            Paragraph(
-                f"<b>{total_calcados}</b>",
-                estilo_distribuicao
+        tabela_funcao.setStyle(
+
+            TableStyle(
+
+                [
+
+                    (
+                        "GRID",
+                        (0, 0),
+                        (-1, -1),
+                        0.5,
+                        colors.grey
+                    ),
+
+                    (
+                        "BACKGROUND",
+                        (0, 0),
+                        (-1, 0),
+                        colors.lightgrey
+                    ),
+
+                    (
+                        "BACKGROUND",
+                        (0, -1),
+                        (-1, -1),
+                        colors.whitesmoke
+                    ),
+
+                    (
+                        "ALIGN",
+                        (0, 0),
+                        (-1, -1),
+                        "CENTER"
+                    ),
+
+                    (
+                        "VALIGN",
+                        (0, 0),
+                        (-1, -1),
+                        "MIDDLE"
+                    ),
+
+                    (
+                        "LEFTPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        7
+                    ),
+
+                    (
+                        "RIGHTPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        7
+                    ),
+
+                    (
+                        "TOPPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5
+                    ),
+
+                    (
+                        "BOTTOMPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5
+                    )
+
+                ]
+
             )
 
-        ]
+        )
 
-    ]
+        elementos.append(
+            tabela_funcao
+        )
 
-    tabela_total_calcados = Table(
+        elementos.append(
+            Spacer(1, 12)
+        )
 
-        dados_total_calcados,
+    # ==============================
+    # LISTA DE INTEGRANTES
+    # ==============================
 
-        colWidths=[
-
-            170,
-            170
-
-        ]
-
+    elementos.append(
+        Spacer(1, 8)
     )
 
-    tabela_total_calcados.setStyle(
+    elementos.append(
 
-        TableStyle(
+        Paragraph(
 
-            [
+            "<b>Lista de Integrantes</b>",
 
-                (
-                    "BOX",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
-
-                (
-                    "BACKGROUND",
-                    (0, 0),
-                    (-1, -1),
-                    colors.whitesmoke
-                ),
-
-                (
-                    "ALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "CENTER"
-                ),
-
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE"
-                ),
-
-                (
-                    "LEFTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    8
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    6
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    6
-                )
-
-            ]
+            estilo_resumo_cabecalho
 
         )
 
     )
 
     elementos.append(
-        tabela_total_calcados
-    )
-
-    elementos.append(
-        Spacer(1, 18)
-    )
-
-    # ==============================
-    # ESTILOS DA TABELA
-    # ==============================
-
-    estilo_tabela = ParagraphStyle(
-
-        "TabelaCalcado",
-
-        parent=estilos["Normal"],
-
-        fontSize=9,
-
-        leading=11
-
-    )
-
-    estilo_cabecalho = ParagraphStyle(
-
-        "CabecalhoCalcado",
-
-        parent=estilos["Normal"],
-
-        fontSize=9,
-
-        leading=11,
-
-        alignment=1,
-
-        fontName="Helvetica-Bold"
-
-    )
-
-    estilo_centro = ParagraphStyle(
-
-        "CentroCalcado",
-
-        parent=estilos["Normal"],
-
-        fontSize=9,
-
-        leading=11,
-
-        alignment=1
-
+        Spacer(1, 8)
     )
 
     # ==============================
@@ -3455,7 +3289,7 @@ def exportar_pdf_calcados():
         )
 
     # ==============================
-    # TABELA
+    # TABELA DE INTEGRANTES
     # ==============================
 
     tabela = Table(
@@ -3522,7 +3356,9 @@ def exportar_pdf_calcados():
 
     )
 
-    elementos.append(tabela)
+    elementos.append(
+        tabela
+    )
 
     elementos.append(
         Spacer(1, 20)
@@ -3543,7 +3379,9 @@ def exportar_pdf_calcados():
 
     )
 
-    elementos.append(rodape)
+    elementos.append(
+        rodape
+    )
 
     # ==============================
     # GERAR PDF
