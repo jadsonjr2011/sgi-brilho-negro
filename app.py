@@ -67,6 +67,9 @@ FUNCOES_BANDA = [
     ("Apoio", "🛠️ Apoio"),
     ("Maestro", "🥁 Maestro"),
     ("Instrutor", "🎼 Instrutor"),
+    ("Capitão-mor", "🫡 Capitão-mor"),
+    ("Guardião", "🛡️ Guardião"),
+    ("Produção", "🎬 Produção"),
 ]
 
 # ==============================
@@ -1815,6 +1818,7 @@ def exportar_pdf_calcados():
     status_filtro = request.args.get("status")
     situacao_filtro = request.args.get("situacao")
     funcao_filtro = request.args.get("funcao")
+    excluir_funcao = request.args.get("excluir_funcao")
 
     condicoes = []
     parametros = {}
@@ -1842,6 +1846,14 @@ def exportar_pdf_calcados():
         )
 
         parametros["funcao"] = funcao_filtro
+
+    if excluir_funcao:
+
+        condicoes.append(
+            "funcao <> :excluir_funcao"
+        )
+
+    parametros["excluir_funcao"] = excluir_funcao    
 
     where = ""
 

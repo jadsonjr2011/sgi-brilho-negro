@@ -265,50 +265,24 @@ Função na Banda
 </label>
 
 <select
-class="form-select"
-name="funcao">
+    class="form-select"
+    name="funcao">
 
+    <option value="">
+        Selecione
+    </option>
 
-<option value="">
-Selecione
-</option>
+    {% for valor, nome in funcoes_banda %}
 
+        <option
+            value="{{ valor }}"
+            {% if integrante.funcao == valor %}selected{% endif %}>
 
-<option value="Músico"
-{% if integrante.funcao == "Músico" %}selected{% endif %}>
-🎺 Músico
-</option>
+            {{ nome }}
 
+        </option>
 
-<option value="Corpo Coreográfico"
-{% if integrante.funcao == "Corpo Coreográfico" %}selected{% endif %}>
-💃 Corpo Coreográfico
-</option>
-
-
-<option value="Apoio"
-{% if integrante.funcao == "Apoio" %}selected{% endif %}>
-🛠️ Apoio
-</option>
-
-
-<option value="Maestro"
-{% if integrante.funcao == "Maestro" %}selected{% endif %}>
-🥁 Maestro
-</option>
-
-
-<option value="Instrutor"
-{% if integrante.funcao == "Instrutor" %}selected{% endif %}>
-🎼 Instrutor
-</option>
-
-
-<option value="Capitão-mor"
-{% if integrante.funcao == "Capitão-mor" %}selected{% endif %}>
-🫡 Capitão-mor
-</option>
-
+    {% endfor %}
 
 </select>
 
