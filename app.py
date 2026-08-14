@@ -64,7 +64,6 @@ def moeda(valor):
 FUNCOES_BANDA = [
     ("Músico", "🎺 Músico"),
     ("Corpo Coreográfico", "💃 Corpo Coreográfico"),
-    ("Apoio", "🛠️ Apoio"),
     ("Maestro", "🥁 Maestro"),
     ("Instrutor", "🎼 Instrutor"),
     ("Capitão-mor", "🫡 Capitão-mor"),
