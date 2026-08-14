@@ -56,6 +56,19 @@ app.secret_key = "brilho_negro_2026"
 def moeda(valor):
     return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
+
+# =====================================================
+# FUNÇÕES DA BANDA
+# =====================================================
+
+FUNCOES_BANDA = [
+    ("Músico", "🎺 Músico"),
+    ("Corpo Coreográfico", "💃 Corpo Coreográfico"),
+    ("Apoio", "🛠️ Apoio"),
+    ("Maestro", "🥁 Maestro"),
+    ("Instrutor", "🎼 Instrutor"),
+]
+
 # ==============================
 # HISTÓRICO DE ALTERAÇÕES
 # ==============================
@@ -135,6 +148,12 @@ def registrar_historico(integrante_id, acao, status_anterior, status_novo):
 # ROTAS
 # ==============================
 
+@app.context_processor
+def disponibilizar_funcoes():
+
+    return {
+        "funcoes_banda": FUNCOES_BANDA
+    }
 
 @app.route("/")
 def inicio():
@@ -1331,8 +1350,9 @@ def exportar_pdf():
     # ==============================
     # FILTRO
     # ==============================
-
     status_filtro = request.args.get("status")
+
+    situacao_filtro = request.args.get("situacao")
 
     funcao_filtro = request.args.get("funcao")
 
@@ -1349,6 +1369,15 @@ def exportar_pdf():
         )
 
         parametros["status"] = status_filtro
+
+
+    if situacao_filtro:
+
+        condicoes.append(
+            "situacao = :situacao"
+        )
+
+    parametros["situacao"] = situacao_filtro    
 
 
 
@@ -1383,6 +1412,7 @@ def exportar_pdf():
                 cidade,
                 estado,
                 status,
+                situacao,
                 funcao
 
             FROM integrantes
@@ -1512,9 +1542,27 @@ def exportar_pdf():
 
 
 
+    filtros_aplicados = []
+
+    if status_filtro:
+        filtros_aplicados.append(
+            f"Status: {status_filtro}"
+            )
+
+    if situacao_filtro:
+        filtros_aplicados.append(
+            f"Situação: {situacao_filtro}"
+        )
+
+    if funcao_filtro:
+        filtros_aplicados.append(
+            f"Função: {funcao_filtro}"
+        )
+
+
     filtro_texto = (
-        status_filtro
-        if status_filtro
+        " | ".join(filtros_aplicados)
+        if filtros_aplicados
         else
         "TODOS OS INTEGRANTES"
     )

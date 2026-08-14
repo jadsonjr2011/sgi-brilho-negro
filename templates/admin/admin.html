@@ -1227,100 +1227,95 @@
 
                 <div class="row">
 
+                    <!-- STATUS CADASTRO -->
 
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
 
                         <label class="form-label">
-                            Status
+                            Status Cadastro
                         </label>
-
 
                         <select
                             name="status"
                             class="form-select">
 
-
                             <option value="">
                                 Todos
                             </option>
-
 
                             <option value="PENDENTE">
                                 Pendentes
                             </option>
 
-
                             <option value="APROVADO">
                                 Aprovados
                             </option>
-
 
                             <option value="REPROVADO">
                                 Reprovados
                             </option>
 
-
-                            <option value="INATIVO">
-                                Inativos
-                            </option>
-
-
                         </select>
 
                     </div>
 
 
-                    <div class="col-md-6 mb-3">
+                    <!-- SITUAÇÃO -->
+
+                    <div class="col-md-4 mb-3">
 
                         <label class="form-label">
-                            Função
+                            Situação
                         </label>
 
-
                         <select
-                            name="funcao"
+                            name="situacao"
                             class="form-select">
-
 
                             <option value="">
                                 Todas
                             </option>
 
-
-                            <option value="Músico">
-                                Músico
+                            <option value="ATIVO">
+                                Ativos
                             </option>
 
-
-                            <option value="CC Música">
-                                CC Música
+                            <option value="INATIVO">
+                                Inativos
                             </option>
-
-
-                            <option value="Instrutor">
-                                Instrutor
-                            </option>
-
-
-                            <option value="Apoio">
-                                Apoio
-                            </option>
-
-
-                            <option value="Dança">
-                                Dança
-                            </option>
-
-
-                            <option value="Capitão-mor">
-                                Capitão-mor
-                            </option>
-
 
                         </select>
 
                     </div>
 
+
+                    <!-- FUNÇÃO -->
+
+                    <div class="col-md-4 mb-3">
+
+                        <label class="form-label">
+                            Função
+                        </label>
+
+                        <select
+                            name="funcao"
+                            class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            {% for valor, nome in funcoes_banda %}
+
+                                <option value="{{ valor }}">
+                                    {{ nome }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
 
                 </div>
 

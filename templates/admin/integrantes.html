@@ -116,9 +116,7 @@ Integrantes Cadastrados
     <div class="col-md-6 mb-3">
 
         <label class="form-label">
-
             🔎 Pesquisar integrante
-
         </label>
 
         <input
@@ -133,12 +131,10 @@ Integrantes Cadastrados
 
     <!-- STATUS CADASTRO -->
 
-    <div class="col-md-3 mb-3">
+    <div class="col-md-2 mb-3">
 
         <label class="form-label">
-
             Status Cadastro
-
         </label>
 
         <select
@@ -169,12 +165,10 @@ Integrantes Cadastrados
 
     <!-- SITUAÇÃO -->
 
-    <div class="col-md-3 mb-3">
+    <div class="col-md-2 mb-3">
 
         <label class="form-label">
-
             Situação
-
         </label>
 
         <select
@@ -193,6 +187,36 @@ Integrantes Cadastrados
             <option value="INATIVO">
                 Inativos
             </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- FUNÇÃO -->
+
+    <div class="col-md-2 mb-3">
+
+        <label class="form-label">
+            Função
+        </label>
+
+        <select
+            id="filtroFuncao"
+            class="form-select"
+            onchange="filtrarIntegrantes()">
+
+            <option value="">
+                Todas
+            </option>
+
+            {% for valor, nome in funcoes_banda %}
+
+                <option value="{{ valor }}">
+                    {{ nome }}
+                </option>
+
+            {% endfor %}
 
         </select>
 
@@ -268,7 +292,8 @@ Integrantes Cadastrados
             <tr
                 class="linha-integrante"
                 data-status="{{ pessoa.status }}"
-                data-situacao="{{ pessoa.situacao }}">
+                data-situacao="{{ pessoa.situacao }}"
+                data-funcao="{{ pessoa.funcao or '' }}">
 
                 <!-- CÓDIGO -->
 
@@ -439,6 +464,11 @@ function filtrarIntegrantes() {
         .value;
 
 
+    const filtroFuncao = document
+        .getElementById("filtroFuncao")
+        .value;
+
+
     const linhas = document.querySelectorAll(
         ".linha-integrante"
     );
@@ -453,6 +483,8 @@ function filtrarIntegrantes() {
         const status = linha.dataset.status;
 
         const situacao = linha.dataset.situacao;
+
+        const funcao = linha.dataset.funcao;
 
 
         const correspondePesquisa =
@@ -469,10 +501,16 @@ function filtrarIntegrantes() {
             situacao === filtroSituacao;
 
 
+        const correspondeFuncao =
+            filtroFuncao === "" ||
+            funcao === filtroFuncao;
+
+
         if (
             correspondePesquisa &&
             correspondeStatus &&
-            correspondeSituacao
+            correspondeSituacao &&
+            correspondeFuncao
         ) {
 
             linha.style.display = "";
