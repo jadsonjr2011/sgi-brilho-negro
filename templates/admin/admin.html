@@ -1164,9 +1164,7 @@
 </div>
 
 <!-- ===================================================== -->
-
 <!-- MODAL DE RELATÓRIOS                                  -->
-
 <!-- ===================================================== -->
 
 <div
@@ -1175,55 +1173,111 @@
     tabindex="-1"
     aria-hidden="true">
 
+    <div class="modal-dialog modal-lg">
 
-<div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
 
-    <div class="modal-content bg-dark text-white">
+            <!-- CABEÇALHO -->
 
+            <div class="modal-header">
 
-        <div class="modal-header">
+                <h5 class="modal-title">
+                    📊 Central de Relatórios
+                </h5>
 
-            <h5 class="modal-title">
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
 
-                📊 Central de Relatórios
-
-            </h5>
-
-
-            <button
-                class="btn-close btn-close-white"
-                data-bs-dismiss="modal">
-
-            </button>
-
-        </div>
+            </div>
 
 
-        <form
-            action="/admin/exportar/pdf"
-            method="get"
-            target="_blank">
-
+            <!-- CORPO -->
 
             <div class="modal-body">
 
+                <!-- ================================================= -->
+                <!-- ESCOLHA DO RELATÓRIO                              -->
+                <!-- ================================================= -->
 
-                <h4 class="titulo text-center mb-3">
+                <div class="mb-4">
 
-                    👥 Relatório de Integrantes
+                    <label class="form-label">
+                        📄 Tipo de relatório
+                    </label>
 
-                </h4>
+                    <select
+                        id="tipoRelatorio"
+                        class="form-select">
 
+                        <option value="integrantes">
+                            👥 Relatório de Integrantes
+                        </option>
 
-                <p class="text-secondary text-center">
+                        <option value="calcados">
+                            👟 Relatório de Calçados
+                        </option>
 
-                    Selecione os filtros desejados para gerar o relatório.
+                    </select>
 
-                </p>
+                </div>
 
 
                 <hr>
 
+
+                <!-- ================================================= -->
+                <!-- RELATÓRIO DE INTEGRANTES                           -->
+                <!-- ================================================= -->
+
+                <div id="relatorioIntegrantes">
+
+                    <h4 class="titulo text-center mb-3">
+
+                        👥 Relatório de Integrantes
+
+                    </h4>
+
+                    <p class="text-secondary text-center">
+
+                        Lista completa dos integrantes com os dados cadastrais.
+
+                    </p>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- RELATÓRIO DE CALÇADOS                              -->
+                <!-- ================================================= -->
+
+                <div
+                    id="relatorioCalcados"
+                    style="display: none;">
+
+                    <h4 class="titulo text-center mb-3">
+
+                        👟 Relatório de Calçados
+
+                    </h4>
+
+                    <p class="text-secondary text-center">
+
+                        Relação dos integrantes e seus respectivos tamanhos de calçado.
+
+                    </p>
+
+                </div>
+
+
+                <hr>
+
+
+                <!-- ================================================= -->
+                <!-- FILTROS                                            -->
+                <!-- ================================================= -->
 
                 <div class="row">
 
@@ -1232,11 +1286,13 @@
                     <div class="col-md-4 mb-3">
 
                         <label class="form-label">
+
                             Status Cadastro
+
                         </label>
 
                         <select
-                            name="status"
+                            id="filtroStatus"
                             class="form-select">
 
                             <option value="">
@@ -1265,11 +1321,13 @@
                     <div class="col-md-4 mb-3">
 
                         <label class="form-label">
+
                             Situação
+
                         </label>
 
                         <select
-                            name="situacao"
+                            id="filtroSituacao"
                             class="form-select">
 
                             <option value="">
@@ -1294,11 +1352,13 @@
                     <div class="col-md-4 mb-3">
 
                         <label class="form-label">
+
                             Função
+
                         </label>
 
                         <select
-                            name="funcao"
+                            id="filtroFuncao"
                             class="form-select">
 
                             <option value="">
@@ -1308,7 +1368,9 @@
                             {% for valor, nome in funcoes_banda %}
 
                                 <option value="{{ valor }}">
+
                                     {{ nome }}
+
                                 </option>
 
                             {% endfor %}
@@ -1323,12 +1385,16 @@
             </div>
 
 
+            <!-- ===================================================== -->
+            <!-- RODAPÉ                                                -->
+            <!-- ===================================================== -->
+
             <div class="modal-footer">
 
-
                 <button
-                    type="submit"
-                    class="btn btn-danger">
+                    type="button"
+                    class="btn btn-danger"
+                    onclick="exportarRelatorioPDF()">
 
                     📄 Exportar PDF
 
@@ -1337,6 +1403,7 @@
 
                 <a
                     href="/admin/exportar/excel"
+                    target="_blank"
                     class="btn btn-success">
 
                     📊 Exportar Excel
@@ -1353,19 +1420,165 @@
 
                 </button>
 
-
             </div>
 
-
-        </form>
-
+        </div>
 
     </div>
 
 </div>
 
 
-</div>
+<!-- ===================================================== -->
+<!-- SCRIPT DOS RELATÓRIOS                                -->
+<!-- ===================================================== -->
+
+<script>
+
+function exportarRelatorioPDF() {
+
+    const tipo = document.getElementById(
+        "tipoRelatorio"
+    ).value;
+
+
+    const status = document.getElementById(
+        "filtroStatus"
+    ).value;
+
+
+    const situacao = document.getElementById(
+        "filtroSituacao"
+    ).value;
+
+
+    const funcao = document.getElementById(
+        "filtroFuncao"
+    ).value;
+
+
+    let url = "";
+
+
+    // ==========================================
+    // RELATÓRIO DE INTEGRANTES
+    // ==========================================
+
+    if (tipo === "integrantes") {
+
+        url = "/admin/exportar/pdf";
+
+    }
+
+
+    // ==========================================
+    // RELATÓRIO DE CALÇADOS
+    // ==========================================
+
+    else if (tipo === "calcados") {
+
+        url = "/admin/exportar/pdf/calcados";
+
+    }
+
+
+    // ==========================================
+    // ADICIONAR FILTROS
+    // ==========================================
+
+    const parametros = new URLSearchParams();
+
+
+    if (status) {
+
+        parametros.append(
+            "status",
+            status
+        );
+
+    }
+
+
+    if (situacao) {
+
+        parametros.append(
+            "situacao",
+            situacao
+        );
+
+    }
+
+
+    if (funcao) {
+
+        parametros.append(
+            "funcao",
+            funcao
+        );
+
+    }
+
+
+    if (parametros.toString()) {
+
+        url += "?" + parametros.toString();
+
+    }
+
+
+    // ==========================================
+    // ABRIR PDF
+    // ==========================================
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+// =====================================================
+// ALTERAR DESCRIÇÃO DO RELATÓRIO
+// =====================================================
+
+document
+    .getElementById("tipoRelatorio")
+    .addEventListener(
+        "change",
+        function () {
+
+            const integrantes =
+                document.getElementById(
+                    "relatorioIntegrantes"
+                );
+
+            const calcados =
+                document.getElementById(
+                    "relatorioCalcados"
+                );
+
+
+            if (this.value === "calcados") {
+
+                integrantes.style.display = "none";
+
+                calcados.style.display = "block";
+
+            }
+
+            else {
+
+                integrantes.style.display = "block";
+
+                calcados.style.display = "none";
+
+            }
+
+        }
+    );
+
+</script>
 
 <!-- ===================================================== -->
 

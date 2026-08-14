@@ -1800,6 +1800,412 @@ def exportar_pdf():
         mimetype="application/pdf"
     )
 
+@app.route("/admin/exportar/pdf/calcados")
+def exportar_pdf_calcados():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    # ==============================
+    # FILTROS
+    # ==============================
+
+    status_filtro = request.args.get("status")
+    situacao_filtro = request.args.get("situacao")
+    funcao_filtro = request.args.get("funcao")
+
+    condicoes = []
+    parametros = {}
+
+    if status_filtro:
+
+        condicoes.append(
+            "status = :status"
+        )
+
+        parametros["status"] = status_filtro
+
+    if situacao_filtro:
+
+        condicoes.append(
+            "situacao = :situacao"
+        )
+
+        parametros["situacao"] = situacao_filtro
+
+    if funcao_filtro:
+
+        condicoes.append(
+            "funcao = :funcao"
+        )
+
+        parametros["funcao"] = funcao_filtro
+
+    where = ""
+
+    if condicoes:
+
+        where = "WHERE " + " AND ".join(condicoes)
+
+    # ==============================
+    # BUSCAR INTEGRANTES
+    # ==============================
+
+    integrantes = db.execute(
+
+        text(f"""
+
+            SELECT
+                codigo_integrante,
+                nome,
+                calcado,
+                status,
+                situacao,
+                funcao
+
+            FROM integrantes
+
+            {where}
+
+            ORDER BY LOWER(nome)
+
+        """),
+
+        parametros
+
+    ).mappings().all()
+
+    db.close()
+
+    # ==============================
+    # CRIA PDF
+    # ==============================
+
+    arquivo = BytesIO()
+
+    from reportlab.lib.pagesizes import A4
+
+    pdf = SimpleDocTemplate(
+        arquivo,
+        pagesize=A4,
+        topMargin=25,
+        bottomMargin=30,
+        leftMargin=35,
+        rightMargin=35
+    )
+
+    elementos = []
+
+    estilos = getSampleStyleSheet()
+
+    # ==============================
+    # LOGO
+    # ==============================
+
+    from reportlab.platypus import Image
+
+    logo = Image(
+        "static/img/logo_relatorio.PNG",
+        width=320,
+        height=79
+    )
+
+    logo.hAlign = "CENTER"
+
+    elementos.append(logo)
+
+    elementos.append(
+        Spacer(1, 5)
+    )
+
+    # ==============================
+    # TÍTULO
+    # ==============================
+
+    titulo = Paragraph(
+        """
+        <b>BRILHO NEGRO</b><br/>
+        <font size="14">
+        Sistema de Gestão de Integrantes
+        </font>
+        """,
+        estilos["Title"]
+    )
+
+    elementos.append(titulo)
+
+    from reportlab.platypus import HRFlowable
+
+    elementos.append(
+        Spacer(1, 8)
+    )
+
+    elementos.append(
+        HRFlowable(
+            width="100%",
+            thickness=1
+        )
+    )
+
+    elementos.append(
+        Spacer(1, 15)
+    )
+
+    subtitulo = Paragraph(
+        "<b>Relatório de Calçados</b>",
+        estilos["Heading2"]
+    )
+
+    elementos.append(subtitulo)
+
+    elementos.append(
+        Spacer(1, 15)
+    )
+
+    # ==============================
+    # FILTROS APLICADOS
+    # ==============================
+
+    filtros_aplicados = []
+
+    if status_filtro:
+
+        filtros_aplicados.append(
+            f"Status Cadastro: {status_filtro}"
+        )
+
+    if situacao_filtro:
+
+        filtros_aplicados.append(
+            f"Situação: {situacao_filtro}"
+        )
+
+    if funcao_filtro:
+
+        filtros_aplicados.append(
+            f"Função: {funcao_filtro}"
+        )
+
+    filtro_texto = (
+
+        " | ".join(filtros_aplicados)
+
+        if filtros_aplicados
+
+        else
+
+        "TODOS OS INTEGRANTES"
+
+    )
+
+    informacoes = Paragraph(
+
+        f"""
+        Gerado em: {datetime.now().strftime("%d/%m/%Y %H:%M")}<br/>
+        Filtro: {filtro_texto}<br/><br/>
+
+        <b>Total encontrado:</b> {len(integrantes)}
+        """,
+
+        estilos["Normal"]
+
+    )
+
+    elementos.append(informacoes)
+
+    elementos.append(
+        Spacer(1, 20)
+    )
+
+    # ==============================
+    # ESTILOS DA TABELA
+    # ==============================
+
+    from reportlab.lib.styles import ParagraphStyle
+
+    estilo_tabela = ParagraphStyle(
+        "TabelaCalcado",
+        parent=estilos["Normal"],
+        fontSize=9,
+        leading=11
+    )
+
+    estilo_cabecalho = ParagraphStyle(
+        "CabecalhoCalcado",
+        parent=estilos["Normal"],
+        fontSize=9,
+        leading=11,
+        alignment=1,
+        fontName="Helvetica-Bold"
+    )
+
+    estilo_centro = ParagraphStyle(
+        "CentroCalcado",
+        parent=estilos["Normal"],
+        fontSize=9,
+        leading=11,
+        alignment=1
+    )
+
+    # ==============================
+    # DADOS DA TABELA
+    # ==============================
+
+    dados = [
+
+        [
+            Paragraph(
+                "Código Integrante",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Integrante",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
+                "Calçado",
+                estilo_cabecalho
+            )
+        ]
+
+    ]
+
+    for pessoa in integrantes:
+
+        dados.append(
+
+            [
+
+                Paragraph(
+                    str(pessoa["codigo_integrante"]),
+                    estilo_centro
+                ),
+
+                Paragraph(
+                    (pessoa["nome"] or "").title(),
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    str(pessoa["calcado"])
+                    if pessoa["calcado"]
+                    else "-",
+                    estilo_centro
+                )
+
+            ]
+
+        )
+
+    # ==============================
+    # TABELA
+    # ==============================
+
+    tabela = Table(
+
+        dados,
+
+        colWidths=[
+            110,   # código
+            300,   # integrante
+            70     # calçado
+        ],
+
+        repeatRows=1
+    )
+
+    tabela.setStyle(
+
+        TableStyle(
+
+            [
+
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.5,
+                    colors.grey
+                ),
+
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    colors.lightgrey
+                ),
+
+                (
+                    "FONTNAME",
+                    (0, 0),
+                    (-1, 0),
+                    "Helvetica-Bold"
+                ),
+
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, 0),
+                    "CENTER"
+                ),
+
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                )
+
+            ]
+
+        )
+
+    )
+
+    elementos.append(tabela)
+
+    elementos.append(
+        Spacer(1, 20)
+    )
+
+    # ==============================
+    # RODAPÉ
+    # ==============================
+
+    rodape = Paragraph(
+        """
+        SGI Brilho Negro<br/>
+        Documento gerado automaticamente.
+        """,
+        estilos["Normal"]
+    )
+
+    elementos.append(rodape)
+
+    # ==============================
+    # GERAR PDF
+    # ==============================
+
+    pdf.build(elementos)
+
+    arquivo.seek(0)
+
+    return send_file(
+
+        arquivo,
+
+        as_attachment=True,
+
+        download_name="relatorio_calcados_brilho_negro.pdf",
+
+        mimetype="application/pdf"
+
+    )    
+
 @app.route("/admin/integrante/<int:id>/pdf")
 def pdf_integrante(id):
 
