@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, jsonify
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
+from urllib.parse import quote
 from flask import send_file
 from io import BytesIO
 from utils.pdf_carteirinha import (
@@ -285,6 +286,18 @@ def admin():
     if "admin" not in session:
         return redirect("/login")
 
+    mensagem_instrumento = request.args.get(
+        "instrumento_msg"
+        )
+
+    tipo_mensagem_instrumento = request.args.get(
+        "instrumento_tipo"
+        )
+
+    abrir_instrumentos = request.args.get(
+        "abrir_instrumentos"
+        )
+
     db = SessionLocal()
 
     try:
@@ -353,6 +366,22 @@ def admin():
                 SELECT *
                 FROM temporadas
                 ORDER BY ano DESC
+            """)
+        ).mappings().all()
+
+        # ==========================================
+        # INSTRUMENTOS
+        # ==========================================
+
+        instrumentos = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo,
+                    data_cadastro
+                FROM instrumentos
+                ORDER BY LOWER(nome)
             """)
         ).mappings().all()
 
@@ -440,6 +469,21 @@ def admin():
 
         mes_nome = meses[mes_atual]
 
+        # ==========================================
+        # INSTRUMENTOS
+        # ==========================================
+
+        instrumentos = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo,
+                    data_cadastro
+                FROM instrumentos
+                ORDER BY LOWER(nome)
+            """)
+        ).mappings().all()
 
     finally:
 
@@ -460,8 +504,258 @@ def admin():
         aniversariantes=aniversariantes,
         mes_nome=mes_nome,
         status_inscricoes=status_inscricoes,
-        integrantes_carteirinhas=integrantes_carteirinhas
+        integrantes_carteirinhas=integrantes_carteirinhas,
+        instrumentos=instrumentos,
+        mensagem_instrumento=mensagem_instrumento,
+        tipo_mensagem_instrumento=tipo_mensagem_instrumento,
+        abrir_instrumentos=abrir_instrumentos
     )
+
+@app.route("/admin/instrumentos/novo", methods=["POST"])
+def novo_instrumento():
+
+    if "admin" not in session:
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    nome = request.form.get("nome", "").strip()
+
+
+    # ==========================================
+    # VALIDAR NOME
+    # ==========================================
+
+    if not nome:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Informe o nome do instrumento."
+        })
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        # ==========================================
+        # VERIFICAR SE JÁ EXISTE
+        # ==========================================
+
+        existente = db.execute(
+            text("""
+                SELECT id
+                FROM instrumentos
+                WHERE LOWER(nome) = LOWER(:nome)
+                LIMIT 1
+            """),
+            {
+                "nome": nome
+            }
+        ).scalar()
+
+
+        if existente:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": f'O instrumento "{nome}" já está cadastrado.'
+            })
+
+
+        # ==========================================
+        # CADASTRAR
+        # ==========================================
+
+        instrumento = db.execute(
+            text("""
+                INSERT INTO instrumentos (
+                    nome,
+                    ativo
+                )
+                VALUES (
+                    :nome,
+                    TRUE
+                )
+                RETURNING id, nome, ativo
+            """),
+            {
+                "nome": nome
+            }
+        ).mappings().first()
+
+
+        db.commit()
+
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": f'Instrumento "{instrumento["nome"]}" cadastrado com sucesso.',
+            "instrumento": {
+                "id": instrumento["id"],
+                "nome": instrumento["nome"],
+                "ativo": instrumento["ativo"]
+            }
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO CADASTRAR INSTRUMENTO:",
+            e
+        )
+
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao cadastrar o instrumento."
+        }), 500
+
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/instrumentos/<int:id>/editar", methods=["POST"])
+def editar_instrumento(id):
+
+    if "admin" not in session:
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    nome = request.form.get("nome", "").strip()
+
+
+    # ==========================================
+    # VALIDAR NOME
+    # ==========================================
+
+    if not nome:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Informe o nome do instrumento."
+        })
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        # ==========================================
+        # VERIFICAR SE O INSTRUMENTO EXISTE
+        # ==========================================
+
+        instrumento_atual = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo
+                FROM instrumentos
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+
+        if not instrumento_atual:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Instrumento não encontrado."
+            })
+
+
+        # ==========================================
+        # VERIFICAR DUPLICIDADE
+        # ==========================================
+
+        existente = db.execute(
+            text("""
+                SELECT id
+                FROM instrumentos
+                WHERE LOWER(nome) = LOWER(:nome)
+                AND id <> :id
+                LIMIT 1
+            """),
+            {
+                "nome": nome,
+                "id": id
+            }
+        ).scalar()
+
+
+        if existente:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": f'O instrumento "{nome}" já está cadastrado.'
+            })
+
+
+        # ==========================================
+        # ATUALIZAR
+        # ==========================================
+
+        db.execute(
+            text("""
+                UPDATE instrumentos
+                SET nome = :nome
+                WHERE id = :id
+            """),
+            {
+                "nome": nome,
+                "id": id
+            }
+        )
+
+
+        db.commit()
+
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": f'Instrumento alterado para "{nome}" com sucesso.',
+            "instrumento": {
+                "id": id,
+                "nome": nome,
+                "ativo": instrumento_atual["ativo"]
+            }
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO EDITAR INSTRUMENTO:",
+            e
+        )
+
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao editar o instrumento."
+        }), 500
+
+
+    finally:
+
+        db.close()        
 
 @app.route("/integrantes")
 def integrantes():
