@@ -755,7 +755,144 @@ def editar_instrumento(id):
 
     finally:
 
-        db.close()        
+        db.close()
+
+@app.route("/admin/instrumentos/<int:id>/alternar", methods=["POST"])
+def alternar_instrumento(id):
+
+    if "admin" not in session:
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        # ==========================================
+        # BUSCAR INSTRUMENTO
+        # ==========================================
+
+        instrumento = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo
+                FROM instrumentos
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+
+        if not instrumento:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Instrumento não encontrado."
+            }), 404
+
+
+        # ==========================================
+        # RECEBER A AÇÃO SOLICITADA
+        # ==========================================
+
+        dados = request.get_json(silent=True) or {}
+
+        ativar = dados.get("ativar")
+
+
+        # ==========================================
+        # SE NÃO VEIO PELO JSON,
+        # INVERTE O STATUS ATUAL
+        # ==========================================
+
+        if ativar is None:
+
+            novo_status = not instrumento["ativo"]
+
+        else:
+
+            novo_status = bool(ativar)
+
+
+        # ==========================================
+        # ATUALIZAR BANCO
+        # ==========================================
+
+        db.execute(
+            text("""
+                UPDATE instrumentos
+                SET ativo = :ativo
+                WHERE id = :id
+            """),
+            {
+                "ativo": novo_status,
+                "id": id
+            }
+        )
+
+
+        db.commit()
+
+
+        # ==========================================
+        # MENSAGEM
+        # ==========================================
+
+        if novo_status:
+
+            mensagem = (
+                f'Instrumento "{instrumento["nome"]}" '
+                'ativado com sucesso.'
+            )
+
+        else:
+
+            mensagem = (
+                f'Instrumento "{instrumento["nome"]}" '
+                'inativado com sucesso.'
+            )
+
+
+        # ==========================================
+        # RESPOSTA
+        # ==========================================
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": mensagem,
+            "ativo": novo_status,
+            "nome": instrumento["nome"],
+            "id": instrumento["id"]
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO ALTERAR STATUS DO INSTRUMENTO:",
+            e
+        )
+
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao alterar o status do instrumento."
+        }), 500
+
+
+    finally:
+
+        db.close()
 
 @app.route("/integrantes")
 def integrantes():
