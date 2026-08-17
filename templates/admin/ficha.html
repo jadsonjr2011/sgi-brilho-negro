@@ -323,6 +323,21 @@ Nenhum responsável informado.
 </p>
 
 <p>
+<strong>🎺 Instrumento:</strong>
+
+{% if integrante.instrumento_nome %}
+
+    {{ integrante.instrumento_nome }}
+
+{% else %}
+
+    Não informado
+
+{% endif %}
+
+</p>
+
+<p>
 <strong>Calçado:</strong>
 {{ integrante.calcado }}
 </p>

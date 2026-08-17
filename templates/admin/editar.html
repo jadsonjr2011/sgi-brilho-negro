@@ -286,7 +286,33 @@ Função na Banda
 
 </select>
 
+<label class="mt-3">
+    🎺 Instrumento
+</label>
 
+<select
+    class="form-select"
+    name="instrumento_id">
+
+    <option value="">
+        Selecione o instrumento
+    </option>
+
+    {% for instrumento in instrumentos %}
+
+        <option
+            value="{{ instrumento.id }}"
+            {% if integrante.instrumento_id == instrumento.id %}
+                selected
+            {% endif %}>
+
+            {{ instrumento.nome }}
+
+        </option>
+
+    {% endfor %}
+
+</select>
 
 <label class="mt-3">
 Estuda atualmente?

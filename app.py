@@ -994,9 +994,13 @@ def ver_integrante(id):
 
         integrante = db.execute(
             text("""
-                SELECT *
-                FROM integrantes
-                WHERE id = :id
+                SELECT
+                    i.*,
+                    ins.nome AS instrumento_nome
+                FROM integrantes i
+                LEFT JOIN instrumentos ins
+                    ON ins.id = i.instrumento_id
+                WHERE i.id = :id
             """),
             {
                 "id": id
@@ -1172,7 +1176,8 @@ def editar_integrante(id):
                 experiencia_banda=:experiencia_banda,
                 descricao_experiencia=:descricao_experiencia,
 
-                funcao=:funcao
+                funcao=:funcao,
+                instrumento_id=:instrumento_id
 
             WHERE id=:id
             """),
@@ -1205,7 +1210,8 @@ def editar_integrante(id):
                 "profissao": request.form.get("profissao"),
                 "experiencia_banda": request.form.get("experiencia_banda"),
                 "descricao_experiencia": request.form.get("descricao_experiencia"),
-                "funcao": request.form.get("funcao")
+                "funcao": request.form.get("funcao"),
+                "instrumento_id": request.form.get("instrumento_id") or None
             }
         )
 
@@ -1230,6 +1236,14 @@ def editar_integrante(id):
         }
     ).fetchone()
 
+    instrumentos = db.execute(
+        text("""
+            SELECT id, nome
+            FROM instrumentos
+            WHERE ativo = TRUE
+            ORDER BY nome
+        """)
+    ).fetchall()
 
     db.close()
 
@@ -1237,7 +1251,8 @@ def editar_integrante(id):
     return render_template(
         "admin/editar.html",
         integrante=integrante,
-        funcoes_banda=FUNCOES_BANDA
+        funcoes_banda=FUNCOES_BANDA,
+        instrumentos=instrumentos
     )
 
 @app.route("/admin/aprovar/<int:id>")
