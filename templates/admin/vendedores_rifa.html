@@ -48,6 +48,213 @@ Vendedores da Rifa
 
 <hr>
 
+<!-- ===================================================== -->
+<!-- PESQUISA + AÇÕES -->
+<!-- ===================================================== -->
+
+<div class="row align-items-end g-2 mb-4">
+
+    <!-- PESQUISA -->
+
+    <div class="col">
+
+        <label class="form-label">
+            🔎 Pesquisar vendedor
+        </label>
+
+        <input
+            type="text"
+            id="pesquisaVendedor"
+            class="form-control"
+            placeholder="Digite o nome ou função do vendedor...">
+
+    </div>
+
+
+    <!-- VOLTAR -->
+
+    <div class="col-auto">
+
+        <a
+            href="/admin/rifas/{{ rifa.id }}"
+            class="btn btn-secondary">
+
+            ⬅ Voltar para a Rifa
+
+        </a>
+
+    </div>
+
+
+    <!-- ADICIONAR VENDEDORES -->
+
+    {% if rifa.status == "ATIVA" %}
+
+    <div class="col-auto">
+
+        <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#modalAdicionarVendedores">
+
+            ➕ Adicionar Vendedores
+
+        </button>
+
+    </div>
+
+    {% else %}
+
+    <div class="col-auto">
+
+        <div class="alert alert-warning mb-0">
+
+            🔒 <strong>Rifa Finalizada</strong>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<!-- ===================================================== -->
+<!-- MODAL ADICIONAR VENDEDORES -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalAdicionarVendedores"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <form
+                method="POST"
+                action="/admin/rifas/{{ rifa.id }}/vendedores">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        👥 Adicionar Vendedores
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+
+                        <p class="mb-0">
+                            Selecione os integrantes:
+                        </p>
+
+                        <div class="form-check">
+
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                id="selecionarTodosVendedores">
+
+                            <label
+                                class="form-check-label"
+                                for="selecionarTodosVendedores">
+
+                                ☑ Selecionar todos
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    {% for pessoa in integrantes %}
+
+                    <div class="row align-items-center mb-3">
+
+                        <div class="col-md-1">
+
+                            <input
+                                type="checkbox"
+                                class="form-check-input"
+                                name="integrantes"
+                                value="{{ pessoa.id }}">
+
+                        </div>
+
+
+                        <div class="col-md-5">
+
+                            👤 {{ pessoa.nome }}
+
+                            <br>
+
+                            🎺 {{ pessoa.funcao or "-" }}
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                name="quantidade_{{ pessoa.id }}"
+                                value="{{ rifa.quantidade_por_integrante }}"
+                                min="1">
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Salvar Distribuição
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
 <h4>👥 Vendedores da Campanha</h4>
 
 {% if vendedores %}
@@ -73,7 +280,7 @@ Vendedores da Rifa
 
 {% for vendedor in vendedores %}
 
-<tr>
+<tr class="linha-vendedor">
 
 <td>
     👤 {{ vendedor.nome }}
@@ -485,146 +692,8 @@ Vendedores da Rifa
 </div>
 
 
-
 <!-- ===================================================== -->
-
-<!-- MODAL ADICIONAR VENDEDORES -->
-
-<!-- ===================================================== -->
-
-<div
-    class="modal fade"
-    id="modalAdicionarVendedores"
-    tabindex="-1"
-    aria-hidden="true">
-
-
-<div class="modal-dialog modal-lg modal-dialog-centered">
-
-    <div class="modal-content bg-dark text-white">
-
-        <form
-            method="POST"
-            action="/admin/rifas/{{ rifa.id }}/vendedores">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    👥 Adicionar Vendedores
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
-
-
-            <div class="modal-body">
-
-                <div class="d-flex align-items-center justify-content-between mb-3">
-
-                    <p class="mb-0">
-                        Selecione os integrantes:
-                    </p>
-
-                    <div class="form-check">
-                        <input
-                            type="checkbox"
-                            class="form-check-input"
-                            id="selecionarTodosVendedores">
-
-                        <label
-                            class="form-check-label"
-                            for="selecionarTodosVendedores">
-
-                            ☑ Selecionar todos
-
-                        </label>
-                    </div>
-
-                </div>
-
-                {% for pessoa in integrantes %}
-
-                <div class="row align-items-center mb-3">
-
-                    <div class="col-md-1">
-
-                        <input
-                            type="checkbox"
-                            class="form-check-input"
-                            name="integrantes"
-                            value="{{ pessoa.id }}">
-
-                    </div>
-
-
-                    <div class="col-md-5">
-
-                        👤 {{ pessoa.nome }}
-
-                        <br>
-
-                        🎺 {{ pessoa.funcao or "-" }}
-
-                    </div>
-
-
-                    <div class="col-md-3">
-
-                        <input
-                            type="number"
-                            class="form-control"
-                            name="quantidade_{{ pessoa.id }}"
-                            value="{{ rifa.quantidade_por_integrante }}"
-                            min="1">
-
-                    </div>
-
-                </div>
-
-                {% endfor %}
-
-            </div>
-
-
-            <div class="modal-footer">
-
-                <button
-                    type="submit"
-                    class="btn btn-success">
-
-                    💾 Salvar Distribuição
-
-                </button>
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-
-                    Cancelar
-
-                </button>
-
-            </div>
-
-        </form>
-
-    </div>
-
-</div>
-
-
-</div>
-
-<!-- ===================================================== -->
-
 <!-- JAVASCRIPT PRESTAÇÃO -->
-
 <!-- ===================================================== -->
 
 <script>
@@ -815,6 +884,86 @@ if (selecionarTodos) {
     );
 
 }
+
+
+// ==========================================
+// PESQUISAR VENDEDORES
+// ==========================================
+
+function filtrarVendedores() {
+
+    const campoPesquisa =
+        document.getElementById(
+            "pesquisaVendedor"
+        );
+
+
+    if (!campoPesquisa) {
+        return;
+    }
+
+
+    const pesquisa =
+        campoPesquisa.value
+            .toLowerCase()
+            .trim();
+
+
+    const linhas =
+        document.querySelectorAll(
+            ".linha-vendedor"
+        );
+
+
+    linhas.forEach(
+        function (linha) {
+
+            const texto =
+                linha.textContent
+                    .toLowerCase();
+
+
+            if (
+                texto.includes(pesquisa)
+            ) {
+
+                linha.style.display = "";
+
+            } else {
+
+                linha.style.display = "none";
+
+            }
+
+        }
+    );
+
+}
+
+
+// ==========================================
+// PESQUISA AUTOMÁTICA
+// ==========================================
+
+const pesquisaVendedor =
+    document.getElementById(
+        "pesquisaVendedor"
+    );
+
+
+if (pesquisaVendedor) {
+
+    pesquisaVendedor.addEventListener(
+        "input",
+        filtrarVendedores
+    );
+
+}
+
+
+// ==========================================
+// FINAL DO JAVASCRIPT
+// ==========================================
 
 </script>
 

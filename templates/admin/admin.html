@@ -692,93 +692,118 @@
 </div>
 
 <!-- ===================================================== -->
-
 <!-- CARDS DE RESUMO                                      -->
-
 <!-- ===================================================== -->
 
 <div class="row text-center g-3 mb-4">
 
 
-<!-- TOTAL -->
+    <!-- TOTAL -->
 
-<div class="col-md-4">
+    <div class="col-md-3">
 
-    <div class="card-resumo">
+        <div class="card-resumo">
 
-        <div class="icone">
-            👥
-        </div>
+            <div class="icone">
+                👥
+            </div>
 
-        <div class="numero">
-            {{ total }}
-        </div>
+            <div class="numero">
+                {{ total }}
+            </div>
 
-        <div class="descricao">
-            Total de Integrantes
-        </div>
+            <div class="descricao">
+                Total de Integrantes
+            </div>
 
-        <div class="detalhe">
-            Total cadastrado
-        </div>
+            <div class="detalhe">
+                Total cadastrado
+            </div>
 
-    </div>
-
-</div>
-
-
-<!-- PENDENTES -->
-
-<div class="col-md-4">
-
-    <div class="card-resumo">
-
-        <div class="icone">
-            ⏳
-        </div>
-
-        <div class="numero">
-            {{ pendentes }}
-        </div>
-
-        <div class="descricao">
-            Pendentes
-        </div>
-
-        <div class="detalhe">
-            Aguardando análise
         </div>
 
     </div>
 
-</div>
 
+    <!-- ATIVOS -->
 
-<!-- APROVADOS -->
+    <div class="col-md-3">
 
-<div class="col-md-4">
+        <div class="card-resumo">
 
-    <div class="card-resumo">
+            <div class="icone">
+                🟢
+            </div>
 
-        <div class="icone">
-            ✅
-        </div>
+            <div class="numero">
+                {{ ativos }}
+            </div>
 
-        <div class="numero">
-            {{ aprovados }}
-        </div>
+            <div class="descricao">
+                Ativos
+            </div>
 
-        <div class="descricao">
-            Aprovados
-        </div>
+            <div class="detalhe">
+                Aprovados na ativa
+            </div>
 
-        <div class="detalhe">
-            Cadastros aprovados
         </div>
 
     </div>
 
-</div>
+
+    <!-- PENDENTES -->
+
+    <div class="col-md-3">
+
+        <div class="card-resumo">
+
+            <div class="icone">
+                ⏳
+            </div>
+
+            <div class="numero">
+                {{ pendentes }}
+            </div>
+
+            <div class="descricao">
+                Pendentes
+            </div>
+
+            <div class="detalhe">
+                Aguardando análise
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- APROVADOS -->
+
+    <div class="col-md-3">
+
+        <div class="card-resumo">
+
+            <div class="icone">
+                ✅
+            </div>
+
+            <div class="numero">
+                {{ aprovados }}
+            </div>
+
+            <div class="descricao">
+                Aprovados
+            </div>
+
+            <div class="detalhe">
+                Cadastros aprovados
+            </div>
+
+        </div>
+
+    </div>
 
 
 </div>

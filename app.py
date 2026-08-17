@@ -318,6 +318,15 @@ def admin():
             """)
         ).scalar()
 
+        ativos = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM integrantes
+                WHERE status = 'APROVADO'
+                AND situacao = 'ATIVO'
+            """)
+        ).scalar()
+
         # ==========================================
         # INTEGRANTES PARA CARTEIRINHAS
         # ==========================================
@@ -446,6 +455,7 @@ def admin():
         total=total,
         pendentes=pendentes,
         aprovados=aprovados,
+        ativos=ativos,
         temporadas=temporadas,
         aniversariantes=aniversariantes,
         mes_nome=mes_nome,
@@ -514,6 +524,15 @@ def integrantes():
             """)
         ).scalar()
 
+        ativos = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM integrantes
+                WHERE status = 'APROVADO'
+                AND situacao = 'ATIVO'
+            """)
+        ).scalar()
+
 
     finally:
 
@@ -526,6 +545,7 @@ def integrantes():
         total=total,
         pendentes=pendentes,
         aprovados=aprovados,
+        ativos=ativos,
         inativos=inativos
     )
 
@@ -5245,6 +5265,1071 @@ def vendedores_rifa(id):
     finally:
 
         db.close()
+
+@app.route("/admin/rifas/<int:rifa_id>/exportar/pdf/vendedores")
+def exportar_pdf_vendedores(rifa_id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # BUSCAR RIFA
+        # =====================================================
+
+        rifa = db.execute(
+            text("""
+                SELECT
+                    *
+                FROM rifas
+                WHERE id = :id
+            """),
+            {
+                "id": rifa_id
+            }
+        ).mappings().fetchone()
+
+        if not rifa:
+            return "Rifa não encontrada", 404
+
+
+        # =====================================================
+        # FILTRO
+        # =====================================================
+
+        status_prestacao = request.args.get(
+            "status_prestacao"
+        )
+
+
+        # =====================================================
+        # BUSCAR VENDEDORES
+        # =====================================================
+
+        condicoes = [
+            "ri.rifa_id = :rifa_id"
+        ]
+
+        parametros = {
+            "rifa_id": rifa_id
+        }
+
+
+        if status_prestacao:
+
+            condicoes.append(
+                "ri.status_prestacao = :status_prestacao"
+            )
+
+            parametros["status_prestacao"] = (
+                status_prestacao
+            )
+
+
+        where = " AND ".join(condicoes)
+
+
+        vendedores = db.execute(
+            text(f"""
+                SELECT
+
+                    ri.id,
+                    ri.integrante_id,
+
+                    ri.quantidade_numeros,
+                    ri.quantidade_vendida,
+                    ri.quantidade_devolvida,
+
+                    ri.valor_recebido,
+                    ri.valor_devido,
+                    ri.valor_entregue,
+                    ri.saldo_pendente,
+
+                    ri.status,
+                    ri.status_prestacao,
+                    ri.data_prestacao,
+                    ri.observacao,
+
+                    i.nome,
+                    i.funcao
+
+                FROM rifas_integrantes ri
+
+                JOIN integrantes i
+                    ON i.id = ri.integrante_id
+
+                WHERE {where}
+
+                ORDER BY
+                    LOWER(i.nome)
+            """),
+            parametros
+        ).mappings().all()
+
+
+        # =====================================================
+        # RESUMOS
+        # =====================================================
+
+        total_vendedores = len(vendedores)
+
+        total_vendidos = sum(
+            (v["quantidade_vendida"] or 0)
+            for v in vendedores
+        )
+
+        total_valor_vendido = sum(
+            (v["valor_devido"] or 0)
+            for v in vendedores
+        )
+
+        total_valor_entregue = sum(
+            (v["valor_entregue"] or 0)
+            for v in vendedores
+        )
+
+        total_saldo = sum(
+            (v["saldo_pendente"] or 0)
+            for v in vendedores
+        )
+
+
+        # =====================================================
+        # CONTAGEM POR STATUS
+        # =====================================================
+
+        quantidade_prestados = sum(
+            1
+            for v in vendedores
+            if v["status_prestacao"] == "PRESTADO"
+        )
+
+        quantidade_parciais = sum(
+            1
+            for v in vendedores
+            if v["status_prestacao"] == "PARCIAL"
+        )
+
+        quantidade_pendentes = sum(
+            1
+            for v in vendedores
+            if v["status_prestacao"] == "PENDENTE"
+        )
+
+
+        # =====================================================
+        # FECHAR BANCO
+        # =====================================================
+
+        db.close()
+
+
+        # =====================================================
+        # CRIAR PDF
+        # =====================================================
+
+        arquivo = BytesIO()
+
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib import colors
+
+        from reportlab.platypus import (
+            SimpleDocTemplate,
+            Image,
+            HRFlowable,
+            Table,
+            TableStyle,
+            Paragraph,
+            Spacer
+        )
+
+        from reportlab.lib.styles import (
+            getSampleStyleSheet,
+            ParagraphStyle
+        )
+
+
+        pdf = SimpleDocTemplate(
+
+            arquivo,
+
+            pagesize=A4,
+
+            topMargin=25,
+            bottomMargin=30,
+            leftMargin=25,
+            rightMargin=25
+
+        )
+
+
+        elementos = []
+
+        estilos = getSampleStyleSheet()
+
+
+        # =====================================================
+        # ESTILOS
+        # =====================================================
+
+        estilo_resumo = ParagraphStyle(
+
+            "ResumoVendedores",
+
+            parent=estilos["Normal"],
+
+            fontSize=8.5,
+            leading=11
+
+        )
+
+
+        estilo_resumo_cabecalho = ParagraphStyle(
+
+            "ResumoCabecalhoVendedores",
+
+            parent=estilos["Normal"],
+
+            fontSize=8,
+            leading=10,
+
+            alignment=1,
+
+            fontName="Helvetica-Bold"
+
+        )
+
+
+        estilo_titulo = ParagraphStyle(
+
+            "TituloVendedores",
+
+            parent=estilos["Title"],
+
+            fontSize=18,
+            leading=21,
+
+            alignment=1,
+
+            fontName="Helvetica-Bold"
+
+        )
+
+
+        estilo_tabela = ParagraphStyle(
+
+            "TabelaVendedores",
+
+            parent=estilos["Normal"],
+
+            fontSize=7.5,
+            leading=9
+
+        )
+
+
+        estilo_cabecalho = ParagraphStyle(
+
+            "CabecalhoVendedores",
+
+            parent=estilos["Normal"],
+
+            fontSize=7.5,
+            leading=9,
+
+            alignment=1,
+
+            fontName="Helvetica-Bold"
+
+        )
+
+
+        estilo_centro = ParagraphStyle(
+
+            "CentroVendedores",
+
+            parent=estilos["Normal"],
+
+            fontSize=7.5,
+            leading=9,
+
+            alignment=1
+
+        )
+
+
+        estilo_direita = ParagraphStyle(
+
+            "DireitaVendedores",
+
+            parent=estilos["Normal"],
+
+            fontSize=7.5,
+            leading=9,
+
+            alignment=2
+
+        )
+
+
+        # =====================================================
+        # LOGO
+        # =====================================================
+
+        logo = Image(
+
+            "static/img/logo_relatorio.PNG",
+
+            width=320,
+            height=79
+
+        )
+
+        logo.hAlign = "CENTER"
+
+        elementos.append(logo)
+
+        elementos.append(
+            Spacer(1, 5)
+        )
+
+
+        # =====================================================
+        # TÍTULO
+        # =====================================================
+
+        elementos.append(
+
+            Paragraph(
+
+                "<b>BRILHO NEGRO</b><br/>"
+                "<font size='14'>"
+                "Sistema de Gestão de Integrantes"
+                "</font>",
+
+                estilos["Title"]
+
+            )
+
+        )
+
+        elementos.append(
+            Spacer(1, 8)
+        )
+
+
+        elementos.append(
+
+            HRFlowable(
+
+                width="100%",
+
+                thickness=1
+
+            )
+
+        )
+
+        elementos.append(
+            Spacer(1, 15)
+        )
+
+
+        elementos.append(
+
+            Paragraph(
+
+                "<b>Relatório de Vendedores da Rifa</b>",
+
+                estilos["Heading2"]
+
+            )
+
+        )
+
+        elementos.append(
+            Spacer(1, 5)
+        )
+
+
+        # =====================================================
+        # NOME DA RIFA
+        # =====================================================
+
+        elementos.append(
+
+            Paragraph(
+
+                f"<b>Rifa:</b> {rifa['nome']}",
+
+                estilo_resumo
+
+            )
+
+        )
+
+        elementos.append(
+            Spacer(1, 10)
+        )
+
+
+        # =====================================================
+        # DATA
+        # =====================================================
+
+        data_geracao = datetime.now().strftime(
+            "%d/%m/%Y %H:%M"
+        )
+
+
+        # =====================================================
+        # FILTROS
+        # =====================================================
+
+        if status_prestacao:
+
+            filtros_html = (
+
+                "<b>Status da prestação:</b> "
+                f"{status_prestacao}"
+
+            )
+
+        else:
+
+            filtros_html = (
+
+                "<b>Status da prestação:</b> "
+                "Todos"
+
+            )
+
+
+        # =====================================================
+        # RESULTADO
+        # =====================================================
+
+        texto_resultado = f"""
+
+            <b>Total de vendedores:</b>
+            {total_vendedores}
+
+            <br/>
+
+            <b>Prestados:</b>
+            {quantidade_prestados}
+
+            <br/>
+
+            <b>Parciais:</b>
+            {quantidade_parciais}
+
+            <br/>
+
+            <b>Pendentes:</b>
+            {quantidade_pendentes}
+
+        """
+
+
+        # =====================================================
+        # RIFA
+        # =====================================================
+
+        texto_rifa = f"""
+
+            <b>Rifa:</b>
+            {rifa['nome']}
+
+            <br/>
+
+            <b>Status:</b>
+            {rifa['status']}
+
+            <br/>
+
+            <b>Valor por número:</b>
+            R$ {float(rifa['valor_numero'] or 0):,.2f}
+
+        """
+
+
+        texto_rifa = texto_rifa.replace(
+            ",",
+            "X"
+        ).replace(
+            ".",
+            ","
+        ).replace(
+            "X",
+            "."
+        )
+
+
+        # =====================================================
+        # RESUMO EM 3 COLUNAS
+        # =====================================================
+
+        dados_resumo = [
+
+            [
+
+                Paragraph(
+                    "FILTROS APLICADOS",
+                    estilo_resumo_cabecalho
+                ),
+
+                Paragraph(
+                    "RIFA",
+                    estilo_resumo_cabecalho
+                ),
+
+                Paragraph(
+                    "RESULTADO",
+                    estilo_resumo_cabecalho
+                )
+
+            ],
+
+            [
+
+                Paragraph(
+                    filtros_html,
+                    estilo_resumo
+                ),
+
+                Paragraph(
+                    texto_rifa,
+                    estilo_resumo
+                ),
+
+                Paragraph(
+                    texto_resultado,
+                    estilo_resumo
+                )
+
+            ]
+
+        ]
+
+
+        tabela_resumo = Table(
+
+            dados_resumo,
+
+            colWidths=[
+
+                175,
+                175,
+                175
+
+            ]
+
+        )
+
+
+        tabela_resumo.setStyle(
+
+            TableStyle(
+
+                [
+
+                    (
+                        "GRID",
+                        (0, 0),
+                        (-1, -1),
+                        0.5,
+                        colors.grey
+                    ),
+
+                    (
+                        "BACKGROUND",
+                        (0, 0),
+                        (-1, 0),
+                        colors.lightgrey
+                    ),
+
+                    (
+                        "VALIGN",
+                        (0, 0),
+                        (-1, -1),
+                        "TOP"
+                    ),
+
+                    (
+                        "ALIGN",
+                        (0, 0),
+                        (-1, 0),
+                        "CENTER"
+                    ),
+
+                    (
+                        "LEFTPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        8
+                    ),
+
+                    (
+                        "RIGHTPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        8
+                    ),
+
+                    (
+                        "TOPPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        7
+                    ),
+
+                    (
+                        "BOTTOMPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        7
+                    )
+
+                ]
+
+            )
+
+        )
+
+
+        elementos.append(
+            tabela_resumo
+        )
+
+        elementos.append(
+            Spacer(1, 18)
+        )
+
+
+        # =====================================================
+        # TÍTULO DA TABELA
+        # =====================================================
+
+        elementos.append(
+
+            Paragraph(
+
+                "<b>Lista de Vendedores</b>",
+
+                estilo_resumo_cabecalho
+
+            )
+
+        )
+
+        elementos.append(
+            Spacer(1, 8)
+        )
+
+
+        # =====================================================
+        # DADOS DA TABELA
+        # =====================================================
+
+        dados = [
+
+            [
+
+                Paragraph(
+                    "Nº",
+                    estilo_cabecalho
+                ),
+
+                Paragraph(
+                    "Vendedor",
+                    estilo_cabecalho
+                ),
+
+                Paragraph(
+                    "Função",
+                    estilo_cabecalho
+                ),
+
+                Paragraph(
+                    "Vendidos",
+                    estilo_cabecalho
+                ),
+
+                Paragraph(
+                    "Valor vendido",
+                    estilo_cabecalho
+                ),
+
+                Paragraph(
+                    "Valor entregue",
+                    estilo_cabecalho
+                ),
+
+                Paragraph(
+                    "Saldo",
+                    estilo_cabecalho
+                )
+
+            ]
+
+        ]
+
+
+        # =====================================================
+        # LINHAS
+        # =====================================================
+
+        for numero, vendedor in enumerate(
+            vendedores,
+            start=1
+        ):
+
+            nome = (
+                vendedor["nome"] or ""
+            ).title()
+
+
+            funcao = (
+                vendedor["funcao"]
+                or "-"
+            )
+
+
+            vendidos = (
+                vendedor["quantidade_vendida"]
+                or 0
+            )
+
+
+            valor_vendido = (
+                vendedor["valor_devido"]
+                or 0
+            )
+
+
+            valor_entregue = (
+                vendedor["valor_entregue"]
+                or 0
+            )
+
+
+            saldo = (
+                vendedor["saldo_pendente"]
+                or 0
+            )
+
+
+            dados.append(
+
+                [
+
+                    Paragraph(
+                        str(numero),
+                        estilo_centro
+                    ),
+
+                    Paragraph(
+                        nome,
+                        estilo_tabela
+                    ),
+
+                    Paragraph(
+                        str(funcao),
+                        estilo_tabela
+                    ),
+
+                    Paragraph(
+                        f"<b>{vendidos}</b>",
+                        estilo_centro
+                    ),
+
+                    Paragraph(
+                        f"R$ {float(valor_vendido):,.2f}"
+                        .replace(",", "X")
+                        .replace(".", ",")
+                        .replace("X", "."),
+                        estilo_direita
+                    ),
+
+                    Paragraph(
+                        f"R$ {float(valor_entregue):,.2f}"
+                        .replace(",", "X")
+                        .replace(".", ",")
+                        .replace("X", "."),
+                        estilo_direita
+                    ),
+
+                    Paragraph(
+                        f"R$ {float(saldo):,.2f}"
+                        .replace(",", "X")
+                        .replace(".", ",")
+                        .replace("X", "."),
+                        estilo_direita
+                    )
+
+                ]
+
+            )
+
+
+        # =====================================================
+        # TOTAL
+        # =====================================================
+
+        dados.append(
+
+            [
+
+                Paragraph(
+                    "<b>TOTAL</b>",
+                    estilo_centro
+                ),
+
+                Paragraph(
+                    f"<b>{total_vendedores} vendedores</b>",
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    "",
+                    estilo_tabela
+                ),
+
+                Paragraph(
+                    f"<b>{total_vendidos}</b>",
+                    estilo_centro
+                ),
+
+                Paragraph(
+                    f"<b>R$ {float(total_valor_vendido):,.2f}</b>"
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", "."),
+                    estilo_direita
+                ),
+
+                Paragraph(
+                    f"<b>R$ {float(total_valor_entregue):,.2f}</b>"
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", "."),
+                    estilo_direita
+                ),
+
+                Paragraph(
+                    f"<b>R$ {float(total_saldo):,.2f}</b>"
+                    .replace(",", "X")
+                    .replace(".", ",")
+                    .replace("X", "."),
+                    estilo_direita
+                )
+
+            ]
+
+        )
+
+
+        # =====================================================
+        # TABELA
+        # =====================================================
+
+        tabela = Table(
+
+            dados,
+
+            colWidths=[
+
+                32,
+                125,
+                90,
+                50,
+                78,
+                78,
+                78
+
+            ],
+
+            repeatRows=1
+
+        )
+
+
+        tabela.setStyle(
+
+            TableStyle(
+
+                [
+
+                    (
+                        "GRID",
+                        (0, 0),
+                        (-1, -1),
+                        0.5,
+                        colors.grey
+                    ),
+
+                    (
+                        "BACKGROUND",
+                        (0, 0),
+                        (-1, 0),
+                        colors.lightgrey
+                    ),
+
+                    (
+                        "BACKGROUND",
+                        (0, -1),
+                        (-1, -1),
+                        colors.whitesmoke
+                    ),
+
+                    (
+                        "FONTNAME",
+                        (0, 0),
+                        (-1, 0),
+                        "Helvetica-Bold"
+                    ),
+
+                    (
+                        "ALIGN",
+                        (0, 0),
+                        (-1, 0),
+                        "CENTER"
+                    ),
+
+                    (
+                        "VALIGN",
+                        (0, 0),
+                        (-1, -1),
+                        "MIDDLE"
+                    ),
+
+                    (
+                        "LEFTPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5
+                    ),
+
+                    (
+                        "RIGHTPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5
+                    ),
+
+                    (
+                        "TOPPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5
+                    ),
+
+                    (
+                        "BOTTOMPADDING",
+                        (0, 0),
+                        (-1, -1),
+                        5
+                    )
+
+                ]
+
+            )
+
+        )
+
+
+        elementos.append(
+            tabela
+        )
+
+        elementos.append(
+            Spacer(1, 20)
+        )
+
+
+        # =====================================================
+        # RODAPÉ
+        # =====================================================
+
+        rodape = Paragraph(
+
+            f"""
+            SGI Brilho Negro<br/>
+            Documento gerado automaticamente em
+            {data_geracao}.
+            """,
+
+            estilos["Normal"]
+
+        )
+
+
+        elementos.append(
+            rodape
+        )
+
+
+        # =====================================================
+        # GERAR PDF
+        # =====================================================
+
+        pdf.build(elementos)
+
+        arquivo.seek(0)
+
+
+        # =====================================================
+        # NOME DO ARQUIVO
+        # =====================================================
+
+        nome_rifa = str(
+            rifa["nome"] or "rifa"
+        )
+
+        nome_rifa = "".join(
+
+            c if c.isalnum() or c in (
+                " ",
+                "-",
+                "_"
+            )
+
+            else "_"
+
+            for c in nome_rifa
+
+        ).strip()
+
+
+        nome_arquivo = (
+            f"relatorio_vendedores_"
+            f"{nome_rifa}.pdf"
+        )
+
+
+        return send_file(
+
+            arquivo,
+
+            as_attachment=True,
+
+            download_name=nome_arquivo,
+
+            mimetype="application/pdf"
+
+        )
+
+
+    finally:
+
+        try:
+            db.close()
+        except:
+            pass        
 
 @app.route("/admin/rifas/<int:rifa_id>/vendedores", methods=["POST"])
 def salvar_vendedores_rifa(rifa_id):

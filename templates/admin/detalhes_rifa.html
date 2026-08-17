@@ -57,6 +57,18 @@
 
         </a>
 
+        <!-- IMPRIMIR VENDEDORES -->
+
+        <button
+            type="button"
+            class="btn btn-info"
+            data-bs-toggle="modal"
+            data-bs-target="#modalRelatorioVendedores">
+
+            🖨️ Imprimir Vendedores
+
+        </button>
+
         <!-- VENDEDORES -->
 
         {% if rifa.status == "ATIVA" %}
@@ -1627,7 +1639,156 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </script>
 
+<!-- ===================================================== -->
+<!-- MODAL - RELATÓRIO DE VENDEDORES -->
+<!-- ===================================================== -->
 
+<div
+    class="modal fade"
+    id="modalRelatorioVendedores"
+    tabindex="-1"
+    aria-labelledby="modalRelatorioVendedoresLabel"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title"
+                    id="modalRelatorioVendedoresLabel">
+
+                    🖨️ Relatório de Vendedores
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <p class="text-secondary mb-3">
+
+                    Selecione os filtros para gerar o relatório.
+
+                </p>
+
+
+                <!-- ===================================== -->
+                <!-- PRESTAÇÃO -->
+                <!-- ===================================== -->
+
+                <div class="mb-3">
+
+                    <label
+                        for="filtroPrestacaoVendedores"
+                        class="form-label">
+
+                        📋 <strong>Prestação</strong>
+
+                    </label>
+
+                    <select
+                        id="filtroPrestacaoVendedores"
+                        class="form-select">
+
+                        <option value="">
+                            Todos
+                        </option>
+
+                        <option value="PENDENTE">
+                            🟡 Pendente
+                        </option>
+
+                        <option value="PARCIAL">
+                            🟠 Parcial
+                        </option>
+
+                        <option value="PRESTADO">
+                            🟢 Prestado
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-info"
+                    onclick="gerarRelatorioVendedores()">
+
+                    🖨️ Gerar Relatório
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- GERAR RELATÓRIO DE VENDEDORES -->
+<!-- ===================================================== -->
+
+<script>
+
+function gerarRelatorioVendedores() {
+
+    const statusPrestacao =
+        document.getElementById(
+            "filtroPrestacaoVendedores"
+        ).value;
+
+
+    let url =
+        "/admin/rifas/{{ rifa.id }}/exportar/pdf/vendedores";
+
+
+    if (statusPrestacao) {
+
+        url +=
+            "?status_prestacao="
+            +
+            encodeURIComponent(
+                statusPrestacao
+            );
+
+    }
+
+
+    window.location.href = url;
+
+}
+
+</script>
 
 {% endblock %}
 
