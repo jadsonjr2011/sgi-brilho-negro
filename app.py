@@ -279,7 +279,6 @@ def logout():
 
     return redirect("/login")
 
-
 @app.route("/admin")
 def admin():
 
@@ -288,15 +287,15 @@ def admin():
 
     mensagem_instrumento = request.args.get(
         "instrumento_msg"
-        )
+    )
 
     tipo_mensagem_instrumento = request.args.get(
         "instrumento_tipo"
-        )
+    )
 
     abrir_instrumentos = request.args.get(
         "abrir_instrumentos"
-        )
+    )
 
     db = SessionLocal()
 
@@ -331,6 +330,7 @@ def admin():
             """)
         ).scalar()
 
+
         ativos = db.execute(
             text("""
                 SELECT COUNT(*)
@@ -339,6 +339,7 @@ def admin():
                 AND situacao = 'ATIVO'
             """)
         ).scalar()
+
 
         # ==========================================
         # INTEGRANTES PARA CARTEIRINHAS
@@ -357,6 +358,7 @@ def admin():
             """)
         ).mappings().all()
 
+
         # ==========================================
         # TEMPORADAS
         # ==========================================
@@ -368,6 +370,7 @@ def admin():
                 ORDER BY ano DESC
             """)
         ).mappings().all()
+
 
         # ==========================================
         # INSTRUMENTOS
@@ -385,6 +388,7 @@ def admin():
             """)
         ).mappings().all()
 
+
         # ==========================================
         # STATUS DAS INSCRIÇÕES
         # ==========================================
@@ -398,6 +402,7 @@ def admin():
         ).scalar()
 
         status_inscricoes = status_inscricoes or "ABERTA"
+
 
         # ==========================================
         # ANIVERSARIANTES DO MÊS
@@ -429,7 +434,6 @@ def admin():
                 AND data_nascimento <> ''
                 AND status = 'APROVADO'
                 AND situacao = 'ATIVO'
-
 
                 AND EXTRACT(
                     MONTH FROM CAST(data_nascimento AS DATE)
@@ -469,21 +473,6 @@ def admin():
 
         mes_nome = meses[mes_atual]
 
-        # ==========================================
-        # INSTRUMENTOS
-        # ==========================================
-
-        instrumentos = db.execute(
-            text("""
-                SELECT
-                    id,
-                    nome,
-                    ativo,
-                    data_cadastro
-                FROM instrumentos
-                ORDER BY LOWER(nome)
-            """)
-        ).mappings().all()
 
     finally:
 
@@ -496,20 +485,111 @@ def admin():
 
     return render_template(
         "admin/admin.html",
+
+        # RESUMO
         total=total,
         pendentes=pendentes,
         aprovados=aprovados,
         ativos=ativos,
+
+        # TEMPORADAS
         temporadas=temporadas,
+
+        # ANIVERSARIANTES
         aniversariantes=aniversariantes,
         mes_nome=mes_nome,
+
+        # INSCRIÇÕES
         status_inscricoes=status_inscricoes,
+
+        # CARTEIRINHAS
         integrantes_carteirinhas=integrantes_carteirinhas,
+
+        # INSTRUMENTOS
         instrumentos=instrumentos,
+
+        # MENSAGENS
         mensagem_instrumento=mensagem_instrumento,
         tipo_mensagem_instrumento=tipo_mensagem_instrumento,
         abrir_instrumentos=abrir_instrumentos
     )
+
+@app.route("/admin/patrimonio")
+def patrimonio():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # BUSCAR INSTRUMENTOS
+        # ==========================================
+
+        instrumentos = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo
+                FROM instrumentos
+                ORDER BY
+                    ativo DESC,
+                    nome ASC
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # RESUMO
+        # ==========================================
+
+        total_instrumentos = len(instrumentos)
+
+        instrumentos_ativos = sum(
+            1
+            for instrumento in instrumentos
+            if instrumento["ativo"]
+        )
+
+        instrumentos_inativos = (
+            total_instrumentos
+            - instrumentos_ativos
+        )
+
+
+        # ==========================================
+        # ABRIR PATRIMÔNIO
+        # ==========================================
+
+        return render_template(
+            "admin/patrimonio.html",
+
+            instrumentos=instrumentos,
+
+            total_instrumentos=total_instrumentos,
+
+            instrumentos_ativos=instrumentos_ativos,
+
+            instrumentos_inativos=instrumentos_inativos
+        )
+
+
+    except Exception as e:
+
+        print(
+            "ERRO AO ABRIR PATRIMÔNIO:",
+            e
+        )
+
+        return "Erro ao carregar o módulo de patrimônio.", 500
+
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/instrumentos/novo", methods=["POST"])
 def novo_instrumento():
@@ -1099,7 +1179,7 @@ def alterar_status_inscricoes():
             f"Status das inscrições alterado para: {novo_status}"
         )
 
-        return redirect("/admin")
+        return redirect("/admin/inscricoes")
 
     except Exception as e:
 
@@ -1114,7 +1194,45 @@ def alterar_status_inscricoes():
 
     finally:
 
-        db.close()        
+        db.close()
+
+@app.route("/admin/inscricoes")
+def admin_inscricoes():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        resultado = db.execute(
+            text("""
+                SELECT valor
+                FROM configuracoes
+                WHERE chave = 'inscricoes_status'
+            """)
+        ).scalar()
+
+        status_inscricoes = resultado or "FECHADA"
+
+        return render_template(
+            "admin/inscricoes.html",
+            status_inscricoes=status_inscricoes
+        )
+
+    except Exception as e:
+
+        print(
+            "ERRO AO CARREGAR STATUS DAS INSCRIÇÕES:",
+            e
+        )
+
+        return f"Erro ao carregar inscrições: {e}", 500
+
+    finally:
+
+        db.close()                
 
 @app.route("/admin/integrante/<int:id>/editar", methods=["GET","POST"])
 def editar_integrante(id):
@@ -4489,30 +4607,6 @@ def termo_individual_viagem(viagem_id, integrante_id):
     return gerar_documentos_viagem(
         viagem_id,
         integrante_id
-    )
-
-@app.route("/admin/carteirinhas")
-def admin_carteirinhas():
-
-    db = SessionLocal()
-
-    integrantes = db.execute(text("""
-        SELECT
-            id,
-            codigo_integrante,
-            nome,
-            foto,
-            status
-        FROM integrantes
-        WHERE status = 'APROVADO'
-        ORDER BY nome
-    """)).mappings().all()
-
-    db.close()
-
-    return render_template(
-        "admin/carteirinhas.html",
-        integrantes=integrantes
     )
 
 
@@ -8458,6 +8552,48 @@ def gerar_pdf_rifa_vendedor(rifa_id, integrante_id):
 
         db.close()
 
+@app.route("/admin/carteirinhas")
+def admin_carteirinhas():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # INTEGRANTES APTOS PARA CARTEIRINHA
+        # ==========================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    id,
+                    codigo_integrante,
+                    nome,
+                    status,
+                    situacao
+                FROM integrantes
+                WHERE status = 'APROVADO'
+                  AND situacao = 'ATIVO'
+                ORDER BY LOWER(nome)
+            """)
+        ).mappings().all()
+
+    finally:
+
+        db.close()
+
+    # ==========================================
+    # RETORNO
+    # ==========================================
+
+    return render_template(
+        "admin/carteirinhas.html",
+        integrantes=integrantes
+    )        
+
 @app.route("/admin/carteirinha/pdf/<int:id>")
 def baixar_carteirinha_pdf(id):
 
@@ -8472,7 +8608,53 @@ def baixar_todas_carteirinhas_pdf():
     if "admin" not in session:
         return redirect("/login")
 
-    return gerar_pdf_todas_carteirinhas()    
+    return gerar_pdf_todas_carteirinhas()
+
+@app.route("/admin/temporadas")
+def admin_temporadas():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # TEMPORADAS
+        # ==========================================
+
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano,
+                    status,
+                    data_cadastro
+                FROM temporadas
+                ORDER BY ano DESC
+            """)
+        ).mappings().all()
+
+    finally:
+
+        db.close()
+
+    return render_template(
+        "admin/temporadas.html",
+        temporadas=temporadas
+    )
+
+@app.route("/admin/relatorios")
+def admin_relatorios():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    return render_template(
+        "admin/relatorios.html"
+    )        
 
 if __name__ == "__main__":
 

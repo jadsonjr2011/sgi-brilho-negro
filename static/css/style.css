@@ -2915,3 +2915,437 @@ body:has(.login-brilho) footer{
     }
 
 }
+
+/* ===================================================== */
+/* LAYOUT ADMINISTRATIVO                                 */
+/* ===================================================== */
+
+.admin-layout {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    background: #0f1720;
+
+}
+
+
+/* ===================================================== */
+/* MENU LATERAL ADMIN                                    */
+/* ===================================================== */
+
+.menu-lateral-admin {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+    bottom: 0;
+
+    width: 260px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #111827;
+
+    border-right: 1px solid rgba(255,255,255,0.08);
+
+    z-index: 1000;
+
+}
+
+
+/* ===================================================== */
+/* TOPO                                                  */
+/* ===================================================== */
+
+.menu-admin-topo {
+
+    flex-shrink: 0;
+
+    padding: 20px;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+}
+
+
+/* ===================================================== */
+/* MENU                                                   */
+/* ===================================================== */
+
+.menu-admin {
+
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 12px;
+
+}
+
+
+/* Barra de rolagem */
+
+.menu-admin::-webkit-scrollbar {
+
+    width: 6px;
+
+}
+
+.menu-admin::-webkit-scrollbar-track {
+
+    background: transparent;
+
+}
+
+.menu-admin::-webkit-scrollbar-thumb {
+
+    background: rgba(255,255,255,0.20);
+
+    border-radius: 10px;
+
+}
+
+.menu-admin::-webkit-scrollbar-thumb:hover {
+
+    background: rgba(255,255,255,0.35);
+
+}
+
+
+/* ===================================================== */
+/* RODAPÉ                                                 */
+/* ===================================================== */
+
+.menu-admin-rodape {
+
+    flex-shrink: 0;
+
+    padding: 12px;
+
+    border-top: 1px solid rgba(255,255,255,0.08);
+
+}
+
+
+/* ===================================================== */
+/* NAVEGAÇÃO                                             */
+/* ===================================================== */
+
+.menu-admin {
+
+    padding: 18px 12px;
+
+    flex: 1;
+
+}
+
+
+.menu-admin-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    padding: 11px 14px;
+
+    margin-bottom: 5px;
+
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    transition: 0.2s ease;
+
+    font-size: 15px;
+
+    white-space: nowrap;
+
+}
+
+
+.menu-admin-item:hover {
+
+    background: rgba(255,255,255,0.12);
+
+    color: white;
+
+}
+
+
+.menu-admin-item span:first-child {
+
+    flex-shrink: 0;
+
+    width: 25px;
+
+    text-align: center;
+
+    font-size: 18px;
+
+}
+
+
+/* ===================================================== */
+/* DESABILITADOS                                         */
+/* ===================================================== */
+
+.menu-admin-desabilitado {
+
+    opacity: 0.45;
+
+    cursor: default;
+
+}
+
+
+.menu-admin-desabilitado:hover {
+
+    background: transparent;
+
+}
+
+
+/* ===================================================== */
+/* SEPARADOR                                             */
+/* ===================================================== */
+
+.menu-admin-separador {
+
+    height: 1px;
+
+    background: rgba(255,255,255,0.15);
+
+    margin: 15px 5px;
+
+}
+
+
+/* ===================================================== */
+/* RODAPÉ DO MENU                                        */
+/* ===================================================== */
+
+.menu-admin-rodape {
+
+    padding: 12px;
+
+    border-top: 1px solid rgba(255,255,255,0.15);
+
+}
+
+
+/* ===================================================== */
+/* CONTEÚDO PRINCIPAL                                    */
+/* ===================================================== */
+
+.conteudo-admin {
+
+    margin-left: 250px;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    transition: margin-left 0.25s ease;
+
+}
+
+
+/* ===================================================== */
+/* CABEÇALHO                                             */
+/* ===================================================== */
+
+.cabecalho-admin {
+
+    height: 70px;
+
+    display: flex;
+
+    align-items: center;
+
+    padding: 0 25px;
+
+    background: #111c2a;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+}
+
+
+.btn-menu-admin {
+
+    border: none;
+
+    background: transparent;
+
+    color: white;
+
+    font-size: 25px;
+
+    width: 42px;
+
+    height: 42px;
+
+    border-radius: 8px;
+
+    margin-right: 12px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+
+}
+
+
+.btn-menu-admin:hover {
+
+    background: rgba(255,255,255,0.10);
+
+}
+
+
+.titulo-cabecalho-admin {
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+    color: #ffffff;
+
+}
+
+
+/* ===================================================== */
+/* CONTAINER                                             */
+/* ===================================================== */
+
+.container-admin {
+
+    flex: 1;
+
+    padding: 25px;
+
+    color: #ffffff;
+
+}
+
+
+/* ===================================================== */
+/* MENU RECOLHIDO                                        */
+/* ===================================================== */
+
+.menu-admin-recolhido .menu-lateral-admin {
+
+    width: 72px;
+
+}
+
+
+.menu-admin-recolhido .conteudo-admin {
+
+    margin-left: 72px;
+
+}
+
+
+.menu-admin-recolhido .texto-menu {
+
+    display: none;
+
+}
+
+
+.menu-admin-recolhido .menu-admin-item {
+
+    justify-content: center;
+
+    padding-left: 0;
+
+    padding-right: 0;
+
+}
+
+
+.menu-admin-recolhido .menu-admin-item span:first-child {
+
+    width: auto;
+
+}
+
+
+.menu-admin-recolhido .titulo-menu-admin {
+
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
+
+/* ===================================================== */
+/* RESPONSIVO                                            */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+    .menu-lateral-admin {
+
+        width: 250px;
+
+        transform: translateX(-100%);
+
+        transition:
+            transform 0.25s ease,
+            width 0.25s ease;
+
+    }
+
+
+    .menu-admin-recolhido .menu-lateral-admin {
+
+        width: 250px;
+
+        transform: translateX(-100%);
+
+    }
+
+
+    .menu-admin-recolhido .conteudo-admin {
+
+        margin-left: 0;
+
+    }
+
+
+    .conteudo-admin {
+
+        margin-left: 0;
+
+    }
+
+
+    .btn-menu-admin {
+
+        display: block;
+
+    }
+
+
+    .container-admin {
+
+        padding: 15px;
+
+    }
+
+}

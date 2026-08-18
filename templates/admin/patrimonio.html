@@ -1,0 +1,973 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Patrimônio
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ===================================================== */
+/* CABEÇALHO                                             */
+/* ===================================================== */
+
+.patrimonio-cabecalho {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 25px;
+
+}
+
+
+/* ===================================================== */
+/* CARDS                                                 */
+/* ===================================================== */
+
+.patrimonio-card {
+
+    height: 100%;
+
+    padding: 20px;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+}
+
+
+.patrimonio-card .icone {
+
+    font-size: 1.8rem;
+
+}
+
+
+.patrimonio-card .numero {
+
+    font-size: 2rem;
+
+    font-weight: 700;
+
+}
+
+
+.patrimonio-card .descricao {
+
+    color: #aaa;
+
+    font-size: 0.9rem;
+
+}
+
+
+/* ===================================================== */
+/* MÓDULOS                                               */
+/* ===================================================== */
+
+.patrimonio-modulo {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    height: 100%;
+
+    padding: 20px;
+
+    color: #fff;
+
+    text-decoration: none;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    transition: all 0.2s ease;
+
+}
+
+
+.patrimonio-modulo:hover {
+
+    transform: translateY(-2px);
+
+    background: rgba(255, 255, 255, 0.07);
+
+    color: #fff;
+
+}
+
+
+.patrimonio-modulo .icone {
+
+    font-size: 2rem;
+
+}
+
+
+.patrimonio-modulo strong {
+
+    display: block;
+
+    font-size: 1rem;
+
+}
+
+
+.patrimonio-modulo span {
+
+    color: #888;
+
+    font-size: 0.8rem;
+
+}
+
+
+/* ===================================================== */
+/* TABELA                                                */
+/* ===================================================== */
+
+.patrimonio-tabela {
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+}
+
+
+@media (max-width: 768px) {
+
+    .patrimonio-cabecalho {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+}
+
+</style>
+
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                            -->
+<!-- ===================================================== -->
+
+<div class="patrimonio-cabecalho">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+
+            🏛️ Patrimônio
+
+        </h2>
+
+        <div class="text-secondary">
+
+            Controle de bens, materiais, equipamentos e empréstimos.
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- RESUMO                                               -->
+<!-- ===================================================== -->
+
+<div class="row g-3 mb-4">
+
+
+    <div class="col-md-4">
+
+        <div class="patrimonio-card">
+
+            <div class="icone">
+                🏛️
+            </div>
+
+            <div class="numero">
+
+                {{ total_instrumentos }}
+
+            </div>
+
+            <div class="descricao">
+
+                Instrumentos cadastrados
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="patrimonio-card">
+
+            <div class="icone">
+                🟢
+            </div>
+
+            <div class="numero">
+
+                {{ instrumentos_ativos }}
+
+            </div>
+
+            <div class="descricao">
+
+                Instrumentos ativos
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+        <div class="patrimonio-card">
+
+            <div class="icone">
+                ⚪
+            </div>
+
+            <div class="numero">
+
+                {{ instrumentos_inativos }}
+
+            </div>
+
+            <div class="descricao">
+
+                Instrumentos inativos
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MÓDULOS DO PATRIMÔNIO                                -->
+<!-- ===================================================== -->
+
+<div class="row g-3 mb-4">
+
+
+    <div class="col-md-6">
+
+        <a
+            href="#"
+            class="patrimonio-modulo">
+
+            <div class="icone">
+                🎺
+            </div>
+
+            <div>
+
+                <strong>
+                    Instrumentos
+                </strong>
+
+                <span>
+                    Cadastro e controle dos instrumentos da banda.
+                </span>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <div class="col-md-6">
+
+        <a
+            href="#"
+            class="patrimonio-modulo">
+
+            <div class="icone">
+                📦
+            </div>
+
+            <div>
+
+                <strong>
+                    Materiais
+                </strong>
+
+                <span>
+                    Controle de itens por quantidade e saldo.
+                </span>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <div class="col-md-6">
+
+        <a
+            href="#"
+            class="patrimonio-modulo">
+
+            <div class="icone">
+                🤝
+            </div>
+
+            <div>
+
+                <strong>
+                    Empréstimos
+                </strong>
+
+                <span>
+                    Controle de retiradas, responsáveis e devoluções.
+                </span>
+
+            </div>
+
+        </a>
+
+    </div>
+
+
+    <div class="col-md-6">
+
+        <a
+            href="#"
+            class="patrimonio-modulo">
+
+            <div class="icone">
+                📜
+            </div>
+
+            <div>
+
+                <strong>
+                    Movimentações
+                </strong>
+
+                <span>
+                    Histórico de entradas, saídas e alterações.
+                </span>
+
+            </div>
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- INSTRUMENTOS                                         -->
+<!-- ===================================================== -->
+
+<div class="patrimonio-tabela">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+
+            <h5 class="mb-1">
+
+                🎺 Instrumentos
+
+            </h5>
+
+            <div class="text-secondary small">
+
+                Instrumentos cadastrados no patrimônio.
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#modalNovoInstrumento">
+
+            ➕ Novo Instrumento
+
+        </button>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Instrumento
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th class="text-end">
+                        Ações
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for instrumento in instrumentos %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+                            {{ instrumento.nome }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        {% if instrumento.ativo %}
+
+                            <span class="badge bg-success">
+                                🟢 Ativo
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+                                ⚪ Inativo
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="text-end">
+
+                        <div class="d-flex justify-content-end gap-2">
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-warning"
+                                onclick="abrirEditarInstrumento(
+                                    {{ instrumento.id }},
+                                    '{{ instrumento.nome|replace("'", "\\'") }}'
+                                    )">
+
+                                    ✏️ Editar
+
+                                </button>
+
+
+                                {% if instrumento.ativo %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    onclick="alternarInstrumento(
+                                        {{ instrumento.id }},
+                                        false
+                                    )">
+
+                                    ⚪ Inativar
+
+                                </button>
+
+                                {% else %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-success"
+                                    onclick="alternarInstrumento(
+                                        {{ instrumento.id }},
+                                        true
+                                    )">
+
+                                    🟢 Ativar
+
+                                </button>
+
+                                {% endif %}
+
+                            </div>
+
+                        </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="3"
+                        class="text-center text-secondary py-4">
+
+                        Nenhum instrumento cadastrado.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- MODAL NOVO INSTRUMENTO                                -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalNovoInstrumento"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content bg-dark text-light">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    🎺 Novo Instrumento
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+
+            <form id="formNovoInstrumento">
+
+                <div class="modal-body">
+
+                    <label class="form-label">
+
+                        Nome do instrumento
+
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nome"
+                        id="nomeNovoInstrumento"
+                        class="form-control"
+                        placeholder="Ex.: Trompete"
+                        required
+                        autocomplete="off">
+
+                    <div
+                        id="erroNovoInstrumento"
+                        class="text-danger small mt-2">
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Cadastrar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MODAL EDITAR INSTRUMENTO                              -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalEditarInstrumento"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content bg-dark text-light">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    ✏️ Editar Instrumento
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+
+            <form id="formEditarInstrumento">
+
+                <input
+                    type="hidden"
+                    id="editarInstrumentoId">
+
+
+                <div class="modal-body">
+
+                    <label class="form-label">
+
+                        Nome do instrumento
+
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nome"
+                        id="nomeEditarInstrumento"
+                        class="form-control"
+                        required
+                        autocomplete="off">
+
+                    <div
+                        id="erroEditarInstrumento"
+                        class="text-danger small mt-2">
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
+
+                        💾 Salvar Alterações
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ===================================================== */
+/* NOVO INSTRUMENTO                                      */
+/* ===================================================== */
+
+document
+    .getElementById("formNovoInstrumento")
+    .addEventListener("submit", async function(e) {
+
+        e.preventDefault();
+
+
+        const form = this;
+
+        const erro = document.getElementById(
+            "erroNovoInstrumento"
+        );
+
+        erro.textContent = "";
+
+
+        const dados = new FormData(form);
+
+
+        try {
+
+            const resposta = await fetch(
+                "/admin/instrumentos/novo",
+                {
+                    method: "POST",
+                    body: dados
+                }
+            );
+
+
+            const resultado = await resposta.json();
+
+
+            if (!resultado.sucesso) {
+
+                erro.textContent = resultado.mensagem;
+
+                return;
+
+            }
+
+
+            location.reload();
+
+        }
+
+        catch (erroFetch) {
+
+            console.error(erroFetch);
+
+            erro.textContent =
+                "Erro de comunicação com o servidor.";
+
+        }
+
+    });
+
+
+/* ===================================================== */
+/* ABRIR EDITAR                                          */
+/* ===================================================== */
+
+function abrirEditarInstrumento(id, nome) {
+
+    document.getElementById(
+        "editarInstrumentoId"
+    ).value = id;
+
+
+    document.getElementById(
+        "nomeEditarInstrumento"
+    ).value = nome;
+
+
+    document.getElementById(
+        "erroEditarInstrumento"
+    ).textContent = "";
+
+
+    const modal = new bootstrap.Modal(
+        document.getElementById(
+            "modalEditarInstrumento"
+        )
+    );
+
+
+    modal.show();
+
+}
+
+
+/* ===================================================== */
+/* EDITAR INSTRUMENTO                                    */
+/* ===================================================== */
+
+document
+    .getElementById("formEditarInstrumento")
+    .addEventListener("submit", async function(e) {
+
+        e.preventDefault();
+
+
+        const id = document.getElementById(
+            "editarInstrumentoId"
+        ).value;
+
+
+        const erro = document.getElementById(
+            "erroEditarInstrumento"
+        );
+
+        erro.textContent = "";
+
+
+        const dados = new FormData(this);
+
+
+        try {
+
+            const resposta = await fetch(
+                `/admin/instrumentos/${id}/editar`,
+                {
+                    method: "POST",
+                    body: dados
+                }
+            );
+
+
+            const resultado = await resposta.json();
+
+
+            if (!resultado.sucesso) {
+
+                erro.textContent = resultado.mensagem;
+
+                return;
+
+            }
+
+
+            location.reload();
+
+        }
+
+        catch (erroFetch) {
+
+            console.error(erroFetch);
+
+            erro.textContent =
+                "Erro de comunicação com o servidor.";
+
+        }
+
+    });
+
+
+/* ===================================================== */
+/* ATIVAR / INATIVAR                                    */
+/* ===================================================== */
+
+async function alternarInstrumento(id, ativar) {
+
+    try {
+
+        const resposta = await fetch(
+            `/admin/instrumentos/${id}/alternar`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    ativar: ativar
+                })
+            }
+        );
+
+
+        const resultado = await resposta.json();
+
+
+        if (!resultado.sucesso) {
+
+            alert(resultado.mensagem);
+
+            return;
+
+        }
+
+
+        location.reload();
+
+    }
+
+    catch (erro) {
+
+        console.error(erro);
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+
+    }
+
+}
+
+</script>
+
+{% endblock %}

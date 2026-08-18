@@ -1,0 +1,1321 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Relatórios
+{% endblock %}
+
+{% block titulo_pagina %}
+Relatórios
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ===================================================== */
+/* CABEÇALHO                                             */
+/* ===================================================== */
+
+.relatorios-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 20px;
+
+    margin-bottom: 30px;
+
+}
+
+
+.relatorios-header h2 {
+
+    margin-bottom: 4px;
+
+}
+
+
+.relatorios-header p {
+
+    margin: 0;
+
+    color: #888;
+
+}
+
+
+/* ===================================================== */
+/* CARD PRINCIPAL                                        */
+/* ===================================================== */
+
+.card-relatorio {
+
+    height: 100%;
+
+    padding: 24px;
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+
+}
+
+
+.card-relatorio:hover {
+
+    transform: translateY(-2px);
+
+    background: rgba(255, 255, 255, 0.055);
+
+    border-color: rgba(255, 255, 255, 0.13);
+
+}
+
+
+/* ===================================================== */
+/* DESTAQUE DOS RELATÓRIOS PRINCIPAIS                   */
+/* ===================================================== */
+
+.card-relatorio-principal {
+
+    border-color: rgba(13, 202, 240, 0.18);
+
+}
+
+
+.card-relatorio-principal:hover {
+
+    border-color: rgba(13, 202, 240, 0.35);
+
+}
+
+
+/* ===================================================== */
+/* CABEÇALHO DO CARD                                     */
+/* ===================================================== */
+
+.relatorio-card-header {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 16px;
+
+    margin-bottom: 22px;
+
+}
+
+
+.relatorio-icone {
+
+    width: 54px;
+
+    height: 54px;
+
+    min-width: 54px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 1.8rem;
+
+    background: rgba(255, 255, 255, 0.06);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 12px;
+
+}
+
+
+.relatorio-card-header h4 {
+
+    margin: 0 0 5px 0;
+
+}
+
+
+.relatorio-descricao {
+
+    color: #999;
+
+    font-size: 0.9rem;
+
+    line-height: 1.5;
+
+}
+
+
+/* ===================================================== */
+/* FILTROS                                               */
+/* ===================================================== */
+
+.filtros-relatorio {
+
+    padding: 18px;
+
+    background: rgba(0, 0, 0, 0.16);
+
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    border-radius: 12px;
+
+}
+
+
+.filtros-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 16px;
+
+}
+
+
+.filtros-titulo {
+
+    font-size: 0.85rem;
+
+    font-weight: 600;
+
+    color: #aaa;
+
+}
+
+
+.form-label {
+
+    font-size: 0.85rem;
+
+    color: #aaa;
+
+}
+
+
+.form-select {
+
+    min-height: 40px;
+
+}
+
+
+/* ===================================================== */
+/* AÇÕES                                                 */
+/* ===================================================== */
+
+.acoes-relatorio {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 18px;
+
+}
+
+
+.acoes-relatorio .btn {
+
+    min-width: 145px;
+
+}
+
+
+/* ===================================================== */
+/* BOTÃO LIMPAR                                          */
+/* ===================================================== */
+
+.btn-limpar {
+
+    font-size: 0.78rem;
+
+    color: #888;
+
+    background: transparent;
+
+    border: none;
+
+    padding: 0;
+
+}
+
+
+.btn-limpar:hover {
+
+    color: #fff;
+
+}
+
+
+/* ===================================================== */
+/* CARDS SECUNDÁRIOS                                    */
+/* ===================================================== */
+
+.card-relatorio-secundario {
+
+    display: flex;
+
+    flex-direction: column;
+
+}
+
+
+.card-relatorio-secundario .relatorio-card-header {
+
+    margin-bottom: 15px;
+
+}
+
+
+.card-relatorio-secundario .relatorio-descricao {
+
+    min-height: 48px;
+
+}
+
+
+.card-relatorio-secundario .btn {
+
+    margin-top: auto;
+
+    align-self: flex-start;
+
+}
+
+
+/* ===================================================== */
+/* SEPARADOR                                             */
+/* ===================================================== */
+
+.secao-relatorios {
+
+    margin-top: 38px;
+
+    margin-bottom: 18px;
+
+}
+
+
+.secao-relatorios-titulo {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: #aaa;
+
+    font-size: 0.85rem;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+
+}
+
+
+.secao-relatorios-titulo::after {
+
+    content: "";
+
+    height: 1px;
+
+    flex: 1;
+
+    background: rgba(255, 255, 255, 0.08);
+
+}
+
+
+/* ===================================================== */
+/* RESPONSIVIDADE                                        */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+    .relatorios-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+    }
+
+
+    .acoes-relatorio {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+
+    .acoes-relatorio .btn {
+
+        width: 100%;
+
+    }
+
+
+    .filtros-header {
+
+        align-items: flex-start;
+
+    }
+
+}
+
+</style>
+
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                             -->
+<!-- ===================================================== -->
+
+<div class="relatorios-header">
+
+    <div>
+
+        <h2 class="titulo">
+
+            📊 Relatórios
+
+        </h2>
+
+        <p>
+
+            Consulte, filtre e gere os relatórios do sistema.
+
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- RELATÓRIOS PRINCIPAIS                                -->
+<!-- ===================================================== -->
+
+<div class="secao-relatorios">
+
+    <div class="secao-relatorios-titulo">
+
+        📋 Relatórios cadastrais
+
+    </div>
+
+</div>
+
+
+<div class="row g-4">
+
+
+    <!-- ================================================= -->
+    <!-- INTEGRANTES                                       -->
+    <!-- ================================================= -->
+
+    <div class="col-12">
+
+        <div class="card-relatorio card-relatorio-principal">
+
+            <div class="relatorio-card-header">
+
+                <div class="relatorio-icone">
+                    👥
+                </div>
+
+                <div>
+
+                    <h4 class="titulo">
+
+                        Relatório de Integrantes
+
+                    </h4>
+
+                    <div class="relatorio-descricao">
+
+                        Relação dos integrantes cadastrados
+                        no sistema, conforme os filtros selecionados.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FILTROS -->
+
+            <div class="filtros-relatorio">
+
+                <div class="filtros-header">
+
+                    <div class="filtros-titulo">
+
+                        🔎 Filtros do relatório
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-limpar"
+                        onclick="limparIntegrantes()">
+
+                        ↺ Limpar filtros
+
+                    </button>
+
+                </div>
+
+
+                <div class="row">
+
+
+                    <!-- STATUS -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Status Cadastro
+
+                        </label>
+
+                        <select
+                            id="integrantesStatus"
+                            class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            <option value="PENDENTE">
+                                Pendentes
+                            </option>
+
+                            <option value="APROVADO">
+                                Aprovados
+                            </option>
+
+                            <option value="REPROVADO">
+                                Reprovados
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- SITUAÇÃO -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Situação
+
+                        </label>
+
+                        <select
+                            id="integrantesSituacao"
+                            class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            <option value="ATIVO">
+                                Ativos
+                            </option>
+
+                            <option value="INATIVO">
+                                Inativos
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- FUNÇÃO -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Função
+
+                        </label>
+
+                        <select
+                            id="integrantesFuncao"
+                            class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            {% for valor, nome in funcoes_banda %}
+
+                                <option value="{{ valor }}">
+                                    {{ nome }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- INSTRUMENTO -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Instrumento
+
+                        </label>
+
+                        <select
+                            id="integrantesInstrumento"
+                            class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            {% for instrumento in instrumentos %}
+
+                                {% if instrumento.ativo %}
+
+                                    <option value="{{ instrumento.id }}">
+
+                                        {{ instrumento.nome }}
+
+                                    </option>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- AÇÕES -->
+
+            <div class="acoes-relatorio">
+
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    onclick="exportarIntegrantesPDF()">
+
+                    📄 Exportar PDF
+
+                </button>
+
+
+                <a
+                    href="/admin/exportar/excel"
+                    target="_blank"
+                    class="btn btn-success">
+
+                    📊 Exportar Excel
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CALÇADOS                                          -->
+    <!-- ================================================= -->
+
+    <div class="col-12">
+
+        <div class="card-relatorio card-relatorio-principal">
+
+            <div class="relatorio-card-header">
+
+                <div class="relatorio-icone">
+                    👟
+                </div>
+
+                <div>
+
+                    <h4 class="titulo">
+
+                        Relatório de Calçados
+
+                    </h4>
+
+                    <div class="relatorio-descricao">
+
+                        Relação e distribuição dos tamanhos
+                        de calçado dos integrantes.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FILTROS -->
+
+            <div class="filtros-relatorio">
+
+                <div class="filtros-header">
+
+                    <div class="filtros-titulo">
+
+                        🔎 Filtros do relatório
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-limpar"
+                        onclick="limparCalcados()">
+
+                        ↺ Limpar filtros
+
+                    </button>
+
+                </div>
+
+
+                <div class="row">
+
+
+                    <!-- STATUS -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Status Cadastro
+
+                        </label>
+
+                        <select
+                            id="calcadosStatus"
+                            class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            <option value="PENDENTE">
+                                Pendentes
+                            </option>
+
+                            <option value="APROVADO">
+                                Aprovados
+                            </option>
+
+                            <option value="REPROVADO">
+                                Reprovados
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- SITUAÇÃO -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Situação
+
+                        </label>
+
+                        <select
+                            id="calcadosSituacao"
+                            class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            <option value="ATIVO">
+                                Ativos
+                            </option>
+
+                            <option value="INATIVO">
+                                Inativos
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- FUNÇÃO -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            Função
+
+                        </label>
+
+                        <select
+                            id="calcadosFuncao"
+                            class="form-select">
+
+                            <option value="">
+                                Todas
+                            </option>
+
+                            {% for valor, nome in funcoes_banda %}
+
+                                <option value="{{ valor }}">
+                                    {{ nome }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- EXCLUIR FUNÇÃO -->
+
+                    <div class="col-md-3 mb-3">
+
+                        <label class="form-label">
+
+                            🚫 Excluir Função
+
+                        </label>
+
+                        <select
+                            id="calcadosExcluirFuncao"
+                            class="form-select">
+
+                            <option value="">
+                                Nenhuma
+                            </option>
+
+                            {% for valor, nome in funcoes_banda %}
+
+                                <option value="{{ valor }}">
+                                    {{ nome }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- AÇÕES -->
+
+            <div class="acoes-relatorio">
+
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    onclick="exportarCalcadosPDF()">
+
+                    📄 Exportar PDF
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- OUTROS RELATÓRIOS                                    -->
+<!-- ===================================================== -->
+
+<div class="secao-relatorios">
+
+    <div class="secao-relatorios-titulo">
+
+        📂 Outros módulos
+
+    </div>
+
+</div>
+
+
+<div class="row g-4">
+
+
+    <!-- CARTEIRINHAS -->
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card-relatorio card-relatorio-secundario">
+
+            <div class="relatorio-card-header">
+
+                <div class="relatorio-icone">
+                    🪪
+                </div>
+
+                <div>
+
+                    <h4 class="titulo">
+                        Carteirinhas
+                    </h4>
+
+                </div>
+
+            </div>
+
+            <div class="relatorio-descricao">
+
+                Integrantes aptos para emissão
+                de carteirinha.
+
+            </div>
+
+            <a
+                href="/admin/carteirinhas"
+                class="btn btn-outline-light">
+
+                🪪 Abrir
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- VIAGENS -->
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card-relatorio card-relatorio-secundario">
+
+            <div class="relatorio-card-header">
+
+                <div class="relatorio-icone">
+                    🚌
+                </div>
+
+                <div>
+
+                    <h4 class="titulo">
+                        Viagens
+                    </h4>
+
+                </div>
+
+            </div>
+
+            <div class="relatorio-descricao">
+
+                Relatórios relacionados às viagens
+                e integrantes.
+
+            </div>
+
+            <a
+                href="/admin/viagens"
+                class="btn btn-outline-light">
+
+                🚌 Abrir
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- RIFAS -->
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card-relatorio card-relatorio-secundario">
+
+            <div class="relatorio-card-header">
+
+                <div class="relatorio-icone">
+                    🎟️
+                </div>
+
+                <div>
+
+                    <h4 class="titulo">
+                        Rifas
+                    </h4>
+
+                </div>
+
+            </div>
+
+            <div class="relatorio-descricao">
+
+                Relatórios das rifas, vendedores
+                e prestações.
+
+            </div>
+
+            <a
+                href="/admin/rifas"
+                class="btn btn-outline-light">
+
+                🎟️ Abrir
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- PATRIMÔNIO -->
+
+    <div class="col-md-6 col-xl-3">
+
+        <div class="card-relatorio card-relatorio-secundario">
+
+            <div class="relatorio-card-header">
+
+                <div class="relatorio-icone">
+                    📦
+                </div>
+
+                <div>
+
+                    <h4 class="titulo">
+                        Patrimônio
+                    </h4>
+
+                </div>
+
+            </div>
+
+            <div class="relatorio-descricao">
+
+                Instrumentos, itens e movimentações
+                patrimoniais.
+
+            </div>
+
+            <a
+                href="/admin/patrimonio"
+                class="btn btn-outline-light">
+
+                📦 Abrir
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT                                            -->
+<!-- ===================================================== -->
+
+<script>
+
+/* ===================================================== */
+/* RELATÓRIO DE INTEGRANTES                              */
+/* ===================================================== */
+
+function exportarIntegrantesPDF() {
+
+    const parametros =
+        new URLSearchParams();
+
+
+    const status =
+        document.getElementById(
+            "integrantesStatus"
+        ).value;
+
+
+    const situacao =
+        document.getElementById(
+            "integrantesSituacao"
+        ).value;
+
+
+    const funcao =
+        document.getElementById(
+            "integrantesFuncao"
+        ).value;
+
+
+    const instrumento =
+        document.getElementById(
+            "integrantesInstrumento"
+        ).value;
+
+
+    if (status) {
+
+        parametros.append(
+            "status",
+            status
+        );
+
+    }
+
+
+    if (situacao) {
+
+        parametros.append(
+            "situacao",
+            situacao
+        );
+
+    }
+
+
+    if (funcao) {
+
+        parametros.append(
+            "funcao",
+            funcao
+        );
+
+    }
+
+
+    if (instrumento) {
+
+        parametros.append(
+            "instrumento",
+            instrumento
+        );
+
+    }
+
+
+    let url =
+        "/admin/exportar/pdf";
+
+
+    if (parametros.toString()) {
+
+        url +=
+            "?" +
+            parametros.toString();
+
+    }
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* ===================================================== */
+/* RELATÓRIO DE CALÇADOS                                 */
+/* ===================================================== */
+
+function exportarCalcadosPDF() {
+
+    const parametros =
+        new URLSearchParams();
+
+
+    const status =
+        document.getElementById(
+            "calcadosStatus"
+        ).value;
+
+
+    const situacao =
+        document.getElementById(
+            "calcadosSituacao"
+        ).value;
+
+
+    const funcao =
+        document.getElementById(
+            "calcadosFuncao"
+        ).value;
+
+
+    const excluirFuncao =
+        document.getElementById(
+            "calcadosExcluirFuncao"
+        ).value;
+
+
+    if (status) {
+
+        parametros.append(
+            "status",
+            status
+        );
+
+    }
+
+
+    if (situacao) {
+
+        parametros.append(
+            "situacao",
+            situacao
+        );
+
+    }
+
+
+    if (funcao) {
+
+        parametros.append(
+            "funcao",
+            funcao
+        );
+
+    }
+
+
+    if (excluirFuncao) {
+
+        parametros.append(
+            "excluir_funcao",
+            excluirFuncao
+        );
+
+    }
+
+
+    let url =
+        "/admin/exportar/pdf/calcados";
+
+
+    if (parametros.toString()) {
+
+        url +=
+            "?" +
+            parametros.toString();
+
+    }
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* ===================================================== */
+/* LIMPAR FILTROS — INTEGRANTES                          */
+/* ===================================================== */
+
+function limparIntegrantes() {
+
+    document.getElementById(
+        "integrantesStatus"
+    ).value = "";
+
+    document.getElementById(
+        "integrantesSituacao"
+    ).value = "";
+
+    document.getElementById(
+        "integrantesFuncao"
+    ).value = "";
+
+    document.getElementById(
+        "integrantesInstrumento"
+    ).value = "";
+
+}
+
+
+/* ===================================================== */
+/* LIMPAR FILTROS — CALÇADOS                             */
+/* ===================================================== */
+
+function limparCalcados() {
+
+    document.getElementById(
+        "calcadosStatus"
+    ).value = "";
+
+    document.getElementById(
+        "calcadosSituacao"
+    ).value = "";
+
+    document.getElementById(
+        "calcadosFuncao"
+    ).value = "";
+
+    document.getElementById(
+        "calcadosExcluirFuncao"
+    ).value = "";
+
+}
+
+</script>
+
+{% endblock %}

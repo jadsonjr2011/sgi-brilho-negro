@@ -1,0 +1,203 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Carteirinhas
+{% endblock %}
+
+{% block titulo_pagina %}
+Carteirinhas
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+            🪪 Carteirinhas
+        </h2>
+
+        <p class="text-secondary mb-0">
+            Gere as carteirinhas dos integrantes aprovados e ativos.
+        </p>
+
+    </div>
+
+
+    <a
+        href="/admin/carteirinha/pdf/todas"
+        target="_blank"
+        class="btn btn-success">
+
+        🪪 Gerar Todas
+
+    </a>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- RESUMO                                                -->
+<!-- ===================================================== -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-4">
+
+        <div class="card-resumo">
+
+            <div class="icone">
+                👥
+            </div>
+
+            <div class="numero">
+                {{ integrantes|length }}
+            </div>
+
+            <div class="descricao">
+                Integrantes aptos
+            </div>
+
+            <div class="detalhe">
+                Aprovados e ativos
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- LISTA                                                 -->
+<!-- ===================================================== -->
+
+<div class="painel-admin">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div class="painel-admin-titulo mb-0">
+            📋 Integrantes
+        </div>
+
+        <span class="badge bg-secondary">
+
+            {{ integrantes|length }}
+
+            integrante{% if integrantes|length != 1 %}s{% endif %}
+
+        </span>
+
+    </div>
+
+
+    {% if integrantes %}
+
+        <div class="table-responsive">
+
+            <table class="table table-dark table-hover align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Matrícula
+                        </th>
+
+                        <th>
+                            Integrante
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th class="text-end">
+                            Ação
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for integrante in integrantes %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ integrante.codigo_integrante }}
+                            </strong>
+
+                        </td>
+
+
+                        <td>
+
+                            {{ integrante.nome }}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="badge bg-success">
+
+                                🟢 Ativo
+
+                            </span>
+
+                        </td>
+
+
+                        <td class="text-end">
+
+                            <a
+                                href="/admin/carteirinha/pdf/{{ integrante.id }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-light">
+
+                                📄 Gerar PDF
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="text-center text-secondary py-5">
+
+            <div style="font-size: 3rem;">
+                🪪
+            </div>
+
+            <div class="mt-3">
+
+                Nenhum integrante aprovado e ativo encontrado.
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

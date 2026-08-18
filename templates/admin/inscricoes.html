@@ -1,0 +1,267 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Inscrições
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="container-fluid">
+
+    <!-- ===================================================== -->
+    <!-- CABEÇALHO                                             -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="titulo mb-1">
+                📝 Controle de Inscrições
+            </h2>
+
+            <p class="text-secondary mb-0">
+                Controle o período de inscrições da banda.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- STATUS ATUAL                                          -->
+    <!-- ===================================================== -->
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card-bn">
+
+                <div class="text-center">
+
+                    <div class="text-secondary mb-3">
+                        Status atual das inscrições
+                    </div>
+
+
+                    {% if status_inscricoes == "ABERTA" %}
+
+                        <span class="badge bg-success fs-5 px-4 py-2">
+
+                            🟢 ABERTA
+
+                        </span>
+
+
+                        <p class="text-secondary mt-3 mb-0">
+
+                            As inscrições estão abertas para novos cadastros.
+
+                        </p>
+
+
+                    {% elif status_inscricoes == "PAUSADA" %}
+
+                        <span class="badge bg-warning text-dark fs-5 px-4 py-2">
+
+                            🟡 PAUSADA
+
+                        </span>
+
+
+                        <p class="text-secondary mt-3 mb-0">
+
+                            As inscrições estão temporariamente bloqueadas.
+
+                        </p>
+
+
+                    {% elif status_inscricoes == "FECHADA" %}
+
+                        <span class="badge bg-danger fs-5 px-4 py-2">
+
+                            🔴 FECHADA
+
+                        </span>
+
+
+                        <p class="text-secondary mt-3 mb-0">
+
+                            O período de inscrições está encerrado.
+
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- ALTERAR STATUS                                    -->
+                <!-- ================================================= -->
+
+                <form
+                    method="POST"
+                    action="/admin/inscricoes/status">
+
+
+                    <label class="form-label">
+
+                        Alterar status das inscrições
+
+                    </label>
+
+
+                    <select
+                        name="status"
+                        class="form-select mb-4"
+                        required>
+
+
+                        <option
+                            value="ABERTA"
+                            {% if status_inscricoes == "ABERTA" %}
+                                selected
+                            {% endif %}>
+
+                            🟢 ABERTA
+
+                        </option>
+
+
+                        <option
+                            value="PAUSADA"
+                            {% if status_inscricoes == "PAUSADA" %}
+                                selected
+                            {% endif %}>
+
+                            🟡 PAUSADA
+
+                        </option>
+
+
+                        <option
+                            value="FECHADA"
+                            {% if status_inscricoes == "FECHADA" %}
+                                selected
+                            {% endif %}>
+
+                            🔴 FECHADA
+
+                        </option>
+
+
+                    </select>
+
+
+                    <!-- ================================================= -->
+                    <!-- EXPLICAÇÕES                                      -->
+                    <!-- ================================================= -->
+
+                    <div class="row g-3 mb-4">
+
+
+                        <div class="col-md-4">
+
+                            <div class="p-3 rounded border border-success">
+
+                                <strong class="text-success">
+                                    🟢 ABERTA
+                                </strong>
+
+                                <div class="small text-secondary mt-2">
+
+                                    Permite novos cadastros.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="p-3 rounded border border-warning">
+
+                                <strong class="text-warning">
+                                    🟡 PAUSADA
+                                </strong>
+
+                                <div class="small text-secondary mt-2">
+
+                                    Inscrições temporariamente bloqueadas.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <div class="p-3 rounded border border-danger">
+
+                                <strong class="text-danger">
+                                    🔴 FECHADA
+                                </strong>
+
+                                <div class="small text-secondary mt-2">
+
+                                    Período de inscrições encerrado.
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- BOTÃO                                             -->
+                    <!-- ================================================= -->
+
+                    <div class="d-flex justify-content-end gap-2">
+
+
+                        <a
+                            href="/admin"
+                            class="btn btn-secondary">
+
+                            Cancelar
+
+                        </a>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-success">
+
+                            💾 Salvar Status
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

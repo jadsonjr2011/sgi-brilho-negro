@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block titulo %}Brilho Negro{% endblock %}</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body class="admin-layout">
+
+    <!-- ================================================= -->
+    <!-- MENU LATERAL                                      -->
+    <!-- ================================================= -->
+
+    <aside class="menu-lateral-admin">
+
+        <div class="menu-admin-topo">
+
+            <div class="titulo-menu-admin">
+
+                <strong>
+                    Brilho Negro
+                </strong>
+
+                <small>
+                    Sistema de Gestão
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <nav class="menu-admin">
+
+            <a href="/admin" class="menu-admin-item">
+
+                <span>🏠</span>
+
+                <span class="texto-menu">
+                    Dashboard
+                </span>
+
+            </a>
+
+
+            <a href="/integrantes" class="menu-admin-item">
+
+                <span>👥</span>
+
+                <span class="texto-menu">
+                    Integrantes
+                </span>
+
+            </a>
+
+            <a href="/admin/inscricoes" class="menu-admin-item">
+
+                <span>📝</span>
+
+                <span class="texto-menu">
+                    Inscrições
+                </span>
+
+            </a>
+
+            <a
+                href="/admin/carteirinhas"
+                class="menu-admin-item">
+
+                <span>🪪</span>
+
+                <span class="texto-menu">
+                    Carteirinhas
+                </span>
+
+            </a>
+
+            <a
+                href="/admin/temporadas"
+                class="menu-admin-item">
+
+                <span>📅</span>
+
+                <span class="texto-menu">
+                    Temporadas
+                </span>
+
+            </a>   
+
+            <a href="/admin/viagens" class="menu-admin-item">
+
+                <span>🚌</span>
+
+                <span class="texto-menu">
+                    Viagens
+                </span>
+
+            </a>
+
+
+            <a href="/admin/rifas" class="menu-admin-item">
+
+                <span>🎟️</span>
+
+                <span class="texto-menu">
+                    Rifas
+                </span>
+
+            </a>
+
+
+            <a href="/admin/patrimonio" class="menu-admin-item">
+
+                <span>📦</span>
+
+                <span class="texto-menu">
+                    Patrimônio
+                </span>
+
+            </a>
+
+
+            <a
+                href="/admin/financeiro"
+                class="menu-admin-item">
+
+                <span>💰</span>
+
+                <span class="texto-menu">
+                    Financeiro
+                </span>
+
+            </a>
+
+            <a
+                href="/admin/relatorios"
+                class="menu-admin-item">
+
+                <span>📊</span>
+
+                <span class="texto-menu">
+                    Relatórios
+                </span>
+
+            </a>            
+
+            <a
+                href="#"
+                class="menu-admin-item disabled"
+                style="opacity: 0.5; cursor: not-allowed;"
+                onclick="return false;">
+
+                <span>🎶</span>
+
+                <span class="texto-menu">
+                    Ensaios
+                </span>
+
+            </a>
+
+
+            <a
+                href="#"
+                class="menu-admin-item disabled"
+                style="opacity: 0.5; cursor: not-allowed;"
+                onclick="return false;">
+
+                <span>📄</span>
+
+                <span class="texto-menu">
+                    Documentos
+                </span>
+
+            </a>
+
+
+            <div class="menu-admin-separador"></div>
+
+
+            <a href="#"
+               class="menu-admin-item menu-admin-desabilitado">
+
+                <span>⚙️</span>
+
+                <span class="texto-menu">
+                    Configurações
+                </span>
+
+            </a>
+
+        </nav>
+
+
+        <div class="menu-admin-rodape">
+
+            <a
+                href="/logout"
+                class="menu-admin-item menu-admin-sair">
+
+                <span>🚪</span>
+
+                <span class="texto-menu">
+                    Sair
+                </span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- ================================================= -->
+    <!-- ÁREA PRINCIPAL                                    -->
+    <!-- ================================================= -->
+
+    <main class="conteudo-admin">
+
+
+        <!-- CABEÇALHO -->
+
+        <header class="cabecalho-admin">
+
+
+            <button
+                type="button"
+                class="btn-menu-admin"
+                onclick="alternarMenuAdmin()"
+                aria-label="Abrir ou recolher menu">
+
+                ☰
+
+            </button>
+
+
+            <div class="titulo-cabecalho-admin">
+
+                {% block titulo_pagina %}
+                Área Administrativa
+                {% endblock %}
+
+            </div>
+
+        </header>
+
+
+        <!-- ================================================= -->
+        <!-- CONTEÚDO                                         -->
+        <!-- ================================================= -->
+
+        <div class="container-fluid container-admin">
+
+            {% block conteudo %}
+
+            {% endblock %}
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- FOOTER                                           -->
+        <!-- ================================================= -->
+
+        <footer class="text-center text-secondary py-3 mt-4">
+
+            © 2026 - Brilho Negro
+
+        </footer>
+
+
+    </main>
+
+
+    <!-- ================================================= -->
+    <!-- BOOTSTRAP                                         -->
+    <!-- ================================================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{{ url_for('static', filename='js/wizard.js') }}"></script>
+
+
+    <!-- ================================================= -->
+    <!-- CONTROLE DO MENU                                  -->
+    <!-- ================================================= -->
+
+    <script>
+
+        function alternarMenuAdmin() {
+
+            document
+                .body
+                .classList
+                .toggle("menu-admin-recolhido");
+
+        }
+
+    </script>
+
+</body>
+
+</html>

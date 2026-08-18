@@ -1,4 +1,4 @@
-{% extends 'layout/base.html' %}
+{% extends 'layout/base_admin.html' %}
 
 {% block titulo %}
 Área Administrativa
@@ -80,6 +80,46 @@
 
 }
 
+/* ===================================================== */
+/* CABEÇALHO DO DASHBOARD                                */
+/* ===================================================== */
+
+.dashboard-subtitulo {
+
+    color: #aaa;
+
+    font-size: 0.9rem;
+
+    margin-bottom: 4px;
+
+}
+
+
+.dashboard-status {
+
+    color: #777;
+
+    font-size: 0.75rem;
+
+}
+
+
+.botao-sair {
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.botao-sair a {
+
+    min-width: 90px;
+
+    font-weight: 500;
+
+}
 
 /* ===================================================== */
 /* CARDS DE RESUMO                                       */
@@ -515,7 +555,7 @@
 <!-- ===================================================== -->
 
 <h2 class="titulo text-center">
-    🏠 Painel Administrativo
+    🏠 Dashboard Administrativo
 </h2>
 
 {% if session.get("mensagem_instrumento") %}
@@ -539,174 +579,35 @@
 {% endif %}
 
 <!-- ===================================================== -->
-<!-- MENU ADMINISTRATIVO                                   -->
+<!-- CABEÇALHO DO DASHBOARD                               -->
 <!-- ===================================================== -->
 
 <div class="area-menu-admin mt-4 mb-4">
 
+    <div>
 
-<div class="botoes-admin">
+        <div class="dashboard-subtitulo">
+            Visão geral do sistema
+        </div>
 
-
-    <!-- GESTÃO -->
-
-    <div class="grupo-admin">
-
-        <div class="grupo-admin-titulo">
-            🎺 Gestão
+        <div class="dashboard-status">
+            🟢 Sistema operacional
         </div>
 
     </div>
 
 
-    <a href="/integrantes"
-       class="btn btn-outline-primary">
+    <div class="botao-sair">
 
-        👥 Integrantes
+        <a
+            href="/logout"
+            class="btn btn-outline-danger">
 
-    </a>
+            🚪 Sair
 
-    <button
-        type="button"
-        class="btn btn-outline-warning"
-        data-bs-toggle="modal"
-        data-bs-target="#modalInscricoes">
-
-        📝 Inscrições
-
-    </button>
-
-    <button
-        class="btn btn-outline-light"
-        data-bs-toggle="modal"
-        data-bs-target="#modalCarteirinhas">
-
-        🪪 Carteirinhas
-
-    </button>
-
-
-    <button
-        type="button"
-        class="btn btn-outline-secondary"
-        data-bs-toggle="modal"
-        data-bs-target="#modalInstrumentos">
-
-        🎺 Instrumentos
-
-    </button>
-
-
-    <!-- ORGANIZAÇÃO -->
-
-    <div class="grupo-admin">
-
-        <div class="grupo-admin-titulo">
-            📅 Organização
-        </div>
+        </a>
 
     </div>
-
-
-    <a href="/admin/viagens"
-       class="btn btn-primary">
-
-        🚌 Viagens
-
-    </a>
-
-
-    <button
-        type="button"
-        class="btn btn-outline-info"
-        data-bs-toggle="modal"
-        data-bs-target="#modalTemporadas">
-
-        📅 Temporadas
-
-    </button>
-
-
-    <a href="#"
-       class="btn btn-outline-info disabled">
-
-        📅 Ensaios
-
-    </a>
-
-
-    <!-- FINANCEIRO -->
-
-    <div class="grupo-admin">
-
-        <div class="grupo-admin-titulo">
-            💰 Financeiro
-        </div>
-
-    </div>
-
-
-    <a href="/admin/financeiro"
-       class="btn btn-outline-warning">
-
-        💰 Financeiro
-
-    </a>
-
-
-    <a href="/admin/rifas"
-       class="btn btn-outline-success">
-
-        🎟️ Rifas
-
-    </a>
-
-
-    <!-- RELATÓRIOS -->
-
-    <div class="grupo-admin">
-
-        <div class="grupo-admin-titulo">
-            📊 Relatórios
-        </div>
-
-    </div>
-
-
-    <button
-        class="btn btn-outline-success"
-        data-bs-toggle="modal"
-        data-bs-target="#modalRelatorios">
-
-        📊 Relatórios
-
-    </button>
-
-
-    <a href="#"
-       class="btn btn-outline-secondary disabled">
-
-        📄 Documentos
-
-    </a>
-
-
-</div>
-
-
-<!-- SAIR -->
-
-<div class="botao-sair">
-
-    <a href="/logout"
-       class="btn btn-danger">
-
-        🚪 Sair
-
-    </a>
-
-</div>
-
 
 </div>
 
@@ -1963,191 +1864,6 @@ document
     </div>
 
 </div>
-
-</div>
-
-<!-- ===================================================== -->
-<!-- MODAL DE CONTROLE DAS INSCRIÇÕES                     -->
-<!-- ===================================================== -->
-
-<div
-    class="modal fade"
-    id="modalInscricoes"
-    tabindex="-1"
-    aria-hidden="true">
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content bg-dark text-white">
-
-            <!-- CABEÇALHO -->
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    📝 Controle de Inscrições
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
-
-
-            <!-- FORMULÁRIO -->
-
-            <form
-                method="POST"
-                action="/admin/inscricoes/status">
-
-                <div class="modal-body">
-
-
-                    <!-- STATUS ATUAL -->
-
-                    <div class="text-center mb-4">
-
-                        <div class="text-secondary mb-2">
-                            Status atual
-                        </div>
-
-
-                        {% if status_inscricoes == "ABERTA" %}
-
-                            <span class="badge bg-success fs-6">
-                                🟢 ABERTA
-                            </span>
-
-
-                        {% elif status_inscricoes == "PAUSADA" %}
-
-                            <span class="badge bg-warning text-dark fs-6">
-                                🟡 PAUSADA
-                            </span>
-
-
-                        {% elif status_inscricoes == "FECHADA" %}
-
-                            <span class="badge bg-danger fs-6">
-                                🔴 FECHADA
-                            </span>
-
-                        {% endif %}
-
-                    </div>
-
-
-                    <hr>
-
-
-                    <!-- NOVO STATUS -->
-
-                    <label class="form-label">
-
-                        Alterar status das inscrições
-
-                    </label>
-
-
-                    <select
-                        name="status"
-                        class="form-select"
-                        required>
-
-
-                        <option
-                            value="ABERTA"
-                            {% if status_inscricoes == "ABERTA" %}
-                                selected
-                            {% endif %}>
-
-                            🟢 ABERTA
-
-                        </option>
-
-
-                        <option
-                            value="PAUSADA"
-                            {% if status_inscricoes == "PAUSADA" %}
-                                selected
-                            {% endif %}>
-
-                            🟡 PAUSADA
-
-                        </option>
-
-
-                        <option
-                            value="FECHADA"
-                            {% if status_inscricoes == "FECHADA" %}
-                                selected
-                            {% endif %}>
-
-                            🔴 FECHADA
-
-                        </option>
-
-
-                    </select>
-
-
-                    <!-- EXPLICAÇÃO -->
-
-                    <div class="alert alert-secondary mt-3 mb-0">
-
-                        <strong>🟢 ABERTA</strong>
-                        — permite novos cadastros.
-
-                        <br>
-
-                        <strong>🟡 PAUSADA</strong>
-                        — inscrições temporariamente bloqueadas.
-
-                        <br>
-
-                        <strong>🔴 FECHADA</strong>
-                        — período de inscrições encerrado.
-
-                    </div>
-
-
-                </div>
-
-
-                <!-- RODAPÉ -->
-
-                <div class="modal-footer">
-
-
-                    <button
-                        type="submit"
-                        class="btn btn-success">
-
-                        💾 Salvar Status
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-
-                        Cancelar
-
-                    </button>
-
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
 
 </div>
 
