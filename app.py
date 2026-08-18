@@ -910,9 +910,27 @@ def integrantes():
 
         integrantes = db.execute(
             text("""
-                SELECT *
-                FROM integrantes
-                ORDER BY id DESC
+                SELECT
+                    i.*,
+                    ins.nome AS instrumento_nome
+                FROM integrantes i
+                LEFT JOIN instrumentos ins
+                    ON ins.id = i.instrumento_id
+                ORDER BY i.id DESC
+            """)
+        ).fetchall()
+
+
+        # ==========================================
+        # LISTA DE INSTRUMENTOS
+        # ==========================================
+
+        instrumentos = db.execute(
+            text("""
+                SELECT id, nome
+                FROM instrumentos
+                WHERE ativo = TRUE
+                ORDER BY nome
             """)
         ).fetchall()
 
@@ -955,6 +973,7 @@ def integrantes():
             """)
         ).scalar()
 
+
         ativos = db.execute(
             text("""
                 SELECT COUNT(*)
@@ -977,7 +996,8 @@ def integrantes():
         pendentes=pendentes,
         aprovados=aprovados,
         ativos=ativos,
-        inativos=inativos
+        inativos=inativos,
+        instrumentos=instrumentos
     )
 
 @app.route("/admin/integrante/<int:id>")
@@ -1822,6 +1842,7 @@ def exportar_pdf():
     status_filtro = request.args.get("status")
     situacao_filtro = request.args.get("situacao")
     funcao_filtro = request.args.get("funcao")
+    instrumento_filtro = request.args.get("instrumento")
 
     condicoes = []
     parametros = {}
@@ -1829,7 +1850,7 @@ def exportar_pdf():
     if status_filtro:
 
         condicoes.append(
-            "status = :status"
+            "integrantes.status = :status"
         )
 
         parametros["status"] = status_filtro
@@ -1837,7 +1858,7 @@ def exportar_pdf():
     if situacao_filtro:
 
         condicoes.append(
-            "situacao = :situacao"
+            "integrantes.situacao = :situacao"
         )
 
         parametros["situacao"] = situacao_filtro
@@ -1845,10 +1866,18 @@ def exportar_pdf():
     if funcao_filtro:
 
         condicoes.append(
-            "funcao = :funcao"
+            "integrantes.funcao = :funcao"
         )
 
         parametros["funcao"] = funcao_filtro
+
+    if instrumento_filtro:
+
+        condicoes.append(
+            "integrantes.instrumento_id = :instrumento"
+        )
+
+        parametros["instrumento"] = instrumento_filtro
 
     where = ""
 
@@ -1866,21 +1895,25 @@ def exportar_pdf():
 
             SELECT
 
-                codigo_integrante,
-                nome,
-                cpf,
-                data_nascimento,
-                cidade,
-                estado,
-                status,
-                situacao,
-                funcao
+                integrantes.codigo_integrante,
+                integrantes.nome,
+                integrantes.cpf,
+                integrantes.data_nascimento,
+                integrantes.cidade,
+                integrantes.estado,
+                integrantes.status,
+                integrantes.situacao,
+                integrantes.funcao,
+                instrumentos.nome AS instrumento
 
             FROM integrantes
 
+            LEFT JOIN instrumentos
+                ON instrumentos.id = integrantes.instrumento_id
+
             {where}
 
-            ORDER BY LOWER(nome)
+            ORDER BY LOWER(integrantes.nome)
 
         """),
 
@@ -1889,8 +1922,6 @@ def exportar_pdf():
     ).mappings().all()
 
     total_apresentado = len(integrantes)
-
-    db.close()
 
     # ==============================
     # DISTRIBUIÇÃO POR FUNÇÃO
@@ -2106,6 +2137,31 @@ def exportar_pdf():
             f"<b>Função:</b> {funcao_filtro}"
         )
 
+    # ==============================
+    # NOME DO INSTRUMENTO
+    # ==============================
+
+    if instrumento_filtro:
+
+        instrumento_nome = db.execute(
+
+            text("""
+                SELECT nome
+                FROM instrumentos
+                WHERE id = :id
+            """),
+
+            {
+                "id": instrumento_filtro
+            }
+
+        ).scalar()
+
+        filtros_html.append(
+            f"<b>Instrumento:</b> "
+            f"{instrumento_nome or instrumento_filtro}"
+        )
+
     if not filtros_html:
 
         filtros_html.append(
@@ -2115,6 +2171,9 @@ def exportar_pdf():
     texto_filtros = "<br/>".join(
         filtros_html
     )
+
+    # Agora podemos fechar o banco
+    db.close()
 
     # ==============================
     # RESUMO DOS RESULTADOS
@@ -2575,6 +2634,11 @@ def exportar_pdf():
             ),
 
             Paragraph(
+                "Instrumento",
+                estilo_cabecalho
+            ),
+
+            Paragraph(
                 "Status",
                 estilo_cabecalho
             )
@@ -2676,6 +2740,15 @@ def exportar_pdf():
 
                 Paragraph(
 
+                    pessoa["instrumento"]
+                    or "-",
+
+                    estilo_centro
+
+                ),
+
+                Paragraph(
+
                     pessoa["status"]
                     or "-",
 
@@ -2697,13 +2770,14 @@ def exportar_pdf():
 
         colWidths=[
 
-            50,
-            130,
-            80,
-            70,
-            80,
-            70,
-            55
+            45,   # Código
+            120,  # Integrante
+            70,   # CPF
+            65,   # Data nascimento
+            75,   # Cidade/UF
+            60,   # Função
+            75,   # Instrumento
+            50    # Status
 
         ],
 

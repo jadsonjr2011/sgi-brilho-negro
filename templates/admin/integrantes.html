@@ -142,7 +142,7 @@ Integrantes Cadastrados
 
     <!-- PESQUISA -->
 
-    <div class="col-md-6 mb-3">
+    <div class="col-md-4 mb-3">
 
         <label class="form-label">
             🔎 Pesquisar integrante
@@ -152,7 +152,7 @@ Integrantes Cadastrados
             type="text"
             id="pesquisaIntegrante"
             class="form-control"
-            placeholder="Digite nome, código, cidade ou função..."
+            placeholder="Digite nome, código, cidade, função ou instrumento..."
             onkeyup="filtrarIntegrantes()">
 
     </div>
@@ -251,6 +251,35 @@ Integrantes Cadastrados
 
     </div>
 
+    <!-- INSTRUMENTO -->
+
+    <div class="col-md-2 mb-3">
+
+        <label class="form-label">
+            Instrumento
+        </label>
+
+        <select
+            id="filtroInstrumento"
+            class="form-select"
+            onchange="filtrarIntegrantes()">
+
+            <option value="">
+            Todos
+            </option>
+
+            {% for instrumento in instrumentos %}
+
+                <option value="{{ instrumento.nome }}">
+                    {{ instrumento.nome }}
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+    </div>
+
 </div>
 
 
@@ -322,7 +351,8 @@ Integrantes Cadastrados
                 class="linha-integrante"
                 data-status="{{ pessoa.status }}"
                 data-situacao="{{ pessoa.situacao }}"
-                data-funcao="{{ pessoa.funcao or '' }}">
+                data-funcao="{{ pessoa.funcao or '' }}"
+                data-instrumento="{{ pessoa.instrumento_nome or '' }}">
 
                 <!-- CÓDIGO -->
 
@@ -497,6 +527,10 @@ function filtrarIntegrantes() {
         .getElementById("filtroFuncao")
         .value;
 
+    const filtroInstrumento = document
+        .getElementById("filtroInstrumento")
+        .value;    
+
 
     const linhas = document.querySelectorAll(
         ".linha-integrante"
@@ -515,6 +549,7 @@ function filtrarIntegrantes() {
 
         const funcao = linha.dataset.funcao;
 
+        const instrumento = linha.dataset.instrumento;
 
         const correspondePesquisa =
             texto.includes(pesquisa);
@@ -534,12 +569,17 @@ function filtrarIntegrantes() {
             filtroFuncao === "" ||
             funcao === filtroFuncao;
 
+        const correspondeInstrumento =
+            filtroInstrumento === "" ||
+            instrumento === filtroInstrumento;    
+
 
         if (
             correspondePesquisa &&
             correspondeStatus &&
             correspondeSituacao &&
-            correspondeFuncao
+            correspondeFuncao &&
+            correspondeInstrumento
         ) {
 
             linha.style.display = "";

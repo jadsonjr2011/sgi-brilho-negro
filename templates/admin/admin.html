@@ -1320,7 +1320,7 @@
 
 
                 <!-- ================================================= -->
-                <!-- FILTROS                                            -->
+                <!-- FILTROS                                          -->
                 <!-- ================================================= -->
 
                 <div class="row">
@@ -1330,9 +1330,7 @@
                     <div class="col-md-4 mb-3">
 
                         <label class="form-label">
-
                             Status Cadastro
-
                         </label>
 
                         <select
@@ -1365,9 +1363,7 @@
                     <div class="col-md-4 mb-3">
 
                         <label class="form-label">
-
                             Situação
-
                         </label>
 
                         <select
@@ -1396,9 +1392,7 @@
                     <div class="col-md-4 mb-3">
 
                         <label class="form-label">
-
                             Função
-
                         </label>
 
                         <select
@@ -1412,9 +1406,7 @@
                             {% for valor, nome in funcoes_banda %}
 
                                 <option value="{{ valor }}">
-
                                     {{ nome }}
-
                                 </option>
 
                             {% endfor %}
@@ -1423,23 +1415,55 @@
 
                     </div>
 
-                </div>
 
-                <!-- ================================================= -->
-                <!-- EXCLUIR FUNÇÃO                                    -->
-                <!-- ================================================= -->
+                    <!-- ================================================= -->
+                    <!-- INSTRUMENTO - SOMENTE INTEGRANTES                 -->
+                    <!-- ================================================= -->
 
-                <div
-                    class="row"
-                    id="campoExcluirFuncao"
-                    style="display: none;">
-
-                    <div class="col-md-4 mb-3">
+                    <div
+                        class="col-md-4 mb-3"
+                        id="campoInstrumento">
 
                         <label class="form-label">
+                            Instrumento
+                        </label>
 
+                        <select
+                            id="filtroInstrumento"
+                            class="form-select">
+
+                            <option value="">
+                                Todos
+                            </option>
+
+                            {% for instrumento in instrumentos %}
+
+                                {% if instrumento.ativo %}
+
+                                    <option value="{{ instrumento.id }}">
+                                        {{ instrumento.nome }}
+                                    </option>
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- EXCLUIR FUNÇÃO - SOMENTE CALÇADOS                 -->
+                    <!-- ================================================= -->
+
+                    <div
+                        id="campoExcluirFuncao"
+                        style="display: none;"
+                        class="col-md-4 mb-3">
+
+                        <label class="form-label">
                             🚫 Excluir Função
-
                         </label>
 
                         <select
@@ -1460,9 +1484,9 @@
 
                         </select>
 
-                    </div>            
+                    </div>
 
-            </div>
+                </div>
 
 
             <!-- ===================================================== -->
@@ -1538,6 +1562,10 @@ function exportarRelatorioPDF() {
         "filtroFuncao"
     ).value;
 
+    const instrumento = document.getElementById(
+        "filtroInstrumento"
+    ).value;
+
     const excluirFuncao = document.getElementById(
         "filtroExcluirFuncao"
     ).value;
@@ -1604,6 +1632,15 @@ function exportarRelatorioPDF() {
 
     }
 
+    if (instrumento && tipo === "integrantes") {
+
+        parametros.append(
+            "instrumento",
+            instrumento
+        );
+
+    }
+
     if (excluirFuncao && tipo === "calcados") {
 
         parametros.append(
@@ -1658,6 +1695,11 @@ document
                     "campoExcluirFuncao"
                 );
 
+            const campoInstrumento =
+                document.getElementById(
+                    "campoInstrumento"
+                );    
+
 
             if (this.value === "calcados") {
 
@@ -1665,7 +1707,9 @@ document
 
                 calcados.style.display = "block";
 
-                campoExcluir.style.display = "flex";
+                campoExcluir.style.display = "block";
+
+                campoInstrumento.style.display = "none";
 
             }
 
@@ -1676,6 +1720,8 @@ document
                 calcados.style.display = "none";
 
                 campoExcluir.style.display = "none";
+
+                campoInstrumento.style.display = "block";
 
             }
 
