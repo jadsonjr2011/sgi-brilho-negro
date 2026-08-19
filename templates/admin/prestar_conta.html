@@ -93,8 +93,26 @@ Prestação de Conta
 <hr>
 
 
+{% if vendedor.data_prestacao %}
+
+<div class="alert alert-warning">
+
+    🔒 <strong>Prestação já iniciada</strong>
+
+    <br>
+
+    Os números vendidos e devolvidos já foram definidos.
+
+    <br>
+
+    Nesta etapa, informe somente o valor desta nova prestação.
+
+</div>
+
+{% else %}
+
 <h4>
-🎫 Selecione os números vendidos
+    🎫 Selecione os números vendidos
 </h4>
 
 <p class="text-secondary">
@@ -107,6 +125,8 @@ Prestação de Conta
 
 </p>
 
+{% endif %}
+
 
 <div class="row">
 
@@ -116,8 +136,9 @@ Prestação de Conta
 <div class="col-6 col-md-3 col-lg-2 mb-3">
 
     <label
-        class="card bg-dark text-white border-secondary p-3 text-center"
-        style="cursor:pointer;">
+        class="card bg-dark text-white border-secondary p-3 text-center
+            {% if vendedor.data_prestacao %}numero-bloqueado{% endif %}"
+        style="cursor: {% if vendedor.data_prestacao %}not-allowed{% else %}pointer{% endif %};">
 
         <input
             type="checkbox"
@@ -128,6 +149,10 @@ Prestação de Conta
 
             {% if numero.status == "VENDIDO" %}
                 checked
+            {% endif %}
+
+            {% if vendedor.data_prestacao %}
+                disabled
             {% endif %}
         >
 
@@ -210,17 +235,18 @@ Prestação de Conta
 
         <div class="alert alert-info">
 
-            💵 <b>Valor entregue</b>
+            💵 <b>Total já entregue</b>
 
             <br>
 
             R$
 
-            <span id="valorDevido">
+            <span id="valorEntregue">
+
                 {{ "%.2f"|format(
-                    (vendedor.quantidade_vendida or 0)
-                    * vendedor.valor_numero
-                ) }}
+                    vendedor.valor_entregue or 0
+                )|replace(".", ",") }}
+
             </span>
 
         </div>
@@ -264,9 +290,7 @@ Prestação de Conta
 <div class="mb-3">
 
     <label class="form-label">
-
-        💵 Valor entregue
-
+        💵 Valor desta prestação
     </label>
 
     <input
@@ -274,8 +298,12 @@ Prestação de Conta
         class="form-control"
         name="valor_entregue"
         placeholder="0,00"
-        value="{{ "%.2f"|format(vendedor.valor_entregue or 0) }}"
+        value=""
     >
+
+    <small class="text-secondary">
+        Informe somente o valor entregue nesta prestação.
+    </small>
 
 </div>
 
@@ -358,12 +386,33 @@ Prestação de Conta
 
 </form>
 
+<style>
+
+.numero-bloqueado {
+
+    opacity: 0.65;
+
+    cursor: not-allowed !important;
+
+}
+
+
+.numero-bloqueado input {
+
+    pointer-events: none;
+
+}
+
+</style>
 
 <script>
 
 const checkboxes = document.querySelectorAll(
     ".numero-vendido"
 );
+
+const prestacaoJaIniciada =
+    {{ "true" if vendedor.data_prestacao else "false" }};
 
 const valorNumero = Number(
     "{{ vendedor.valor_numero }}"
@@ -372,26 +421,91 @@ const valorNumero = Number(
 
 function atualizarResumo() {
 
+    const prestacaoJaIniciada =
+        {{ "true" if vendedor.data_prestacao else "false" }};
+
+
     let vendidos = 0;
 
+    let devolvidos = 0;
 
-    checkboxes.forEach(function(checkbox) {
-
-        if (checkbox.checked) {
-
-            vendidos++;
-
-        }
-
-    });
+    let valor = 0;
 
 
-    let total = checkboxes.length;
+    // ==========================================
+    // PRIMEIRA PRESTAÇÃO
+    // ==========================================
 
-    let devolvidos = total - vendidos;
+    if (!prestacaoJaIniciada) {
 
-    let valor = vendidos * valorNumero;
+        checkboxes.forEach(function(checkbox) {
 
+            if (checkbox.checked) {
+
+                vendidos++;
+
+            }
+
+        });
+
+
+        let total = checkboxes.length;
+
+        devolvidos = total - vendidos;
+
+        valor = vendidos * valorNumero;
+
+    }
+
+
+    // ==========================================
+    // PRESTAÇÃO JÁ INICIADA
+    // ==========================================
+
+    else {
+
+        vendidos =
+            Number(
+                "{{ vendedor.quantidade_vendida or 0 }}"
+            );
+
+        devolvidos =
+            Number(
+                "{{ vendedor.quantidade_devolvida or 0 }}"
+            );
+
+        valor =
+            vendidos * valorNumero;
+
+    }
+
+
+    // ==========================================
+    // VALOR JÁ ENTREGUE
+    // ==========================================
+
+    let valorJaEntregue = Number(
+        "{{ vendedor.valor_entregue or 0 }}"
+    );
+
+
+    // ==========================================
+    // SALDO
+    // ==========================================
+
+    let saldo = valor - valorJaEntregue;
+
+
+    if (saldo < 0) {
+
+        saldo = 0;
+
+    }
+
+
+    // ==========================================
+    // ATUALIZAR RESUMOS
+    // ==========================================
 
     document.getElementById(
         "totalVendidos"
@@ -410,9 +524,9 @@ function atualizarResumo() {
 
 
     document.getElementById(
-        "valorDevido"
+        "saldoPendente"
     ).innerText =
-        valor.toFixed(2).replace(".", ",");
+        saldo.toFixed(2).replace(".", ",");
 
 
     document.getElementById(
@@ -437,7 +551,17 @@ checkboxes.forEach(function(checkbox) {
 
     checkbox.addEventListener(
         "change",
-        atualizarResumo
+        function() {
+
+            if (prestacaoJaIniciada) {
+
+                return;
+
+            }
+
+            atualizarResumo();
+
+        }
     );
 
 });

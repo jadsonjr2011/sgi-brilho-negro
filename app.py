@@ -30,7 +30,7 @@ from datetime import datetime, date
 from zoneinfo import ZoneInfo
 from database import SessionLocal
 from sqlalchemy import text
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from collections import Counter
 
 import os
@@ -52,6 +52,107 @@ cloudinary.config(
 
 app = Flask(__name__)
 app.secret_key = "brilho_negro_2026"
+
+# =====================================================
+# CONTROLE DE ACESSO POR PERFIL
+# =====================================================
+
+PERMISSOES_PERFIS = {
+
+    "ADMIN": {
+        "admin",
+        "integrantes",
+        "inscricoes",
+        "carteirinhas",
+        "instrumentos",
+        "patrimonio",
+        "ensaios",
+        "viagens",
+        "rifas",
+        "financeiro",
+        "temporadas",
+        "relatorios",
+        "usuarios",
+        "configuracoes",
+    },
+
+    "GESTAO": {
+        "admin",
+        "integrantes",
+        "inscricoes",
+        "carteirinhas",
+        "instrumentos",
+        "patrimonio",
+        "ensaios",
+        "viagens",
+        "rifas",
+        "financeiro",
+        "temporadas",
+        "relatorios",
+    },
+
+    "OPERADOR": {
+        "admin",
+        "integrantes",
+        "inscricoes",
+        "carteirinhas",
+        "instrumentos",
+        "patrimonio",
+        "ensaios",
+        "viagens",
+        "rifas",
+    },
+
+    "CONSULTA": {
+        "admin",
+        "integrantes",
+        "carteirinhas",
+        "instrumentos",
+        "patrimonio",
+        "relatorios",
+    }
+
+}
+
+
+def usuario_tem_permissao(modulo):
+
+    if "usuario_id" not in session:
+        return False
+
+    perfil = session.get("perfil")
+
+    permissoes = PERMISSOES_PERFIS.get(perfil, set())
+
+    return modulo in permissoes
+
+from functools import wraps
+
+
+def requer_permissao(modulo):
+
+    def decorator(func):
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+
+            # Usuário não está logado
+            if "usuario_id" not in session:
+
+                return redirect("/login")
+
+
+            # Usuário sem permissão
+            if not usuario_tem_permissao(modulo):
+
+                return redirect("/admin")
+
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 @app.template_filter('moeda')
 def moeda(valor):
@@ -215,15 +316,14 @@ def cadastro():
 
         db.close()
 
-@app.route("/login", methods=["GET","POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
 
     if request.method == "POST":
 
-        usuario = request.form["usuario"]
+        usuario = request.form["usuario"].strip()
 
         senha = request.form["senha"]
-
 
         db = SessionLocal()
 
@@ -231,7 +331,13 @@ def login():
 
             resultado = db.execute(
                 text("""
-                    SELECT usuario, senha
+                    SELECT
+                        id,
+                        usuario,
+                        senha,
+                        nome,
+                        perfil,
+                        ativo
                     FROM usuarios
                     WHERE usuario = :usuario
                 """),
@@ -241,28 +347,65 @@ def login():
             ).fetchone()
 
 
-            if resultado:
+            # ==========================================
+            # USUÁRIO NÃO ENCONTRADO
+            # ==========================================
 
-                senha_banco = resultado.senha
+            if not resultado:
 
-
-                if check_password_hash(
-                    senha_banco,
-                    senha
-                ):
-
-                    session["admin"] = True
-                    session["usuario"] = usuario
+                return render_template(
+                    "admin/login.html",
+                    erro="Usuário ou senha inválidos"
+                )
 
 
-                    return redirect("/admin")
+            # ==========================================
+            # VERIFICAR SENHA
+            # ==========================================
+
+            if not check_password_hash(
+                resultado.senha,
+                senha
+            ):
+
+                return render_template(
+                    "admin/login.html",
+                    erro="Usuário ou senha inválidos"
+                )
 
 
+            # ==========================================
+            # VERIFICAR USUÁRIO ATIVO
+            # ==========================================
 
-            return render_template(
-                "admin/login.html",
-                erro="Usuário ou senha inválidos"
-            )
+            if not resultado.ativo:
+
+                return render_template(
+                    "admin/login.html",
+                    erro="Este usuário está inativo."
+                )
+
+
+            # ==========================================
+            # CRIAR SESSÃO
+            # ==========================================
+
+            session["admin"] = True
+
+            session["usuario"] = resultado.usuario
+
+            session["usuario_id"] = resultado.id
+
+            session["nome_usuario"] = resultado.nome
+
+            session["perfil"] = resultado.perfil
+
+
+            # ==========================================
+            # ENTRAR NO DASHBOARD
+            # ==========================================
+
+            return redirect("/admin")
 
 
         finally:
@@ -270,7 +413,303 @@ def login():
             db.close()
 
 
-    return render_template("admin/login.html")
+    return render_template(
+        "admin/login.html"
+    )
+
+@app.route("/admin/usuarios")
+def usuarios_admin():
+
+    if not usuario_tem_permissao("usuarios"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        usuarios = db.execute(
+            text("""
+                SELECT
+                    id,
+                    usuario,
+                    nome,
+                    perfil,
+                    ativo,
+                    criado_em
+                FROM usuarios
+                ORDER BY nome
+            """)
+        ).fetchall()
+
+        return render_template(
+            "admin/usuarios.html",
+            usuarios=usuarios
+        )
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/usuarios/novo", methods=["POST"])
+def novo_usuario():
+
+    if not usuario_tem_permissao("usuarios"):
+        return redirect("/admin")
+
+    nome = request.form.get("nome", "").strip()
+    usuario = request.form.get("usuario", "").strip()
+    senha = request.form.get("senha", "")
+    perfil = request.form.get("perfil", "").strip()
+    ativo = request.form.get("ativo") == "on"
+
+    # ==========================================
+    # VALIDAÇÕES
+    # ==========================================
+
+    if not nome or not usuario or not senha or not perfil:
+
+        return redirect("/admin/usuarios")
+
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # VERIFICAR SE USUÁRIO JÁ EXISTE
+        # ==========================================
+
+        existente = db.execute(
+            text("""
+                SELECT id
+                FROM usuarios
+                WHERE LOWER(usuario) = LOWER(:usuario)
+            """),
+            {
+                "usuario": usuario
+            }
+        ).fetchone()
+
+
+        if existente:
+
+            return redirect("/admin/usuarios")
+
+
+        # ==========================================
+        # CRIPTOGRAFAR SENHA
+        # ==========================================
+
+        senha_hash = generate_password_hash(senha)
+
+
+        # ==========================================
+        # CADASTRAR
+        # ==========================================
+
+        db.execute(
+            text("""
+                INSERT INTO usuarios (
+                    usuario,
+                    senha,
+                    nome,
+                    perfil,
+                    ativo,
+                    criado_em
+                )
+                VALUES (
+                    :usuario,
+                    :senha,
+                    :nome,
+                    :perfil,
+                    :ativo,
+                    CURRENT_TIMESTAMP
+                )
+            """),
+            {
+                "usuario": usuario,
+                "senha": senha_hash,
+                "nome": nome,
+                "perfil": perfil,
+                "ativo": ativo
+            }
+        )
+
+
+        db.commit()
+
+
+        return redirect("/admin/usuarios")
+
+
+    except Exception:
+
+        db.rollback()
+
+        raise
+
+
+    finally:
+
+        db.close()            
+
+@app.route("/admin/usuarios/<int:id>/status", methods=["POST"])
+def alterar_status_usuario(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        usuario = db.execute(
+            text("""
+                SELECT id, ativo
+                FROM usuarios
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()
+
+        if not usuario:
+            return redirect("/admin/usuarios")
+
+        # Inverte o status atual
+        novo_status = not usuario.ativo
+
+        db.execute(
+            text("""
+                UPDATE usuarios
+                SET ativo = :ativo
+                WHERE id = :id
+            """),
+            {
+                "ativo": novo_status,
+                "id": id
+            }
+        )
+
+        db.commit()
+
+        return redirect("/admin/usuarios")
+
+    except Exception:
+
+        db.rollback()
+
+        raise
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/usuarios/<int:id>/editar", methods=["POST"])
+def editar_usuario(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    nome = request.form.get("nome", "").strip()
+    usuario = request.form.get("usuario", "").strip()
+    perfil = request.form.get("perfil", "").strip()
+    senha = request.form.get("senha", "")
+
+    if not nome or not usuario or not perfil:
+        return redirect("/admin/usuarios")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # VERIFICAR SE OUTRO USUÁRIO USA O MESMO LOGIN
+        # ==========================================
+
+        existente = db.execute(
+            text("""
+                SELECT id
+                FROM usuarios
+                WHERE LOWER(usuario) = LOWER(:usuario)
+                AND id <> :id
+            """),
+            {
+                "usuario": usuario,
+                "id": id
+            }
+        ).fetchone()
+
+        if existente:
+            return redirect("/admin/usuarios")
+
+
+        # ==========================================
+        # ATUALIZAR SEM TROCAR SENHA
+        # ==========================================
+
+        if not senha:
+
+            db.execute(
+                text("""
+                    UPDATE usuarios
+                    SET
+                        nome = :nome,
+                        usuario = :usuario,
+                        perfil = :perfil
+                    WHERE id = :id
+                """),
+                {
+                    "nome": nome,
+                    "usuario": usuario,
+                    "perfil": perfil,
+                    "id": id
+                }
+            )
+
+
+        # ==========================================
+        # ATUALIZAR COM NOVA SENHA
+        # ==========================================
+
+        else:
+
+            senha_hash = generate_password_hash(senha)
+
+            db.execute(
+                text("""
+                    UPDATE usuarios
+                    SET
+                        nome = :nome,
+                        usuario = :usuario,
+                        perfil = :perfil,
+                        senha = :senha
+                    WHERE id = :id
+                """),
+                {
+                    "nome": nome,
+                    "usuario": usuario,
+                    "perfil": perfil,
+                    "senha": senha_hash,
+                    "id": id
+                }
+            )
+
+
+        db.commit()
+
+        return redirect("/admin/usuarios")
+
+    except Exception:
+
+        db.rollback()
+
+        raise
+
+    finally:
+
+        db.close()
 
 @app.route("/logout")
 def logout():
@@ -284,6 +723,11 @@ def admin():
 
     if "admin" not in session:
         return redirect("/login")
+
+    if not session.get("usuario_id"):
+        session.clear()
+        return redirect("/login")
+
 
     mensagem_instrumento = request.args.get(
         "instrumento_msg"
@@ -517,8 +961,8 @@ def admin():
 @app.route("/admin/patrimonio")
 def patrimonio():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("patrimonio"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -594,7 +1038,7 @@ def patrimonio():
 @app.route("/admin/instrumentos/novo", methods=["POST"])
 def novo_instrumento():
 
-    if "admin" not in session:
+    if not usuario_tem_permissao("instrumentos"):
         return jsonify({
             "sucesso": False,
             "mensagem": "Não autorizado."
@@ -705,7 +1149,7 @@ def novo_instrumento():
 @app.route("/admin/instrumentos/<int:id>/editar", methods=["POST"])
 def editar_instrumento(id):
 
-    if "admin" not in session:
+    if not usuario_tem_permissao("instrumentos"):
         return jsonify({
             "sucesso": False,
             "mensagem": "Não autorizado."
@@ -840,7 +1284,7 @@ def editar_instrumento(id):
 @app.route("/admin/instrumentos/<int:id>/alternar", methods=["POST"])
 def alternar_instrumento(id):
 
-    if "admin" not in session:
+    if not usuario_tem_permissao("instrumentos"):
         return jsonify({
             "sucesso": False,
             "mensagem": "Não autorizado."
@@ -977,8 +1421,11 @@ def alternar_instrumento(id):
 @app.route("/integrantes")
 def integrantes():
 
-    if "admin" not in session:
+    if "usuario_id" not in session:
         return redirect("/login")
+
+    if not usuario_tem_permissao("integrantes"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -1144,8 +1591,8 @@ def ver_integrante(id):
 @app.route("/admin/inscricoes/status", methods=["POST"])
 def alterar_status_inscricoes():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("inscricoes"):
+        return redirect("/admin")
 
     novo_status = request.form.get("status")
 
@@ -1199,8 +1646,8 @@ def alterar_status_inscricoes():
 @app.route("/admin/inscricoes")
 def admin_inscricoes():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("inscricoes"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4217,8 +4664,8 @@ def exportar_excel():
 @app.route("/admin/viagens")
 def viagens():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4312,8 +4759,8 @@ def viagens():
 @app.route("/admin/viagens/nova", methods=["POST"])
 def nova_viagem():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -4363,8 +4810,8 @@ def nova_viagem():
 @app.route("/admin/viagem/<int:id>/integrantes")
 def integrantes_viagem(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -4452,8 +4899,8 @@ def integrantes_viagem(id):
 @app.route("/admin/viagem/<int:id>/integrantes/salvar", methods=["POST"])
 def salvar_integrantes_viagem(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -4509,8 +4956,8 @@ def salvar_integrantes_viagem(id):
 )
 def remover_integrante_viagem(viagem_id, integrante_id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4541,8 +4988,8 @@ def remover_integrante_viagem(viagem_id, integrante_id):
 @app.route("/admin/viagem/<int:id>")
 def detalhe_viagem(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4591,8 +5038,8 @@ def detalhe_viagem(id):
 @app.route("/admin/viagem/<int:id>/documentos")
 def documentos_viagem(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
     return gerar_documentos_viagem(id)
 
@@ -4601,8 +5048,8 @@ def documentos_viagem(id):
 )
 def termo_individual_viagem(viagem_id, integrante_id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
 
     return gerar_documentos_viagem(
         viagem_id,
@@ -4614,8 +5061,8 @@ def termo_individual_viagem(viagem_id, integrante_id):
 @app.route("/admin/financeiro")
 def financeiro():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -4657,9 +5104,8 @@ def financeiro():
 @app.route("/admin/financeiro/nova", methods=["GET","POST"])
 def nova_movimentacao():
 
-    if "admin" not in session:
-        return redirect("/login")
-
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4726,8 +5172,8 @@ def nova_movimentacao():
 @app.route("/admin/financeiro/movimentacoes")
 def movimentacoes_financeiro():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -4840,9 +5286,8 @@ def movimentacoes_financeiro():
 @app.route("/admin/financeiro/excluir/<int:id>", methods=["POST"])
 def excluir_movimentacao_financeiro(id):
 
-    if "admin" not in session:
-        return redirect("/login")
-
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4868,9 +5313,8 @@ def excluir_movimentacao_financeiro(id):
 @app.route("/admin/financeiro/prestacao")
 def prestacao_financeira():
 
-    if "admin" not in session:
-        return redirect("/login")
-
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -4967,8 +5411,8 @@ def prestacao_financeira():
 @app.route("/admin/rifas")
 def rifas():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -5035,9 +5479,8 @@ def rifas():
 @app.route("/admin/rifas/nova", methods=["GET","POST"])
 def nova_rifa():
 
-    if "admin" not in session:
-        return redirect("/login")
-
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -5122,8 +5565,8 @@ def nova_rifa():
 @app.route("/admin/rifas/<int:id>/editar", methods=["POST"])
 def editar_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -5334,8 +5777,8 @@ def nova_temporada():
 @app.route("/admin/rifas/excluir/<int:id>", methods=["POST"])
 def excluir_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -5357,8 +5800,8 @@ def excluir_rifa(id):
 @app.route("/admin/rifas/<int:id>")
 def detalhes_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -5640,8 +6083,8 @@ def detalhes_rifa(id):
 @app.route("/admin/rifas/<int:id>/vendedores")
 def vendedores_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -5883,8 +6326,8 @@ def vendedores_rifa(id):
 @app.route("/admin/rifas/<int:rifa_id>/exportar/pdf/vendedores")
 def exportar_pdf_vendedores(rifa_id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -6948,8 +7391,8 @@ def exportar_pdf_vendedores(rifa_id):
 @app.route("/admin/rifas/<int:rifa_id>/vendedores", methods=["POST"])
 def salvar_vendedores_rifa(rifa_id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -6972,8 +7415,10 @@ def salvar_vendedores_rifa(rifa_id):
             }
         ).mappings().fetchone()
 
+
         if not rifa:
             return "Rifa não encontrada", 404
+
 
         # ==========================================
         # VERIFICAR STATUS DA RIFA
@@ -6984,6 +7429,7 @@ def salvar_vendedores_rifa(rifa_id):
             return redirect(
                 f"/admin/rifas/{rifa_id}?erro=rifa_finalizada"
             )
+
 
         # ==========================================
         # INTEGRANTES SELECIONADOS
@@ -7021,11 +7467,21 @@ def salvar_vendedores_rifa(rifa_id):
                 f"quantidade_{integrante_id}"
             )
 
+
             if not quantidade:
                 continue
 
 
-            quantidade = int(quantidade)
+            try:
+
+                quantidade = int(quantidade)
+
+            except ValueError:
+
+                return (
+                    f"Quantidade inválida para o integrante "
+                    f"{integrante_id}."
+                ), 400
 
 
             if quantidade <= 0:
@@ -7040,8 +7496,12 @@ def salvar_vendedores_rifa(rifa_id):
                 text("""
                     SELECT
                         id,
-                        quantidade_numeros
+                        quantidade_numeros,
+                        status_prestacao,
+                        data_prestacao
+
                     FROM rifas_integrantes
+
                     WHERE rifa_id = :rifa_id
                     AND integrante_id = :integrante_id
                 """),
@@ -7059,22 +7519,46 @@ def salvar_vendedores_rifa(rifa_id):
             if existente:
 
                 quantidade_atual = (
-                    existente.quantidade_numeros or 0
+                    existente["quantidade_numeros"] or 0
                 )
 
 
-                # ----------------------------------
+                # ==================================
+                # PRESTAÇÃO JÁ INICIADA
+                # ==================================
+
+                if existente["data_prestacao"] is not None:
+
+                    # Depois que a prestação começou,
+                    # a quantidade não pode mais mudar.
+
+                    if quantidade != quantidade_atual:
+
+                        return (
+                            "Este vendedor já iniciou a "
+                            "prestação de conta e a quantidade "
+                            "de números não pode mais ser alterada."
+                        ), 400
+
+
+                    # Quantidade igual:
+                    # não faz nada.
+
+                    continue
+
+
+                # ==================================
                 # JÁ POSSUI A QUANTIDADE SOLICITADA
-                # ----------------------------------
+                # ==================================
 
                 if quantidade <= quantidade_atual:
 
                     continue
 
 
-                # ----------------------------------
+                # ==================================
                 # AUMENTOU A QUANTIDADE
-                # ----------------------------------
+                # ==================================
 
                 quantidade_nova = (
                     quantidade
@@ -7083,28 +7567,29 @@ def salvar_vendedores_rifa(rifa_id):
                 )
 
 
-                # Atualiza a quantidade distribuída
+                # ==================================
+                # ATUALIZAR QUANTIDADE DO VENDEDOR
+                # ==================================
 
                 db.execute(
                     text("""
                         UPDATE rifas_integrantes
 
                         SET
-                            quantidade_numeros =
-                                :quantidade
+                            quantidade_numeros = :quantidade
 
                         WHERE id = :id
                     """),
                     {
                         "quantidade": quantidade,
-                        "id": existente.id
+                        "id": existente["id"]
                     }
                 )
 
 
-                # ----------------------------------
+                # ==================================
                 # GERAR SOMENTE OS NOVOS NÚMEROS
-                # ----------------------------------
+                # ==================================
 
                 for _ in range(quantidade_nova):
 
@@ -7152,7 +7637,11 @@ def salvar_vendedores_rifa(rifa_id):
                         integrante_id,
                         quantidade_numeros,
                         quantidade_vendida,
+                        quantidade_devolvida,
+                        valor_devido,
+                        valor_entregue,
                         valor_recebido,
+                        saldo_pendente,
                         status,
                         status_prestacao
                     )
@@ -7162,6 +7651,10 @@ def salvar_vendedores_rifa(rifa_id):
                         :rifa_id,
                         :integrante_id,
                         :quantidade,
+                        0,
+                        0,
+                        0,
+                        0,
                         0,
                         0,
                         'ATIVO',
@@ -7239,22 +7732,30 @@ def salvar_vendedores_rifa(rifa_id):
 @app.route("/admin/rifas/vendedor/<int:id>/remover")
 def remover_vendedor_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
     try:
+
+        # ==========================================
+        # BUSCAR VENDEDOR
+        # ==========================================
 
         vendedor = db.execute(
             text("""
                 SELECT
                     ri.id,
                     ri.rifa_id,
+                    ri.integrante_id,
                     r.status AS status_rifa
+
                 FROM rifas_integrantes ri
+
                 JOIN rifas r
                     ON r.id = ri.rifa_id
+
                 WHERE ri.id = :id
             """),
             {
@@ -7262,18 +7763,56 @@ def remover_vendedor_rifa(id):
             }
         ).mappings().first()
 
+
         if not vendedor:
+
             return "Vendedor não encontrado", 404
 
+
+        # ==========================================
+        # VERIFICAR STATUS DA RIFA
+        # ==========================================
+
         if vendedor["status_rifa"] != "ATIVA":
+
             return (
                 "Esta rifa está finalizada "
                 "e não permite remover vendedores."
             ), 400
 
+
+        # ==========================================
+        # LIBERAR NÚMEROS DO VENDEDOR
+        # ==========================================
+
+        db.execute(
+            text("""
+                UPDATE rifas_numeros
+
+                SET
+                    status = 'DISPONIVEL',
+                    integrante_id = NULL,
+                    data_venda = NULL,
+                    observacao = NULL
+
+                WHERE rifa_id = :rifa_id
+                AND integrante_id = :integrante_id
+            """),
+            {
+                "rifa_id": vendedor["rifa_id"],
+                "integrante_id": vendedor["integrante_id"]
+            }
+        )
+
+
+        # ==========================================
+        # REMOVER VINCULO DO VENDEDOR
+        # ==========================================
+
         db.execute(
             text("""
                 DELETE FROM rifas_integrantes
+
                 WHERE id = :id
             """),
             {
@@ -7281,15 +7820,23 @@ def remover_vendedor_rifa(id):
             }
         )
 
+
+        # ==========================================
+        # SALVAR
+        # ==========================================
+
         db.commit()
 
+
         return redirect(request.referrer)
+
 
     except Exception as e:
 
         db.rollback()
 
         return f"Erro: {e}"
+
 
     finally:
 
@@ -7298,8 +7845,8 @@ def remover_vendedor_rifa(id):
 @app.route("/admin/rifas/vendedor/<int:id>/prestacao")
 def prestacao_vendedor(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
 
     db = SessionLocal()
@@ -7401,8 +7948,8 @@ def api_integrante(id):
 @app.route("/admin/rifas/vendedor/<int:id>/prestar-conta")
 def prestar_conta(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -7507,7 +8054,6 @@ def prestar_conta(id):
 
         db.close()
 
- 
 @app.route("/admin/rifas/vendedor/<int:id>/prestar-conta", methods=["POST"])
 def salvar_prestacao(id):
 
@@ -7887,8 +8433,8 @@ def salvar_prestacao(id):
 @app.route("/admin/rifas/<int:id>/finalizar", methods=["POST"])
 def finalizar_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -8018,8 +8564,8 @@ def finalizar_rifa(id):
 @app.route("/admin/rifas/<int:id>/numeros")
 def numeros_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -8197,8 +8743,8 @@ def numeros_rifa(id):
 @app.route("/admin/rifas/<int:id>/sortear", methods=["POST"])
 def sortear_rifa(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -8347,8 +8893,8 @@ def sortear_rifa(id):
 @app.route("/admin/rifas/<int:id>/gerar-pdf")
 def gerar_pdf_rifa_admin(id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -8429,8 +8975,8 @@ def gerar_pdf_rifa_admin(id):
 @app.route("/admin/rifas/<int:rifa_id>/vendedor/<int:integrante_id>/gerar-pdf")
 def gerar_pdf_rifa_vendedor(rifa_id, integrante_id):
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("rifas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 
@@ -8555,8 +9101,8 @@ def gerar_pdf_rifa_vendedor(rifa_id, integrante_id):
 @app.route("/admin/carteirinhas")
 def admin_carteirinhas():
 
-    if "admin" not in session:
-        return redirect("/login")
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
 
     db = SessionLocal()
 

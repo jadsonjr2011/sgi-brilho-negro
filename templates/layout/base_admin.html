@@ -46,7 +46,14 @@
 
         <nav class="menu-admin">
 
-            <a href="/admin" class="menu-admin-item">
+
+            <!-- ================================================= -->
+            <!-- DASHBOARD                                         -->
+            <!-- ================================================= -->
+
+            <a
+                href="/admin"
+                class="menu-admin-item">
 
                 <span>🏠</span>
 
@@ -54,153 +61,258 @@
                     Dashboard
                 </span>
 
-            </a>
-
-
-            <a href="/integrantes" class="menu-admin-item">
-
-                <span>👥</span>
-
-                <span class="texto-menu">
-                    Integrantes
-                </span>
-
-            </a>
-
-            <a href="/admin/inscricoes" class="menu-admin-item">
-
-                <span>📝</span>
-
-                <span class="texto-menu">
-                    Inscrições
-                </span>
-
-            </a>
-
-            <a
-                href="/admin/carteirinhas"
-                class="menu-admin-item">
-
-                <span>🪪</span>
-
-                <span class="texto-menu">
-                    Carteirinhas
-                </span>
-
-            </a>
-
-            <a
-                href="/admin/temporadas"
-                class="menu-admin-item">
-
-                <span>📅</span>
-
-                <span class="texto-menu">
-                    Temporadas
-                </span>
-
-            </a>   
-
-            <a href="/admin/viagens" class="menu-admin-item">
-
-                <span>🚌</span>
-
-                <span class="texto-menu">
-                    Viagens
-                </span>
-
-            </a>
-
-
-            <a href="/admin/rifas" class="menu-admin-item">
-
-                <span>🎟️</span>
-
-                <span class="texto-menu">
-                    Rifas
-                </span>
-
-            </a>
-
-
-            <a href="/admin/patrimonio" class="menu-admin-item">
-
-                <span>📦</span>
-
-                <span class="texto-menu">
-                    Patrimônio
-                </span>
-
-            </a>
-
-
-            <a
-                href="/admin/financeiro"
-                class="menu-admin-item">
-
-                <span>💰</span>
-
-                <span class="texto-menu">
-                    Financeiro
-                </span>
-
-            </a>
-
-            <a
-                href="/admin/relatorios"
-                class="menu-admin-item">
-
-                <span>📊</span>
-
-                <span class="texto-menu">
-                    Relatórios
-                </span>
-
             </a>            
 
-            <a
-                href="#"
-                class="menu-admin-item disabled"
-                style="opacity: 0.5; cursor: not-allowed;"
-                onclick="return false;">
 
-                <span>🎶</span>
+            <!-- ================================================= -->
+            <!-- INTEGRANTES                                      -->
+            <!-- ================================================= -->
 
-                <span class="texto-menu">
-                    Ensaios
-                </span>
+            <div class="menu-admin-grupo">
 
-            </a>
+                <div class="menu-admin-titulo">
+                    👥 INTEGRANTES
+                </div>
 
 
-            <a
-                href="#"
-                class="menu-admin-item disabled"
-                style="opacity: 0.5; cursor: not-allowed;"
-                onclick="return false;">
+                <a
+                    href="/integrantes"
+                    class="menu-admin-item">
 
-                <span>📄</span>
+                    <span>👥</span>
 
-                <span class="texto-menu">
-                    Documentos
-                </span>
+                    <span class="texto-menu">
+                        Integrantes
+                    </span>
 
-            </a>
+                </a>
 
 
-            <div class="menu-admin-separador"></div>
+                <a
+                    href="/admin/inscricoes"
+                    class="menu-admin-item">
+
+                    <span>📝</span>
+
+                    <span class="texto-menu">
+                        Inscrições
+                    </span>
+
+                </a>
 
 
-            <a href="#"
-               class="menu-admin-item menu-admin-desabilitado">
+                <a
+                    href="/admin/carteirinhas"
+                    class="menu-admin-item">
 
-                <span>⚙️</span>
+                    <span>🪪</span>
 
-                <span class="texto-menu">
-                    Configurações
-                </span>
+                    <span class="texto-menu">
+                        Carteirinhas
+                    </span>
 
-            </a>
+                </a>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- BANDA                                             -->
+            <!-- ================================================= -->
+
+            <div class="menu-admin-grupo">
+
+                <div class="menu-admin-titulo">
+                    🎺 BANDA
+                </div>
+
+
+                <a
+                    href="/admin/instrumentos"
+                    class="menu-admin-item">
+
+                    <span>🎺</span>
+
+                    <span class="texto-menu">
+                        Instrumentos
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/admin/patrimonio"
+                    class="menu-admin-item">
+
+                    <span>📦</span>
+
+                    <span class="texto-menu">
+                        Patrimônio
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-admin-item disabled"
+                    style="opacity: 0.5; cursor: not-allowed;"
+                    onclick="return false;">
+
+                    <span>🎶</span>
+
+                    <span class="texto-menu">
+                        Ensaios
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- OPERAÇÕES                                         -->
+            <!-- ================================================= -->
+
+            <div class="menu-admin-grupo">
+
+                <div class="menu-admin-titulo">
+                    🚌 OPERAÇÕES
+                </div>
+
+
+                <a
+                    href="/admin/viagens"
+                    class="menu-admin-item">
+
+                    <span>🚌</span>
+
+                    <span class="texto-menu">
+                        Viagens
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/admin/rifas"
+                    class="menu-admin-item">
+
+                    <span>🎟️</span>
+
+                    <span class="texto-menu">
+                        Rifas
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- FINANCEIRO                                        -->
+            <!-- ================================================= -->
+
+            <div class="menu-admin-grupo">
+
+                <div class="menu-admin-titulo">
+                    💰 FINANCEIRO
+                </div>
+
+
+                <a
+                    href="/admin/financeiro"
+                    class="menu-admin-item">
+
+                    <span>💰</span>
+
+                    <span class="texto-menu">
+                        Financeiro
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- GESTÃO                                            -->
+            <!-- ================================================= -->
+
+            <div class="menu-admin-grupo">
+
+                <div class="menu-admin-titulo">
+                    📊 GESTÃO
+                </div>
+
+
+                <a
+                    href="/admin/temporadas"
+                    class="menu-admin-item">
+
+                    <span>📅</span>
+
+                    <span class="texto-menu">
+                        Temporadas
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="/admin/relatorios"
+                    class="menu-admin-item">
+
+                    <span>📊</span>
+
+                    <span class="texto-menu">
+                        Relatórios
+                    </span>
+
+                </a>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- ADMINISTRAÇÃO                                     -->
+            <!-- ================================================= -->
+
+                <div class="menu-admin-grupo">
+
+                <div class="menu-admin-titulo">
+                    ⚙️ ADMINISTRAÇÃO
+                </div>
+
+
+                <a
+                    href="/admin/usuarios"
+                    class="menu-admin-item">
+
+                    <span>👤</span>
+
+                    <span class="texto-menu">
+                        Usuários
+                    </span>
+
+                </a>
+
+
+                <a
+                    href="#"
+                    class="menu-admin-item menu-admin-desabilitado"
+                    onclick="return false;">
+
+                    <span>⚙️</span>
+
+                    <span class="texto-menu">
+                        Configurações
+                    </span>
+
+                </a>
+
+            </div>
+
 
         </nav>
 
