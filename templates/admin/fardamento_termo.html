@@ -1,0 +1,641 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Termo de Fardamento
+{% endblock %}
+
+{% block titulo_pagina %}
+👕 Termo de Fardamento
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+.termo-header {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+
+}
+
+.termo-card {
+
+    background: rgba(255,255,255,0.04);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+
+}
+
+.info-box {
+
+    padding: 14px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.03);
+
+    border: 1px solid rgba(255,255,255,0.07);
+
+}
+
+.info-label {
+
+    display: block;
+
+    color: #888;
+
+    font-size: 0.75rem;
+
+    text-transform: uppercase;
+
+    margin-bottom: 3px;
+
+}
+
+.info-value {
+
+    font-weight: 600;
+
+}
+
+.item-card {
+
+    padding: 15px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.025);
+
+    margin-bottom: 10px;
+
+}
+
+.item-card:last-child {
+
+    margin-bottom: 0;
+
+}
+
+.status-termo {
+
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 0.75rem;
+
+    font-weight: 600;
+
+}
+
+.status-emitido {
+
+    background: rgba(25,135,84,0.15);
+
+    color: #4ade80;
+
+}
+
+.status-devolvido {
+
+    background: rgba(255,193,7,0.15);
+
+    color: #facc15;
+
+}
+
+.status-outro {
+
+    background: rgba(108,117,125,0.15);
+
+    color: #aaa;
+
+}
+
+</style>
+
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                             -->
+<!-- ===================================================== -->
+
+<div class="termo-header">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+            👕 Termo de Fardamento
+        </h2>
+
+        <div class="text-secondary">
+
+            Visualização dos dados da entrega registrada.
+
+        </div>
+
+    </div>
+
+
+    <div class="d-flex gap-2">
+
+        <a
+            href="/admin/fardamento/entregas"
+            class="btn btn-secondary">
+
+            ← Voltar
+
+        </a>
+
+
+        <a
+            href="/admin/fardamento/termo/{{ termo.id }}/pdf"
+            class="btn btn-danger">
+
+            📄 Gerar PDF
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- DADOS DO TERMO                                        -->
+<!-- ===================================================== -->
+
+<div class="termo-card">
+
+    <h5 class="mb-3">
+        📋 Informações do Termo
+    </h5>
+
+
+    <div class="row g-3">
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Termo
+                </span>
+
+                <span class="info-value">
+                    {{ termo.numero_termo }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Tipo
+                </span>
+
+                <span class="info-value">
+
+                    {% if termo.tipo == "ENTREGA" %}
+
+                        👕 Entrega
+
+                    {% elif termo.tipo == "DEVOLUCAO" %}
+
+                        ↩️ Devolução
+
+                    {% else %}
+
+                        {{ termo.tipo }}
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Data de emissão
+                </span>
+
+                <span class="info-value">
+
+                    {% if termo.data_emissao %}
+
+                        {{ termo.data_emissao.strftime('%d/%m/%Y') }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Status
+                </span>
+
+                {% if termo.status == "EMITIDO" %}
+
+                    <span class="status-termo status-emitido">
+                        🟢 EMITIDO
+                    </span>
+
+                {% elif termo.status == "DEVOLVIDO" %}
+
+                    <span class="status-termo status-devolvido">
+                        🟡 DEVOLVIDO
+                    </span>
+
+                {% else %}
+
+                    <span class="status-termo status-outro">
+                        {{ termo.status or '-' }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- INTEGRANTE                                            -->
+<!-- ===================================================== -->
+
+<div class="termo-card">
+
+    <h5 class="mb-3">
+        👤 Integrante
+    </h5>
+
+
+    <div class="row g-3">
+
+        <div class="col-md-5">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Nome
+                </span>
+
+                <span class="info-value">
+                    {{ termo.integrante_nome }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Matrícula
+                </span>
+
+                <span class="info-value">
+                    {{ termo.codigo_integrante or '-' }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Função
+                </span>
+
+                <span class="info-value">
+                    {{ termo.funcao or '-' }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Calçado cadastro
+                </span>
+
+                <span class="info-value">
+                    {{ termo.calcado or '-' }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- TEMPORADA                                             -->
+<!-- ===================================================== -->
+
+<div class="termo-card">
+
+    <h5 class="mb-3">
+        📅 Temporada
+    </h5>
+
+
+    <div class="row g-3">
+
+        <div class="col-md-6">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Temporada
+                </span>
+
+                <span class="info-value">
+                    {{ termo.temporada_nome }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Ano
+                </span>
+
+                <span class="info-value">
+                    {{ termo.temporada_ano or '-' }}
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- ITENS                                                 -->
+<!-- ===================================================== -->
+
+<div class="termo-card">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h5 class="mb-0">
+            📦 Itens Entregues
+        </h5>
+
+        <span class="badge bg-primary">
+            {{ itens|length }} item{% if itens|length != 1 %}s{% endif %}
+        </span>
+
+    </div>
+
+
+    {% if itens %}
+
+        {% for item in itens %}
+
+        <div class="item-card">
+
+            <div class="row align-items-center g-3">
+
+                <div class="col-md-4">
+
+                    <span class="info-label">
+                        Item
+                    </span>
+
+                    <strong>
+                        {% if item.item_tipo == "CALCADO" %}
+                            👟
+                        {% else %}
+                            👕
+                        {% endif %}
+
+                        {{ item.item_nome }}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <span class="info-label">
+                        Tipo
+                    </span>
+
+                    {{ item.item_tipo or '-' }}
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <span class="info-label">
+                        Tamanho cadastro
+                    </span>
+
+                    {{ item.tamanho_cadastro or '-' }}
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <span class="info-label">
+                        Tamanho entregue
+                    </span>
+
+                    <strong>
+                        {{ item.tamanho_entregue or '-' }}
+                    </strong>
+
+                </div>
+
+
+                <div class="col-md-2">
+
+                    <span class="info-label">
+                        Quantidade
+                    </span>
+
+                    <strong>
+                        {{ item.quantidade }}
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            {% if item.estado_entrega %}
+
+            <div class="mt-3">
+
+                <span class="info-label">
+                    Estado da entrega
+                </span>
+
+                {% if item.estado_entrega == "NOVO" %}
+
+                    <span class="badge bg-success">
+                        🟢 Novo
+                    </span>
+
+                {% elif item.estado_entrega == "BOM" %}
+
+                    <span class="badge bg-primary">
+                        🔵 Bom
+                    </span>
+
+                {% elif item.estado_entrega == "USADO" %}
+
+                    <span class="badge bg-warning text-dark">
+                        🟡 Usado
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-secondary">
+                        {{ item.estado_entrega }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="text-center text-secondary py-4">
+
+            📦 Nenhum item registrado neste termo.
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- OBSERVAÇÃO                                            -->
+<!-- ===================================================== -->
+
+{% if termo.observacao %}
+
+<div class="termo-card">
+
+    <h5 class="mb-3">
+        📝 Observação
+    </h5>
+
+    <div class="info-box">
+
+        {{ termo.observacao }}
+
+    </div>
+
+</div>
+
+{% endif %}
+
+
+<!-- ===================================================== -->
+<!-- RODAPÉ                                                -->
+<!-- ===================================================== -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <a
+        href="/admin/fardamento/entregas"
+        class="btn btn-secondary">
+
+        ← Voltar para entregas
+
+    </a>
+
+
+    <a
+        href="/admin/fardamento/termo/{{ termo.id }}/pdf"
+        class="btn btn-danger">
+
+        📄 Gerar PDF
+
+    </a>
+
+</div>
+
+
+{% endblock %}

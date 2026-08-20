@@ -1,0 +1,1022 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Termos de Fardamento
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ===================================================== */
+/* CABEÇALHO                                             */
+/* ===================================================== */
+
+.termos-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+
+}
+
+.termos-subtitulo {
+
+    color: #999;
+
+    font-size: 0.9rem;
+
+}
+
+
+/* ===================================================== */
+/* CARD PRINCIPAL                                        */
+/* ===================================================== */
+
+.termos-card {
+
+    background: rgba(255, 255, 255, 0.04);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+}
+
+
+/* ===================================================== */
+/* TABELA                                                */
+/* ===================================================== */
+
+.termos-card table {
+
+    margin-bottom: 0;
+
+}
+
+.termos-card th {
+
+    color: #888;
+
+    font-size: 0.75rem;
+
+    text-transform: uppercase;
+
+    font-weight: 600;
+
+}
+
+.termos-card td {
+
+    vertical-align: middle;
+
+}
+
+
+/* ===================================================== */
+/* STATUS                                                */
+/* ===================================================== */
+
+.status-termo {
+
+    display: inline-block;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 0.75rem;
+
+    font-weight: 600;
+
+}
+
+.status-ativo {
+
+    background: rgba(25, 135, 84, 0.15);
+
+    color: #4ade80;
+
+}
+
+.status-encerrado {
+
+    background: rgba(108, 117, 125, 0.15);
+
+    color: #aaa;
+
+}
+
+
+/* ===================================================== */
+/* MODAL                                                 */
+/* ===================================================== */
+
+.modal-content {
+
+    border: 1px solid rgba(255,255,255,0.1);
+
+}
+
+
+/* ===================================================== */
+/* BLOCO DO INTEGRANTE                                   */
+/* ===================================================== */
+
+.integrante-info {
+
+    padding: 15px;
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.04);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    margin-top: 15px;
+
+}
+
+.integrante-info strong {
+
+    color: #fff;
+
+}
+
+.integrante-info small {
+
+    color: #999;
+
+}
+
+
+/* ===================================================== */
+/* ITENS                                                 */
+/* ===================================================== */
+
+.item-entrega {
+
+    padding: 12px;
+
+    margin-bottom: 8px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,0.025);
+
+}
+
+.item-entrega:last-child {
+
+    margin-bottom: 0;
+
+}
+
+
+/* ===================================================== */
+/* RESPONSIVO                                            */
+/* ===================================================== */
+
+@media (max-width: 768px) {
+
+    .termos-header {
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+    }
+
+}
+
+</style>
+
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                             -->
+<!-- ===================================================== -->
+
+<div class="termos-header">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+            👕 Termos de Fardamento
+        </h2>
+
+        <div class="termos-subtitulo">
+            Controle de entrega, devolução e posse de fardamentos e calçados.
+        </div>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="btn btn-success"
+        data-bs-toggle="modal"
+        data-bs-target="#modalNovoTermo">
+
+        ➕ Nova Entrega
+
+    </button>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- LISTA DE TERMOS                                       -->
+<!-- ===================================================== -->
+
+<div class="termos-card">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h5 class="mb-0">
+            📋 Termos registrados
+        </h5>
+
+        <span class="badge bg-secondary">
+
+            {{ termos|length }}
+
+            termo{% if termos|length != 1 %}s{% endif %}
+
+        </span>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Termo
+                    </th>
+
+                    <th>
+                        Integrante
+                    </th>
+
+                    <th>
+                        Tipo
+                    </th>
+
+                    <th>
+                        Emissão
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th class="text-end">
+                        Ações
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for termo in termos %}
+
+                <tr>
+
+                    <td>
+
+                        <strong>
+                            {{ termo.numero_termo }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ termo.integrante_nome }}
+                        </strong>
+
+                        <div class="small text-secondary">
+
+                            Matrícula:
+                            {{ termo.codigo_integrante }}
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        {% if termo.tipo == "ENTREGA" %}
+
+                            👕 Entrega
+
+                        {% elif termo.tipo == "DEVOLUCAO" %}
+
+                            ↩️ Devolução
+
+                        {% else %}
+
+                            {{ termo.tipo }}
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {{ termo.data_emissao.strftime('%d/%m/%Y') }}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if termo.status == "ATIVO" %}
+
+                            <span class="status-termo status-ativo">
+                                🟢 Ativo
+                            </span>
+
+                        {% else %}
+
+                            <span class="status-termo status-encerrado">
+                                ⚪ {{ termo.status }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="text-end">
+
+                        <a
+                            href="{{ url_for('ver_termo_fardamento', id=termo.id) }}"
+                            class="btn btn-sm btn-outline-light">
+
+                            👁️ Ver
+
+                        </a>
+
+                        <a
+                            href="{{ url_for('ver_termo_fardamento', id=termo.id) }}"
+                            class="btn btn-sm btn-outline-danger">
+
+                            📄 PDF
+
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="text-center text-secondary py-5">
+
+                        <div style="font-size: 2rem;">
+                            👕
+                        </div>
+
+                        <div class="mt-2">
+
+                            Nenhum termo registrado.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- MODAL NOVO TERMO                                      -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalNovoTermo"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- ================================================= -->
+            <!-- CABEÇALHO                                        -->
+            <!-- ================================================= -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    👕 Nova Entrega de Fardamento
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CORPO                                             -->
+            <!-- ================================================= -->
+
+            <div class="modal-body">
+
+
+                <!-- ================================================= -->
+                <!-- INTEGRANTE                                      -->
+                <!-- ================================================= -->
+
+                <h6 class="mb-3">
+
+                    👤 Integrante
+
+                </h6>
+
+
+                <label class="form-label">
+
+                    Selecione o integrante
+
+                </label>
+
+
+                <select
+                    id="integranteTermo"
+                    class="form-select">
+
+                    <option value="">
+                        Selecione...
+                    </option>
+
+
+                    {% for integrante in integrantes %}
+
+                    <option
+                        value="{{ integrante.id }}"
+                        data-nome="{{ integrante.nome }}"
+                        data-codigo="{{ integrante.codigo_integrante }}"
+                        data-funcao="{{ integrante.funcao or '' }}"
+                        data-calcado="{{ integrante.calcado or '' }}">
+
+                        {{ integrante.nome }}
+
+                        {% if integrante.codigo_integrante %}
+                            — {{ integrante.codigo_integrante }}
+                        {% endif %}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <!-- ================================================= -->
+                <!-- INFORMAÇÕES                                      -->
+                <!-- ================================================= -->
+
+                <div
+                    id="infoIntegrante"
+                    class="integrante-info"
+                    style="display:none;">
+
+                    <div class="row">
+
+                        <div class="col-md-5">
+
+                            <small>
+                                Integrante
+                            </small>
+
+                            <br>
+
+                            <strong id="infoNome">
+                                -
+                            </strong>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <small>
+                                Matrícula
+                            </small>
+
+                            <br>
+
+                            <strong id="infoCodigo">
+                                -
+                            </strong>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <small>
+                                Função
+                            </small>
+
+                            <br>
+
+                            <strong id="infoFuncao">
+                                -
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- TEMPORADA                                        -->
+                <!-- ================================================= -->
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            📅 Temporada
+
+                        </label>
+
+
+                        <select
+                            id="temporadaTermo"
+                            class="form-select">
+
+                            <option value="">
+                                Selecione...
+                            </option>
+
+
+                            {% for temporada in temporadas %}
+
+                            <option value="{{ temporada.id }}">
+
+                                {{ temporada.nome }}
+
+                                {% if temporada.status == "ATIVA" %}
+                                    🟢
+                                {% endif %}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+
+                            📅 Data da entrega
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            id="dataEntrega"
+                            class="form-control"
+                            value="{{ today if today is defined else '' }}">
+
+                    </div>
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- CALÇADO                                          -->
+                <!-- ================================================= -->
+
+                <h6 class="mb-3">
+
+                    👟 Calçado
+
+                </h6>
+
+
+                <div class="item-entrega">
+
+                    <div class="row align-items-end">
+
+                        <div class="col-md-5">
+
+                            <label class="form-label">
+
+                                Item
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                value="Tênis"
+                                readonly>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <label class="form-label">
+
+                                Tamanho cadastrado
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="calcadoCadastro"
+                                class="form-control"
+                                readonly>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <label class="form-label">
+
+                                Tamanho entregue
+
+                            </label>
+
+                            <input
+                                type="text"
+                                id="calcadoEntregue"
+                                class="form-control">
+
+                        </div>
+
+
+                        <div class="col-md-1">
+
+                            <label class="form-label">
+
+                                Qtd.
+
+                            </label>
+
+                            <input
+                                type="number"
+                                id="quantidadeCalcado"
+                                class="form-control"
+                                value="1"
+                                min="0">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- FARDAMENTO                                       -->
+                <!-- ================================================= -->
+
+                <h6 class="mb-3 mt-4">
+
+                    👕 Fardamento
+
+                </h6>
+
+
+                <div id="listaFardamento">
+
+                    {% for item in itens_fardamento %}
+
+                        {% if item.tipo == "FARDAMENTO" %}
+
+                        <div class="item-entrega">
+
+                            <div class="row align-items-end">
+
+                                <div class="col-md-7">
+
+                                    <label class="form-label">
+
+                                        {{ item.nome }}
+
+                                    </label>
+
+                                    <input
+                                        type="hidden"
+                                        value="{{ item.id }}"
+                                        class="item-id">
+
+                                </div>
+
+
+                                <div class="col-md-3">
+
+                                    <label class="form-label">
+
+                                        Quantidade
+
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        class="form-control quantidade-item"
+                                        value="0"
+                                        min="0">
+
+                                </div>
+
+
+                                <div class="col-md-2">
+
+                                    <div class="form-check mb-2">
+
+                                        <input
+                                            type="checkbox"
+                                            class="form-check-input incluir-item">
+
+                                        <label class="form-check-label">
+
+                                            Entregar
+
+                                        </label>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- OBSERVAÇÃO                                       -->
+                <!-- ================================================= -->
+
+                <label class="form-label">
+
+                    📝 Observação
+
+                </label>
+
+
+                <textarea
+                    id="observacaoTermo"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Observações sobre a entrega..."></textarea>
+
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- RODAPÉ                                            -->
+            <!-- ================================================= -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    id="btnSalvarTermo">
+
+                    💾 Registrar Entrega
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT                                           -->
+<!-- ===================================================== -->
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        const selectIntegrante =
+            document.getElementById(
+                "integranteTermo"
+            );
+
+
+        const infoIntegrante =
+            document.getElementById(
+                "infoIntegrante"
+            );
+
+
+        const infoNome =
+            document.getElementById(
+                "infoNome"
+            );
+
+
+        const infoCodigo =
+            document.getElementById(
+                "infoCodigo"
+            );
+
+
+        const infoFuncao =
+            document.getElementById(
+                "infoFuncao"
+            );
+
+
+        const calcadoCadastro =
+            document.getElementById(
+                "calcadoCadastro"
+            );
+
+
+        const calcadoEntregue =
+            document.getElementById(
+                "calcadoEntregue"
+            );
+
+
+        selectIntegrante.addEventListener(
+            "change",
+            function () {
+
+
+                const opcao =
+                    this.options[
+                        this.selectedIndex
+                    ];
+
+
+                if (!this.value) {
+
+                    infoIntegrante.style.display =
+                        "none";
+
+                    calcadoCadastro.value =
+                        "";
+
+                    calcadoEntregue.value =
+                        "";
+
+                    return;
+
+                }
+
+
+                const nome =
+                    opcao.dataset.nome || "";
+
+
+                const codigo =
+                    opcao.dataset.codigo || "";
+
+
+                const funcao =
+                    opcao.dataset.funcao || "";
+
+
+                const calcado =
+                    opcao.dataset.calcado || "";
+
+
+                infoNome.textContent =
+                    nome;
+
+
+                infoCodigo.textContent =
+                    codigo || "-";
+
+
+                infoFuncao.textContent =
+                    funcao || "-";
+
+
+                calcadoCadastro.value =
+                    calcado || "Não informado";
+
+
+                /*
+                 * IMPORTANTE:
+                 *
+                 * O tamanho entregue recebe
+                 * inicialmente o tamanho cadastrado.
+                 *
+                 * Se o administrador alterar aqui,
+                 * NÃO alteraremos o cadastro do integrante.
+                 */
+
+                calcadoEntregue.value =
+                    calcado;
+
+
+                infoIntegrante.style.display =
+                    "block";
+
+            }
+
+        );
+
+    }
+
+);
+
+</script>
+
+
+{% endblock %}

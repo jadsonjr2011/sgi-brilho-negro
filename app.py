@@ -4,6 +4,7 @@ from openpyxl.styles import Font, Alignment
 from urllib.parse import quote
 from flask import send_file
 from io import BytesIO
+from utils.pdf_fardamento import gerar_pdf_fardamento
 from utils.pdf_carteirinha import (
     gerar_pdf_carteirinha,
     gerar_pdf_todas_carteirinhas
@@ -65,6 +66,7 @@ PERMISSOES_PERFIS = {
         "inscricoes",
         "carteirinhas",
         "instrumentos",
+        "fardamento",
         "patrimonio",
         "ensaios",
         "viagens",
@@ -82,6 +84,7 @@ PERMISSOES_PERFIS = {
         "inscricoes",
         "carteirinhas",
         "instrumentos",
+        "fardamento",
         "patrimonio",
         "ensaios",
         "viagens",
@@ -97,6 +100,7 @@ PERMISSOES_PERFIS = {
         "inscricoes",
         "carteirinhas",
         "instrumentos",
+        "fardamento",
         "patrimonio",
         "ensaios",
         "viagens",
@@ -108,6 +112,7 @@ PERMISSOES_PERFIS = {
         "integrantes",
         "carteirinhas",
         "instrumentos",
+        "fardamento",
         "patrimonio",
         "relatorios",
     }
@@ -957,6 +962,1229 @@ def admin():
         tipo_mensagem_instrumento=tipo_mensagem_instrumento,
         abrir_instrumentos=abrir_instrumentos
     )
+
+@app.route("/admin/termos")
+def termos_admin():
+
+    if not usuario_tem_permissao("fardamento"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # TERMOS CADASTRADOS
+        # ==========================================
+
+        termos = db.execute(
+            text("""
+                SELECT
+                    t.id,
+                    t.numero_termo,
+                    t.tipo,
+                    t.data_emissao,
+                    t.status,
+
+                    i.id AS integrante_id,
+                    i.codigo_integrante,
+                    i.nome AS integrante_nome,
+
+                    te.nome AS temporada_nome
+
+                FROM termos t
+
+                INNER JOIN integrantes i
+                    ON i.id = t.integrante_id
+
+                LEFT JOIN temporadas te
+                    ON te.id = t.temporada_id
+
+                ORDER BY
+                    t.data_emissao DESC,
+                    t.id DESC
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # INTEGRANTES DISPONÍVEIS
+        # ==========================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    id,
+                    codigo_integrante,
+                    nome,
+                    calcado,
+                    funcao
+
+                FROM integrantes
+
+                WHERE status = 'APROVADO'
+                  AND situacao = 'ATIVO'
+
+                ORDER BY nome
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # ITENS DE FARDAMENTO
+        # ==========================================
+
+        itens_fardamento = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    tipo,
+                    ativo
+
+                FROM itens_fardamento
+
+                WHERE ativo = TRUE
+
+                ORDER BY
+                    tipo,
+                    nome
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # TEMPORADAS
+        # ==========================================
+
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano,
+                    status
+
+                FROM temporadas
+
+                ORDER BY ano DESC
+            """)
+        ).mappings().all()
+
+
+        return render_template(
+            "admin/termos.html",
+            termos=termos,
+            integrantes=integrantes,
+            itens_fardamento=itens_fardamento,
+            temporadas=temporadas
+        )
+
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/fardamento")
+def fardamento_admin():
+
+    if not usuario_tem_permissao("fardamento"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # INTEGRANTES APROVADOS E ATIVOS
+        # ==========================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.codigo_integrante,
+                    i.nome,
+                    i.calcado,
+                    i.funcao,
+                    i.situacao
+                FROM integrantes i
+                WHERE i.status = 'APROVADO'
+                  AND i.situacao = 'ATIVO'
+                ORDER BY i.nome
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # ITENS DE FARDAMENTO
+        # ==========================================
+
+        itens_fardamento = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    tipo,
+                    ativo
+                FROM itens_fardamento
+                WHERE ativo = TRUE
+                ORDER BY tipo, nome
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # TEMPORADAS
+        # ==========================================
+
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano,
+                    status
+                FROM temporadas
+                ORDER BY ano DESC
+            """)
+        ).mappings().all()
+
+
+        return render_template(
+            "admin/fardamento.html",
+            integrantes=integrantes,
+            itens_fardamento=itens_fardamento,
+            temporadas=temporadas
+        )
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/fardamento/salvar", methods=["POST"])
+def salvar_fardamento():
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    dados = request.get_json(silent=True)
+
+
+    if not dados:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Dados da entrega não recebidos."
+        }), 400
+
+
+    integrante_id = dados.get("integrante_id")
+    temporada_id = dados.get("temporada_id")
+    itens = dados.get("itens", [])
+    observacao = dados.get("observacao", "").strip()
+
+
+    # =====================================================
+    # VALIDAR INTEGRANTE
+    # =====================================================
+
+    if not integrante_id:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Selecione um integrante."
+        }), 400
+
+
+    # =====================================================
+    # VALIDAR TEMPORADA
+    # =====================================================
+
+    if not temporada_id:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Selecione uma temporada."
+        }), 400
+
+
+    # =====================================================
+    # VALIDAR ITENS
+    # =====================================================
+
+    if not itens:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Adicione pelo menos um item."
+        }), 400
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        # =================================================
+        # VALIDAR INTEGRANTE NO BANCO
+        # =================================================
+
+        integrante = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    codigo_integrante
+                FROM integrantes
+                WHERE id = :id
+                  AND status = 'APROVADO'
+                  AND situacao = 'ATIVO'
+            """),
+            {
+                "id": integrante_id
+            }
+        ).mappings().first()
+
+
+        if not integrante:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Integrante não encontrado ou não está ativo."
+            }), 400
+
+
+        # =================================================
+        # VALIDAR TEMPORADA
+        # =================================================
+
+        temporada = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano
+                FROM temporadas
+                WHERE id = :id
+            """),
+            {
+                "id": temporada_id
+            }
+        ).mappings().first()
+
+
+        if not temporada:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Temporada não encontrada."
+            }), 400
+
+
+        # =================================================
+        # VALIDAR ITENS
+        # =================================================
+
+        itens_validos = []
+
+
+        for item in itens:
+
+            item_id = item.get("item_id")
+            quantidade = item.get("quantidade")
+
+
+            if not item_id:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Existe um item sem identificação."
+                }), 400
+
+
+            try:
+
+                quantidade = int(quantidade)
+
+            except (TypeError, ValueError):
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Quantidade inválida."
+                }), 400
+
+
+            if quantidade <= 0:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "A quantidade deve ser maior que zero."
+                }), 400
+
+
+            # =============================================
+            # BUSCAR ITEM REAL NO BANCO
+            # =============================================
+
+            item_banco = db.execute(
+                text("""
+                    SELECT
+                        id,
+                        nome,
+                        tipo
+                    FROM itens_fardamento
+                    WHERE id = :id
+                      AND ativo = TRUE
+                """),
+                {
+                    "id": item_id
+                }
+            ).mappings().first()
+
+
+            if not item_banco:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Um dos itens selecionados não está disponível."
+                }), 400
+
+
+            itens_validos.append({
+
+                "item_id":
+                    item_banco["id"],
+
+                "nome":
+                    item_banco["nome"],
+
+                "tipo":
+                    item_banco["tipo"],
+
+                "tamanho_cadastro":
+                    item.get("tamanho_cadastro") or None,
+
+                "tamanho_entregue":
+                    item.get("tamanho_entregue") or None,
+
+                "quantidade":
+                    quantidade,
+
+                "estado_entrega":
+                    item.get("estado_entrega") or None,
+
+                "observacao":
+                    item.get("observacao", "").strip() or None
+
+            })
+
+
+        # =================================================
+        # NÚMERO DO TERMO
+        # =================================================
+
+        ultimo_numero = db.execute(
+            text("""
+                SELECT numero_termo
+                FROM termos
+                ORDER BY id DESC
+                LIMIT 1
+            """)
+        ).scalar()
+
+
+        if ultimo_numero:
+
+            try:
+
+                numero = int(
+                    str(ultimo_numero).replace(
+                        "TERMO-",
+                        ""
+                    )
+                ) + 1
+
+            except ValueError:
+
+                numero = 1
+
+        else:
+
+            numero = 1
+
+
+        numero_termo = f"TERMO-{numero:06d}"
+
+
+        # =================================================
+        # CRIAR TERMO
+        # =================================================
+
+        termo = db.execute(
+            text("""
+                INSERT INTO termos (
+                    numero_termo,
+                    tipo,
+                    integrante_id,
+                    temporada_id,
+                    data_emissao,
+                    status,
+                    observacao,
+                    usuario_id
+                )
+                VALUES (
+                    :numero_termo,
+                    'ENTREGA',
+                    :integrante_id,
+                    :temporada_id,
+                    CURRENT_DATE,
+                    'EMITIDO',
+                    :observacao,
+                    :usuario_id
+                )
+                RETURNING id, numero_termo
+            """),
+            {
+                "numero_termo":
+                    numero_termo,
+
+                "integrante_id":
+                    integrante_id,
+
+                "temporada_id":
+                    temporada_id,
+
+                "observacao":
+                    observacao or None,
+
+                "usuario_id":
+                    session.get("usuario_id")
+
+            }
+        ).mappings().first()
+
+
+        termo_id = termo["id"]
+
+
+        # =================================================
+        # CRIAR ITENS DO TERMO
+        # =================================================
+
+        for item in itens_validos:
+
+            termo_item = db.execute(
+                text("""
+                    INSERT INTO termo_itens (
+                        termo_id,
+                        item_id,
+                        tamanho_cadastro,
+                        tamanho_entregue,
+                        quantidade,
+                        estado_entrega,
+                        observacao
+                    )
+                    VALUES (
+                        :termo_id,
+                        :item_id,
+                        :tamanho_cadastro,
+                        :tamanho_entregue,
+                        :quantidade,
+                        :estado_entrega,
+                        :observacao
+                    )
+                    RETURNING id
+                """),
+                {
+                    "termo_id":
+                        termo_id,
+
+                    "item_id":
+                        item["item_id"],
+
+                    "tamanho_cadastro":
+                        item["tamanho_cadastro"],
+
+                    "tamanho_entregue":
+                        item["tamanho_entregue"],
+
+                    "quantidade":
+                        item["quantidade"],
+
+                    "estado_entrega":
+                        item["estado_entrega"],
+
+                    "observacao":
+                        item["observacao"]
+
+                }
+            ).scalar()
+
+
+            # =============================================
+            # REGISTRAR MOVIMENTAÇÃO
+            # =============================================
+
+            db.execute(
+                text("""
+                    INSERT INTO termo_movimentacoes (
+                        termo_item_id,
+                        tipo,
+                        quantidade,
+                        data_movimentacao,
+                        usuario_id,
+                        observacao
+                    )
+                    VALUES (
+                        :termo_item_id,
+                        'ENTREGA',
+                        :quantidade,
+                        CURRENT_DATE,
+                        :usuario_id,
+                        :observacao
+                    )
+                """),
+                {
+                    "termo_item_id":
+                        termo_item,
+
+                    "quantidade":
+                        item["quantidade"],
+
+                    "usuario_id":
+                        session.get("usuario_id"),
+
+                    "observacao":
+                        item["observacao"]
+
+                }
+            )
+
+
+        # =================================================
+        # CONFIRMAR TUDO
+        # =================================================
+
+        db.commit()
+
+
+        return jsonify({
+
+            "sucesso":
+                True,
+
+            "mensagem":
+                f'Termo {numero_termo} criado com sucesso.',
+
+            "termo_id":
+                termo_id,
+
+            "numero_termo":
+                numero_termo
+
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+
+        print(
+            "ERRO AO SALVAR FARDAMENTO:",
+            e
+        )
+
+
+        return jsonify({
+
+            "sucesso":
+                False,
+
+            "mensagem":
+                "Erro ao salvar o termo de entrega."
+
+        }), 500
+
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/fardamento/termo", methods=["POST"])
+def criar_termo_fardamento():
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    db = SessionLocal()
+
+    try:
+
+        dados = request.get_json()
+
+        if not dados:
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Nenhum dado recebido."
+            }), 400
+
+
+        integrante_id = dados.get("integrante_id")
+        temporada_id = dados.get("temporada_id")
+        itens = dados.get("itens", [])
+        observacao = dados.get("observacao", "").strip()
+
+
+        # =====================================================
+        # VALIDAR DADOS PRINCIPAIS
+        # =====================================================
+
+        if not integrante_id:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Informe o integrante."
+            }), 400
+
+
+        if not temporada_id:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Informe a temporada."
+            }), 400
+
+
+        if not itens:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Adicione pelo menos um item."
+            }), 400
+
+
+        # =====================================================
+        # VERIFICAR INTEGRANTE
+        # =====================================================
+
+        integrante = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    codigo_integrante,
+                    calcado
+                FROM integrantes
+                WHERE id = :id
+                  AND status = 'APROVADO'
+                  AND situacao = 'ATIVO'
+            """),
+            {
+                "id": integrante_id
+            }
+        ).mappings().first()
+
+
+        if not integrante:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Integrante não encontrado ou não está ativo."
+            }), 400
+
+
+        # =====================================================
+        # VERIFICAR TEMPORADA
+        # =====================================================
+
+        temporada = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano
+                FROM temporadas
+                WHERE id = :id
+            """),
+            {
+                "id": temporada_id
+            }
+        ).mappings().first()
+
+
+        if not temporada:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Temporada não encontrada."
+            }), 400
+
+
+        # =====================================================
+        # NÚMERO DO TERMO
+        # =====================================================
+
+        import uuid
+        from datetime import date
+
+        numero_termo = (
+            f"ENT-{date.today().year}-"
+            f"{uuid.uuid4().hex[:8].upper()}"
+        )
+
+
+        # =====================================================
+        # CRIAR TERMO
+        # =====================================================
+
+        usuario_id = session.get("usuario_id")
+
+
+        termo = db.execute(
+            text("""
+                INSERT INTO termos (
+                    numero_termo,
+                    tipo,
+                    integrante_id,
+                    temporada_id,
+                    data_emissao,
+                    status,
+                    observacao,
+                    usuario_id
+                )
+                VALUES (
+                    :numero_termo,
+                    'ENTREGA',
+                    :integrante_id,
+                    :temporada_id,
+                    CURRENT_DATE,
+                    'EMITIDO',
+                    :observacao,
+                    :usuario_id
+                )
+                RETURNING id, numero_termo
+            """),
+            {
+                "numero_termo": numero_termo,
+                "integrante_id": integrante_id,
+                "temporada_id": temporada_id,
+                "observacao": observacao or None,
+                "usuario_id": usuario_id
+            }
+        ).mappings().first()
+
+
+        termo_id = termo["id"]
+
+
+        # =====================================================
+        # ADICIONAR ITENS DO TERMO
+        # =====================================================
+
+        for item in itens:
+
+            item_id = item.get("item_id")
+
+            quantidade = int(
+                item.get("quantidade") or 0
+            )
+
+
+            if not item_id:
+                raise ValueError(
+                    "Item inválido."
+                )
+
+
+            if quantidade <= 0:
+                raise ValueError(
+                    "A quantidade deve ser maior que zero."
+                )
+
+
+            # =================================================
+            # BUSCAR ITEM NO CADASTRO
+            # =================================================
+
+            item_cadastro = db.execute(
+                text("""
+                    SELECT
+                        id,
+                        nome,
+                        tipo,
+                        ativo
+                    FROM itens_fardamento
+                    WHERE id = :id
+                      AND ativo = TRUE
+                """),
+                {
+                    "id": item_id
+                }
+            ).mappings().first()
+
+
+            if not item_cadastro:
+
+                raise ValueError(
+                    f"Item {item_id} não encontrado ou está inativo."
+                )
+
+
+            # =================================================
+            # DADOS INFORMADOS
+            # =================================================
+
+            tamanho_cadastro = (
+                item.get("tamanho_cadastro") or ""
+            ).strip()
+
+
+            tamanho_entregue = (
+                item.get("tamanho_entregue") or ""
+            ).strip()
+
+
+            estado_entrega = (
+                item.get("estado_entrega") or ""
+            ).strip()
+
+
+            observacao_item = (
+                item.get("observacao") or ""
+            ).strip()
+
+
+            # =================================================
+            # SE FOR CALÇADO
+            # =================================================
+
+            if item_cadastro["tipo"] == "CALCADO":
+
+                if not tamanho_cadastro:
+                    tamanho_cadastro = (
+                        integrante["calcado"] or ""
+                    )
+
+
+                if not tamanho_entregue:
+                    tamanho_entregue = tamanho_cadastro
+
+
+            # =================================================
+            # CRIAR TERMO_ITEM
+            # =================================================
+
+            termo_item = db.execute(
+                text("""
+                    INSERT INTO termo_itens (
+                        termo_id,
+                        item_id,
+                        tamanho_cadastro,
+                        tamanho_entregue,
+                        quantidade,
+                        estado_entrega,
+                        observacao
+                    )
+                    VALUES (
+                        :termo_id,
+                        :item_id,
+                        :tamanho_cadastro,
+                        :tamanho_entregue,
+                        :quantidade,
+                        :estado_entrega,
+                        :observacao
+                    )
+                    RETURNING id
+                """),
+                {
+                    "termo_id": termo_id,
+                    "item_id": item_cadastro["id"],
+                    "tamanho_cadastro": (
+                        tamanho_cadastro or None
+                    ),
+                    "tamanho_entregue": (
+                        tamanho_entregue or None
+                    ),
+                    "quantidade": quantidade,
+                    "estado_entrega": (
+                        estado_entrega or None
+                    ),
+                    "observacao": (
+                        observacao_item or None
+                    )
+                }
+            ).scalar()
+
+
+            # =================================================
+            # REGISTRAR MOVIMENTAÇÃO
+            # =================================================
+
+            db.execute(
+                text("""
+                    INSERT INTO termo_movimentacoes (
+                        termo_item_id,
+                        tipo,
+                        quantidade,
+                        data_movimentacao,
+                        usuario_id,
+                        observacao
+                    )
+                    VALUES (
+                        :termo_item_id,
+                        'ENTREGA',
+                        :quantidade,
+                        CURRENT_DATE,
+                        :usuario_id,
+                        :observacao
+                    )
+                """),
+                {
+                    "termo_item_id": termo_item,
+                    "quantidade": quantidade,
+                    "usuario_id": usuario_id,
+                    "observacao": (
+                        observacao_item or None
+                    )
+                }
+            )
+
+
+        # =====================================================
+        # CONFIRMAR TUDO
+        # =====================================================
+
+        db.commit()
+
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": (
+                f"Termo {numero_termo} criado com sucesso."
+            ),
+            "termo": {
+                "id": termo_id,
+                "numero": numero_termo
+            }
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO CRIAR TERMO DE FARDAMENTO:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": str(e)
+        }), 500
+
+
+    finally:
+
+        db.close()                            
+
+@app.route("/admin/fardamento/entregas")
+def fardamento_entregas():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        termos = db.execute(
+            text("""
+                SELECT
+                    tm.id,
+                    tm.numero_termo,
+                    tm.tipo,
+                    tm.data_emissao,
+                    tm.status,
+                    tm.observacao,
+
+                    i.id AS integrante_id,
+                    i.nome AS integrante_nome,
+                    i.codigo_integrante,
+
+                    t.id AS temporada_id,
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano,
+
+                    COUNT(ti.id) AS quantidade_itens
+
+                FROM termos tm
+
+                INNER JOIN integrantes i
+                    ON i.id = tm.integrante_id
+
+                INNER JOIN temporadas t
+                    ON t.id = tm.temporada_id
+
+                LEFT JOIN termo_itens ti
+                    ON ti.termo_id = tm.id
+
+                GROUP BY
+                    tm.id,
+                    tm.numero_termo,
+                    tm.tipo,
+                    tm.data_emissao,
+                    tm.status,
+                    tm.observacao,
+
+                    i.id,
+                    i.nome,
+                    i.codigo_integrante,
+
+                    t.id,
+                    t.nome,
+                    t.ano
+
+                ORDER BY
+                    tm.id DESC
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/fardamento_entregas.html",
+            termos=termos
+        )
+
+    except Exception as e:
+
+        print(
+            "ERRO AO LISTAR ENTREGAS DE FARDAMENTO:",
+            e
+        )
+
+        return "Erro ao carregar entregas de fardamento.", 500
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/fardamento/termo/<int:id>")
+def ver_termo_fardamento(id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+
+        termo = db.execute(
+            text("""
+                SELECT
+                    tm.id,
+                    tm.numero_termo,
+                    tm.tipo,
+                    tm.data_emissao,
+                    tm.status,
+                    tm.observacao,
+
+                    i.id AS integrante_id,
+                    i.nome AS integrante_nome,
+                    i.codigo_integrante,
+                    i.funcao,
+                    i.calcado,
+
+                    t.id AS temporada_id,
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano
+
+                FROM termos tm
+
+                INNER JOIN integrantes i
+                    ON i.id = tm.integrante_id
+
+                INNER JOIN temporadas t
+                    ON t.id = tm.temporada_id
+
+                WHERE tm.id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+
+        if not termo:
+
+            return "Termo não encontrado.", 404
+
+
+        itens = db.execute(
+            text("""
+                SELECT
+                    ti.id,
+                    ti.tamanho_cadastro,
+                    ti.tamanho_entregue,
+                    ti.quantidade,
+                    ti.estado_entrega,
+
+                    f.id AS item_id,
+                    f.nome AS item_nome,
+                    f.tipo AS item_tipo
+
+                FROM termo_itens ti
+
+                INNER JOIN itens_fardamento f
+                    ON f.id = ti.item_id
+
+                WHERE ti.termo_id = :termo_id
+
+                ORDER BY ti.id
+            """),
+            {
+                "termo_id": id
+            }
+        ).mappings().all()
+
+
+        return render_template(
+            "admin/fardamento_termo.html",
+            termo=termo,
+            itens=itens
+        )
+
+
+    except Exception as e:
+
+        print(
+            "ERRO AO VISUALIZAR TERMO DE FARDAMENTO:",
+            e
+        )
+
+        return "Erro ao carregar o termo.", 500
+
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/fardamento/termo/<int:termo_id>/pdf")
+def pdf_fardamento(termo_id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return "Não autorizado.", 403
+
+    return gerar_pdf_fardamento(termo_id)
 
 @app.route("/admin/patrimonio")
 def patrimonio():
