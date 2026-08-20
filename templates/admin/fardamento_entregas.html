@@ -267,7 +267,10 @@ Entregas de Fardamento
                                     type="button"
                                     class="btn btn-sm btn-outline-danger"
                                     title="Excluir entrega"
-                                    onclick="excluirTermo({{ termo.id }})">
+                                    onclick="excluirEntrega(
+                                        {{ termo.id }},
+                                        '{{ termo.numero_termo }}'
+                                    )">
 
                                     🗑️ Excluir
 

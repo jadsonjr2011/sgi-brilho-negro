@@ -32,7 +32,17 @@ Fardamento
         </div>
 
 
-        <div>
+        <div class="d-flex gap-2">
+
+            <button
+                type="button"
+                class="btn btn-outline-warning"
+                onclick="abrirModalItensFardamento()">
+
+                ⚙️ Gerenciar itens
+
+            </button>
+
 
             <a
                 href="/admin/fardamento/entregas"
@@ -1707,5 +1717,1243 @@ function escapeHtml(texto) {
 }
 
 </script>
+
+<!-- ===================================================== -->
+<!-- MODAL - GERENCIAR ITENS DE FARDAMENTO                -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalItensFardamento"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <!-- ================================================= -->
+            <!-- CABEÇALHO                                        -->
+            <!-- ================================================= -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    ⚙️ Gerenciar Itens de Fardamento
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CORPO                                             -->
+            <!-- ================================================= -->
+
+            <div class="modal-body">
+
+
+                <!-- ============================================= -->
+                <!-- AÇÕES                                          -->
+                <!-- ============================================= -->
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <div>
+
+                        <h6 class="mb-1">
+                            📦 Itens cadastrados
+                        </h6>
+
+                        <small class="text-secondary">
+                            Gerencie os itens disponíveis para entrega.
+                        </small>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="novoItemFardamento()">
+
+                        ➕ Novo item
+
+                    </button>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- FORMULÁRIO                                     -->
+                <!-- ============================================= -->
+
+                <div
+                    id="formItemFardamento"
+                    class="card-bn mb-4"
+                    style="display: none;">
+
+                    <div class="card-body">
+
+                        <h6
+                            id="tituloFormItem"
+                            class="mb-3">
+
+                            ➕ Novo item
+
+                        </h6>
+
+
+                        <input
+                            type="hidden"
+                            id="itemFardamentoId">
+
+
+                        <div class="row g-3">
+
+                            <div class="col-md-7">
+
+                                <label class="form-label">
+                                    Nome do item
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="itemFardamentoNome"
+                                    class="form-control"
+                                    maxlength="100"
+                                    placeholder="Ex.: Camisa">
+
+                            </div>
+
+
+                            <div class="col-md-5">
+
+                                <label class="form-label">
+                                    Tipo
+                                </label>
+
+                                <select
+                                    id="itemFardamentoTipo"
+                                    class="form-select">
+
+                                    <option value="">
+                                        -- Selecione --
+                                    </option>
+
+                                    <option value="FARDAMENTO">
+                                        👕 Fardamento
+                                    </option>
+
+                                    <option value="CALCADO">
+                                        👟 Calçado
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                onclick="cancelarFormItem()">
+
+                                Cancelar
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="btn btn-success"
+                                onclick="salvarItemFardamento()">
+
+                                💾 Salvar
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- MENSAGEM                                       -->
+                <!-- ============================================= -->
+
+                <div
+                    id="mensagemItensFardamento"
+                    class="text-center text-secondary py-3"
+                    style="display: none;">
+
+                    Carregando itens...
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- TABELA                                        -->
+                <!-- ============================================= -->
+
+                <div class="table-responsive">
+
+                    <table
+                        class="table table-bordered align-middle mb-0">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Item
+                                </th>
+
+                                <th>
+                                    Tipo
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th
+                                    class="text-center"
+                                    style="width: 160px;">
+
+                                    Ações
+
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="listaItensFardamento">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- RODAPÉ                                           -->
+            <!-- ================================================= -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ===================================================== */
+/* ABRIR MODAL                                           */
+/* ===================================================== */
+
+function abrirModalItensFardamento() {
+
+    const modalElement =
+        document.getElementById(
+            "modalItensFardamento"
+        );
+
+    const modal =
+        bootstrap.Modal.getOrCreateInstance(
+            modalElement
+        );
+
+    modal.show();
+
+
+    carregarItensFardamento();
+
+}
+
+
+/* ===================================================== */
+/* CARREGAR ITENS                                        */
+/* ===================================================== */
+
+async function carregarItensFardamento() {
+
+    const tabela =
+        document.getElementById(
+            "listaItensFardamento"
+        );
+
+
+    const mensagem =
+        document.getElementById(
+            "mensagemItensFardamento"
+        );
+
+
+    tabela.innerHTML = "";
+
+
+    mensagem.style.display =
+        "block";
+
+
+    mensagem.textContent =
+        "Carregando itens...";
+
+
+    try {
+
+        const resposta =
+            await fetch(
+                "/admin/fardamento/itens"
+            );
+
+
+        const resultado =
+            await resposta.json();
+
+
+        if (
+            !resposta.ok ||
+            !resultado.sucesso
+        ) {
+
+            throw new Error(
+                resultado.mensagem ||
+                "Erro ao carregar itens."
+            );
+
+        }
+
+
+        const itens =
+            resultado.itens || [];
+
+
+        mensagem.style.display =
+            "none";
+
+
+        if (itens.length === 0) {
+
+            mensagem.style.display =
+                "block";
+
+            mensagem.textContent =
+                "Nenhum item cadastrado.";
+
+            return;
+
+        }
+
+
+        itens.forEach(
+            function (item) {
+
+                const linha =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                const tipo =
+                    item.tipo === "CALCADO"
+                        ? "👟 Calçado"
+                        : "👕 Fardamento";
+
+
+                const status =
+                    item.ativo
+                        ? `
+                            <span class="status-item status-ativo">
+                                🟢 Ativo
+                            </span>
+                        `
+                        : `
+                            <span class="status-item status-inativo">
+                                🔴 Inativo
+                            </span>
+                        `;
+
+
+                const acaoStatus =
+                    item.ativo
+                        ? `
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="alterarStatusItemFardamento(${item.id})"
+                                title="Inativar item">
+
+                                🔴
+
+                            </button>
+                        `
+                        : `
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-success"
+                                onclick="alterarStatusItemFardamento(${item.id})"
+                                title="Ativar item">
+
+                                🟢
+
+                            </button>
+                        `;
+
+
+                linha.innerHTML = `
+
+                    <td>
+
+                        <strong>
+                            ${escapeHtml(item.nome)}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+                        ${tipo}
+                    </td>
+
+
+                    <td>
+                        ${status}
+                    </td>
+
+
+                    <td>
+
+                        <div class="d-flex justify-content-center gap-1">
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-primary"
+                                onclick="editarItemFardamento(${item.id})"
+                                title="Editar">
+
+                                ✏️
+
+                            </button>
+
+
+                            ${acaoStatus}
+
+                        </div>
+
+                    </td>
+
+                `;
+
+
+                tabela.appendChild(
+                    linha
+                );
+
+            }
+        );
+
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "ERRO AO CARREGAR ITENS:",
+            erro
+        );
+
+
+        mensagem.style.display =
+            "block";
+
+
+        mensagem.textContent =
+            erro.message ||
+            "Erro ao carregar os itens.";
+
+    }
+
+}
+
+
+/* ===================================================== */
+/* NOVO ITEM                                             */
+/* ===================================================== */
+
+function novoItemFardamento() {
+
+    document.getElementById(
+        "itemFardamentoId"
+    ).value = "";
+
+
+    document.getElementById(
+        "itemFardamentoNome"
+    ).value = "";
+
+
+    document.getElementById(
+        "itemFardamentoTipo"
+    ).value = "";
+
+
+    document.getElementById(
+        "tituloFormItem"
+    ).textContent =
+        "➕ Novo item";
+
+
+    document.getElementById(
+        "formItemFardamento"
+    ).style.display =
+        "block";
+
+
+    document.getElementById(
+        "itemFardamentoNome"
+    ).focus();
+
+}
+
+
+/* ===================================================== */
+/* EDITAR ITEM                                           */
+/* ===================================================== */
+
+async function editarItemFardamento(id) {
+
+    try {
+
+        const resposta =
+            await fetch(
+                "/admin/fardamento/itens"
+            );
+
+
+        const resultado =
+            await resposta.json();
+
+
+        if (
+            !resposta.ok ||
+            !resultado.sucesso
+        ) {
+
+            throw new Error(
+                resultado.mensagem ||
+                "Não foi possível carregar o item."
+            );
+
+        }
+
+
+        const item =
+            resultado.itens.find(
+                function (item) {
+
+                    return Number(item.id) ===
+                        Number(id);
+
+                }
+            );
+
+
+        if (!item) {
+
+            alert(
+                "Item não encontrado."
+            );
+
+            return;
+
+        }
+
+
+        document.getElementById(
+            "itemFardamentoId"
+        ).value =
+            item.id;
+
+
+        document.getElementById(
+            "itemFardamentoNome"
+        ).value =
+            item.nome;
+
+
+        document.getElementById(
+            "itemFardamentoTipo"
+        ).value =
+            item.tipo;
+
+
+        document.getElementById(
+            "tituloFormItem"
+        ).textContent =
+            "✏️ Editar item";
+
+
+        document.getElementById(
+            "formItemFardamento"
+        ).style.display =
+            "block";
+
+
+        document.getElementById(
+            "itemFardamentoNome"
+        ).focus();
+
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "ERRO AO EDITAR ITEM:",
+            erro
+        );
+
+
+        alert(
+            erro.message ||
+            "Erro ao carregar item."
+        );
+
+    }
+
+}
+
+
+/* ===================================================== */
+/* CANCELAR FORMULÁRIO                                   */
+/* ===================================================== */
+
+function cancelarFormItem() {
+
+    document.getElementById(
+        "formItemFardamento"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "itemFardamentoId"
+    ).value = "";
+
+
+    document.getElementById(
+        "itemFardamentoNome"
+    ).value = "";
+
+
+    document.getElementById(
+        "itemFardamentoTipo"
+    ).value = "";
+
+}
+
+
+/* ===================================================== */
+/* SALVAR ITEM                                           */
+/* ===================================================== */
+
+async function salvarItemFardamento() {
+
+    const id =
+        document.getElementById(
+            "itemFardamentoId"
+        ).value;
+
+
+    const nome =
+        document.getElementById(
+            "itemFardamentoNome"
+        ).value.trim();
+
+
+    const tipo =
+        document.getElementById(
+            "itemFardamentoTipo"
+        ).value;
+
+
+    if (!nome) {
+
+        alert(
+            "Informe o nome do item."
+        );
+
+        document.getElementById(
+            "itemFardamentoNome"
+        ).focus();
+
+        return;
+
+    }
+
+
+    if (!tipo) {
+
+        alert(
+            "Selecione o tipo do item."
+        );
+
+        document.getElementById(
+            "itemFardamentoTipo"
+        ).focus();
+
+        return;
+
+    }
+
+
+    try {
+
+        const resposta =
+            await fetch(
+                "/admin/fardamento/itens/salvar",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            id:
+                                id || null,
+
+                            nome:
+                                nome,
+
+                            tipo:
+                                tipo
+
+                        })
+
+                }
+            );
+
+
+        const resultado =
+            await resposta.json();
+
+
+        if (
+            !resposta.ok ||
+            !resultado.sucesso
+        ) {
+
+            alert(
+                resultado.mensagem ||
+                "Não foi possível salvar o item."
+            );
+
+            return;
+
+        }
+
+
+        alert(
+            resultado.mensagem
+        );
+
+
+        cancelarFormItem();
+
+
+        await carregarItensFardamento();
+
+
+        /*
+        -------------------------------------------------
+        Atualizar também a lista usada na entrega
+        -------------------------------------------------
+        */
+
+        recarregarItensEntrega();
+
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "ERRO AO SALVAR ITEM:",
+            erro
+        );
+
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+
+    }
+
+}
+
+
+/* ===================================================== */
+/* ALTERAR STATUS                                        */
+/* ===================================================== */
+
+async function alterarStatusItemFardamento(id) {
+
+    try {
+
+        const resposta =
+            await fetch(
+                `/admin/fardamento/itens/${id}/status`,
+                {
+
+                    method: "POST"
+
+                }
+            );
+
+
+        const resultado =
+            await resposta.json();
+
+
+        if (
+            !resposta.ok ||
+            !resultado.sucesso
+        ) {
+
+            alert(
+                resultado.mensagem ||
+                "Não foi possível alterar o status."
+            );
+
+            return;
+
+        }
+
+
+        await carregarItensFardamento();
+
+
+        recarregarItensEntrega();
+
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "ERRO AO ALTERAR STATUS:",
+            erro
+        );
+
+
+        alert(
+            "Erro de comunicação com o servidor."
+        );
+
+    }
+
+}
+
+
+/* ===================================================== */
+/* ATUALIZAR ITENS DA ENTREGA                            */
+/* ===================================================== */
+
+async function recarregarItensEntrega() {
+
+    try {
+
+        const resposta =
+            await fetch(
+                "/admin/fardamento/itens"
+            );
+
+
+        const resultado =
+            await resposta.json();
+
+
+        if (
+            !resposta.ok ||
+            !resultado.sucesso
+        ) {
+
+            return;
+
+        }
+
+
+        itensFardamento.length = 0;
+
+
+        resultado.itens
+            .filter(
+                function (item) {
+
+                    return item.ativo;
+
+                }
+            )
+            .forEach(
+                function (item) {
+
+                    itensFardamento.push({
+                        id:
+                            item.id,
+
+                        nome:
+                            item.nome,
+
+                        tipo:
+                            item.tipo
+
+                    });
+
+                }
+            );
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            "ERRO AO ATUALIZAR ITENS DA ENTREGA:",
+            erro
+        );
+
+    }
+
+}
+
+</script>
+
+<style>
+
+/* ===================================================== */
+/* MODAL - ITENS DE FARDAMENTO                           */
+/* ===================================================== */
+
+#modalItensFardamento .modal-content {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(30, 30, 30, 0.98),
+            rgba(18, 18, 18, 0.98)
+        );
+
+    color: #f5f5f5;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.10);
+
+    border-radius:
+        14px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55);
+
+}
+
+
+/* ===================================================== */
+/* CABEÇALHO                                             */
+/* ===================================================== */
+
+#modalItensFardamento .modal-header {
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    padding:
+        18px 20px;
+
+}
+
+
+#modalItensFardamento .modal-title {
+
+    font-weight:
+        600;
+
+    color:
+        #ffffff;
+
+}
+
+
+#modalItensFardamento .btn-close {
+
+    filter:
+        invert(1);
+
+    opacity:
+        0.75;
+
+}
+
+
+/* ===================================================== */
+/* CORPO                                                  */
+/* ===================================================== */
+
+#modalItensFardamento .modal-body {
+
+    padding:
+        20px;
+
+}
+
+
+/* ===================================================== */
+/* FORMULÁRIO                                             */
+/* ===================================================== */
+
+#modalItensFardamento .card-bn {
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius:
+        10px;
+
+}
+
+
+#modalItensFardamento .form-label {
+
+    color:
+        #d7d7d7;
+
+}
+
+
+#modalItensFardamento .form-control,
+#modalItensFardamento .form-select {
+
+    background-color:
+        rgba(0, 0, 0, 0.25);
+
+    color:
+        #ffffff;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.15);
+
+}
+
+
+#modalItensFardamento .form-control:focus,
+#modalItensFardamento .form-select:focus {
+
+    background-color:
+        rgba(0, 0, 0, 0.35);
+
+    color:
+        #ffffff;
+
+    border-color:
+        rgba(255, 193, 7, 0.65);
+
+    box-shadow:
+        0 0 0 0.15rem rgba(255, 193, 7, 0.10);
+
+}
+
+
+#modalItensFardamento .form-select option {
+
+    background:
+        #222222;
+
+    color:
+        #ffffff;
+
+}
+
+
+/* ===================================================== */
+/* TABELA                                                 */
+/* ===================================================== */
+
+#modalItensFardamento table {
+
+    color:
+        #eeeeee;
+
+    border-color:
+        rgba(255, 255, 255, 0.10);
+
+}
+
+
+#modalItensFardamento thead th {
+
+    background:
+        rgba(255, 255, 255, 0.05);
+
+    color:
+        #ffffff;
+
+    border-color:
+        rgba(255, 255, 255, 0.10);
+
+    font-weight:
+        600;
+
+}
+
+
+#modalItensFardamento tbody td {
+
+    background:
+        transparent;
+
+    color:
+        #dddddd;
+
+    border-color:
+        rgba(255, 255, 255, 0.08);
+
+}
+
+
+#modalItensFardamento tbody tr:hover td {
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+}
+
+
+/* ===================================================== */
+/* BOTÕES                                                 */
+/* ===================================================== */
+
+#modalItensFardamento .btn {
+
+    border-radius:
+        7px;
+
+}
+
+
+/* ===================================================== */
+/* RODAPÉ                                                 */
+/* ===================================================== */
+
+#modalItensFardamento .modal-footer {
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    padding:
+        14px 20px;
+
+}
+
+
+/* ===================================================== */
+/* BACKDROP                                               */
+/* ===================================================== */
+
+.modal-backdrop.show {
+
+    opacity:
+        0.75;
+
+}
+
+* ===================================================== */
+/* STATUS DOS ITENS                                      */
+/* ===================================================== */
+
+.status-item {
+
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 0.82rem;
+
+    font-weight: 600;
+
+}
+
+
+.status-ativo {
+
+    background:
+        rgba(25, 135, 84, 0.15);
+
+    color:
+        #6ee7a8;
+
+    border:
+        1px solid rgba(25, 135, 84, 0.30);
+
+}
+
+
+.status-inativo {
+
+    background:
+        rgba(220, 53, 69, 0.12);
+
+    color:
+        #ff8b96;
+
+    border:
+        1px solid rgba(220, 53, 69, 0.25);
+
+}
+
+</style>
+
+
 
 {% endblock %}

@@ -1162,6 +1162,358 @@ def fardamento_admin():
 
         db.close()
 
+# ============================================================
+# GERENCIAMENTO DE ITENS DE FARDAMENTO
+# ============================================================
+
+@app.route("/admin/fardamento/itens")
+def listar_itens_fardamento():
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+    db = SessionLocal()
+
+    try:
+
+        itens = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    tipo,
+                    ativo,
+                    data_cadastro
+                FROM itens_fardamento
+                ORDER BY
+                    ativo DESC,
+                    tipo,
+                    nome
+            """)
+        ).mappings().all()
+
+        return jsonify({
+            "sucesso": True,
+            "itens": [
+                dict(item)
+                for item in itens
+            ]
+        })
+
+    except Exception as e:
+
+        print(
+            "ERRO AO LISTAR ITENS DE FARDAMENTO:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao carregar os itens."
+        }), 500
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# CADASTRAR / EDITAR ITEM
+# ============================================================
+
+@app.route(
+    "/admin/fardamento/itens/salvar",
+    methods=["POST"]
+)
+def salvar_item_fardamento():
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+    dados = request.get_json(silent=True)
+
+    if not dados:
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Dados não recebidos."
+        }), 400
+
+    item_id = dados.get("id")
+    nome = (dados.get("nome") or "").strip()
+    tipo = (dados.get("tipo") or "").strip().upper()
+
+    # ========================================================
+    # VALIDAR NOME
+    # ========================================================
+
+    if not nome:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Informe o nome do item."
+        }), 400
+
+    # ========================================================
+    # VALIDAR TIPO
+    # ========================================================
+
+    if tipo not in ["FARDAMENTO", "CALCADO"]:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Tipo de item inválido."
+        }), 400
+
+    db = SessionLocal()
+
+    try:
+
+        # ====================================================
+        # EDITAR
+        # ====================================================
+
+        if item_id:
+
+            item = db.execute(
+                text("""
+                    SELECT
+                        id,
+                        nome
+                    FROM itens_fardamento
+                    WHERE id = :id
+                """),
+                {
+                    "id": item_id
+                }
+            ).mappings().first()
+
+            if not item:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Item não encontrado."
+                }), 404
+
+            # -----------------------------------------------
+            # VERIFICAR DUPLICIDADE
+            # -----------------------------------------------
+
+            duplicado = db.execute(
+                text("""
+                    SELECT id
+                    FROM itens_fardamento
+                    WHERE LOWER(nome) = LOWER(:nome)
+                      AND id <> :id
+                      AND ativo = TRUE
+                """),
+                {
+                    "nome": nome,
+                    "id": item_id
+                }
+            ).scalar()
+
+            if duplicado:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Já existe um item ativo com esse nome."
+                }), 400
+
+            # -----------------------------------------------
+            # ATUALIZAR
+            # -----------------------------------------------
+
+            db.execute(
+                text("""
+                    UPDATE itens_fardamento
+                    SET
+                        nome = :nome,
+                        tipo = :tipo
+                    WHERE id = :id
+                """),
+                {
+                    "id": item_id,
+                    "nome": nome,
+                    "tipo": tipo
+                }
+            )
+
+            db.commit()
+
+            return jsonify({
+                "sucesso": True,
+                "mensagem": "Item atualizado com sucesso."
+            })
+
+        # ====================================================
+        # NOVO ITEM
+        # ====================================================
+
+        duplicado = db.execute(
+            text("""
+                SELECT id
+                FROM itens_fardamento
+                WHERE LOWER(nome) = LOWER(:nome)
+                  AND ativo = TRUE
+            """),
+            {
+                "nome": nome
+            }
+        ).scalar()
+
+        if duplicado:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Já existe um item ativo com esse nome."
+            }), 400
+
+        db.execute(
+            text("""
+                INSERT INTO itens_fardamento (
+                    nome,
+                    tipo,
+                    ativo,
+                    data_cadastro
+                )
+                VALUES (
+                    :nome,
+                    :tipo,
+                    TRUE,
+                    CURRENT_TIMESTAMP
+                )
+            """),
+            {
+                "nome": nome,
+                "tipo": tipo
+            }
+        )
+
+        db.commit()
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": "Item cadastrado com sucesso."
+        })
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO SALVAR ITEM DE FARDAMENTO:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao salvar o item."
+        }), 500
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# ATIVAR / INATIVAR ITEM
+# ============================================================
+
+@app.route(
+    "/admin/fardamento/itens/<int:id>/status",
+    methods=["POST"]
+)
+def alterar_status_item_fardamento(id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+    db = SessionLocal()
+
+    try:
+
+        item = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo
+                FROM itens_fardamento
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+        if not item:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Item não encontrado."
+            }), 404
+
+        novo_status = not item["ativo"]
+
+        db.execute(
+            text("""
+                UPDATE itens_fardamento
+                SET ativo = :ativo
+                WHERE id = :id
+            """),
+            {
+                "id": id,
+                "ativo": novo_status
+            }
+        )
+
+        db.commit()
+
+        if novo_status:
+
+            mensagem = (
+                f'Item "{item["nome"]}" ativado com sucesso.'
+            )
+
+        else:
+
+            mensagem = (
+                f'Item "{item["nome"]}" inativado com sucesso.'
+            )
+
+        return jsonify({
+            "sucesso": True,
+            "ativo": novo_status,
+            "mensagem": mensagem
+        })
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO ALTERAR STATUS DO ITEM:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao alterar o status do item."
+        }), 500
+
+    finally:
+
+        db.close()
+
 @app.route("/admin/fardamento/salvar", methods=["POST"])
 def salvar_fardamento():
 
