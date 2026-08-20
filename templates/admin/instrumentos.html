@@ -1,0 +1,1083 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Instrumentos
+{% endblock %}
+
+{% block titulo_pagina %}
+🎺 Instrumentos
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="card-bn">
+
+    <!-- ===================================================== -->
+    <!-- CABEÇALHO                                            -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="titulo mb-1">
+                🎺 Gerenciamento de Instrumentos
+            </h2>
+
+            <div class="text-secondary">
+                Cadastre e gerencie os instrumentos da Banda Fanfarra Brilho Negro.
+            </div>
+
+        </div>
+
+
+        <a
+            href="/admin"
+            class="btn btn-outline-secondary">
+
+            ← Voltar
+
+        </a>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- MENSAGEM                                             -->
+    <!-- ===================================================== -->
+
+    <div id="mensagemInstrumento"></div>
+
+
+    <!-- ===================================================== -->
+    <!-- CADASTRAR                                            -->
+    <!-- ===================================================== -->
+
+    <div class="card-bn mb-4">
+
+        <h5 class="titulo mb-3">
+
+            ➕ Cadastrar novo instrumento
+
+        </h5>
+
+
+        <form
+            method="POST"
+            action="/admin/instrumentos/novo"
+            id="formNovoInstrumento">
+
+            <div class="input-group">
+
+                <input
+                    type="text"
+                    name="nome"
+                    class="form-control"
+                    placeholder="Nome do instrumento"
+                    maxlength="100"
+                    required>
+
+                <button
+                    type="submit"
+                    class="btn btn-success">
+
+                    ➕ Cadastrar
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- LISTA                                                -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h5 class="titulo mb-0">
+
+            🎺 Instrumentos cadastrados
+
+        </h5>
+
+
+        <span
+            id="contadorInstrumentos"
+            class="badge bg-secondary">
+
+            {{ instrumentos|length }}
+
+            instrumento{% if instrumentos|length != 1 %}s{% endif %}
+
+        </span>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- TABELA                                               -->
+    <!-- ===================================================== -->
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Instrumento
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Cadastro
+                    </th>
+
+                    <th class="text-end">
+                        Ações
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody id="tabelaInstrumentos">
+
+                {% for instrumento in instrumentos %}
+
+                <tr
+                    data-instrumento-id="{{ instrumento.id }}">
+
+                    <!-- NOME -->
+
+                    <td>
+
+                        <strong>
+                            {{ instrumento.nome }}
+                        </strong>
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        {% if instrumento.ativo %}
+
+                            <span class="badge bg-success">
+
+                                🟢 Ativo
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+
+                                ⚪ Inativo
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- DATA -->
+
+                    <td>
+
+                        {% if instrumento.data_cadastro %}
+
+                            {{ instrumento.data_cadastro.strftime('%d/%m/%Y') }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- AÇÕES -->
+
+                    <td class="text-end">
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-warning"
+                            onclick='abrirEdicaoInstrumento(
+                                {{ instrumento.id }},
+                                {{ instrumento.nome|tojson }}
+                            )'>
+
+                            ✏️ Editar
+
+                        </button>
+
+
+                        {% if instrumento.ativo %}
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="alternarInstrumento(
+                                    {{ instrumento.id }},
+                                    false
+                                )">
+
+                                🔴 Inativar
+
+                            </button>
+
+                        {% else %}
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-success"
+                                onclick="alternarInstrumento(
+                                    {{ instrumento.id }},
+                                    true
+                                )">
+
+                                🟢 Ativar
+
+                            </button>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="4"
+                        class="text-center text-secondary py-5">
+
+                        <div style="font-size: 2rem;">
+                            🎺
+                        </div>
+
+                        <div class="mt-2">
+
+                            Nenhum instrumento cadastrado.
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MODAL EDITAR                                          -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalEditarInstrumento"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    ✏️ Editar Instrumento
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div id="mensagemEditarInstrumento"></div>
+
+
+                <label class="form-label">
+
+                    Nome do instrumento
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="nomeEditarInstrumento"
+                    class="form-control"
+                    maxlength="100">
+
+
+                <input
+                    type="hidden"
+                    id="idEditarInstrumento">
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    onclick="salvarEdicaoInstrumento()">
+
+                    💾 Salvar Alteração
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ===================================================== */
+/* CADASTRAR INSTRUMENTO                                 */
+/* ===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const formulario =
+            document.getElementById(
+                "formNovoInstrumento"
+            );
+
+
+        if (!formulario) {
+            return;
+        }
+
+
+        formulario.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                const input =
+                    formulario.querySelector(
+                        'input[name="nome"]'
+                    );
+
+
+                const botao =
+                    formulario.querySelector(
+                        'button[type="submit"]'
+                    );
+
+
+                const mensagem =
+                    document.getElementById(
+                        "mensagemInstrumento"
+                    );
+
+
+                const nome =
+                    input.value.trim();
+
+
+                if (!nome) {
+                    return;
+                }
+
+
+                botao.disabled = true;
+
+                botao.innerHTML =
+                    "⏳ Cadastrando...";
+
+
+                try {
+
+                    const resposta =
+                        await fetch(
+                            formulario.action,
+                            {
+                                method: "POST",
+                                body: new FormData(
+                                    formulario
+                                )
+                            }
+                        );
+
+
+                    const dados =
+                        await resposta.json();
+
+
+                    if (!dados.sucesso) {
+
+                        mensagem.innerHTML = `
+
+                            <div class="alert alert-warning">
+
+                                ⚠️ ${dados.mensagem}
+
+                            </div>
+
+                        `;
+
+                        return;
+
+                    }
+
+
+                    mensagem.innerHTML = `
+
+                        <div class="alert alert-success">
+
+                            ✅ ${dados.mensagem}
+
+                        </div>
+
+                    `;
+
+
+                    const tabela =
+                        document.getElementById(
+                            "tabelaInstrumentos"
+                        );
+
+
+                    const linhaVazia =
+                        tabela.querySelector(
+                            "td[colspan='4']"
+                        );
+
+
+                    if (linhaVazia) {
+
+                        tabela.innerHTML = "";
+
+                    }
+
+
+                    const novaLinha =
+                        document.createElement("tr");
+
+
+                    novaLinha.setAttribute(
+                        "data-instrumento-id",
+                        dados.instrumento.id
+                    );
+
+
+                    novaLinha.innerHTML = `
+
+                        <td>
+                            <strong>
+                                ${dados.instrumento.nome}
+                            </strong>
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-success">
+                                🟢 Ativo
+                            </span>
+
+                        </td>
+
+                        <td>
+                            Hoje
+                        </td>
+
+                        <td class="text-end">
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-warning"
+                                onclick='abrirEdicaoInstrumento(
+                                    ${dados.instrumento.id},
+                                    ${JSON.stringify(dados.instrumento.nome)}
+                                )'>
+
+                                ✏️ Editar
+
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                onclick="alternarInstrumento(
+                                    ${dados.instrumento.id},
+                                    false
+                                )">
+
+                                🔴 Inativar
+
+                            </button>
+
+                        </td>
+
+                    `;
+
+
+                    tabela.appendChild(
+                        novaLinha
+                    );
+
+
+                    atualizarContador();
+
+
+                    input.value = "";
+
+                    input.focus();
+
+                }
+
+                catch (erro) {
+
+                    console.error(
+                        erro
+                    );
+
+
+                    mensagem.innerHTML = `
+
+                        <div class="alert alert-danger">
+
+                            ❌ Erro ao comunicar com o servidor.
+
+                        </div>
+
+                    `;
+
+                }
+
+                finally {
+
+                    botao.disabled = false;
+
+                    botao.innerHTML =
+                        "➕ Cadastrar";
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ===================================================== */
+/* CONTADOR                                              */
+/* ===================================================== */
+
+function atualizarContador() {
+
+    const tabela =
+        document.getElementById(
+            "tabelaInstrumentos"
+        );
+
+
+    const contador =
+        document.getElementById(
+            "contadorInstrumentos"
+        );
+
+
+    if (!tabela || !contador) {
+        return;
+    }
+
+
+    const quantidade =
+        tabela.querySelectorAll(
+            "tr[data-instrumento-id]"
+        ).length;
+
+
+    contador.textContent =
+        quantidade +
+        (
+            quantidade === 1
+                ? " instrumento"
+                : " instrumentos"
+        );
+
+}
+
+
+/* ===================================================== */
+/* ABRIR EDIÇÃO                                          */
+/* ===================================================== */
+
+function abrirEdicaoInstrumento(id, nome) {
+
+    document.getElementById(
+        "idEditarInstrumento"
+    ).value = id;
+
+
+    document.getElementById(
+        "nomeEditarInstrumento"
+    ).value = nome;
+
+
+    document.getElementById(
+        "mensagemEditarInstrumento"
+    ).innerHTML = "";
+
+
+    const modal =
+        new bootstrap.Modal(
+            document.getElementById(
+                "modalEditarInstrumento"
+            )
+        );
+
+
+    modal.show();
+
+}
+
+
+/* ===================================================== */
+/* SALVAR EDIÇÃO                                         */
+/* ===================================================== */
+
+async function salvarEdicaoInstrumento() {
+
+    const id =
+        document.getElementById(
+            "idEditarInstrumento"
+        ).value;
+
+
+    const nome =
+        document.getElementById(
+            "nomeEditarInstrumento"
+        ).value.trim();
+
+
+    const mensagem =
+        document.getElementById(
+            "mensagemEditarInstrumento"
+        );
+
+
+    if (!nome) {
+
+        mensagem.innerHTML = `
+
+            <div class="alert alert-warning">
+
+                ⚠️ Informe o nome do instrumento.
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    try {
+
+        const formulario =
+            new FormData();
+
+
+        formulario.append(
+            "nome",
+            nome
+        );
+
+
+        const resposta =
+            await fetch(
+                `/admin/instrumentos/${id}/editar`,
+                {
+                    method: "POST",
+                    body: formulario
+                }
+            );
+
+
+        const dados =
+            await resposta.json();
+
+
+        if (!dados.sucesso) {
+
+            mensagem.innerHTML = `
+
+                <div class="alert alert-warning">
+
+                    ⚠️ ${dados.mensagem}
+
+                </div>
+
+            `;
+
+            return;
+
+        }
+
+
+        const linha =
+            document.querySelector(
+                `tr[data-instrumento-id="${id}"]`
+            );
+
+
+        if (linha) {
+
+            linha.querySelector(
+                "td:first-child strong"
+            ).textContent = nome;
+
+        }
+
+
+        mensagem.innerHTML = `
+
+            <div class="alert alert-success">
+
+                ✅ ${dados.mensagem}
+
+            </div>
+
+        `;
+
+
+        setTimeout(
+            function () {
+
+                const elemento =
+                    document.getElementById(
+                        "modalEditarInstrumento"
+                    );
+
+
+                const modal =
+                    bootstrap.Modal.getInstance(
+                        elemento
+                    );
+
+
+                if (modal) {
+                    modal.hide();
+                }
+
+            },
+            600
+        );
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            erro
+        );
+
+
+        mensagem.innerHTML = `
+
+            <div class="alert alert-danger">
+
+                ❌ Erro ao editar o instrumento.
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* ===================================================== */
+/* ATIVAR / INATIVAR                                    */
+/* ===================================================== */
+
+async function alternarInstrumento(id, ativar) {
+
+    const confirmacao =
+        ativar
+            ? "Deseja realmente ativar este instrumento?"
+            : "Deseja realmente inativar este instrumento?";
+
+
+    if (!confirm(confirmacao)) {
+        return;
+    }
+
+
+    try {
+
+        const resposta =
+            await fetch(
+                `/admin/instrumentos/${id}/alternar`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        ativar: ativar
+                    })
+                }
+            );
+
+
+        const dados =
+            await resposta.json();
+
+
+        if (!dados.sucesso) {
+
+            mostrarMensagem(
+                "warning",
+                dados.mensagem
+            );
+
+            return;
+
+        }
+
+
+        const linha =
+            document.querySelector(
+                `tr[data-instrumento-id="${id}"]`
+            );
+
+
+        if (!linha) {
+            return;
+        }
+
+
+        const celulaStatus =
+            linha.children[1];
+
+
+        const celulaAcoes =
+            linha.children[3];
+
+
+        const nome =
+            linha.querySelector(
+                "td:first-child strong"
+            ).textContent.trim();
+
+
+        if (dados.ativo) {
+
+            celulaStatus.innerHTML = `
+
+                <span class="badge bg-success">
+
+                    🟢 Ativo
+
+                </span>
+
+            `;
+
+
+            celulaAcoes.innerHTML = `
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-warning"
+                    onclick='abrirEdicaoInstrumento(
+                        ${id},
+                        ${JSON.stringify(nome)}
+                    )'>
+
+                    ✏️ Editar
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    onclick="alternarInstrumento(
+                        ${id},
+                        false
+                    )">
+
+                    🔴 Inativar
+
+                </button>
+
+            `;
+
+        }
+
+        else {
+
+            celulaStatus.innerHTML = `
+
+                <span class="badge bg-secondary">
+
+                    ⚪ Inativo
+
+                </span>
+
+            `;
+
+
+            celulaAcoes.innerHTML = `
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-warning"
+                    onclick='abrirEdicaoInstrumento(
+                        ${id},
+                        ${JSON.stringify(nome)}
+                    )'>
+
+                    ✏️ Editar
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-success"
+                    onclick="alternarInstrumento(
+                        ${id},
+                        true
+                    )">
+
+                    🟢 Ativar
+
+                </button>
+
+            `;
+
+        }
+
+
+        mostrarMensagem(
+            "success",
+            dados.mensagem
+        );
+
+    }
+
+    catch (erro) {
+
+        console.error(
+            erro
+        );
+
+
+        mostrarMensagem(
+            "danger",
+            "Erro ao alterar o status do instrumento."
+        );
+
+    }
+
+}
+
+
+/* ===================================================== */
+/* MENSAGEM                                              */
+/* ===================================================== */
+
+function mostrarMensagem(tipo, texto) {
+
+    const elemento =
+        document.getElementById(
+            "mensagemInstrumento"
+        );
+
+
+    if (!elemento) {
+        return;
+    }
+
+
+    elemento.innerHTML = `
+
+        <div class="alert alert-${tipo} alert-dismissible fade show">
+
+            ${texto}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+</script>
+
+{% endblock %}

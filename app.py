@@ -2263,6 +2263,48 @@ def patrimonio():
 
         db.close()
 
+@app.route("/admin/instrumentos")
+def instrumentos():
+
+    if not usuario_tem_permissao("instrumentos"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        instrumentos = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ativo,
+                    data_cadastro
+                FROM instrumentos
+                ORDER BY
+                    ativo DESC,
+                    nome ASC
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/instrumentos.html",
+            instrumentos=instrumentos
+        )
+
+    except Exception as e:
+
+        print(
+            "ERRO AO CARREGAR INSTRUMENTOS:",
+            e
+        )
+
+        return redirect("/admin")
+
+    finally:
+
+        db.close()
+
 @app.route("/admin/instrumentos/novo", methods=["POST"])
 def novo_instrumento():
 
