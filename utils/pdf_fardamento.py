@@ -24,7 +24,7 @@ from reportlab.lib.styles import (
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 
 
 # ============================================================
@@ -39,12 +39,50 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
         "logo_relatorio.PNG"
     )
 
+    estilo_cabecalho = ParagraphStyle(
+        "Cabecalho",
+        parent=estilos["Normal"],
+        alignment=TA_CENTER,
+        fontSize=9.5,
+        leading=12
+    )
+
+    estilo_nome = ParagraphStyle(
+        "NomeAssociacao",
+        parent=estilos["Normal"],
+        alignment=TA_CENTER,
+        fontSize=18,
+        leading=20
+    )
+
+    estilo_sistema = ParagraphStyle(
+        "Sistema",
+        parent=estilos["Normal"],
+        alignment=TA_CENTER,
+        fontSize=8,
+        leading=10
+    )
+
+    estilo_titulo = ParagraphStyle(
+        "TituloDocumento",
+        parent=estilos["Normal"],
+        alignment=TA_CENTER,
+        fontSize=14,
+        leading=17,
+        spaceBefore=5,
+        spaceAfter=4
+    )
+
+    # ========================================================
+    # LOGO
+    # ========================================================
+
     if os.path.exists(logo_path):
 
         logo = Image(
             logo_path,
-            width=320,
-            height=79
+            width=245,
+            height=60
         )
 
         logo.hAlign = "CENTER"
@@ -52,85 +90,51 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
         elementos.append(logo)
 
         elementos.append(
-            Spacer(1, 5)
+            Spacer(1, 2)
         )
 
-    estilo_centralizado = ParagraphStyle(
-        "CabecalhoCentralizado",
-        parent=estilos["Normal"],
-        alignment=TA_CENTER,
-        fontSize=12
-    )
+    # ========================================================
+    # IDENTIFICAÇÃO DA ASSOCIAÇÃO
+    # ========================================================
 
     elementos.append(
         Paragraph(
             "<b>ASSOCIAÇÃO CULTURAL DE PERCUSSÃO RUDIMENTAR</b>",
-            ParagraphStyle(
-                "Associacao",
-                parent=estilo_centralizado,
-                fontSize=12,
-                leading=18
-            )
+            estilo_cabecalho
         )
-    )
-
-    elementos.append(
-        Spacer(1, 8)
     )
 
     elementos.append(
         Paragraph(
             "<b>BRILHO NEGRO</b>",
-            ParagraphStyle(
-                "Nome",
-                parent=estilo_centralizado,
-                fontSize=20,
-                leading=24
-            )
+            estilo_nome
         )
-    )
-
-    elementos.append(
-        Spacer(1, 8)
     )
 
     elementos.append(
         Paragraph(
             "Sistema de Gestão de Integrantes",
-            ParagraphStyle(
-                "Sistema",
-                parent=estilo_centralizado,
-                fontSize=11,
-                leading=18
-            )
+            estilo_sistema
         )
+    )
+
+    elementos.append(
+        Spacer(1, 4)
     )
 
     elementos.append(
         HRFlowable(
             width="100%",
-            thickness=1
+            thickness=0.8,
+            color=colors.grey
         )
-    )
-
-    elementos.append(
-        Spacer(1, 20)
     )
 
     elementos.append(
         Paragraph(
             f"<b>{titulo_documento}</b>",
-            ParagraphStyle(
-                "TituloDocumento",
-                parent=estilo_centralizado,
-                fontSize=16,
-                leading=20
-            )
+            estilo_titulo
         )
-    )
-
-    elementos.append(
-        Spacer(1, 20)
     )
 
 
@@ -157,12 +161,12 @@ def adicionar_rodape(canvas, doc):
     if os.path.exists(logo_path):
 
         try:
-            canvas.setFillAlpha(0.10)
+            canvas.setFillAlpha(0.07)
         except Exception:
             pass
 
-        largura_logo = 360
-        altura_logo = 360
+        largura_logo = 300
+        altura_logo = 300
 
         x = (largura - largura_logo) / 2
         y = (altura - altura_logo) / 2
@@ -184,15 +188,15 @@ def adicionar_rodape(canvas, doc):
     canvas.setStrokeColor(colors.grey)
 
     canvas.line(
-        40,
-        50,
-        largura - 40,
-        50
+        35,
+        37,
+        largura - 35,
+        37
     )
 
     canvas.setFont(
         "Helvetica",
-        8
+        7
     )
 
     canvas.setFillColor(
@@ -201,19 +205,14 @@ def adicionar_rodape(canvas, doc):
 
     canvas.drawCentredString(
         largura / 2,
-        35,
+        25,
         "Associação Cultural de Percussão Rudimentar Brilho Negro"
     )
 
     canvas.drawCentredString(
         largura / 2,
-        23,
-        "Documento gerado pelo Sistema de Gestão de Integrantes"
-    )
-
-    canvas.drawCentredString(
-        largura / 2,
-        11,
+        15,
+        f"Documento gerado pelo Sistema de Gestão de Integrantes • "
         f"Emitido em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
     )
 
@@ -270,9 +269,7 @@ def gerar_pdf_fardamento(termo_id):
         ).mappings().first()
 
         if not termo:
-
-            return "Termo não encontrado."
-
+            return "Termo não encontrado.", 404
 
         # ====================================================
         # BUSCAR ITENS DO TERMO
@@ -308,7 +305,6 @@ def gerar_pdf_fardamento(termo_id):
             }
         ).mappings().all()
 
-
         # ====================================================
         # CRIAR PDF
         # ====================================================
@@ -318,53 +314,71 @@ def gerar_pdf_fardamento(termo_id):
         pdf = SimpleDocTemplate(
             arquivo,
             pagesize=A4,
-            rightMargin=40,
-            leftMargin=40,
-            topMargin=40,
-            bottomMargin=60
+            rightMargin=35,
+            leftMargin=35,
+            topMargin=25,
+            bottomMargin=48
         )
 
         elementos = []
 
         estilos = getSampleStyleSheet()
 
-
         # ====================================================
         # ESTILOS
         # ====================================================
 
+        estilo_secao = ParagraphStyle(
+            "Secao",
+            parent=estilos["Normal"],
+            fontSize=9.5,
+            leading=11,
+            alignment=TA_LEFT,
+            spaceBefore=2,
+            spaceAfter=4
+        )
+
         estilo_info = ParagraphStyle(
             "Info",
             parent=estilos["Normal"],
-            fontSize=10.5,
-            leading=17,
+            fontSize=9,
+            leading=12,
             alignment=TA_LEFT
         )
 
         estilo_pequeno = ParagraphStyle(
             "Pequeno",
             parent=estilos["Normal"],
-            fontSize=8.5,
-            leading=11,
+            fontSize=7.7,
+            leading=9.5,
             alignment=TA_LEFT
         )
 
         estilo_centralizado = ParagraphStyle(
             "Centralizado",
             parent=estilos["Normal"],
-            fontSize=9,
-            leading=12,
+            fontSize=7.7,
+            leading=9.5,
             alignment=TA_CENTER
+        )
+
+        estilo_declaracao = ParagraphStyle(
+            "Declaracao",
+            parent=estilos["Normal"],
+            fontSize=9.8,
+            leading=14.5,
+            alignment=TA_JUSTIFY,
+            firstLineIndent=18,
+            spaceAfter=7
         )
 
         estilo_assinatura = ParagraphStyle(
             "Assinatura",
             parent=estilos["Normal"],
-            fontSize=9,
-            leading=13,
+            fontSize=8,
+            leading=10,
             alignment=TA_CENTER
         )
-
 
         # ====================================================
         # CABEÇALHO
@@ -373,40 +387,202 @@ def gerar_pdf_fardamento(termo_id):
         adicionar_cabecalho(
             elementos,
             estilos,
-            "TERMO DE ENTREGA DE FARDAMENTO"
+            "TERMO DE ENTREGA E RESPONSABILIDADE DE FARDAMENTO"
         )
 
+        elementos.append(
+            Spacer(1, 5)
+        )
 
         # ====================================================
         # IDENTIFICAÇÃO DO TERMO
         # ====================================================
 
-        elementos.append(
-            Paragraph(
-                f"<b>Termo:</b> {termo['numero_termo']}",
-                estilo_info
+        data_emissao = "-"
+
+        if termo["data_emissao"]:
+
+            data_emissao = termo["data_emissao"].strftime(
+                "%d/%m/%Y"
             )
-        )
 
-        elementos.append(
-            Paragraph(
-                f"<b>Data de emissão:</b> "
-                f"{termo['data_emissao'].strftime('%d/%m/%Y')}",
-                estilo_info
+        temporada_texto = termo["temporada_nome"] or "-"
+
+        if termo["temporada_ano"]:
+
+            temporada_texto += (
+                f" — {termo['temporada_ano']}"
             )
+
+        dados_termo = [
+            [
+                Paragraph(
+                    "<b>TERMO Nº</b>",
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    "<b>DATA DE EMISSÃO</b>",
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    "<b>STATUS</b>",
+                    estilo_pequeno
+                )
+            ],
+            [
+                Paragraph(
+                    str(termo["numero_termo"] or "-"),
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    data_emissao,
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    str(termo["status"] or "-"),
+                    estilo_pequeno
+                )
+            ]
+        ]
+
+        tabela_termo = Table(
+            dados_termo,
+            colWidths=[170, 170, 140]
+        )
+
+        tabela_termo.setStyle(
+            TableStyle([
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.4,
+                    colors.grey
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    colors.whitesmoke
+                ),
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    3
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    3
+                )
+            ])
         )
 
         elementos.append(
-            Paragraph(
-                f"<b>Status:</b> {termo['status']}",
-                estilo_info
-            )
+            tabela_termo
         )
 
         elementos.append(
-            Spacer(1, 10)
+            Spacer(1, 7)
         )
 
+        # ====================================================
+        # TEMPORADA
+        # ====================================================
+
+        dados_temporada = [
+            [
+                Paragraph(
+                    "<b>TEMPORADA</b>",
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    temporada_texto,
+                    estilo_pequeno
+                )
+            ]
+        ]
+
+        tabela_temporada = Table(
+            dados_temporada,
+            colWidths=[100, 380]
+        )
+
+        tabela_temporada.setStyle(
+            TableStyle([
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.4,
+                    colors.grey
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (0, 0),
+                    colors.whitesmoke
+                ),
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    3
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    3
+                )
+            ])
+        )
+
+        elementos.append(
+            tabela_temporada
+        )
+
+        elementos.append(
+            Spacer(1, 8)
+        )
 
         # ====================================================
         # DADOS DO INTEGRANTE
@@ -415,12 +591,8 @@ def gerar_pdf_fardamento(termo_id):
         elementos.append(
             Paragraph(
                 "<b>DADOS DO INTEGRANTE</b>",
-                estilo_info
+                estilo_secao
             )
-        )
-
-        elementos.append(
-            Spacer(1, 5)
         )
 
         dados_integrante = [
@@ -432,19 +604,7 @@ def gerar_pdf_fardamento(termo_id):
                 Paragraph(
                     "<b>Matrícula</b>",
                     estilo_pequeno
-                )
-            ],
-            [
-                Paragraph(
-                    str(termo["integrante_nome"] or "-"),
-                    estilo_pequeno
                 ),
-                Paragraph(
-                    str(termo["codigo_integrante"] or "-"),
-                    estilo_pequeno
-                )
-            ],
-            [
                 Paragraph(
                     "<b>Função</b>",
                     estilo_pequeno
@@ -455,6 +615,14 @@ def gerar_pdf_fardamento(termo_id):
                 )
             ],
             [
+                Paragraph(
+                    str(termo["integrante_nome"] or "-"),
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    str(termo["codigo_integrante"] or "-"),
+                    estilo_pequeno
+                ),
                 Paragraph(
                     str(termo["funcao"] or "-"),
                     estilo_pequeno
@@ -468,7 +636,7 @@ def gerar_pdf_fardamento(termo_id):
 
         tabela_integrante = Table(
             dados_integrante,
-            colWidths=[330, 150]
+            colWidths=[210, 90, 120, 60]
         )
 
         tabela_integrante.setStyle(
@@ -477,19 +645,13 @@ def gerar_pdf_fardamento(termo_id):
                     "GRID",
                     (0, 0),
                     (-1, -1),
-                    0.5,
+                    0.4,
                     colors.grey
                 ),
                 (
                     "BACKGROUND",
                     (0, 0),
                     (-1, 0),
-                    colors.whitesmoke
-                ),
-                (
-                    "BACKGROUND",
-                    (0, 2),
-                    (-1, 2),
                     colors.whitesmoke
                 ),
                 (
@@ -502,25 +664,25 @@ def gerar_pdf_fardamento(termo_id):
                     "LEFTPADDING",
                     (0, 0),
                     (-1, -1),
-                    6
+                    5
                 ),
                 (
                     "RIGHTPADDING",
                     (0, 0),
                     (-1, -1),
-                    6
+                    5
                 ),
                 (
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
-                    5
+                    4
                 ),
                 (
                     "BOTTOMPADDING",
                     (0, 0),
                     (-1, -1),
-                    5
+                    4
                 )
             ])
         )
@@ -530,42 +692,8 @@ def gerar_pdf_fardamento(termo_id):
         )
 
         elementos.append(
-            Spacer(1, 18)
+            Spacer(1, 9)
         )
-
-
-        # ====================================================
-        # TEMPORADA
-        # ====================================================
-
-        elementos.append(
-            Paragraph(
-                "<b>TEMPORADA</b>",
-                estilo_info
-            )
-        )
-
-        temporada_texto = (
-            termo["temporada_nome"] or "-"
-        )
-
-        if termo["temporada_ano"]:
-
-            temporada_texto += (
-                f" — {termo['temporada_ano']}"
-            )
-
-        elementos.append(
-            Paragraph(
-                temporada_texto,
-                estilo_info
-            )
-        )
-
-        elementos.append(
-            Spacer(1, 18)
-        )
-
 
         # ====================================================
         # ITENS ENTREGUES
@@ -574,81 +702,98 @@ def gerar_pdf_fardamento(termo_id):
         elementos.append(
             Paragraph(
                 "<b>ITENS ENTREGUES</b>",
-                estilo_info
+                estilo_secao
             )
         )
 
-        elementos.append(
-            Spacer(1, 6)
-        )
-
-
         dados_itens = [
-
             [
-                Paragraph("<b>Item</b>", estilo_pequeno),
-                Paragraph("<b>Tipo</b>", estilo_pequeno),
-                Paragraph("<b>Tam. Cad.</b>", estilo_pequeno),
-                Paragraph("<b>Tam. Ent.</b>", estilo_pequeno),
-                Paragraph("<b>Qtd.</b>", estilo_pequeno),
-                Paragraph("<b>Estado</b>", estilo_pequeno)
+                Paragraph(
+                    "<b>Item</b>",
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    "<b>Categoria</b>",
+                    estilo_pequeno
+                ),
+                Paragraph(
+                    "<b>Tam. Cad.</b>",
+                    estilo_centralizado
+                ),
+                Paragraph(
+                    "<b>Tam. Ent.</b>",
+                    estilo_centralizado
+                ),
+                Paragraph(
+                    "<b>Qtd.</b>",
+                    estilo_centralizado
+                ),
+                Paragraph(
+                    "<b>Condição na Entrega</b>",
+                    estilo_pequeno
+                )
             ]
-
         ]
-
 
         for item in itens:
 
             dados_itens.append(
-
                 [
                     Paragraph(
                         str(item["item_nome"] or "-"),
                         estilo_pequeno
                     ),
-
                     Paragraph(
                         str(item["item_tipo"] or "-"),
                         estilo_pequeno
                     ),
-
                     Paragraph(
                         str(item["tamanho_cadastro"] or "-"),
                         estilo_centralizado
                     ),
-
                     Paragraph(
                         str(item["tamanho_entregue"] or "-"),
                         estilo_centralizado
                     ),
-
                     Paragraph(
                         str(item["quantidade"] or 0),
                         estilo_centralizado
                     ),
-
                     Paragraph(
                         str(item["estado_entrega"] or "-"),
                         estilo_pequeno
                     )
                 ]
-
             )
 
+        if not itens:
+
+            dados_itens.append(
+                [
+                    Paragraph(
+                        "Nenhum item registrado neste termo.",
+                        estilo_pequeno
+                    ),
+                    "",
+                    "",
+                    "",
+                    "",
+                    ""
+                ]
+            )
 
         tabela_itens = Table(
             dados_itens,
             colWidths=[
-                100,
+                105,
                 80,
-                65,
-                65,
+                60,
+                60,
                 45,
-                105
+                130
             ],
             repeatRows=1
         )
-
 
         tabela_itens.setStyle(
             TableStyle([
@@ -656,7 +801,7 @@ def gerar_pdf_fardamento(termo_id):
                     "GRID",
                     (0, 0),
                     (-1, -1),
-                    0.5,
+                    0.4,
                     colors.grey
                 ),
                 (
@@ -693,50 +838,60 @@ def gerar_pdf_fardamento(termo_id):
                     "TOPPADDING",
                     (0, 0),
                     (-1, -1),
-                    5
+                    3
                 ),
                 (
                     "BOTTOMPADDING",
                     (0, 0),
                     (-1, -1),
-                    5
+                    3
                 )
             ])
         )
 
+        if not itens:
+
+            tabela_itens.setStyle(
+                TableStyle([
+                    (
+                        "SPAN",
+                        (0, 1),
+                        (5, 1)
+                    ),
+                    (
+                        "ALIGN",
+                        (0, 1),
+                        (5, 1),
+                        "CENTER"
+                    )
+                ])
+            )
 
         elementos.append(
             tabela_itens
         )
-
 
         # ====================================================
         # OBSERVAÇÕES DOS ITENS
         # ====================================================
 
         observacoes_itens = [
-
             item
             for item in itens
             if item["observacao"]
         ]
 
-
         if observacoes_itens:
 
             elementos.append(
-                Spacer(1, 12)
+                Spacer(1, 6)
             )
 
             elementos.append(
                 Paragraph(
                     "<b>OBSERVAÇÕES DOS ITENS</b>",
-                    estilo_info
+                    estilo_secao
                 )
-            )
-
-            elementos.append(
-                Spacer(1, 5)
             )
 
             for item in observacoes_itens:
@@ -749,7 +904,6 @@ def gerar_pdf_fardamento(termo_id):
                     )
                 )
 
-
         # ====================================================
         # OBSERVAÇÃO GERAL
         # ====================================================
@@ -757,13 +911,13 @@ def gerar_pdf_fardamento(termo_id):
         if termo["observacao"]:
 
             elementos.append(
-                Spacer(1, 12)
+                Spacer(1, 6)
             )
 
             elementos.append(
                 Paragraph(
                     "<b>OBSERVAÇÃO GERAL</b>",
-                    estilo_info
+                    estilo_secao
                 )
             )
 
@@ -774,75 +928,155 @@ def gerar_pdf_fardamento(termo_id):
                 )
             )
 
-
         # ====================================================
         # DECLARAÇÃO
         # ====================================================
 
         elementos.append(
-            Spacer(1, 20)
+            Spacer(1, 9)
+        )
+
+        elementos.append(
+            Paragraph(
+                "<b>DECLARAÇÃO DE RECEBIMENTO E RESPONSABILIDADE</b>",
+                estilo_secao
+            )
         )
 
         texto_declaracao = """
-        Declaro que recebi os itens relacionados neste termo, nas
-        quantidades, tamanhos e condições informadas, comprometendo-me
-        a zelar pela sua conservação e utilização adequada durante as
-        atividades da Associação Cultural de Percussão Rudimentar
-        Brilho Negro.
+        Declaro, para os devidos fins, que recebi os itens relacionados neste
+        termo, nas respectivas quantidades, tamanhos e condições nele
+        informadas, passando a mantê-los sob minha guarda e responsabilidade
+        enquanto permanecerem em minha posse.
         """
 
         elementos.append(
             Paragraph(
                 texto_declaracao,
-                estilo_info
+                estilo_declaracao
             )
         )
 
+        texto_declaracao = """
+        Declaro estar ciente de que os itens recebidos pertencem ou estão sob
+        controle da Associação Cultural de Percussão Rudimentar Brilho Negro
+        e destinam-se ao uso nas atividades oficiais da Associação, tais como
+        ensaios, apresentações, eventos, deslocamentos e demais atividades
+        relacionadas à sua finalidade.
+        """
+
+        elementos.append(
+            Paragraph(
+                texto_declaracao,
+                estilo_declaracao
+            )
+        )
+
+        texto_declaracao = """
+        Comprometo-me a utilizar os itens de maneira adequada, compatível com
+        sua finalidade, preservando suas condições de uso e conservação durante
+        o período em que estiverem sob minha guarda. Estou ciente de que o
+        desgaste natural decorrente do uso regular e adequado não caracteriza,
+        por si só, irregularidade.
+        """
+
+        elementos.append(
+            Paragraph(
+                texto_declaracao,
+                estilo_declaracao
+            )
+        )
+
+        texto_declaracao = """
+        Os itens poderão permanecer sob minha guarda durante toda a temporada
+        e nos intervalos entre ensaios, apresentações e demais atividades,
+        não sendo necessária sua devolução após cada utilização. A devolução
+        será realizada quando solicitada pela Associação, ao término da
+        temporada, em caso de substituição ou troca do material, desligamento
+        do integrante ou em qualquer outra situação que justifique o
+        recolhimento ou a atualização do controle patrimonial e de estoque.
+        """
+
+        elementos.append(
+            Paragraph(
+                texto_declaracao,
+                estilo_declaracao
+            )
+        )
+
+        texto_declaracao = """
+        Declaro, ainda, estar ciente de que qualquer perda, extravio, dano
+        anormal ou outra ocorrência que comprometa a utilização dos itens
+        deverá ser comunicada à Associação tão logo seja identificada,
+        permitindo o devido registro e avaliação da situação.
+        """
+
+        elementos.append(
+            Paragraph(
+                texto_declaracao,
+                estilo_declaracao
+            )
+        )
+
+        texto_declaracao = """
+        Por fim, reconheço que este termo constitui o registro formal da
+        entrega dos itens nele relacionados e da respectiva responsabilidade
+        pela guarda enquanto permanecerem sob minha posse, devendo os materiais
+        ser apresentados ou devolvidos sempre que solicitado pela Associação.
+        """
+
+        elementos.append(
+            Paragraph(
+                texto_declaracao,
+                estilo_declaracao
+            )
+        )
 
         # ====================================================
         # ASSINATURAS
         # ====================================================
 
         elementos.append(
-            Spacer(1, 55)
+            Spacer(1, 20)
         )
 
         assinaturas = Table(
             [
                 [
                     Paragraph(
-                        "________________________________",
+                        "__________________________________",
                         estilo_assinatura
                     ),
                     Paragraph(
-                        "________________________________",
+                        "__________________________________",
                         estilo_assinatura
                     )
                 ],
                 [
                     Paragraph(
-                        "Assinatura do Integrante",
+                        "<b>Assinatura do Integrante</b>",
                         estilo_assinatura
                     ),
                     Paragraph(
-                        "Responsável pela Entrega",
+                        "<b>Responsável pela Entrega</b>",
                         estilo_assinatura
                     )
                 ],
                 [
                     Paragraph(
-                        str(termo["integrante_nome"] or ""),
+                        str(
+                            termo["integrante_nome"] or ""
+                        ),
                         estilo_assinatura
                     ),
                     Paragraph(
-                        "",
+                        "Diretoria Brilho Negro",
                         estilo_assinatura
                     )
                 ]
             ],
             colWidths=[240, 240]
         )
-
 
         assinaturas.setStyle(
             TableStyle([
@@ -856,22 +1090,32 @@ def gerar_pdf_fardamento(termo_id):
                     "LEFTPADDING",
                     (0, 0),
                     (-1, -1),
-                    5
+                    4
                 ),
                 (
                     "RIGHTPADDING",
                     (0, 0),
                     (-1, -1),
-                    5
+                    4
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    2
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    2
                 )
             ])
         )
 
-
         elementos.append(
             assinaturas
         )
-
 
         # ====================================================
         # CONSTRUIR PDF
@@ -883,9 +1127,7 @@ def gerar_pdf_fardamento(termo_id):
             onLaterPages=adicionar_rodape
         )
 
-
         arquivo.seek(0)
-
 
         # ====================================================
         # NOME DO ARQUIVO
@@ -908,11 +1150,9 @@ def gerar_pdf_fardamento(termo_id):
             .replace("|", "")
         )
 
-
         nome_arquivo = (
             f"{termo['numero_termo']}_{nome_pessoa}.pdf"
         )
-
 
         # ====================================================
         # RETORNAR PDF
@@ -925,7 +1165,6 @@ def gerar_pdf_fardamento(termo_id):
             mimetype="application/pdf"
         )
 
-
     except Exception as e:
 
         print(
@@ -937,7 +1176,6 @@ def gerar_pdf_fardamento(termo_id):
             "Erro ao gerar o PDF do termo.",
             500
         )
-
 
     finally:
 
