@@ -241,28 +241,41 @@ Entregas de Fardamento
 
                             <td class="text-center">
 
+                            <div class="d-flex justify-content-center gap-1">
+
                                 <a
                                     href="/admin/fardamento/termo/{{ termo.id }}"
                                     class="btn btn-sm btn-outline-primary"
-                                    title="Ver termo">
+                                    title="Visualizar entrega">
 
-                                    👁️
+                                    👁️ Ver
 
                                 </a>
 
 
                                 <a
                                     href="/admin/fardamento/termo/{{ termo.id }}/pdf"
-                                    class="btn btn-sm btn-outline-danger"
+                                    class="btn btn-sm btn-outline-secondary"
                                     title="Gerar PDF">
 
-                                    📄
+                                    📄 PDF
 
                                 </a>
 
-                            </td>
 
-                        </tr>
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Excluir entrega"
+                                    onclick="excluirTermo({{ termo.id }})">
+
+                                    🗑️ Excluir
+
+                                </button>
+
+                            </div>
+
+                        </td>
 
                         {% endfor %}
 
@@ -309,5 +322,72 @@ Entregas de Fardamento
     </div>
 
 </div>
+
+<script>
+
+function excluirEntrega(id, numeroTermo) {
+
+    const confirmar = confirm(
+        "⚠️ ATENÇÃO!\n\n" +
+        "Você está prestes a excluir a entrega:\n\n" +
+        numeroTermo +
+        "\n\n" +
+        "A entrega e os itens vinculados a ela serão removidos.\n\n" +
+        "Essa ação não poderá ser desfeita.\n\n" +
+        "Deseja realmente continuar?"
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    fetch(`/admin/fardamento/termo/${id}/excluir`, {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        }
+
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        if (data.sucesso) {
+
+            alert(data.mensagem);
+
+            window.location.reload();
+
+        } else {
+
+            alert(
+                data.mensagem ||
+                "Não foi possível excluir a entrega."
+            );
+
+        }
+
+    })
+
+    .catch(error => {
+
+        console.error(
+            "ERRO AO EXCLUIR ENTREGA:",
+            error
+        );
+
+        alert(
+            "Ocorreu um erro ao excluir a entrega."
+        );
+
+    });
+
+}
+
+</script>
 
 {% endblock %}

@@ -2178,6 +2178,150 @@ def ver_termo_fardamento(id):
 
         db.close()
 
+@app.route("/admin/fardamento/termo/<int:id>/excluir", methods=["POST"])
+def excluir_termo_fardamento(id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        # =====================================================
+        # BUSCAR TERMO
+        # =====================================================
+
+        termo = db.execute(
+            text("""
+                SELECT
+                    id,
+                    numero_termo,
+                    tipo,
+                    status
+                FROM termos
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+
+        if not termo:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Termo de entrega não encontrado."
+            }), 404
+
+
+        # =====================================================
+        # BUSCAR ITENS DO TERMO
+        # =====================================================
+
+        termo_itens = db.execute(
+            text("""
+                SELECT id
+                FROM termo_itens
+                WHERE termo_id = :termo_id
+            """),
+            {
+                "termo_id": id
+            }
+        ).scalars().all()
+
+
+        # =====================================================
+        # EXCLUIR MOVIMENTAÇÕES
+        # =====================================================
+
+        for termo_item_id in termo_itens:
+
+            db.execute(
+                text("""
+                    DELETE FROM termo_movimentacoes
+                    WHERE termo_item_id = :termo_item_id
+                """),
+                {
+                    "termo_item_id": termo_item_id
+                }
+            )
+
+
+        # =====================================================
+        # EXCLUIR ITENS DO TERMO
+        # =====================================================
+
+        db.execute(
+            text("""
+                DELETE FROM termo_itens
+                WHERE termo_id = :termo_id
+            """),
+            {
+                "termo_id": id
+            }
+        )
+
+
+        # =====================================================
+        # EXCLUIR TERMO
+        # =====================================================
+
+        db.execute(
+            text("""
+                DELETE FROM termos
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
+
+
+        # =====================================================
+        # CONFIRMAR
+        # =====================================================
+
+        db.commit()
+
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": (
+                f'Termo {termo["numero_termo"]} '
+                'excluído com sucesso.'
+            )
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO EXCLUIR TERMO DE FARDAMENTO:",
+            e
+        )
+
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": (
+                "Erro ao excluir o termo de entrega."
+            )
+        }), 500
+
+
+    finally:
+
+        db.close()
+
 @app.route("/admin/fardamento/termo/<int:termo_id>/pdf")
 def pdf_fardamento(termo_id):
 
