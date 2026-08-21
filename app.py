@@ -4,7 +4,10 @@ from openpyxl.styles import Font, Alignment
 from urllib.parse import quote
 from flask import send_file
 from io import BytesIO
-from utils.pdf_fardamento import gerar_pdf_fardamento
+from utils.pdf_fardamento import (
+    gerar_pdf_fardamento,
+    gerar_pdf_todos_fardamentos
+)
 from utils.pdf_carteirinha import (
     gerar_pdf_carteirinha,
     gerar_pdf_todas_carteirinhas
@@ -2681,6 +2684,18 @@ def pdf_fardamento(termo_id):
         return "Não autorizado.", 403
 
     return gerar_pdf_fardamento(termo_id)
+
+# ============================================================
+# PDF DE TODOS OS TERMOS DE FARDAMENTO
+# ============================================================
+
+@app.route("/admin/fardamento/termos/pdf")
+def pdf_todos_fardamentos():
+
+    if not usuario_tem_permissao("fardamento"):
+        return "Não autorizado.", 403
+
+    return gerar_pdf_todos_fardamentos()
 
 @app.route("/admin/patrimonio")
 def patrimonio():
