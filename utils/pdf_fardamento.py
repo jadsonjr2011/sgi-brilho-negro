@@ -1070,7 +1070,7 @@ def gerar_pdf_fardamento(termo_id):
                             estilo_assinatura
                         ),
                         Paragraph(
-                            "Centro Educacional Fonte do Saber",
+                            "Colégio Fonte",
                             estilo_assinatura
                         )
                     ]
@@ -2209,7 +2209,7 @@ def gerar_pdf_todos_fardamentos():
                         ),
 
                         Paragraph(
-                            "Centro Educacional Fonte do Saber",
+                            "Colégio Fonte",
                             estilo_assinatura
                         )
 
