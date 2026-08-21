@@ -778,7 +778,9 @@ def gerar_pdf_fardamento(termo_id):
                             estilo_centralizado
                         ),
                         Paragraph(
-                            str(item["item_tipo"] or "-"),
+                            "CALÇADO"
+                            if item["item_tipo"] == "CALCADO"
+                            else str(item["item_tipo"] or "-"),
                             estilo_centralizado
                         ),
                         Paragraph(
@@ -1846,9 +1848,9 @@ def gerar_pdf_todos_fardamentos():
                         ),
 
                         Paragraph(
-                            str(
-                                item["item_tipo"] or "-"
-                            ),
+                            "CALÇADO"
+                            if item["item_tipo"] == "CALCADO"
+                            else str(item["item_tipo"] or "-"),
                             estilo_centralizado
                         ),
 
