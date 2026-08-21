@@ -10000,21 +10000,17 @@ def salvar_prestacao(id):
         # STATUS
         # ==========================================
 
-        if valor_devido == 0:
+        if quantidade_vendida == 0 and valor_entregue == 0:
+            status_prestacao = "PENDENTE"
 
+        elif (
+            quantidade_vendida == prestacao.quantidade_numeros
+            and valor_entregue >= valor_devido
+        ):
             status_prestacao = "PRESTADO"
-
-        elif valor_entregue >= valor_devido:
-
-            status_prestacao = "PRESTADO"
-
-        elif valor_entregue > 0:
-
-            status_prestacao = "PARCIAL"
 
         else:
-
-            status_prestacao = "PENDENTE"
+            status_prestacao = "PARCIAL"
 
 
         # ==========================================
@@ -10095,30 +10091,6 @@ def salvar_prestacao(id):
                         "observacao": observacao
                     }
                 )
-
-            else:
-
-                # ------------------------------
-                # DEVOLVIDO
-                # ------------------------------
-
-                db.execute(
-                    text("""
-                        UPDATE rifas_numeros
-
-                        SET
-                            status = 'DEVOLVIDO',
-                            data_venda = NULL,
-                            observacao = :observacao
-
-                        WHERE id = :numero_id
-                    """),
-                    {
-                        "numero_id": numero.id,
-                        "observacao": observacao
-                    }
-                )
-
 
         # ==========================================
         # ATUALIZAR PRESTAÇÃO
