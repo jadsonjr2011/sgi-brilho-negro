@@ -1287,6 +1287,12 @@ def salvar_grupo_entrega():
             "mensagem": "Informe o nome do grupo."
         }), 400
 
+    if not temporada_id:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Selecione uma temporada para o grupo."
+        }), 400
 
     db = SessionLocal()
 

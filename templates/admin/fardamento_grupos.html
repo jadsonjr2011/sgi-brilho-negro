@@ -442,6 +442,7 @@ Grupos de Entrega
                         class="form-label bn-label">
 
                         📅 Temporada
+                        <span class="text-danger">*</span>
 
                     </label>
 
@@ -450,7 +451,7 @@ Grupos de Entrega
                         id="grupo_temporada">
 
                         <option value="">
-                            Não informada
+                            Selecione uma temporada
                         </option>
 
                         {% for temporada in temporadas %}
@@ -470,7 +471,7 @@ Grupos de Entrega
                     </select>
 
                     <div class="form-text">
-                        Vincule o grupo à temporada correspondente.
+                        Selecione a temporada correspondente ao grupo.
                     </div>
 
                 </div>
@@ -908,6 +909,18 @@ function salvarGrupo() {
         alert(
             "Informe o nome do grupo."
         );
+
+        return;
+    }
+
+
+    if (!temporadaId) {
+
+        alert(
+            "Selecione uma temporada para o grupo."
+        );
+
+    document.getElementById("grupo_temporada").focus();
 
         return;
     }
