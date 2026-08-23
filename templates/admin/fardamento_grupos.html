@@ -32,14 +32,6 @@ Grupos de Entrega
 
         <div class="d-flex gap-2">
 
-            <a
-                href="/admin/fardamento"
-                class="btn btn-secondary">
-
-                ← Fardamento
-
-            </a>
-
             <button
                 type="button"
                 class="btn btn-primary"
@@ -263,10 +255,7 @@ Grupos de Entrega
                                         type="button"
                                         class="btn btn-sm btn-outline-danger"
                                         title="Excluir grupo"
-                                        onclick="excluirGrupo(
-                                            {{ grupo.id }},
-                                            {{ grupo.nome|tojson }}
-                                        )">
+                                        onclick="excluirGrupo({{ grupo.id }})">
 
                                         🗑️
 
@@ -337,30 +326,55 @@ Grupos de Entrega
     tabindex="-1"
     aria-hidden="true">
 
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
 
-        <div class="modal-content">
+        <div class="modal-content bn-modal">
 
-            <div class="modal-header">
+            <!-- ================================================= -->
+            <!-- CABEÇALHO                                         -->
+            <!-- ================================================= -->
 
-                <h5
-                    class="modal-title"
-                    id="modalGrupoTitulo">
+            <div class="modal-header bn-modal-header">
 
-                    📦 Novo Grupo
+                <div>
 
-                </h5>
+                    <div class="bn-modal-icon">
+                        📦
+                    </div>
+
+                    <div>
+
+                        <h5
+                            class="modal-title"
+                            id="modalGrupoTitulo">
+
+                            Novo Grupo
+
+                        </h5>
+
+                        <small>
+                            Organize as entregas de fardamento
+                        </small>
+
+                    </div>
+
+                </div>
 
                 <button
                     type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
                 </button>
 
             </div>
 
 
-            <div class="modal-body">
+            <!-- ================================================= -->
+            <!-- CORPO                                             -->
+            <!-- ================================================= -->
+
+            <div class="modal-body bn-modal-body">
 
                 <input
                     type="hidden"
@@ -369,48 +383,70 @@ Grupos de Entrega
 
                 <!-- NOME -->
 
-                <div class="mb-3">
+                <div class="mb-4">
 
-                    <label class="form-label">
-                        Nome do grupo *
+                    <label
+                        for="grupo_nome"
+                        class="form-label bn-label">
+
+                        📦 Nome do grupo
+                        <span class="text-danger">*</span>
+
                     </label>
 
                     <input
                         type="text"
-                        class="form-control"
+                        class="form-control bn-input"
                         id="grupo_nome"
-                        placeholder="Ex.: Fardamento Agosto 2026">
+                        placeholder="Ex.: Fardamento Agosto 2026"
+                        autocomplete="off">
+
+                    <div class="form-text">
+                        Informe um nome para identificar este grupo de entregas.
+                    </div>
 
                 </div>
 
 
                 <!-- DESCRIÇÃO -->
 
-                <div class="mb-3">
+                <div class="mb-4">
 
-                    <label class="form-label">
-                        Descrição
+                    <label
+                        for="grupo_descricao"
+                        class="form-label bn-label">
+
+                        📝 Descrição
+
                     </label>
 
                     <textarea
-                        class="form-control"
+                        class="form-control bn-input"
                         id="grupo_descricao"
                         rows="3"
                         placeholder="Descrição opcional do grupo"></textarea>
+
+                    <div class="form-text">
+                        Você pode adicionar uma observação para facilitar a identificação.
+                    </div>
 
                 </div>
 
 
                 <!-- TEMPORADA -->
 
-                <div class="mb-3">
+                <div class="mb-2">
 
-                    <label class="form-label">
-                        Temporada
+                    <label
+                        for="grupo_temporada"
+                        class="form-label bn-label">
+
+                        📅 Temporada
+
                     </label>
 
                     <select
-                        class="form-select"
+                        class="form-select bn-input"
                         id="grupo_temporada">
 
                         <option value="">
@@ -433,29 +469,39 @@ Grupos de Entrega
 
                     </select>
 
+                    <div class="form-text">
+                        Vincule o grupo à temporada correspondente.
+                    </div>
+
                 </div>
 
             </div>
 
 
-            <div class="modal-footer">
+            <!-- ================================================= -->
+            <!-- RODAPÉ                                             -->
+            <!-- ================================================= -->
+
+            <div class="modal-footer bn-modal-footer">
 
                 <button
                     type="button"
-                    class="btn btn-secondary"
+                    class="btn btn-light bn-btn-cancelar"
                     data-bs-dismiss="modal">
 
                     Cancelar
 
                 </button>
 
-
                 <button
                     type="button"
-                    class="btn btn-primary"
+                    class="btn btn-primary bn-btn-salvar"
                     onclick="salvarGrupo()">
 
-                    💾 Salvar Grupo
+                    💾
+                    <span id="textoBotaoSalvar">
+                        Salvar Grupo
+                    </span>
 
                 </button>
 
@@ -467,6 +513,297 @@ Grupos de Entrega
 
 </div>
 
+<style>
+
+<style>
+
+/* ========================================================= */
+/* MODAL GRUPOS DE ENTREGA                                   */
+/* ========================================================= */
+
+.bn-modal {
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    background: #1f2227;
+
+    color: #fff;
+
+    box-shadow:
+        0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+
+/* ========================================================= */
+/* CABEÇALHO                                                 */
+/* ========================================================= */
+
+.bn-modal-header {
+
+    background: #17191d;
+
+    color: #fff;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bn-modal-header > div:first-child {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+}
+
+.bn-modal-icon {
+
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+
+    font-size: 21px;
+}
+
+.bn-modal-header .modal-title {
+
+    margin: 0;
+
+    font-size: 18px;
+
+    font-weight: 600;
+
+    color: #fff;
+}
+
+.bn-modal-header small {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color: #9ca3af;
+
+    font-size: 12px;
+}
+
+
+/* ========================================================= */
+/* CORPO                                                      */
+/* ========================================================= */
+
+.bn-modal-body {
+
+    padding: 25px 24px 20px;
+
+    background: #1f2227;
+}
+
+
+/* ========================================================= */
+/* LABELS                                                     */
+/* ========================================================= */
+
+.bn-label {
+
+    font-weight: 600;
+
+    font-size: 13px;
+
+    color: #e5e7eb;
+
+    margin-bottom: 8px;
+}
+
+
+/* ========================================================= */
+/* CAMPOS                                                     */
+/* ========================================================= */
+
+.bn-input {
+
+    background: #292d33;
+
+    border: 1px solid #3b4048;
+
+    color: #f1f3f5;
+
+    border-radius: 9px;
+
+    padding: 10px 12px;
+
+    font-size: 14px;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+
+.bn-input::placeholder {
+
+    color: #7f8791;
+}
+
+.bn-input:focus {
+
+    background: #2d3239;
+
+    color: #fff;
+
+    border-color: #6c757d;
+
+    box-shadow:
+        0 0 0 3px rgba(108, 117, 125, 0.15);
+}
+
+
+/* SELECT */
+
+select.bn-input {
+
+    color: #f1f3f5;
+
+}
+
+select.bn-input option {
+
+    background: #292d33;
+
+    color: #fff;
+}
+
+
+/* TEXTAREA */
+
+textarea.bn-input {
+
+    resize: vertical;
+}
+
+
+/* ========================================================= */
+/* TEXTO DE AJUDA                                             */
+/* ========================================================= */
+
+.bn-modal .form-text {
+
+    font-size: 11px;
+
+    color: #7f8791;
+
+    margin-top: 6px;
+}
+
+
+/* ========================================================= */
+/* RODAPÉ                                                     */
+/* ========================================================= */
+
+.bn-modal-footer {
+
+    background: #191b1f;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+
+    padding: 14px 20px;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 8px;
+}
+
+
+/* ========================================================= */
+/* CANCELAR                                                   */
+/* ========================================================= */
+
+.bn-btn-cancelar {
+
+    background: #292d33;
+
+    color: #d1d5db;
+
+    border: 1px solid #3b4048;
+
+    border-radius: 8px;
+
+    padding: 8px 16px;
+
+    font-size: 13px;
+
+    font-weight: 500;
+}
+
+.bn-btn-cancelar:hover {
+
+    background: #343941;
+
+    color: #fff;
+}
+
+
+/* ========================================================= */
+/* SALVAR                                                     */
+/* ========================================================= */
+
+.bn-btn-salvar {
+
+    border-radius: 8px;
+
+    padding: 8px 17px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+/* ========================================================= */
+/* ANIMAÇÃO                                                   */
+/* ========================================================= */
+
+#modalGrupo .modal-dialog {
+
+    transform: translateY(-8px);
+
+    transition: transform 0.2s ease;
+}
+
+#modalGrupo.show .modal-dialog {
+
+    transform: translateY(0);
+}
+
+
+/* ========================================================= */
+/* FUNDO ATRÁS DO MODAL                                       */
+/* ========================================================= */
+
+.modal-backdrop.show {
+
+    opacity: 0.75;
+}
+
+</style>
 
 <!-- ========================================================= -->
 <!-- JAVASCRIPT                                                -->
@@ -525,7 +862,7 @@ function editarGrupo(id) {
                 grupo.temporada_id || "";
 
             document.getElementById("modalGrupoTitulo").innerText =
-                "✏️ Editar Grupo";
+                "Editar Grupo";
 
             const modal = new bootstrap.Modal(
                 document.getElementById("modalGrupo")
@@ -668,17 +1005,51 @@ function excluirGrupo(id, nome) {
     fetch(
         `/admin/fardamento/grupos/${id}/excluir`,
         {
-
             method: "POST",
 
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
             }
-
         }
     )
 
-    .then(response => response.json())
+    .then(async response => {
+
+        const texto = await response.text();
+
+        let data;
+
+        try {
+            data = JSON.parse(texto);
+        }
+
+        catch (e) {
+
+            console.error(
+                "RESPOSTA NÃO JSON:",
+                texto
+            );
+
+            throw new Error(
+                "O servidor não retornou uma resposta válida."
+            );
+        }
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.mensagem ||
+                data.erro ||
+                "Erro ao excluir o grupo."
+            );
+        }
+
+
+        return data;
+
+    })
 
     .then(data => {
 
@@ -688,14 +1059,14 @@ function excluirGrupo(id, nome) {
 
             window.location.reload();
 
-        } else {
-
-            alert(
-                data.mensagem ||
-                "Não foi possível excluir o grupo."
-            );
-
+            return;
         }
+
+
+        alert(
+            data.mensagem ||
+            "Não foi possível excluir o grupo."
+        );
 
     })
 
@@ -707,6 +1078,7 @@ function excluirGrupo(id, nome) {
         );
 
         alert(
+            error.message ||
             "Ocorreu um erro ao excluir o grupo."
         );
 

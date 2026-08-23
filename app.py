@@ -1518,17 +1518,20 @@ def excluir_grupo_entrega(id):
             "mensagem": "Não autorizado."
         }), 403
 
-
     db = SessionLocal()
 
-
     try:
+
+        # =====================================================
+        # BUSCAR GRUPO
+        # =====================================================
 
         grupo = db.execute(
             text("""
                 SELECT
                     id,
-                    nome
+                    nome,
+                    status
                 FROM grupos_entrega
                 WHERE id = :id
             """),
@@ -1536,7 +1539,6 @@ def excluir_grupo_entrega(id):
                 "id": id
             }
         ).mappings().first()
-
 
         if not grupo:
 
@@ -1547,10 +1549,10 @@ def excluir_grupo_entrega(id):
 
 
         # =====================================================
-        # VERIFICAR SE POSSUI TERMOS
+        # VERIFICAR TERMOS VINCULADOS
         # =====================================================
 
-        quantidade = db.execute(
+        quantidade_termos = db.execute(
             text("""
                 SELECT COUNT(*)
                 FROM termos
@@ -1559,25 +1561,26 @@ def excluir_grupo_entrega(id):
             {
                 "grupo_id": id
             }
-        ).scalar()
+        ).scalar() or 0
 
 
-        if quantidade > 0:
+        if quantidade_termos > 0:
 
             return jsonify({
                 "sucesso": False,
                 "mensagem": (
-                    "Não é possível excluir este grupo "
-                    "porque existem entregas vinculadas a ele."
+                    f'Não é possível excluir o grupo '
+                    f'"{grupo["nome"]}" porque existem '
+                    f'{quantidade_termos} entrega(s) vinculada(s) a ele.'
                 )
             }), 400
 
 
         # =====================================================
-        # EXCLUIR
+        # EXCLUIR GRUPO
         # =====================================================
 
-        db.execute(
+        resultado = db.execute(
             text("""
                 DELETE FROM grupos_entrega
                 WHERE id = :id
@@ -1588,6 +1591,20 @@ def excluir_grupo_entrega(id):
         )
 
 
+        # =====================================================
+        # GARANTIR QUE REALMENTE FOI EXCLUÍDO
+        # =====================================================
+
+        if resultado.rowcount == 0:
+
+            db.rollback()
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "O grupo não pôde ser excluído."
+            }), 400
+
+
         db.commit()
 
 
@@ -1595,7 +1612,7 @@ def excluir_grupo_entrega(id):
             "sucesso": True,
             "mensagem": (
                 f'Grupo "{grupo["nome"]}" '
-                "excluído com sucesso."
+                'excluído com sucesso.'
             )
         })
 
@@ -1605,13 +1622,30 @@ def excluir_grupo_entrega(id):
         db.rollback()
 
         print(
-            "ERRO AO EXCLUIR GRUPO DE ENTREGA:",
-            e
+            "=================================================="
+        )
+        print(
+            "ERRO AO EXCLUIR GRUPO DE ENTREGA"
+        )
+        print(
+            "GRUPO ID:",
+            id
+        )
+        print(
+            "ERRO:",
+            repr(e)
+        )
+        print(
+            "=================================================="
         )
 
         return jsonify({
             "sucesso": False,
-            "mensagem": "Erro ao excluir o grupo."
+            "mensagem": (
+                "Não foi possível excluir o grupo. "
+                "Verifique se existem registros vinculados a ele."
+            ),
+            "erro": str(e)
         }), 500
 
 
