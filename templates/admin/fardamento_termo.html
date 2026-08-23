@@ -302,89 +302,118 @@ Termo de Fardamento
 
 
 <!-- ===================================================== -->
-<!-- INTEGRANTE                                            -->
+<!-- INTEGRANTE                                           -->
 <!-- ===================================================== -->
 
-<div class="termo-card">
+<h6 class="mb-3">
+    👤 Integrante
+</h6>
 
-    <h5 class="mb-3">
-        👤 Integrante
-    </h5>
+<label class="form-label">
+    Selecione o integrante
+</label>
+
+<select
+    id="integranteTermo"
+    name="integrante_id"
+    class="form-select">
+
+    <option value="">
+        Selecione...
+    </option>
+
+    {% if integrantes %}
+
+        {% for integrante in integrantes %}
+
+            <option
+                value="{{ integrante.id }}"
+                data-nome="{{ integrante.nome }}"
+                data-codigo="{{ integrante.codigo_integrante or '' }}"
+                data-funcao="{{ integrante.funcao or '' }}"
+                data-calcado="{{ integrante.calcado or '' }}"
+            >
+                {{ integrante.nome }}
+                {% if integrante.codigo_integrante %}
+                    — {{ integrante.codigo_integrante }}
+                {% endif %}
+            </option>
+
+        {% endfor %}
+
+    {% else %}
+
+        <option value="" disabled>
+            Nenhum integrante ativo encontrado
+        </option>
+
+    {% endif %}
+
+</select>
+
+<div class="small text-secondary mt-2">
+
+    {{ integrantes|length }} integrante(s) disponível(is)
+
+</div>
 
 
-    <div class="row g-3">
+<!-- ===================================================== -->
+<!-- INFORMAÇÕES DO INTEGRANTE                            -->
+<!-- ===================================================== -->
+
+<div
+    id="infoIntegrante"
+    class="integrante-info"
+    style="display:none;">
+
+    <div class="row">
 
         <div class="col-md-5">
 
-            <div class="info-box">
+            <small>
+                Integrante
+            </small>
 
-                <span class="info-label">
-                    Nome
-                </span>
+            <br>
 
-                <span class="info-value">
-                    {{ termo.integrante_nome }}
-                </span>
-
-            </div>
+            <strong id="infoNome">
+                -
+            </strong>
 
         </div>
-
 
         <div class="col-md-3">
 
-            <div class="info-box">
+            <small>
+                Matrícula
+            </small>
 
-                <span class="info-label">
-                    Matrícula
-                </span>
+            <br>
 
-                <span class="info-value">
-                    {{ termo.codigo_integrante or '-' }}
-                </span>
-
-            </div>
+            <strong id="infoCodigo">
+                -
+            </strong>
 
         </div>
 
+        <div class="col-md-4">
 
-        <div class="col-md-2">
+            <small>
+                Função
+            </small>
 
-            <div class="info-box">
+            <br>
 
-                <span class="info-label">
-                    Função
-                </span>
-
-                <span class="info-value">
-                    {{ termo.funcao or '-' }}
-                </span>
-
-            </div>
-
-        </div>
-
-
-        <div class="col-md-2">
-
-            <div class="info-box">
-
-                <span class="info-label">
-                    Calçado cadastro
-                </span>
-
-                <span class="info-value">
-                    {{ termo.calcado or '-' }}
-                </span>
-
-            </div>
+            <strong id="infoFuncao">
+                -
+            </strong>
 
         </div>
 
     </div>
 
 </div>
-
 
 <!-- ===================================================== -->
 <!-- TEMPORADA                                             -->

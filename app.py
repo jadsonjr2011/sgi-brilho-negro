@@ -6,7 +6,8 @@ from flask import send_file
 from io import BytesIO
 from utils.pdf_fardamento import (
     gerar_pdf_fardamento,
-    gerar_pdf_todos_fardamentos
+    gerar_pdf_todos_fardamentos,
+    gerar_pdf_grupo_fardamento
 )
 from utils.pdf_carteirinha import (
     gerar_pdf_carteirinha,
@@ -1165,6 +1166,715 @@ def fardamento_admin():
 
         db.close()
 
+@app.route("/admin/fardamento/grupos")
+def fardamento_grupos():
+
+    if not usuario_tem_permissao("fardamento"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        grupos = db.execute(
+            text("""
+                SELECT
+                    g.id,
+                    g.nome,
+                    g.descricao,
+                    g.status,
+                    g.data_cadastro,
+
+                    t.id AS temporada_id,
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano,
+
+                    COUNT(tm.id) AS quantidade_termos
+
+                FROM grupos_entrega g
+
+                LEFT JOIN temporadas t
+                    ON t.id = g.temporada_id
+
+                LEFT JOIN termos tm
+                    ON tm.grupo_id = g.id
+
+                GROUP BY
+                    g.id,
+                    g.nome,
+                    g.descricao,
+                    g.status,
+                    g.data_cadastro,
+                    t.id,
+                    t.nome,
+                    t.ano
+
+                ORDER BY
+                    g.id DESC
+            """)
+        ).mappings().all()
+
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano,
+                    status
+                FROM temporadas
+                ORDER BY ano DESC, id DESC
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/fardamento_grupos.html",
+            grupos=grupos,
+            temporadas=temporadas
+        )
+
+    except Exception as e:
+
+        print(
+            "ERRO AO LISTAR GRUPOS DE ENTREGA:",
+            e
+        )
+
+        return "Erro ao carregar grupos de entrega.", 500
+
+    finally:
+        db.close()
+
+@app.route(
+    "/admin/fardamento/grupos/salvar",
+    methods=["POST"]
+)
+def salvar_grupo_entrega():
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    dados = request.get_json(silent=True)
+
+
+    if not dados:
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Dados não recebidos."
+        }), 400
+
+
+    grupo_id = dados.get("id")
+
+    nome = (
+        dados.get("nome") or ""
+    ).strip()
+
+    descricao = (
+        dados.get("descricao") or ""
+    ).strip()
+
+    temporada_id = dados.get("temporada_id")
+
+
+    if not nome:
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Informe o nome do grupo."
+        }), 400
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        # =====================================================
+        # VALIDAR TEMPORADA
+        # =====================================================
+
+        if temporada_id:
+
+            temporada = db.execute(
+                text("""
+                    SELECT id
+                    FROM temporadas
+                    WHERE id = :id
+                """),
+                {
+                    "id": temporada_id
+                }
+            ).scalar()
+
+
+            if not temporada:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Temporada não encontrada."
+                }), 400
+
+
+        # =====================================================
+        # EDITAR
+        # =====================================================
+
+        if grupo_id:
+
+            grupo = db.execute(
+                text("""
+                    SELECT
+                        id,
+                        nome
+                    FROM grupos_entrega
+                    WHERE id = :id
+                """),
+                {
+                    "id": grupo_id
+                }
+            ).mappings().first()
+
+
+            if not grupo:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": "Grupo não encontrado."
+                }), 404
+
+
+            # -------------------------------------------------
+            # VERIFICAR DUPLICIDADE
+            # -------------------------------------------------
+
+            duplicado = db.execute(
+                text("""
+                    SELECT id
+                    FROM grupos_entrega
+                    WHERE LOWER(nome) = LOWER(:nome)
+                      AND id <> :id
+                      AND status = 'ATIVO'
+                """),
+                {
+                    "nome": nome,
+                    "id": grupo_id
+                }
+            ).scalar()
+
+
+            if duplicado:
+
+                return jsonify({
+                    "sucesso": False,
+                    "mensagem": (
+                        "Já existe outro grupo ativo "
+                        "com esse nome."
+                    )
+                }), 400
+
+
+            # -------------------------------------------------
+            # ATUALIZAR
+            # -------------------------------------------------
+
+            db.execute(
+                text("""
+                    UPDATE grupos_entrega
+                    SET
+                        nome = :nome,
+                        descricao = :descricao,
+                        temporada_id = :temporada_id
+                    WHERE id = :id
+                """),
+                {
+                    "id": grupo_id,
+                    "nome": nome,
+                    "descricao": descricao or None,
+                    "temporada_id": (
+                        temporada_id or None
+                    )
+                }
+            )
+
+
+            db.commit()
+
+
+            return jsonify({
+                "sucesso": True,
+                "mensagem": (
+                    f'Grupo "{nome}" atualizado com sucesso.'
+                )
+            })
+
+
+        # =====================================================
+        # NOVO GRUPO
+        # =====================================================
+
+        duplicado = db.execute(
+            text("""
+                SELECT id
+                FROM grupos_entrega
+                WHERE LOWER(nome) = LOWER(:nome)
+                  AND status = 'ATIVO'
+            """),
+            {
+                "nome": nome
+            }
+        ).scalar()
+
+
+        if duplicado:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": (
+                    "Já existe um grupo ativo "
+                    "com esse nome."
+                )
+            }), 400
+
+
+        grupo = db.execute(
+            text("""
+                INSERT INTO grupos_entrega (
+                    nome,
+                    descricao,
+                    temporada_id,
+                    status,
+                    usuario_id
+                )
+                VALUES (
+                    :nome,
+                    :descricao,
+                    :temporada_id,
+                    'ATIVO',
+                    :usuario_id
+                )
+                RETURNING id, nome
+            """),
+            {
+                "nome": nome,
+                "descricao": descricao or None,
+                "temporada_id": (
+                    temporada_id or None
+                ),
+                "usuario_id": session.get(
+                    "usuario_id"
+                )
+            }
+        ).mappings().first()
+
+
+        db.commit()
+
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": (
+                f'Grupo "{grupo["nome"]}" '
+                "criado com sucesso."
+            ),
+            "grupo": {
+                "id": grupo["id"],
+                "nome": grupo["nome"]
+            }
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO SALVAR GRUPO DE ENTREGA:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao salvar o grupo."
+        }), 500
+
+
+    finally:
+
+        db.close()
+
+@app.route(
+    "/admin/fardamento/grupos/<int:id>/excluir",
+    methods=["POST"]
+)
+def excluir_grupo_entrega(id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+
+    db = SessionLocal()
+
+
+    try:
+
+        grupo = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome
+                FROM grupos_entrega
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+
+        if not grupo:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Grupo não encontrado."
+            }), 404
+
+
+        # =====================================================
+        # VERIFICAR SE POSSUI TERMOS
+        # =====================================================
+
+        quantidade = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM termos
+                WHERE grupo_id = :grupo_id
+            """),
+            {
+                "grupo_id": id
+            }
+        ).scalar()
+
+
+        if quantidade > 0:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": (
+                    "Não é possível excluir este grupo "
+                    "porque existem entregas vinculadas a ele."
+                )
+            }), 400
+
+
+        # =====================================================
+        # EXCLUIR
+        # =====================================================
+
+        db.execute(
+            text("""
+                DELETE FROM grupos_entrega
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
+
+
+        db.commit()
+
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": (
+                f'Grupo "{grupo["nome"]}" '
+                "excluído com sucesso."
+            )
+        })
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO EXCLUIR GRUPO DE ENTREGA:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao excluir o grupo."
+        }), 500
+
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/fardamento/grupos/<int:grupo_id>")
+def fardamento_grupo(grupo_id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # BUSCAR GRUPO
+        # =====================================================
+
+        grupo = db.execute(
+            text("""
+                SELECT
+                    g.id,
+                    g.nome,
+                    g.descricao,
+                    g.status,
+                    g.temporada_id,
+
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano
+
+                FROM grupos_entrega g
+
+                LEFT JOIN temporadas t
+                    ON t.id = g.temporada_id
+
+                WHERE g.id = :id
+            """),
+            {
+                "id": grupo_id
+            }
+        ).mappings().first()
+
+        if not grupo:
+            return "Grupo não encontrado.", 404
+
+
+        # =====================================================
+        # INTEGRANTES APROVADOS E ATIVOS
+        # =====================================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.codigo_integrante,
+                    i.nome,
+                    i.calcado,
+                    i.funcao
+
+                FROM integrantes i
+
+                WHERE i.status = 'APROVADO'
+                  AND i.situacao = 'ATIVO'
+
+                ORDER BY i.nome
+            """)
+        ).mappings().all()
+
+
+        # =====================================================
+        # ITENS DE FARDAMENTO ATIVOS
+        # =====================================================
+
+        itens_fardamento = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    tipo
+
+                FROM itens_fardamento
+
+                WHERE ativo = TRUE
+
+                ORDER BY
+                    tipo,
+                    nome
+            """)
+        ).mappings().all()
+
+
+        # =====================================================
+        # TERMOS DO GRUPO
+        # =====================================================
+
+        termos = db.execute(
+            text("""
+                SELECT
+                    tm.id,
+                    tm.numero_termo,
+                    tm.tipo,
+                    tm.data_emissao,
+                    tm.status,
+                    tm.observacao,
+
+                    i.id AS integrante_id,
+                    i.nome AS integrante_nome,
+                    i.codigo_integrante,
+
+                    t.id AS temporada_id,
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano,
+
+                    COUNT(ti.id) AS quantidade_itens
+
+                FROM termos tm
+
+                INNER JOIN integrantes i
+                    ON i.id = tm.integrante_id
+
+                LEFT JOIN temporadas t
+                    ON t.id = tm.temporada_id
+
+                LEFT JOIN termo_itens ti
+                    ON ti.termo_id = tm.id
+
+                WHERE tm.grupo_id = :grupo_id
+
+                GROUP BY
+                    tm.id,
+                    tm.numero_termo,
+                    tm.tipo,
+                    tm.data_emissao,
+                    tm.status,
+                    tm.observacao,
+
+                    i.id,
+                    i.nome,
+                    i.codigo_integrante,
+
+                    t.id,
+                    t.nome,
+                    t.ano
+
+                ORDER BY
+                    tm.id DESC
+            """),
+            {
+                "grupo_id": grupo_id
+            }
+        ).mappings().all()
+
+
+        # =====================================================
+        # DATA ATUAL
+        # =====================================================
+
+        from datetime import date
+
+        today = date.today().isoformat()
+
+
+        # =====================================================
+        # RENDER
+        # =====================================================
+
+        return render_template(
+            "admin/fardamento_grupo.html",
+
+            grupo=grupo,
+
+            termos=termos,
+
+            integrantes=integrantes,
+
+            itens_fardamento=itens_fardamento,
+
+            today=today
+        )
+
+
+    except Exception as e:
+
+        print(
+            "ERRO AO ABRIR GRUPO DE ENTREGA:",
+            e
+        )
+
+        return (
+            "Erro ao carregar o grupo de entrega.",
+            500
+        )
+
+
+    finally:
+        db.close()
+
+@app.route("/admin/fardamento/grupos/<int:id>/dados")
+def dados_grupo_entrega(id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Não autorizado."
+        }), 403
+
+    db = SessionLocal()
+
+    try:
+
+        grupo = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    descricao,
+                    temporada_id,
+                    status
+                FROM grupos_entrega
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+        if not grupo:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Grupo não encontrado."
+            }), 404
+
+        return jsonify({
+            "sucesso": True,
+            "grupo": {
+                "id": grupo["id"],
+                "nome": grupo["nome"],
+                "descricao": grupo["descricao"] or "",
+                "temporada_id": grupo["temporada_id"],
+                "status": grupo["status"]
+            }
+        })
+
+    except Exception as e:
+
+        print(
+            "ERRO AO CARREGAR DADOS DO GRUPO:",
+            e
+        )
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": "Erro ao carregar os dados do grupo."
+        }), 500
+
+    finally:
+
+        db.close()
+
 # ============================================================
 # GERENCIAMENTO DE ITENS DE FARDAMENTO
 # ============================================================
@@ -1538,6 +2248,7 @@ def salvar_fardamento():
         }), 400
 
 
+    grupo_id = dados.get("grupo_id")
     integrante_id = dados.get("integrante_id")
     temporada_id = dados.get("temporada_id")
     itens = dados.get("itens", [])
@@ -1545,38 +2256,37 @@ def salvar_fardamento():
 
 
     # =====================================================
-    # VALIDAR INTEGRANTE
+    # NORMALIZAR IDs
     # =====================================================
 
-    if not integrante_id:
+    try:
+
+        if grupo_id:
+            grupo_id = int(grupo_id)
+
+        if integrante_id:
+            integrante_id = int(integrante_id)
+
+        if temporada_id:
+            temporada_id = int(temporada_id)
+
+    except (TypeError, ValueError):
 
         return jsonify({
             "sucesso": False,
-            "mensagem": "Selecione um integrante."
+            "mensagem": "Grupo, integrante ou temporada inválidos."
         }), 400
 
 
     # =====================================================
-    # VALIDAR TEMPORADA
+    # VALIDAR GRUPO
     # =====================================================
 
-    if not temporada_id:
+    if not grupo_id:
 
         return jsonify({
             "sucesso": False,
-            "mensagem": "Selecione uma temporada."
-        }), 400
-
-
-    # =====================================================
-    # VALIDAR ITENS
-    # =====================================================
-
-    if not itens:
-
-        return jsonify({
-            "sucesso": False,
-            "mensagem": "Adicione pelo menos um item."
+            "mensagem": "Grupo de entrega não informado."
         }), 400
 
 
@@ -1584,6 +2294,78 @@ def salvar_fardamento():
 
 
     try:
+
+        # =================================================
+        # VALIDAR GRUPO
+        # =================================================
+
+        grupo = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    temporada_id,
+                    status
+                FROM grupos_entrega
+                WHERE id = :id
+            """),
+            {
+                "id": grupo_id
+            }
+        ).mappings().first()
+
+
+        if not grupo:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Grupo de entrega não encontrado."
+            }), 400
+
+
+        if grupo["status"] != "ATIVO":
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Este grupo de entrega está inativo."
+            }), 400
+
+
+        # =================================================
+        # VALIDAR INTEGRANTE
+        # =================================================
+
+        if not integrante_id:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Selecione um integrante."
+            }), 400
+
+
+        # =================================================
+        # VALIDAR TEMPORADA
+        # =================================================
+
+        if not temporada_id:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Selecione uma temporada."
+            }), 400
+
+
+        # =================================================
+        # VALIDAR ITENS
+        # =================================================
+
+        if not itens:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Adicione pelo menos um item."
+            }), 400
+
 
         # =================================================
         # VALIDAR INTEGRANTE NO BANCO
@@ -1638,6 +2420,19 @@ def salvar_fardamento():
             return jsonify({
                 "sucesso": False,
                 "mensagem": "Temporada não encontrada."
+            }), 400
+
+
+        # =================================================
+        # GARANTIR QUE O TERMO USE A TEMPORADA DO GRUPO
+        # =================================================
+
+        if grupo["temporada_id"] != temporada_id:
+
+            return jsonify({
+                "sucesso": False,
+                "mensagem":
+                    "A temporada da entrega não corresponde à temporada do grupo."
             }), 400
 
 
@@ -1706,7 +2501,8 @@ def salvar_fardamento():
 
                 return jsonify({
                     "sucesso": False,
-                    "mensagem": "Um dos itens selecionados não está disponível."
+                    "mensagem":
+                        "Um dos itens selecionados não está disponível."
                 }), 400
 
 
@@ -1787,6 +2583,7 @@ def salvar_fardamento():
                     tipo,
                     integrante_id,
                     temporada_id,
+                    grupo_id,
                     data_emissao,
                     status,
                     observacao,
@@ -1797,6 +2594,7 @@ def salvar_fardamento():
                     'ENTREGA',
                     :integrante_id,
                     :temporada_id,
+                    :grupo_id,
                     CURRENT_DATE,
                     'EMITIDO',
                     :observacao,
@@ -1813,6 +2611,9 @@ def salvar_fardamento():
 
                 "temporada_id":
                     temporada_id,
+
+                "grupo_id":
+                    grupo_id,
 
                 "observacao":
                     observacao or None,
@@ -1934,13 +2735,16 @@ def salvar_fardamento():
                 True,
 
             "mensagem":
-                f'Termo {numero_termo} criado com sucesso.',
+                f'Termo {numero_termo} criado com sucesso no grupo "{grupo["nome"]}".',
 
             "termo_id":
                 termo_id,
 
             "numero_termo":
-                numero_termo
+                numero_termo,
+
+            "grupo_id":
+                grupo_id
 
         })
 
@@ -2677,6 +3481,152 @@ def excluir_termo_fardamento(id):
 
         db.close()
 
+@app.route("/admin/fardamento/grupos/<int:grupo_id>/nova")
+def nova_entrega_grupo(grupo_id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # BUSCAR GRUPO
+        # =====================================================
+
+        grupo = db.execute(
+            text("""
+                SELECT
+                    g.id,
+                    g.nome,
+                    g.descricao,
+                    g.temporada_id,
+
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano
+
+                FROM grupos_entrega g
+
+                LEFT JOIN temporadas t
+                    ON t.id = g.temporada_id
+
+                WHERE g.id = :id
+            """),
+            {
+                "id": grupo_id
+            }
+        ).mappings().first()
+
+
+        if not grupo:
+
+            return redirect(
+                "/admin/fardamento/grupos"
+            )
+
+
+        # =====================================================
+        # INTEGRANTES APROVADOS E ATIVOS
+        # =====================================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    id,
+                    codigo_integrante,
+                    nome,
+                    funcao,
+                    calcado
+                FROM integrantes
+                WHERE status = 'APROVADO'
+                  AND situacao = 'ATIVO'
+                ORDER BY nome ASC
+            """)
+        ).mappings().all()
+
+
+        # =====================================================
+        # ITENS DE FARDAMENTO
+        # =====================================================
+
+        itens_fardamento = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    tipo
+                FROM itens_fardamento
+                WHERE ativo = TRUE
+                ORDER BY tipo ASC, nome ASC
+            """)
+        ).mappings().all()
+
+
+        # =====================================================
+        # TEMPORADAS
+        # =====================================================
+
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano,
+                    status
+                FROM temporadas
+                ORDER BY ano DESC, id DESC
+            """)
+        ).mappings().all()
+
+
+        # =====================================================
+        # DATA ATUAL
+        # =====================================================
+
+        from datetime import date
+
+        today = date.today().isoformat()
+
+
+        # =====================================================
+        # ABRIR TELA
+        # =====================================================
+
+        return render_template(
+            "admin/fardamento_termos.html",
+
+            grupo=grupo,
+
+            grupo_id=grupo["id"],
+
+            integrantes=integrantes,
+
+            temporadas=temporadas,
+
+            itens_fardamento=itens_fardamento,
+
+            today=today
+        )
+
+
+    except Exception as e:
+
+        print(
+            "ERRO AO ABRIR NOVA ENTREGA DO GRUPO:",
+            e
+        )
+
+        return (
+            "Erro ao abrir a nova entrega.",
+            500
+        )
+
+
+    finally:
+
+        db.close()
+
 @app.route("/admin/fardamento/termo/<int:termo_id>/pdf")
 def pdf_fardamento(termo_id):
 
@@ -2773,6 +3723,18 @@ def patrimonio():
     finally:
 
         db.close()
+
+# ============================================================
+# PDF DE TODOS OS TERMOS DE UM GRUPO DE FARDAMENTO
+# ============================================================
+
+@app.route("/admin/fardamento/grupos/<int:grupo_id>/pdf")
+def pdf_grupo_fardamento(grupo_id):
+
+    if not usuario_tem_permissao("fardamento"):
+        return "Não autorizado.", 403
+
+    return gerar_pdf_grupo_fardamento(grupo_id)
 
 @app.route("/admin/instrumentos")
 def instrumentos():

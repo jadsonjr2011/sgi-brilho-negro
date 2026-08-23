@@ -15,13 +15,10 @@ Termos de Fardamento
 .termos-header {
 
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
 
     gap: 15px;
-
     margin-bottom: 20px;
 
 }
@@ -29,7 +26,6 @@ Termos de Fardamento
 .termos-subtitulo {
 
     color: #999;
-
     font-size: 0.9rem;
 
 }
@@ -184,6 +180,19 @@ Termos de Fardamento
 
 
 /* ===================================================== */
+/* ALERTA                                                */
+/* ===================================================== */
+
+.alerta-termo {
+
+    display: none;
+
+    margin-top: 15px;
+
+}
+
+
+/* ===================================================== */
 /* RESPONSIVO                                            */
 /* ===================================================== */
 
@@ -215,7 +224,10 @@ Termos de Fardamento
         </h2>
 
         <div class="termos-subtitulo">
-            Controle de entrega, devolução e posse de fardamentos e calçados.
+
+            Controle de entrega, devolução e posse de
+            fardamentos e calçados.
+
         </div>
 
     </div>
@@ -318,7 +330,7 @@ Termos de Fardamento
                         <div class="small text-secondary">
 
                             Matrícula:
-                            {{ termo.codigo_integrante }}
+                            {{ termo.codigo_integrante or '-' }}
 
                         </div>
 
@@ -337,7 +349,7 @@ Termos de Fardamento
 
                         {% else %}
 
-                            {{ termo.tipo }}
+                            {{ termo.tipo or '-' }}
 
                         {% endif %}
 
@@ -346,7 +358,15 @@ Termos de Fardamento
 
                     <td>
 
-                        {{ termo.data_emissao.strftime('%d/%m/%Y') }}
+                        {% if termo.data_emissao %}
+
+                            {{ termo.data_emissao.strftime('%d/%m/%Y') }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
 
                     </td>
 
@@ -356,13 +376,17 @@ Termos de Fardamento
                         {% if termo.status == "ATIVO" %}
 
                             <span class="status-termo status-ativo">
+
                                 🟢 Ativo
+
                             </span>
 
                         {% else %}
 
                             <span class="status-termo status-encerrado">
-                                ⚪ {{ termo.status }}
+
+                                ⚪ {{ termo.status or '-' }}
+
                             </span>
 
                         {% endif %}
@@ -372,6 +396,8 @@ Termos de Fardamento
 
                     <td class="text-end">
 
+                        <!-- VER -->
+
                         <a
                             href="{{ url_for('ver_termo_fardamento', id=termo.id) }}"
                             class="btn btn-sm btn-outline-light">
@@ -380,9 +406,13 @@ Termos de Fardamento
 
                         </a>
 
+
+                        <!-- PDF -->
+
                         <a
-                            href="{{ url_for('ver_termo_fardamento', id=termo.id) }}"
-                            class="btn btn-sm btn-outline-danger">
+                            href="/admin/fardamento/termo/{{ termo.id }}/pdf"
+                            class="btn btn-sm btn-outline-danger"
+                            target="_blank">
 
                             📄 PDF
 
@@ -391,6 +421,7 @@ Termos de Fardamento
                     </td>
 
                 </tr>
+
 
                 {% else %}
 
@@ -449,7 +480,7 @@ Termos de Fardamento
 
                 <h5 class="modal-title">
 
-                    👕 Nova Entrega de Fardamento
+                    👕 Nova Entrega — {{ grupo.nome }}
 
                 </h5>
 
@@ -470,9 +501,36 @@ Termos de Fardamento
 
             <div class="modal-body">
 
+                
 
                 <!-- ================================================= -->
-                <!-- INTEGRANTE                                      -->
+                <!-- ALERTA                                           -->
+                <!-- ================================================= -->
+
+                <div
+                    id="alertaTermo"
+                    class="alert alert-danger alerta-termo">
+
+                </div>
+
+                <!-- ================================================= -->
+                <!-- GRUPO DA ENTREGA                                -->
+                <!-- ================================================= -->
+
+                <div class="alert alert-info">
+
+                    📦 Esta entrega será registrada automaticamente dentro do grupo
+                    <strong>{{ grupo.nome }}</strong>.
+
+                </div>
+
+                <input
+                    type="hidden"
+                    id="grupoId"
+                    value="{{ grupo.id }}">
+
+                <!-- ================================================= -->
+                <!-- INTEGRANTE                                       -->
                 <!-- ================================================= -->
 
                 <h6 class="mb-3">
@@ -503,14 +561,16 @@ Termos de Fardamento
                     <option
                         value="{{ integrante.id }}"
                         data-nome="{{ integrante.nome }}"
-                        data-codigo="{{ integrante.codigo_integrante }}"
+                        data-codigo="{{ integrante.codigo_integrante or '' }}"
                         data-funcao="{{ integrante.funcao or '' }}"
                         data-calcado="{{ integrante.calcado or '' }}">
 
                         {{ integrante.nome }}
 
                         {% if integrante.codigo_integrante %}
+
                             — {{ integrante.codigo_integrante }}
+
                         {% endif %}
 
                     </option>
@@ -609,12 +669,15 @@ Termos de Fardamento
 
                             {% for temporada in temporadas %}
 
-                            <option value="{{ temporada.id }}">
+                            <option
+                                value="{{ temporada.id }}">
 
                                 {{ temporada.nome }}
 
                                 {% if temporada.status == "ATIVA" %}
+
                                     🟢
+
                                 {% endif %}
 
                             </option>
@@ -667,9 +730,7 @@ Termos de Fardamento
                         <div class="col-md-5">
 
                             <label class="form-label">
-
                                 Item
-
                             </label>
 
                             <input
@@ -753,7 +814,9 @@ Termos de Fardamento
 
                         {% if item.tipo == "FARDAMENTO" %}
 
-                        <div class="item-entrega">
+                        <div
+                            class="item-entrega"
+                            data-item-id="{{ item.id }}">
 
                             <div class="row align-items-end">
 
@@ -890,6 +953,10 @@ document.addEventListener(
     function () {
 
 
+        /* ================================================= */
+        /* ELEMENTOS                                         */
+        /* ================================================= */
+
         const selectIntegrante =
             document.getElementById(
                 "integranteTermo"
@@ -931,6 +998,46 @@ document.addEventListener(
                 "calcadoEntregue"
             );
 
+
+        const quantidadeCalcado =
+            document.getElementById(
+                "quantidadeCalcado"
+            );
+
+
+        const temporadaTermo =
+            document.getElementById(
+                "temporadaTermo"
+            );
+
+
+        const dataEntrega =
+            document.getElementById(
+                "dataEntrega"
+            );
+
+
+        const observacaoTermo =
+            document.getElementById(
+                "observacaoTermo"
+            );
+
+
+        const btnSalvarTermo =
+            document.getElementById(
+                "btnSalvarTermo"
+            );
+
+
+        const alertaTermo =
+            document.getElementById(
+                "alertaTermo"
+            );
+
+
+        /* ================================================= */
+        /* SELEÇÃO DO INTEGRANTE                              */
+        /* ================================================= */
 
         selectIntegrante.addEventListener(
             "change",
@@ -992,13 +1099,11 @@ document.addEventListener(
 
 
                 /*
-                 * IMPORTANTE:
+                 * O tamanho entregue começa igual
+                 * ao tamanho cadastrado.
                  *
-                 * O tamanho entregue recebe
-                 * inicialmente o tamanho cadastrado.
-                 *
-                 * Se o administrador alterar aqui,
-                 * NÃO alteraremos o cadastro do integrante.
+                 * Alterar aqui NÃO altera o cadastro
+                 * do integrante.
                  */
 
                 calcadoEntregue.value =
@@ -1011,6 +1116,389 @@ document.addEventListener(
             }
 
         );
+
+
+        /* ================================================= */
+        /* SALVAR TERMO                                      */
+        /* ================================================= */
+
+        btnSalvarTermo.addEventListener(
+            "click",
+            async function () {
+
+
+                alertaTermo.style.display =
+                    "none";
+
+
+                /* ========================================= */
+                /* VALIDAÇÕES                               */
+                /* ========================================= */
+
+                const integranteId =
+                    selectIntegrante.value;
+
+
+                const temporadaId =
+                    temporadaTermo.value;
+
+
+                const data =
+                    dataEntrega.value;
+
+
+                if (!integranteId) {
+
+                    alertaTermo.textContent =
+                        "Selecione um integrante.";
+
+                    alertaTermo.style.display =
+                        "block";
+
+                    return;
+
+                }
+
+
+                if (!temporadaId) {
+
+                    alertaTermo.textContent =
+                        "Selecione uma temporada.";
+
+                    alertaTermo.style.display =
+                        "block";
+
+                    return;
+
+                }
+
+
+                if (!data) {
+
+                    alertaTermo.textContent =
+                        "Informe a data da entrega.";
+
+                    alertaTermo.style.display =
+                        "block";
+
+                    return;
+
+                }
+
+
+                /* ========================================= */
+                /* ITENS                                    */
+                /* ========================================= */
+
+                const itens = [];
+
+
+                /* ----------------------------------------- */
+                /* CALÇADO                                  */
+                /* ----------------------------------------- */
+
+                const qtdCalcado =
+                    parseInt(
+                        quantidadeCalcado.value || "0"
+                    );
+
+
+                if (
+                    qtdCalcado > 0 &&
+                    calcadoEntregue.value.trim() !== ""
+                ) {
+
+                    itens.push({
+
+                        item_id: null,
+
+                        nome: "Tênis",
+
+                        tipo: "CALCADO",
+
+                        tamanho_cadastro:
+                            calcadoCadastro.value,
+
+                        tamanho_entregue:
+                            calcadoEntregue.value.trim(),
+
+                        quantidade:
+                            qtdCalcado
+
+                    });
+
+                }
+
+
+                /* ----------------------------------------- */
+                /* FARDAMENTOS                               */
+                /* ----------------------------------------- */
+
+                document
+                    .querySelectorAll(
+                        "#listaFardamento .item-entrega"
+                    )
+                    .forEach(
+                        function (card) {
+
+
+                            const checkbox =
+                                card.querySelector(
+                                    ".incluir-item"
+                                );
+
+
+                            const quantidade =
+                                card.querySelector(
+                                    ".quantidade-item"
+                                );
+
+
+                            const itemId =
+                                card.querySelector(
+                                    ".item-id"
+                                );
+
+
+                            if (
+                                checkbox &&
+                                checkbox.checked &&
+                                quantidade &&
+                                parseInt(
+                                    quantidade.value || "0"
+                                ) > 0
+                            ) {
+
+                                itens.push({
+
+                                    item_id:
+                                        itemId.value,
+
+                                    quantidade:
+                                        parseInt(
+                                            quantidade.value
+                                        )
+
+                                });
+
+                            }
+
+                        }
+                    );
+
+
+                if (itens.length === 0) {
+
+                    alertaTermo.textContent =
+                        "Selecione pelo menos um item para entregar.";
+
+                    alertaTermo.style.display =
+                        "block";
+
+                    return;
+
+                }
+
+
+                /* ========================================= */
+                /* DADOS                                    */
+                /* ========================================= */
+
+                const dados = {
+
+                    integrante_id:
+                        integranteId,
+
+                    temporada_id:
+                        temporadaId,
+
+                    data_entrega:
+                        data,
+
+                    observacao:
+                        observacaoTermo.value.trim(),
+
+                    itens:
+                        itens
+
+                };
+
+
+                /* ========================================= */
+                /* BOTÃO                                    */
+                /* ========================================= */
+
+                const textoOriginal =
+                    btnSalvarTermo.innerHTML;
+
+
+                btnSalvarTermo.disabled =
+                    true;
+
+
+                btnSalvarTermo.innerHTML =
+                    "⏳ Registrando...";
+
+
+                try {
+
+
+                    const resposta =
+                        await fetch(
+                            "/admin/fardamento/salvar",
+                            {
+
+                                method: "POST",
+
+                                headers: {
+
+                                    "Content-Type":
+                                        "application/json"
+
+                                },
+
+                                body:
+                                    JSON.stringify(
+                                        dados
+                                    )
+
+                            }
+                        );
+
+
+                    const resultado =
+                        await resposta.json();
+
+
+                    if (!resposta.ok) {
+
+                        throw new Error(
+                            resultado.erro ||
+                            resultado.mensagem ||
+                            "Não foi possível registrar a entrega."
+                        );
+
+                    }
+
+
+                    /* ===================================== */
+                    /* SUCESSO                               */
+                    /* ===================================== */
+
+                    window.location.href =
+                        "/admin/fardamento/entregas";
+
+
+                }
+
+                catch (erro) {
+
+                    console.error(
+                        "Erro ao registrar termo:",
+                        erro
+                    );
+
+
+                    alertaTermo.textContent =
+                        erro.message ||
+                        "Erro ao registrar a entrega.";
+
+
+                    alertaTermo.style.display =
+                        "block";
+
+
+                    btnSalvarTermo.disabled =
+                        false;
+
+
+                    btnSalvarTermo.innerHTML =
+                        textoOriginal;
+
+                }
+
+            }
+
+        );
+
+
+        /* ================================================= */
+        /* LIMPAR MODAL AO FECHAR                            */
+        /* ================================================= */
+
+        const modalNovoTermo =
+            document.getElementById(
+                "modalNovoTermo"
+            );
+
+
+        if (modalNovoTermo) {
+
+            modalNovoTermo.addEventListener(
+                "hidden.bs.modal",
+                function () {
+
+
+                    selectIntegrante.value =
+                        "";
+
+
+                    infoIntegrante.style.display =
+                        "none";
+
+
+                    calcadoCadastro.value =
+                        "";
+
+
+                    calcadoEntregue.value =
+                        "";
+
+
+                    quantidadeCalcado.value =
+                        "1";
+
+
+                    observacaoTermo.value =
+                        "";
+
+
+                    alertaTermo.style.display =
+                        "none";
+
+
+                    document
+                        .querySelectorAll(
+                            "#listaFardamento .incluir-item"
+                        )
+                        .forEach(
+                            function (checkbox) {
+
+                                checkbox.checked =
+                                    false;
+
+                            }
+                        );
+
+
+                    document
+                        .querySelectorAll(
+                            "#listaFardamento .quantidade-item"
+                        )
+                        .forEach(
+                            function (input) {
+
+                                input.value =
+                                    "0";
+
+                            }
+                        );
+
+                }
+
+            );
+
+        }
 
     }
 

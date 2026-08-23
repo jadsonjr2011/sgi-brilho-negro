@@ -1,0 +1,1594 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Grupo de Entrega
+{% endblock %}
+
+{% block titulo_pagina %}
+📦 Grupo de Entrega
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+.grupo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.grupo-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.info-box {
+    padding: 14px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+}
+
+.info-label {
+    display: block;
+    color: #888;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.info-value {
+    font-weight: 600;
+}
+
+.status-grupo {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-ativo {
+    background: rgba(25,135,84,0.15);
+    color: #4ade80;
+}
+
+.status-inativo {
+    background: rgba(108,117,125,0.15);
+    color: #aaa;
+}
+
+.termo-row {
+    background: rgba(255,255,255,0.025);
+}
+
+.item-entrega-linha {
+    background: rgba(255,255,255,0.025);
+}
+
+.item-entrega-linha td {
+    vertical-align: middle;
+}
+
+</style>
+
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                             -->
+<!-- ===================================================== -->
+
+<div class="grupo-header">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+            📦 {{ grupo.nome }}
+        </h2>
+
+        <div class="text-secondary">
+            Entregas vinculadas a este grupo.
+        </div>
+
+    </div>
+
+
+    <div class="d-flex gap-2">
+
+        <a
+            href="{{ url_for('fardamento_grupos') }}"
+            class="btn btn-secondary">
+
+            ← Grupos
+
+        </a>
+
+        <a
+            href="{{ url_for('pdf_grupo_fardamento', grupo_id=grupo.id) }}"
+            target="_blank"
+            class="btn btn-danger">
+            📄 Imprimir Todos do Grupo
+        </a>
+
+        <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#modalNovaEntrega">
+
+            ➕ Nova Entrega
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- INFORMAÇÕES DO GRUPO                                  -->
+<!-- ===================================================== -->
+
+<div class="grupo-card">
+
+    <div class="row g-3">
+
+        <div class="col-md-5">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Grupo
+                </span>
+
+                <span class="info-value">
+                    📦 {{ grupo.nome }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Temporada
+                </span>
+
+                <span class="info-value">
+
+                    {{ grupo.temporada_nome or '-' }}
+
+                    {% if grupo.temporada_ano %}
+                        — {{ grupo.temporada_ano }}
+                    {% endif %}
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Entregas
+                </span>
+
+                <span class="info-value">
+                    📋 {{ termos|length }}
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-2">
+
+            <div class="info-box">
+
+                <span class="info-label">
+                    Status
+                </span>
+
+                {% if grupo.status == "ATIVO" %}
+
+                    <span class="status-grupo status-ativo">
+                        🟢 ATIVO
+                    </span>
+
+                {% else %}
+
+                    <span class="status-grupo status-inativo">
+                        ⚪ {{ grupo.status or 'INATIVO' }}
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    {% if grupo.descricao %}
+
+    <div class="info-box mt-3">
+
+        <span class="info-label">
+            Descrição
+        </span>
+
+        {{ grupo.descricao }}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- TERMOS DO GRUPO                                       -->
+<!-- ===================================================== -->
+
+<div class="grupo-card">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h5 class="mb-0">
+            📋 Entregas deste grupo
+        </h5>
+
+        <span class="badge bg-primary">
+
+            {{ termos|length }}
+
+            entrega{% if termos|length != 1 %}s{% endif %}
+
+        </span>
+
+    </div>
+
+
+    {% if termos %}
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Termo</th>
+                    <th>Integrante</th>
+                    <th>Matrícula</th>
+                    <th>Data</th>
+                    <th>Status</th>
+                    <th class="text-end">Ações</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for termo in termos %}
+
+                <tr class="termo-row">
+
+                    <td>
+
+                        <strong>
+                            {{ termo.numero_termo }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ termo.integrante_nome }}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        {{ termo.codigo_integrante or '-' }}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if termo.data_emissao %}
+
+                            {{ termo.data_emissao.strftime('%d/%m/%Y') }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if termo.status == "ATIVO" or termo.status == "EMITIDO" %}
+
+                            <span class="badge bg-success">
+                                🟢 {{ termo.status }}
+                            </span>
+
+                        {% elif termo.status == "DEVOLVIDO" %}
+
+                            <span class="badge bg-warning text-dark">
+                                🟡 DEVOLVIDO
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+                                {{ termo.status or '-' }}
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td class="text-end">
+
+                        <div class="d-flex justify-content-end gap-1">
+
+                            <a
+                                href="{{ url_for('ver_termo_fardamento', id=termo.id) }}"
+                                class="btn btn-sm btn-outline-light">
+
+                                👁️ Ver
+
+                            </a>
+
+
+                            <a
+                                href="{{ url_for('pdf_fardamento', termo_id=termo.id) }}"
+                                target="_blank"
+                                class="btn btn-sm btn-outline-danger">
+                                📄 PDF
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="text-center text-secondary py-5">
+
+        <div style="font-size: 3rem;">
+            📦
+        </div>
+
+        <div class="mt-2">
+            Nenhuma entrega registrada neste grupo.
+        </div>
+
+        <div class="mt-3">
+
+            <button
+                type="button"
+                class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#modalNovaEntrega">
+
+                ➕ Registrar primeira entrega
+
+            </button>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MODAL NOVA ENTREGA                                    -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalNovaEntrega"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    👕 Nova Entrega
+
+                    <small class="text-secondary">
+                        — {{ grupo.nome }}
+                    </small>
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div class="alert alert-info">
+
+                    📦 Esta entrega será registrada automaticamente
+                    dentro do grupo
+                    <strong>{{ grupo.nome }}</strong>.
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- DADOS OCULTOS                                     -->
+                <!-- ================================================= -->
+
+                <input
+                    type="hidden"
+                    id="grupoId"
+                    value="{{ grupo.id }}">
+
+
+                <input
+                    type="hidden"
+                    id="temporadaTermo"
+                    value="{{ grupo.temporada_id or '' }}">
+
+
+                <!-- ================================================= -->
+                <!-- INTEGRANTE                                         -->
+                <!-- ================================================= -->
+
+                <h6 class="mb-3">
+                    👤 Integrante
+                </h6>
+
+
+                <label class="form-label">
+                    Selecione o integrante
+                </label>
+
+
+                <select
+                    id="integranteTermo"
+                    class="form-select">
+
+                    <option value="">
+                        Selecione...
+                    </option>
+
+                    {% for integrante in integrantes %}
+
+                    <option
+                        value="{{ integrante.id }}"
+                        data-nome="{{ integrante.nome }}"
+                        data-codigo="{{ integrante.codigo_integrante or '' }}"
+                        data-funcao="{{ integrante.funcao or '' }}"
+                        data-calcado="{{ integrante.calcado or '' }}">
+
+                        {{ integrante.nome }}
+
+                        {% if integrante.codigo_integrante %}
+                            — {{ integrante.codigo_integrante }}
+                        {% endif %}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <!-- ================================================= -->
+                <!-- INFORMAÇÕES DO INTEGRANTE                          -->
+                <!-- ================================================= -->
+
+                <div
+                    id="infoIntegrante"
+                    class="info-box mt-3"
+                    style="display:none;">
+
+                    <div class="row">
+
+                        <div class="col-md-5">
+
+                            <span class="info-label">
+                                Integrante
+                            </span>
+
+                            <strong id="infoNome">
+                                -
+                            </strong>
+
+                        </div>
+
+
+                        <div class="col-md-3">
+
+                            <span class="info-label">
+                                Matrícula
+                            </span>
+
+                            <strong id="infoCodigo">
+                                -
+                            </strong>
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <span class="info-label">
+                                Função
+                            </span>
+
+                            <strong id="infoFuncao">
+                                -
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- TEMPORADA E DATA                                  -->
+                <!-- ================================================= -->
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            📅 Temporada
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            value="{{ grupo.temporada_nome or '-' }}{% if grupo.temporada_ano %} — {{ grupo.temporada_ano }}{% endif %}"
+                            readonly>
+
+                    </div>
+
+
+                    <div class="col-md-6">
+
+                        <label class="form-label">
+                            📅 Data da entrega
+                        </label>
+
+                        <input
+                            type="date"
+                            id="dataEntrega"
+                            class="form-control"
+                            value="{{ today }}">
+
+                    </div>
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- ITENS PARA ENTREGA                                -->
+                <!-- ================================================= -->
+
+                <h6 class="mb-2">
+                    📦 Itens para Entrega
+                </h6>
+
+
+                <p class="text-secondary small mb-3">
+
+                    Adicione somente os itens que serão efetivamente
+                    entregues.
+
+                </p>
+
+
+                <div class="table-responsive">
+
+                    <table class="table table-dark table-hover align-middle">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Item
+                                </th>
+
+                                <th>
+                                    Tipo
+                                </th>
+
+                                <th>
+                                    Tamanho cadastro
+                                </th>
+
+                                <th>
+                                    Tamanho entregue
+                                </th>
+
+                                <th style="width:100px;">
+                                    Quantidade
+                                </th>
+
+                                <th>
+                                    Estado
+                                </th>
+
+                                <th>
+                                    Observação
+                                </th>
+
+                                <th style="width:60px;">
+                                    Ação
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="listaItensEntrega">
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <div class="mt-3">
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-primary"
+                        id="btnAdicionarItem">
+
+                        ➕ Adicionar item
+
+                    </button>
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- OBSERVAÇÃO GERAL                                  -->
+                <!-- ================================================= -->
+
+                <label class="form-label">
+                    📝 Observação
+                </label>
+
+
+                <textarea
+                    id="observacaoTermo"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Observações sobre a entrega..."></textarea>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-success"
+                    id="btnSalvarTermo">
+
+                    💾 Registrar Entrega no Grupo
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT                                            -->
+<!-- ===================================================== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const selectIntegrante =
+        document.getElementById("integranteTermo");
+
+    const infoIntegrante =
+        document.getElementById("infoIntegrante");
+
+    const infoNome =
+        document.getElementById("infoNome");
+
+    const infoCodigo =
+        document.getElementById("infoCodigo");
+
+    const infoFuncao =
+        document.getElementById("infoFuncao");
+
+    const listaItens =
+        document.getElementById("listaItensEntrega");
+
+    const btnAdicionarItem =
+        document.getElementById("btnAdicionarItem");
+
+    const btnSalvar =
+        document.getElementById("btnSalvarTermo");
+
+
+    /* ===================================================== */
+    /* DADOS DOS ITENS                                       */
+    /* ===================================================== */
+
+    const itensFardamento = [
+
+        {% for item in itens_fardamento %}
+
+        {
+            id: "{{ item.id }}",
+            nome: {{ item.nome|tojson }},
+            tipo: "{{ item.tipo }}"
+        }
+
+        {% if not loop.last %},{% endif %}
+
+        {% endfor %}
+
+    ];
+
+
+    /* ===================================================== */
+    /* INTEGRANTE                                            */
+    /* ===================================================== */
+
+    selectIntegrante.addEventListener(
+        "change",
+        function () {
+
+            const opcao =
+                this.options[this.selectedIndex];
+
+
+            if (!this.value) {
+
+                infoIntegrante.style.display =
+                    "none";
+
+                return;
+
+            }
+
+
+            infoNome.textContent =
+                opcao.dataset.nome || "-";
+
+            infoCodigo.textContent =
+                opcao.dataset.codigo || "-";
+
+            infoFuncao.textContent =
+                opcao.dataset.funcao || "-";
+
+
+            infoIntegrante.style.display =
+                "block";
+
+
+            /*
+             * Atualiza automaticamente os tamanhos
+             * cadastrados nas linhas de CALÇADO.
+             */
+
+            document
+                .querySelectorAll(".item-tipo")
+                .forEach(function (selectTipo) {
+
+                    if (
+                        selectTipo.value === "CALCADO"
+                    ) {
+
+                        const linha =
+                            selectTipo.closest(
+                                ".item-entrega-linha"
+                            );
+
+                        if (linha) {
+
+                            const campo =
+                                linha.querySelector(
+                                    ".tamanho-cadastro"
+                                );
+
+                            if (campo) {
+
+                                campo.value =
+                                    opcao.dataset.calcado || "";
+
+                            }
+
+                        }
+
+                    }
+
+                });
+
+        }
+    );
+
+
+    /* ===================================================== */
+    /* CRIAR OPÇÕES DE ITEM                                  */
+    /* ===================================================== */
+
+    function criarOpcoesItens() {
+
+        let html = `
+            <option value="">
+                Selecione...
+            </option>
+        `;
+
+
+        itensFardamento.forEach(function (item) {
+
+            html += `
+                <option
+                    value="${item.id}"
+                    data-tipo="${item.tipo}">
+
+                    ${item.nome}
+
+                </option>
+            `;
+
+        });
+
+
+        /*
+         * Tênis/calçado é tratado separadamente porque
+         * o tamanho vem do cadastro do integrante.
+         */
+
+        html += `
+            <option
+                value="CALCADO"
+                data-tipo="CALCADO">
+
+                👟 Tênis
+
+            </option>
+        `;
+
+
+        return html;
+
+    }
+
+
+    /* ===================================================== */
+    /* ADICIONAR ITEM                                        */
+    /* ===================================================== */
+
+    function adicionarItem() {
+
+        const linha =
+            document.createElement("tr");
+
+        linha.className =
+            "item-entrega-linha";
+
+
+        linha.innerHTML = `
+
+            <td>
+
+                <select
+                    class="form-select form-select-sm item-select">
+
+                    ${criarOpcoesItens()}
+
+                </select>
+
+            </td>
+
+
+            <td>
+
+                <select
+                    class="form-select form-select-sm item-tipo">
+
+                    <option value="">
+                        -
+                    </option>
+
+                    <option value="FARDAMENTO">
+                        Fardamento
+                    </option>
+
+                    <option value="CALCADO">
+                        Calçado
+                    </option>
+
+                </select>
+
+            </td>
+
+
+            <td>
+
+                <input
+                    type="text"
+                    class="form-control form-control-sm tamanho-cadastro"
+                    readonly>
+
+            </td>
+
+
+            <td>
+
+                <input
+                    type="text"
+                    class="form-control form-control-sm tamanho-entregue">
+
+            </td>
+
+
+            <td>
+
+                <input
+                    type="number"
+                    class="form-control form-control-sm quantidade"
+                    value="1"
+                    min="1">
+
+            </td>
+
+
+            <td>
+
+                <select
+                    class="form-select form-select-sm estado">
+
+                    <option value="NOVO">
+                        Novo
+                    </option>
+
+                    <option value="BOM">
+                        Bom
+                    </option>
+
+                    <option value="USADO">
+                        Usado
+                    </option>
+
+                </select>
+
+            </td>
+
+
+            <td>
+
+                <input
+                    type="text"
+                    class="form-control form-control-sm observacao-item"
+                    placeholder="Observação">
+
+            </td>
+
+
+            <td class="text-center">
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger btn-remover-item">
+
+                    🗑️
+
+                </button>
+
+            </td>
+
+        `;
+
+
+        listaItens.appendChild(linha);
+
+
+        configurarLinha(linha);
+
+    }
+
+
+    /* ===================================================== */
+    /* CONFIGURAR LINHA                                      */
+    /* ===================================================== */
+
+    function configurarLinha(linha) {
+
+        const selectItem =
+            linha.querySelector(".item-select");
+
+        const selectTipo =
+            linha.querySelector(".item-tipo");
+
+        const tamanhoCadastro =
+            linha.querySelector(".tamanho-cadastro");
+
+        const tamanhoEntregue =
+            linha.querySelector(".tamanho-entregue");
+
+
+        selectItem.addEventListener(
+            "change",
+            function () {
+
+                const opcao =
+                    this.options[this.selectedIndex];
+
+                const tipo =
+                    opcao.dataset.tipo || "";
+
+
+                selectTipo.value =
+                    tipo;
+
+
+                if (tipo === "CALCADO") {
+
+                    const integrante =
+                        selectIntegrante.options[
+                            selectIntegrante.selectedIndex
+                        ];
+
+
+                    const calcado =
+                        integrante.dataset.calcado || "";
+
+
+                    tamanhoCadastro.value =
+                        calcado;
+
+
+                    tamanhoEntregue.value =
+                        calcado;
+
+                }
+
+                else {
+
+                    tamanhoCadastro.value =
+                        "";
+
+                }
+
+            }
+        );
+
+
+        selectTipo.addEventListener(
+            "change",
+            function () {
+
+                if (this.value === "CALCADO") {
+
+                    const integrante =
+                        selectIntegrante.options[
+                            selectIntegrante.selectedIndex
+                        ];
+
+
+                    tamanhoCadastro.value =
+                        integrante.dataset.calcado || "";
+
+
+                    tamanhoEntregue.value =
+                        integrante.dataset.calcado || "";
+
+                }
+
+                else {
+
+                    tamanhoCadastro.value =
+                        "";
+
+                }
+
+            }
+        );
+
+
+        linha
+            .querySelector(".btn-remover-item")
+            .addEventListener(
+                "click",
+                function () {
+
+                    linha.remove();
+
+                }
+            );
+
+    }
+
+
+    /* ===================================================== */
+    /* BOTÃO ADICIONAR ITEM                                  */
+    /* ===================================================== */
+
+    btnAdicionarItem.addEventListener(
+        "click",
+        function () {
+
+            adicionarItem();
+
+        }
+    );
+
+
+    /* ===================================================== */
+    /* SALVAR TERMO                                          */
+    /* ===================================================== */
+
+    btnSalvar.addEventListener(
+        "click",
+        async function () {
+
+            const grupoId =
+                document.getElementById(
+                    "grupoId"
+                ).value;
+
+
+            const integranteId =
+                selectIntegrante.value;
+
+
+            const temporadaId =
+                document.getElementById(
+                    "temporadaTermo"
+                ).value;
+
+
+            const dataEntrega =
+                document.getElementById(
+                    "dataEntrega"
+                ).value;
+
+
+            const observacao =
+                document.getElementById(
+                    "observacaoTermo"
+                ).value;
+
+
+            /* ============================================= */
+            /* VALIDAÇÕES                                    */
+            /* ============================================= */
+
+            if (!grupoId) {
+
+                alert(
+                    "Grupo de entrega não identificado."
+                );
+
+                return;
+
+            }
+
+
+            if (!integranteId) {
+
+                alert(
+                    "Selecione o integrante."
+                );
+
+                return;
+
+            }
+
+
+            if (!temporadaId) {
+
+                alert(
+                    "Este grupo não possui uma temporada."
+                );
+
+                return;
+
+            }
+
+
+            if (!dataEntrega) {
+
+                alert(
+                    "Informe a data da entrega."
+                );
+
+                return;
+
+            }
+
+
+            const linhas =
+                listaItens.querySelectorAll(
+                    ".item-entrega-linha"
+                );
+
+
+            if (linhas.length === 0) {
+
+                alert(
+                    "Adicione pelo menos um item para entregar."
+                );
+
+                return;
+
+            }
+
+
+            /* ============================================= */
+            /* MONTAR ITENS                                  */
+            /* ============================================= */
+
+            const itens = [];
+
+
+            for (
+                const linha of linhas
+            ) {
+
+                const selectItem =
+                    linha.querySelector(
+                        ".item-select"
+                    );
+
+
+                const selectTipo =
+                    linha.querySelector(
+                        ".item-tipo"
+                    );
+
+
+                const tamanhoCadastro =
+                    linha.querySelector(
+                        ".tamanho-cadastro"
+                    );
+
+
+                const tamanhoEntregue =
+                    linha.querySelector(
+                        ".tamanho-entregue"
+                    );
+
+
+                const quantidade =
+                    linha.querySelector(
+                        ".quantidade"
+                    );
+
+
+                const estado =
+                    linha.querySelector(
+                        ".estado"
+                    );
+
+
+                const observacaoItem =
+                    linha.querySelector(
+                        ".observacao-item"
+                    );
+
+
+                if (!selectItem.value) {
+
+                    alert(
+                        "Selecione o item de todas as linhas adicionadas."
+                    );
+
+                    return;
+
+                }
+
+
+                if (!selectTipo.value) {
+
+                    alert(
+                        "Informe o tipo de todos os itens."
+                    );
+
+                    return;
+
+                }
+
+
+                if (
+                    !quantidade.value ||
+                    Number(quantidade.value) <= 0
+                ) {
+
+                    alert(
+                        "Informe uma quantidade válida."
+                    );
+
+                    return;
+
+                }
+
+
+                let itemId =
+                    selectItem.value;
+
+                let itemNome = "";
+
+
+                if (
+                    itemId === "CALCADO"
+                ) {
+
+                    itemId = null;
+
+                    itemNome =
+                        "Tênis";
+
+                }
+
+                else {
+
+                    const opcao =
+                        selectItem.options[
+                            selectItem.selectedIndex
+                        ];
+
+                    itemNome =
+                        opcao.textContent.trim();
+
+                }
+
+
+                itens.push({
+
+                    item_id:
+                        itemId,
+
+                    item_nome:
+                        itemNome,
+
+                    item_tipo:
+                        selectTipo.value,
+
+                    tamanho_cadastro:
+                        tamanhoCadastro.value || "",
+
+                    tamanho_entregue:
+                        tamanhoEntregue.value || "",
+
+                    quantidade:
+                        Number(quantidade.value),
+
+                    estado_entrega:
+                        estado.value,
+
+                    observacao:
+                        observacaoItem.value || ""
+
+                });
+
+            }
+
+
+            /* ============================================= */
+            /* ENVIAR                                      */
+            /* ============================================= */
+
+            btnSalvar.disabled =
+                true;
+
+
+            btnSalvar.innerHTML =
+                "⏳ Registrando...";
+
+
+            try {
+
+                const resposta =
+                    await fetch(
+                        "{{ url_for('salvar_fardamento') }}",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                grupo_id:
+                                    grupoId,
+
+                                integrante_id:
+                                    integranteId,
+
+                                temporada_id:
+                                    temporadaId,
+
+                                data_entrega:
+                                    dataEntrega,
+
+                                itens:
+                                    itens,
+
+                                observacao:
+                                    observacao
+
+                            })
+
+                        }
+                    );
+
+
+                const dados =
+                    await resposta.json();
+
+
+                if (
+                    !resposta.ok ||
+                    !dados.sucesso
+                ) {
+
+                    throw new Error(
+                        dados.erro ||
+                        dados.mensagem ||
+                        "Não foi possível registrar a entrega."
+                    );
+
+                }
+
+
+                window.location.reload();
+
+            }
+
+            catch (erro) {
+
+                alert(
+                    erro.message ||
+                    "Erro ao registrar a entrega."
+                );
+
+
+                btnSalvar.disabled =
+                    false;
+
+
+                btnSalvar.innerHTML =
+                    "💾 Registrar Entrega no Grupo";
+
+            }
+
+        }
+    );
+
+
+    /* ===================================================== */
+    /* LIMPAR MODAL AO FECHAR                                */
+    /* ===================================================== */
+
+    const modal =
+        document.getElementById(
+            "modalNovaEntrega"
+        );
+
+
+    if (modal) {
+
+        modal.addEventListener(
+            "hidden.bs.modal",
+            function () {
+
+                selectIntegrante.value = "";
+
+                infoIntegrante.style.display =
+                    "none";
+
+                listaItens.innerHTML =
+                    "";
+
+                document.getElementById(
+                    "observacaoTermo"
+                ).value = "";
+
+            }
+        );
+
+    }
+
+});
+
+</script>
+
+
+{% endblock %}
