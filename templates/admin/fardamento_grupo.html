@@ -77,6 +77,10 @@ Grupo de Entrega
     vertical-align: middle;
 }
 
+.btn-excluir-termo {
+    cursor: pointer;
+}
+
 </style>
 
 
@@ -109,12 +113,16 @@ Grupo de Entrega
 
         </a>
 
+
         <a
             href="{{ url_for('pdf_grupo_fardamento', grupo_id=grupo.id) }}"
             target="_blank"
             class="btn btn-danger">
+
             📄 Imprimir Todos do Grupo
+
         </a>
+
 
         <button
             type="button"
@@ -291,7 +299,10 @@ Grupo de Entrega
 
                 {% for termo in termos %}
 
-                <tr class="termo-row">
+                <tr
+                    class="termo-row"
+                    id="termo-row-{{ termo.id }}"
+                >
 
                     <td>
 
@@ -358,6 +369,10 @@ Grupo de Entrega
                     </td>
 
 
+                    <!-- ================================================= -->
+                    <!-- AÇÕES                                              -->
+                    <!-- ================================================= -->
+
                     <td class="text-end">
 
                         <div class="d-flex justify-content-end gap-1">
@@ -375,8 +390,23 @@ Grupo de Entrega
                                 href="{{ url_for('pdf_fardamento', termo_id=termo.id) }}"
                                 target="_blank"
                                 class="btn btn-sm btn-outline-danger">
+
                                 📄 PDF
+
                             </a>
+
+
+                            <!-- EXCLUIR -->
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger btn-excluir-termo"
+                                data-termo-id="{{ termo.id }}"
+                                data-numero-termo="{{ termo.numero_termo }}"
+                                title="Excluir termo">
+
+                                🗑️
+
+                            </button>
 
                         </div>
 
@@ -472,10 +502,6 @@ Grupo de Entrega
                 </div>
 
 
-                <!-- ================================================= -->
-                <!-- DADOS OCULTOS                                     -->
-                <!-- ================================================= -->
-
                 <input
                     type="hidden"
                     id="grupoId"
@@ -487,10 +513,6 @@ Grupo de Entrega
                     id="temporadaTermo"
                     value="{{ grupo.temporada_id or '' }}">
 
-
-                <!-- ================================================= -->
-                <!-- INTEGRANTE                                         -->
-                <!-- ================================================= -->
 
                 <h6 class="mb-3">
                     👤 Integrante
@@ -531,10 +553,6 @@ Grupo de Entrega
 
                 </select>
 
-
-                <!-- ================================================= -->
-                <!-- INFORMAÇÕES DO INTEGRANTE                          -->
-                <!-- ================================================= -->
 
                 <div
                     id="infoIntegrante"
@@ -589,10 +607,6 @@ Grupo de Entrega
                 <hr class="my-4">
 
 
-                <!-- ================================================= -->
-                <!-- TEMPORADA E DATA                                  -->
-                <!-- ================================================= -->
-
                 <div class="row">
 
                     <div class="col-md-6">
@@ -630,10 +644,6 @@ Grupo de Entrega
                 <hr class="my-4">
 
 
-                <!-- ================================================= -->
-                <!-- ITENS PARA ENTREGA                                -->
-                <!-- ================================================= -->
-
                 <h6 class="mb-2">
                     📦 Itens para Entrega
                 </h6>
@@ -655,33 +665,17 @@ Grupo de Entrega
 
                             <tr>
 
-                                <th>
-                                    Item
-                                </th>
-
-                                <th>
-                                    Tipo
-                                </th>
-
-                                <th>
-                                    Tamanho cadastro
-                                </th>
-
-                                <th>
-                                    Tamanho entregue
-                                </th>
+                                <th>Item</th>
+                                <th>Tipo</th>
+                                <th>Tamanho cadastro</th>
+                                <th>Tamanho entregue</th>
 
                                 <th style="width:100px;">
                                     Quantidade
                                 </th>
 
-                                <th>
-                                    Estado
-                                </th>
-
-                                <th>
-                                    Observação
-                                </th>
+                                <th>Estado</th>
+                                <th>Observação</th>
 
                                 <th style="width:60px;">
                                     Ação
@@ -693,7 +687,6 @@ Grupo de Entrega
 
 
                         <tbody id="listaItensEntrega">
-
                         </tbody>
 
                     </table>
@@ -717,10 +710,6 @@ Grupo de Entrega
 
                 <hr class="my-4">
 
-
-                <!-- ================================================= -->
-                <!-- OBSERVAÇÃO GERAL                                  -->
-                <!-- ================================================= -->
 
                 <label class="form-label">
                     📝 Observação
@@ -824,78 +813,89 @@ document.addEventListener("DOMContentLoaded", function () {
     /* INTEGRANTE                                            */
     /* ===================================================== */
 
-    selectIntegrante.addEventListener(
-        "change",
-        function () {
+    if (selectIntegrante) {
 
-            const opcao =
-                this.options[this.selectedIndex];
+        selectIntegrante.addEventListener(
+            "change",
+            function () {
+
+                const opcao =
+                    this.options[this.selectedIndex];
 
 
-            if (!this.value) {
+                if (!this.value) {
+
+                    infoIntegrante.style.display =
+                        "none";
+
+                    return;
+
+                }
+
+
+                infoNome.textContent =
+                    opcao.dataset.nome || "-";
+
+                infoCodigo.textContent =
+                    opcao.dataset.codigo || "-";
+
+                infoFuncao.textContent =
+                    opcao.dataset.funcao || "-";
+
 
                 infoIntegrante.style.display =
-                    "none";
-
-                return;
-
-            }
+                    "block";
 
 
-            infoNome.textContent =
-                opcao.dataset.nome || "-";
+                document
+                    .querySelectorAll(".item-tipo")
+                    .forEach(function (selectTipo) {
 
-            infoCodigo.textContent =
-                opcao.dataset.codigo || "-";
+                        if (
+                            selectTipo.value === "CALCADO"
+                        ) {
 
-            infoFuncao.textContent =
-                opcao.dataset.funcao || "-";
-
-
-            infoIntegrante.style.display =
-                "block";
-
-
-            /*
-             * Atualiza automaticamente os tamanhos
-             * cadastrados nas linhas de CALÇADO.
-             */
-
-            document
-                .querySelectorAll(".item-tipo")
-                .forEach(function (selectTipo) {
-
-                    if (
-                        selectTipo.value === "CALCADO"
-                    ) {
-
-                        const linha =
-                            selectTipo.closest(
-                                ".item-entrega-linha"
-                            );
-
-                        if (linha) {
-
-                            const campo =
-                                linha.querySelector(
-                                    ".tamanho-cadastro"
+                            const linha =
+                                selectTipo.closest(
+                                    ".item-entrega-linha"
                                 );
 
-                            if (campo) {
+                            if (linha) {
 
-                                campo.value =
-                                    opcao.dataset.calcado || "";
+                                const campo =
+                                    linha.querySelector(
+                                        ".tamanho-cadastro"
+                                    );
+
+                                const entregue =
+                                    linha.querySelector(
+                                        ".tamanho-entregue"
+                                    );
+
+                                if (campo) {
+
+                                    campo.value =
+                                        opcao.dataset.calcado || "";
+
+                                }
+
+                                if (entregue) {
+
+                                    entregue.value =
+                                        opcao.dataset.calcado || "";
+
+                                }
 
                             }
 
                         }
 
-                    }
+                    });
 
-                });
+            }
+        );
 
-        }
-    );
+    }
 
 
     /* ===================================================== */
@@ -924,22 +924,6 @@ document.addEventListener("DOMContentLoaded", function () {
             `;
 
         });
-
-
-        /*
-         * Tênis/calçado é tratado separadamente porque
-         * o tamanho vem do cadastro do integrante.
-         */
-
-        html += `
-            <option
-                value="CALCADO"
-                data-tipo="CALCADO">
-
-                👟 Tênis
-
-            </option>
-        `;
 
 
         return html;
@@ -1075,7 +1059,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         listaItens.appendChild(linha);
 
-
         configurarLinha(linha);
 
     }
@@ -1130,7 +1113,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     tamanhoCadastro.value =
                         calcado;
 
-
                     tamanhoEntregue.value =
                         calcado;
 
@@ -1139,6 +1121,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 else {
 
                     tamanhoCadastro.value =
+                        "";
+
+                    tamanhoEntregue.value =
                         "";
 
                 }
@@ -1162,7 +1147,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     tamanhoCadastro.value =
                         integrante.dataset.calcado || "";
 
-
                     tamanhoEntregue.value =
                         integrante.dataset.calcado || "";
 
@@ -1179,9 +1163,15 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
 
-        linha
-            .querySelector(".btn-remover-item")
-            .addEventListener(
+        const btnRemover =
+            linha.querySelector(
+                ".btn-remover-item"
+            );
+
+
+        if (btnRemover) {
+
+            btnRemover.addEventListener(
                 "click",
                 function () {
 
@@ -1190,6 +1180,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             );
 
+        }
+
     }
 
 
@@ -1197,174 +1189,62 @@ document.addEventListener("DOMContentLoaded", function () {
     /* BOTÃO ADICIONAR ITEM                                  */
     /* ===================================================== */
 
-    btnAdicionarItem.addEventListener(
-        "click",
-        function () {
+    if (btnAdicionarItem) {
 
-            adicionarItem();
+        btnAdicionarItem.addEventListener(
+            "click",
+            function () {
 
-        }
-    );
+                adicionarItem();
+
+            }
+        );
+
+    }
 
 
     /* ===================================================== */
     /* SALVAR TERMO                                          */
     /* ===================================================== */
 
-    btnSalvar.addEventListener(
-        "click",
-        async function () {
+    if (btnSalvar) {
 
-            const grupoId =
-                document.getElementById(
-                    "grupoId"
-                ).value;
+        btnSalvar.addEventListener(
+            "click",
+            async function () {
 
-
-            const integranteId =
-                selectIntegrante.value;
+                const grupoId =
+                    document.getElementById(
+                        "grupoId"
+                    ).value;
 
 
-            const temporadaId =
-                document.getElementById(
-                    "temporadaTermo"
-                ).value;
+                const integranteId =
+                    selectIntegrante.value;
 
 
-            const dataEntrega =
-                document.getElementById(
-                    "dataEntrega"
-                ).value;
+                const temporadaId =
+                    document.getElementById(
+                        "temporadaTermo"
+                    ).value;
 
 
-            const observacao =
-                document.getElementById(
-                    "observacaoTermo"
-                ).value;
+                const dataEntrega =
+                    document.getElementById(
+                        "dataEntrega"
+                    ).value;
 
 
-            /* ============================================= */
-            /* VALIDAÇÕES                                    */
-            /* ============================================= */
-
-            if (!grupoId) {
-
-                alert(
-                    "Grupo de entrega não identificado."
-                );
-
-                return;
-
-            }
+                const observacao =
+                    document.getElementById(
+                        "observacaoTermo"
+                    ).value;
 
 
-            if (!integranteId) {
-
-                alert(
-                    "Selecione o integrante."
-                );
-
-                return;
-
-            }
-
-
-            if (!temporadaId) {
-
-                alert(
-                    "Este grupo não possui uma temporada."
-                );
-
-                return;
-
-            }
-
-
-            if (!dataEntrega) {
-
-                alert(
-                    "Informe a data da entrega."
-                );
-
-                return;
-
-            }
-
-
-            const linhas =
-                listaItens.querySelectorAll(
-                    ".item-entrega-linha"
-                );
-
-
-            if (linhas.length === 0) {
-
-                alert(
-                    "Adicione pelo menos um item para entregar."
-                );
-
-                return;
-
-            }
-
-
-            /* ============================================= */
-            /* MONTAR ITENS                                  */
-            /* ============================================= */
-
-            const itens = [];
-
-
-            for (
-                const linha of linhas
-            ) {
-
-                const selectItem =
-                    linha.querySelector(
-                        ".item-select"
-                    );
-
-
-                const selectTipo =
-                    linha.querySelector(
-                        ".item-tipo"
-                    );
-
-
-                const tamanhoCadastro =
-                    linha.querySelector(
-                        ".tamanho-cadastro"
-                    );
-
-
-                const tamanhoEntregue =
-                    linha.querySelector(
-                        ".tamanho-entregue"
-                    );
-
-
-                const quantidade =
-                    linha.querySelector(
-                        ".quantidade"
-                    );
-
-
-                const estado =
-                    linha.querySelector(
-                        ".estado"
-                    );
-
-
-                const observacaoItem =
-                    linha.querySelector(
-                        ".observacao-item"
-                    );
-
-
-                if (!selectItem.value) {
+                if (!grupoId) {
 
                     alert(
-                        "Selecione o item de todas as linhas adicionadas."
+                        "Grupo de entrega não identificado."
                     );
 
                     return;
@@ -1372,10 +1252,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                if (!selectTipo.value) {
+                if (!integranteId) {
 
                     alert(
-                        "Informe o tipo de todos os itens."
+                        "Selecione o integrante."
                     );
 
                     return;
@@ -1383,13 +1263,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                if (
-                    !quantidade.value ||
-                    Number(quantidade.value) <= 0
-                ) {
+                if (!temporadaId) {
 
                     alert(
-                        "Informe uma quantidade válida."
+                        "Este grupo não possui uma temporada."
                     );
 
                     return;
@@ -1397,160 +1274,254 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
 
-                let itemId =
-                    selectItem.value;
+                if (!dataEntrega) {
 
-                let itemNome = "";
+                    alert(
+                        "Informe a data da entrega."
+                    );
 
-
-                if (
-                    itemId === "CALCADO"
-                ) {
-
-                    itemId = null;
-
-                    itemNome =
-                        "Tênis";
-
-                }
-
-                else {
-
-                    const opcao =
-                        selectItem.options[
-                            selectItem.selectedIndex
-                        ];
-
-                    itemNome =
-                        opcao.textContent.trim();
+                    return;
 
                 }
 
 
-                itens.push({
-
-                    item_id:
-                        itemId,
-
-                    item_nome:
-                        itemNome,
-
-                    item_tipo:
-                        selectTipo.value,
-
-                    tamanho_cadastro:
-                        tamanhoCadastro.value || "",
-
-                    tamanho_entregue:
-                        tamanhoEntregue.value || "",
-
-                    quantidade:
-                        Number(quantidade.value),
-
-                    estado_entrega:
-                        estado.value,
-
-                    observacao:
-                        observacaoItem.value || ""
-
-                });
-
-            }
-
-
-            /* ============================================= */
-            /* ENVIAR                                      */
-            /* ============================================= */
-
-            btnSalvar.disabled =
-                true;
-
-
-            btnSalvar.innerHTML =
-                "⏳ Registrando...";
-
-
-            try {
-
-                const resposta =
-                    await fetch(
-                        "{{ url_for('salvar_fardamento') }}",
-                        {
-
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-
-                                grupo_id:
-                                    grupoId,
-
-                                integrante_id:
-                                    integranteId,
-
-                                temporada_id:
-                                    temporadaId,
-
-                                data_entrega:
-                                    dataEntrega,
-
-                                itens:
-                                    itens,
-
-                                observacao:
-                                    observacao
-
-                            })
-
-                        }
+                const linhas =
+                    listaItens.querySelectorAll(
+                        ".item-entrega-linha"
                     );
 
 
-                const dados =
-                    await resposta.json();
+                if (linhas.length === 0) {
 
-
-                if (
-                    !resposta.ok ||
-                    !dados.sucesso
-                ) {
-
-                    throw new Error(
-                        dados.erro ||
-                        dados.mensagem ||
-                        "Não foi possível registrar a entrega."
+                    alert(
+                        "Adicione pelo menos um item para entregar."
                     );
+
+                    return;
 
                 }
 
 
-                window.location.reload();
+                const itens = [];
 
-            }
 
-            catch (erro) {
+                for (const linha of linhas) {
 
-                alert(
-                    erro.message ||
-                    "Erro ao registrar a entrega."
-                );
+                    const selectItem =
+                        linha.querySelector(
+                            ".item-select"
+                        );
+
+                    const selectTipo =
+                        linha.querySelector(
+                            ".item-tipo"
+                        );
+
+                    const tamanhoCadastro =
+                        linha.querySelector(
+                            ".tamanho-cadastro"
+                        );
+
+                    const tamanhoEntregue =
+                        linha.querySelector(
+                            ".tamanho-entregue"
+                        );
+
+                    const quantidade =
+                        linha.querySelector(
+                            ".quantidade"
+                        );
+
+                    const estado =
+                        linha.querySelector(
+                            ".estado"
+                        );
+
+                    const observacaoItem =
+                        linha.querySelector(
+                            ".observacao-item"
+                        );
+
+
+                    if (!selectItem.value) {
+
+                        alert(
+                            "Selecione o item de todas as linhas adicionadas."
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (!selectTipo.value) {
+
+                        alert(
+                            "Informe o tipo de todos os itens."
+                        );
+
+                        return;
+
+                    }
+
+
+                    if (
+                        !quantidade.value ||
+                        Number(quantidade.value) <= 0
+                    ) {
+
+                        alert(
+                            "Informe uma quantidade válida."
+                        );
+
+                        return;
+
+                    }
+
+
+                    itens.push({
+
+                        item_id:
+                            Number(selectItem.value),
+
+                        tamanho_cadastro:
+                            tamanhoCadastro.value || "",
+
+                        tamanho_entregue:
+                            tamanhoEntregue.value || "",
+
+                        quantidade:
+                            Number(quantidade.value),
+
+                        estado_entrega:
+                            estado.value,
+
+                        observacao:
+                            observacaoItem.value || ""
+
+                    });
+
+                }
 
 
                 btnSalvar.disabled =
-                    false;
+                    true;
 
 
                 btnSalvar.innerHTML =
-                    "💾 Registrar Entrega no Grupo";
+                    "⏳ Registrando...";
+
+
+                try {
+
+                    const resposta =
+                        await fetch(
+                            "{{ url_for('salvar_fardamento') }}",
+                            {
+
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body: JSON.stringify({
+
+                                    grupo_id:
+                                        Number(grupoId),
+
+                                    integrante_id:
+                                        Number(integranteId),
+
+                                    temporada_id:
+                                        Number(temporadaId),
+
+                                    data_entrega:
+                                        dataEntrega,
+
+                                    itens:
+                                        itens,
+
+                                    observacao:
+                                        observacao
+
+                                })
+
+                            }
+                        );
+
+
+                    const texto =
+                        await resposta.text();
+
+
+                    let dados = {};
+
+                    try {
+
+                        dados =
+                            JSON.parse(texto);
+
+                    }
+
+                    catch (e) {
+
+                        dados = {
+                            sucesso: false,
+                            mensagem:
+                                texto ||
+                                "Resposta inválida do servidor."
+                        };
+
+                    }
+
+
+                    if (
+                        !resposta.ok ||
+                        !dados.sucesso
+                    ) {
+
+                        throw new Error(
+                            dados.erro ||
+                            dados.mensagem ||
+                            "Não foi possível registrar a entrega."
+                        );
+
+                    }
+
+
+                    window.location.reload();
+
+                }
+
+                catch (erro) {
+
+                    console.error(
+                        "ERRO AO REGISTRAR TERMO:",
+                        erro
+                    );
+
+
+                    alert(
+                        erro.message ||
+                        "Erro ao registrar entrega."
+                    );
+
+
+                    btnSalvar.disabled =
+                        false;
+
+
+                    btnSalvar.innerHTML =
+                        "💾 Registrar Entrega no Grupo";
+
+                }
 
             }
+        );
 
-        }
-    );
+    }
 
 
     /* ===================================================== */
@@ -1586,9 +1557,220 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+
+    /* ===================================================== */
+    /* EXCLUSÃO DOS TERMOS                                  */
+    /* ===================================================== */
+
+    document.addEventListener(
+        "click",
+        async function (event) {
+
+            const botao =
+                event.target.closest(
+                    ".btn-excluir-termo"
+                );
+
+
+            if (!botao) {
+                return;
+            }
+
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            const termoId =
+                botao.dataset.termoId;
+
+
+            const numeroTermo =
+                botao.dataset.numeroTermo ||
+                "este termo";
+
+
+            if (!termoId) {
+
+                alert(
+                    "Erro: ID do termo não encontrado."
+                );
+
+                return;
+
+            }
+
+
+            const confirmar =
+                confirm(
+
+                    `Deseja realmente excluir o termo ${numeroTermo}?\n\n` +
+
+                    `A entrega, seus itens e movimentações serão excluídos.`
+
+                );
+
+
+            if (!confirmar) {
+
+                return;
+
+            }
+
+
+            const textoOriginal =
+                botao.innerHTML;
+
+
+            botao.disabled =
+                true;
+
+
+            botao.innerHTML =
+                "⏳";
+
+
+            try {
+
+                /*
+                 * A URL usada aqui é exatamente a rota
+                 * esperada pelo módulo de fardamento.
+                 */
+
+                const url =
+                    `/admin/fardamento/termos/${encodeURIComponent(termoId)}/excluir`;
+
+
+                console.log(
+                    "Excluindo termo:",
+                    termoId,
+                    url
+                );
+
+
+                const resposta =
+                    await fetch(
+                        url,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "X-Requested-With":
+                                    "XMLHttpRequest"
+                            },
+
+                            credentials: "same-origin"
+                        }
+                    );
+
+
+                const texto =
+                    await resposta.text();
+
+
+                console.log(
+                    "Resposta exclusão:",
+                    resposta.status,
+                    texto
+                );
+
+
+                let resultado = {};
+
+                try {
+
+                    resultado =
+                        texto
+                            ? JSON.parse(texto)
+                            : {};
+
+                }
+
+                catch (erroJson) {
+
+                    resultado = {
+                        sucesso: false,
+                        mensagem:
+                            texto ||
+                            `Erro HTTP ${resposta.status}.`
+                    };
+
+                }
+
+
+                if (
+                    !resposta.ok ||
+                    resultado.sucesso !== true
+                ) {
+
+                    throw new Error(
+                        resultado.mensagem ||
+                        resultado.erro ||
+                        `Não foi possível excluir o termo. HTTP ${resposta.status}`
+                    );
+
+                }
+
+
+                /*
+                 * Remove imediatamente a linha da tabela.
+                 * Depois recarrega para atualizar o contador.
+                 */
+
+                const linha =
+                    document.getElementById(
+                        `termo-row-${termoId}`
+                    );
+
+
+                if (linha) {
+
+                    linha.remove();
+
+                }
+
+
+                alert(
+                    resultado.mensagem ||
+                    "Termo excluído com sucesso."
+                );
+
+
+                window.location.reload();
+
+            }
+
+            catch (erro) {
+
+                console.error(
+                    "ERRO AO EXCLUIR TERMO:",
+                    erro
+                );
+
+
+                alert(
+                    erro.message ||
+                    "Erro de comunicação com o servidor."
+                );
+
+
+                botao.disabled =
+                    false;
+
+
+                botao.innerHTML =
+                    textoOriginal;
+
+            }
+
+        }
+    );
+
 });
 
 </script>
-
 
 {% endblock %}
