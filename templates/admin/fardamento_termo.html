@@ -144,9 +144,7 @@ Termo de Fardamento
         </h2>
 
         <div class="text-secondary">
-
             Visualização dos dados da entrega registrada.
-
         </div>
 
     </div>
@@ -154,17 +152,32 @@ Termo de Fardamento
 
     <div class="d-flex gap-2">
 
+        {% if termo.grupo_id %}
+
         <a
-            href="/admin/fardamento/entregas"
+            href="/admin/fardamento/grupo/{{ termo.grupo_id }}"
             class="btn btn-secondary">
 
             ← Voltar
 
         </a>
 
+        {% else %}
 
         <a
-            href="/admin/fardamento/termo/{{ termo.id }}/pdf"
+            href="{{ url_for('fardamento_grupos') }}"
+            class="btn btn-secondary">
+
+            ← Voltar
+
+        </a>
+
+        {% endif %}
+
+
+        <a
+            href="{{ url_for('pdf_fardamento', termo_id=termo.id) }}"
+            target="_blank"
             class="btn btn-danger">
 
             📄 Gerar PDF
@@ -177,7 +190,7 @@ Termo de Fardamento
 
 
 <!-- ===================================================== -->
-<!-- DADOS DO TERMO                                        -->
+<!-- INFORMAÇÕES DO TERMO                                  -->
 <!-- ===================================================== -->
 
 <div class="termo-card">
@@ -188,6 +201,8 @@ Termo de Fardamento
 
 
     <div class="row g-3">
+
+        <!-- TERMO -->
 
         <div class="col-md-3">
 
@@ -205,6 +220,8 @@ Termo de Fardamento
 
         </div>
 
+
+        <!-- TIPO -->
 
         <div class="col-md-3">
 
@@ -226,7 +243,7 @@ Termo de Fardamento
 
                     {% else %}
 
-                        {{ termo.tipo }}
+                        {{ termo.tipo or '-' }}
 
                     {% endif %}
 
@@ -236,6 +253,8 @@ Termo de Fardamento
 
         </div>
 
+
+        <!-- DATA -->
 
         <div class="col-md-3">
 
@@ -264,6 +283,8 @@ Termo de Fardamento
         </div>
 
 
+        <!-- STATUS -->
+
         <div class="col-md-3">
 
             <div class="info-box">
@@ -271,6 +292,7 @@ Termo de Fardamento
                 <span class="info-label">
                     Status
                 </span>
+
 
                 {% if termo.status == "EMITIDO" %}
 
@@ -302,118 +324,84 @@ Termo de Fardamento
 
 
 <!-- ===================================================== -->
-<!-- INTEGRANTE                                           -->
+<!-- INTEGRANTE                                            -->
 <!-- ===================================================== -->
 
-<h6 class="mb-3">
-    👤 Integrante
-</h6>
+<div class="termo-card">
 
-<label class="form-label">
-    Selecione o integrante
-</label>
-
-<select
-    id="integranteTermo"
-    name="integrante_id"
-    class="form-select">
-
-    <option value="">
-        Selecione...
-    </option>
-
-    {% if integrantes %}
-
-        {% for integrante in integrantes %}
-
-            <option
-                value="{{ integrante.id }}"
-                data-nome="{{ integrante.nome }}"
-                data-codigo="{{ integrante.codigo_integrante or '' }}"
-                data-funcao="{{ integrante.funcao or '' }}"
-                data-calcado="{{ integrante.calcado or '' }}"
-            >
-                {{ integrante.nome }}
-                {% if integrante.codigo_integrante %}
-                    — {{ integrante.codigo_integrante }}
-                {% endif %}
-            </option>
-
-        {% endfor %}
-
-    {% else %}
-
-        <option value="" disabled>
-            Nenhum integrante ativo encontrado
-        </option>
-
-    {% endif %}
-
-</select>
-
-<div class="small text-secondary mt-2">
-
-    {{ integrantes|length }} integrante(s) disponível(is)
-
-</div>
+    <h5 class="mb-3">
+        👤 Integrante
+    </h5>
 
 
-<!-- ===================================================== -->
-<!-- INFORMAÇÕES DO INTEGRANTE                            -->
-<!-- ===================================================== -->
+    <div class="row g-3">
 
-<div
-    id="infoIntegrante"
-    class="integrante-info"
-    style="display:none;">
-
-    <div class="row">
+        <!-- NOME -->
 
         <div class="col-md-5">
 
-            <small>
-                Integrante
-            </small>
+            <div class="info-box">
 
-            <br>
+                <span class="info-label">
+                    Integrante
+                </span>
 
-            <strong id="infoNome">
-                -
-            </strong>
+                <span class="info-value">
+
+                    {{ termo.integrante_nome or '-' }}
+
+                </span>
+
+            </div>
 
         </div>
+
+
+        <!-- MATRÍCULA -->
 
         <div class="col-md-3">
 
-            <small>
-                Matrícula
-            </small>
+            <div class="info-box">
 
-            <br>
+                <span class="info-label">
+                    Matrícula
+                </span>
 
-            <strong id="infoCodigo">
-                -
-            </strong>
+                <span class="info-value">
+
+                    {{ termo.codigo_integrante or '-' }}
+
+                </span>
+
+            </div>
 
         </div>
 
+
+        <!-- FUNÇÃO -->
+
         <div class="col-md-4">
 
-            <small>
-                Função
-            </small>
+            <div class="info-box">
 
-            <br>
+                <span class="info-label">
+                    Função
+                </span>
 
-            <strong id="infoFuncao">
-                -
-            </strong>
+                <span class="info-value">
+
+                    {{ termo.funcao or '-' }}
+
+                </span>
+
+            </div>
 
         </div>
 
     </div>
 
 </div>
+
 
 <!-- ===================================================== -->
 <!-- TEMPORADA                                             -->
@@ -437,7 +425,9 @@ Termo de Fardamento
                 </span>
 
                 <span class="info-value">
-                    {{ termo.temporada_nome }}
+
+                    {{ termo.temporada_nome or '-' }}
+
                 </span>
 
             </div>
@@ -454,7 +444,9 @@ Termo de Fardamento
                 </span>
 
                 <span class="info-value">
+
                     {{ termo.temporada_ano or '-' }}
+
                 </span>
 
             </div>
@@ -467,7 +459,7 @@ Termo de Fardamento
 
 
 <!-- ===================================================== -->
-<!-- ITENS                                                 -->
+<!-- ITENS ENTREGUES                                       -->
 <!-- ===================================================== -->
 
 <div class="termo-card">
@@ -478,8 +470,13 @@ Termo de Fardamento
             📦 Itens Entregues
         </h5>
 
+
         <span class="badge bg-primary">
-            {{ itens|length }} item{% if itens|length != 1 %}s{% endif %}
+
+            {{ itens|length }}
+
+            item{% if itens|length != 1 %}s{% endif %}
+
         </span>
 
     </div>
@@ -493,6 +490,9 @@ Termo de Fardamento
 
             <div class="row align-items-center g-3">
 
+
+                <!-- ITEM -->
+
                 <div class="col-md-4">
 
                     <span class="info-label">
@@ -500,10 +500,15 @@ Termo de Fardamento
                     </span>
 
                     <strong>
+
                         {% if item.item_tipo == "CALCADO" %}
+
                             👟
+
                         {% else %}
+
                             👕
+
                         {% endif %}
 
                         {{ item.item_nome }}
@@ -513,16 +518,28 @@ Termo de Fardamento
                 </div>
 
 
+                <!-- TIPO -->
+
                 <div class="col-md-2">
 
                     <span class="info-label">
                         Tipo
                     </span>
 
-                    {{ item.item_tipo or '-' }}
+                    {% if item.item_tipo == "CALCADO" %}
+
+                        CALÇADO
+
+                    {% else %}
+
+                        FARDAMENTO
+
+                    {% endif %}
 
                 </div>
 
+
+                <!-- TAMANHO CADASTRO -->
 
                 <div class="col-md-2">
 
@@ -535,6 +552,8 @@ Termo de Fardamento
                 </div>
 
 
+                <!-- TAMANHO ENTREGUE -->
+
                 <div class="col-md-2">
 
                     <span class="info-label">
@@ -542,11 +561,15 @@ Termo de Fardamento
                     </span>
 
                     <strong>
+
                         {{ item.tamanho_entregue or '-' }}
+
                     </strong>
 
                 </div>
 
+
+                <!-- QUANTIDADE -->
 
                 <div class="col-md-2">
 
@@ -555,13 +578,17 @@ Termo de Fardamento
                     </span>
 
                     <strong>
+
                         {{ item.quantidade }}
+
                     </strong>
 
                 </div>
 
             </div>
 
+
+            <!-- ESTADO -->
 
             {% if item.estado_entrega %}
 
@@ -570,6 +597,7 @@ Termo de Fardamento
                 <span class="info-label">
                     Estado da entrega
                 </span>
+
 
                 {% if item.estado_entrega == "NOVO" %}
 
@@ -601,9 +629,29 @@ Termo de Fardamento
 
             {% endif %}
 
+
+            <!-- OBSERVAÇÃO DO ITEM -->
+
+            {% if item.observacao %}
+
+            <div class="mt-3">
+
+                <span class="info-label">
+                    Observação
+                </span>
+
+                <div>
+                    {{ item.observacao }}
+                </div>
+
+            </div>
+
+            {% endif %}
+
         </div>
 
         {% endfor %}
+
 
     {% else %}
 
@@ -619,7 +667,7 @@ Termo de Fardamento
 
 
 <!-- ===================================================== -->
-<!-- OBSERVAÇÃO                                            -->
+<!-- OBSERVAÇÃO GERAL                                      -->
 <!-- ===================================================== -->
 
 {% if termo.observacao %}
@@ -629,6 +677,7 @@ Termo de Fardamento
     <h5 class="mb-3">
         📝 Observação
     </h5>
+
 
     <div class="info-box">
 
@@ -647,17 +696,32 @@ Termo de Fardamento
 
 <div class="d-flex justify-content-between align-items-center mb-4">
 
+    {% if termo.grupo_id %}
+
     <a
-        href="/admin/fardamento/entregas"
+        href="/admin/fardamento/grupo/{{ termo.grupo_id }}"
         class="btn btn-secondary">
 
-        ← Voltar para entregas
+        ← Voltar para o grupo
 
     </a>
 
+    {% else %}
 
     <a
-        href="/admin/fardamento/termo/{{ termo.id }}/pdf"
+        href="{{ url_for('fardamento_grupos') }}"
+        class="btn btn-secondary">
+
+        ← Voltar para grupos
+
+    </a>
+
+    {% endif %}
+
+
+    <a
+        href="{{ url_for('pdf_fardamento', termo_id=termo.id) }}"
+        target="_blank"
         class="btn btn-danger">
 
         📄 Gerar PDF
