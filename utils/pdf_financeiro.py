@@ -392,19 +392,20 @@ def gerar_pdf_financeiro(
 
 
             dados.append(
-
                 [
-
                     item.data_movimento.strftime("%d/%m/%Y"),
-
                     item.categoria,
-
-                    item.descricao,
-
+                    Paragraph(
+                        str(item.descricao or ""),
+                        ParagraphStyle(
+                            "DescricaoTabela",
+                            parent=estilos["Normal"],
+                            fontSize=9,
+                            leading=11
+                        )
+                    ),
                     moeda(item.valor)
-
                 ]
-
             )
 
 
@@ -448,7 +449,34 @@ def gerar_pdf_financeiro(
 
                 ("FONT",(0,0),(-1,0),"Helvetica-Bold"),
 
-                ("FONT",(0,-1),(-1,-1),"Helvetica-Bold")
+                ("FONT",(0,-1),(-1,-1),"Helvetica-Bold"),
+
+                # Alinhamento vertical
+                ("VALIGN",(0,0),(-1,-1),"MIDDLE"),
+
+                # Cabeçalhos centralizados
+                ("ALIGN",(0,0),(-1,0),"CENTER"),
+
+                # Data centralizada
+                ("ALIGN",(0,1),(0,-1),"CENTER"),
+
+                # Categoria centralizada
+                ("ALIGN",(1,1),(1,-1),"CENTER"),
+
+                # Valor centralizado
+                ("ALIGN",(3,1),(3,-1),"CENTER"),
+
+                # Descrição à esquerda
+                ("ALIGN",(2,1),(2,-1),"LEFT"),
+
+                # Espaçamento interno
+                ("LEFTPADDING",(0,0),(-1,-1),5),
+
+                ("RIGHTPADDING",(0,0),(-1,-1),5),
+
+                ("TOPPADDING",(0,0),(-1,-1),5),
+
+                ("BOTTOMPADDING",(0,0),(-1,-1),5)
 
             ])
 
