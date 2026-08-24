@@ -10,308 +10,1031 @@ Grupos de Entrega
 
 {% block conteudo %}
 
-<div class="container-fluid">
+<style>
 
-    <!-- ===================================================== -->
-    <!-- CABEÇALHO                                             -->
-    <!-- ===================================================== -->
+/* ========================================================= */
+/* CABEÇALHO                                                 */
+/* ========================================================= */
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+.grupos-header {
 
-        <div>
+    display: flex;
 
-            <h2 class="titulo">
-                📦 Grupos de Entrega
-            </h2>
+    justify-content: space-between;
 
-            <p class="text-secondary mb-0">
-                Organize as entregas de fardamento por grupos.
-            </p>
+    align-items: center;
 
-        </div>
+    gap: 15px;
 
-        <div class="d-flex gap-2">
+    margin-bottom: 20px;
 
-            <button
-                type="button"
-                class="btn btn-primary"
-                onclick="abrirModalGrupo()">
+}
 
-                ➕ Novo Grupo
+.grupos-header h2 {
 
-            </button>
+    margin-bottom: 4px;
 
+}
+
+
+/* ========================================================= */
+/* CARD PRINCIPAL                                            */
+/* ========================================================= */
+
+.grupos-card {
+
+    background: rgba(255,255,255,0.04);
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 14px;
+
+    overflow: hidden;
+
+}
+
+
+/* ========================================================= */
+/* CABEÇALHO DO CARD                                         */
+/* ========================================================= */
+
+.grupos-card-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+}
+
+.grupos-card-header h5 {
+
+    margin: 0;
+
+    font-size: 16px;
+
+    font-weight: 600;
+
+}
+
+
+/* ========================================================= */
+/* TABELA                                                    */
+/* ========================================================= */
+
+.grupos-card .table-responsive {
+
+    margin: 0;
+
+}
+
+.grupos-card table {
+
+    margin: 0;
+
+    border: 0;
+
+}
+
+.grupos-card .table {
+
+    --bs-table-bg: transparent;
+
+    --bs-table-color: inherit;
+
+    --bs-table-border-color: rgba(255,255,255,0.07);
+
+}
+
+.grupos-card .table thead th {
+
+    background: rgba(255,255,255,0.025);
+
+    color: #9ca3af;
+
+    font-size: 0.72rem;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.03em;
+
+    white-space: nowrap;
+
+    padding: 13px 16px;
+
+    border-top: 0;
+
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+
+}
+
+.grupos-card .table tbody td {
+
+    padding: 14px 16px;
+
+    vertical-align: middle;
+
+    border-color: rgba(255,255,255,0.06);
+
+}
+
+.grupos-card .table tbody tr {
+
+    transition:
+        background 0.15s ease;
+
+}
+
+.grupos-card .table tbody tr:hover {
+
+    background: rgba(255,255,255,0.025);
+
+}
+
+
+/* ========================================================= */
+/* NOME DO GRUPO                                             */
+/* ========================================================= */
+
+.grupo-nome {
+
+    font-weight: 600;
+
+    color: #f1f3f5;
+
+}
+
+.grupo-descricao {
+
+    display: block;
+
+    margin-top: 3px;
+
+    color: #7f8791;
+
+    font-size: 0.78rem;
+
+    max-width: 360px;
+
+}
+
+
+/* ========================================================= */
+/* TEMPORADA                                                 */
+/* ========================================================= */
+
+.grupo-temporada {
+
+    font-weight: 500;
+
+    color: #f1f3f5 !important;
+}
+
+.grupo-ano {
+
+    color: #7f8791 !important;
+
+    font-size: 0.8rem;
+}
+
+
+/* ========================================================= */
+/* GARANTE COR NORMAL AO PASSAR O MOUSE NA LINHA             */
+/* ========================================================= */
+
+.grupos-card .table tbody tr:hover .grupo-temporada {
+
+    color: #f1f3f5 !important;
+}
+
+.grupos-card .table tbody tr:hover .grupo-ano {
+
+    color: #7f8791 !important;
+}
+
+
+/* ========================================================= */
+/* BADGE DE ENTREGAS                                         */
+/* ========================================================= */
+
+.badge-entregas {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-width: 34px;
+
+    padding: 5px 9px;
+
+    border-radius: 8px;
+
+    background: rgba(13,110,253,0.15);
+
+    border: 1px solid rgba(13,110,253,0.20);
+
+    color: #6ea8fe;
+
+    font-size: 0.78rem;
+
+    font-weight: 600;
+
+}
+
+
+/* ========================================================= */
+/* STATUS                                                    */
+/* ========================================================= */
+
+.status-grupo {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    padding: 5px 10px;
+
+    border-radius: 20px;
+
+    font-size: 0.72rem;
+
+    font-weight: 600;
+
+}
+
+.status-ativo {
+
+    background: rgba(25,135,84,0.15);
+
+    border: 1px solid rgba(25,135,84,0.20);
+
+    color: #4ade80;
+
+}
+
+.status-outro {
+
+    background: rgba(108,117,125,0.15);
+
+    border: 1px solid rgba(108,117,125,0.20);
+
+    color: #aaa;
+
+}
+
+
+/* ========================================================= */
+/* DATA                                                      */
+/* ========================================================= */
+
+.grupo-data {
+
+    color: #c5c9ce;
+
+    font-size: 0.85rem;
+
+}
+
+
+/* ========================================================= */
+/* AÇÕES                                                     */
+/* ========================================================= */
+
+.grupo-acoes {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 5px;
+
+}
+
+.grupo-acoes .btn {
+
+    border-radius: 8px;
+
+}
+
+
+/* ========================================================= */
+/* ESTADO VAZIO                                              */
+/* ========================================================= */
+
+.grupos-vazio {
+
+    text-align: center;
+
+    padding: 55px 20px;
+
+    color: #888;
+
+}
+
+.grupos-vazio-icone {
+
+    font-size: 42px;
+
+    opacity: 0.75;
+
+}
+
+.grupos-vazio h5 {
+
+    margin-top: 14px;
+
+    margin-bottom: 6px;
+
+    color: #d1d5db;
+
+}
+
+.grupos-vazio p {
+
+    margin-bottom: 18px;
+
+    font-size: 0.9rem;
+
+}
+
+
+/* ========================================================= */
+/* MODAL                                                     */
+/* ========================================================= */
+
+.bn-modal {
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 16px;
+
+    overflow: hidden;
+
+    background: #1f2227;
+
+    color: #fff;
+
+    box-shadow:
+        0 18px 50px rgba(0, 0, 0, 0.45);
+
+}
+
+
+/* ========================================================= */
+/* CABEÇALHO DO MODAL                                        */
+/* ========================================================= */
+
+.bn-modal-header {
+
+    background: #17191d;
+
+    color: #fff;
+
+    padding: 20px 22px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+}
+
+.bn-modal-header > div:first-child {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+}
+
+.bn-modal-icon {
+
+    width: 42px;
+
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: rgba(255, 255, 255, 0.07);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+
+    font-size: 21px;
+
+}
+
+.bn-modal-header .modal-title {
+
+    margin: 0;
+
+    font-size: 18px;
+
+    font-weight: 600;
+
+    color: #fff;
+
+}
+
+.bn-modal-header small {
+
+    display: block;
+
+    margin-top: 2px;
+
+    color: #9ca3af;
+
+    font-size: 12px;
+
+}
+
+
+/* ========================================================= */
+/* CORPO DO MODAL                                            */
+/* ========================================================= */
+
+.bn-modal-body {
+
+    padding: 25px 24px 20px;
+
+    background: #1f2227;
+
+}
+
+
+/* ========================================================= */
+/* LABELS                                                    */
+/* ========================================================= */
+
+.bn-label {
+
+    font-weight: 600;
+
+    font-size: 13px;
+
+    color: #e5e7eb;
+
+    margin-bottom: 8px;
+
+}
+
+
+/* ========================================================= */
+/* CAMPOS                                                    */
+/* ========================================================= */
+
+.bn-input {
+
+    background: #292d33;
+
+    border: 1px solid #3b4048;
+
+    color: #f1f3f5;
+
+    border-radius: 9px;
+
+    padding: 10px 12px;
+
+    font-size: 14px;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+
+}
+
+.bn-input::placeholder {
+
+    color: #7f8791;
+
+}
+
+.bn-input:focus {
+
+    background: #2d3239;
+
+    color: #fff;
+
+    border-color: #6c757d;
+
+    box-shadow:
+        0 0 0 3px rgba(108, 117, 125, 0.15);
+
+}
+
+select.bn-input {
+
+    color: #f1f3f5;
+
+}
+
+select.bn-input option {
+
+    background: #292d33;
+
+    color: #fff;
+
+}
+
+textarea.bn-input {
+
+    resize: vertical;
+
+}
+
+
+/* ========================================================= */
+/* TEXTO DE AJUDA                                            */
+/* ========================================================= */
+
+.bn-modal .form-text {
+
+    font-size: 11px;
+
+    color: #7f8791;
+
+    margin-top: 6px;
+
+}
+
+
+/* ========================================================= */
+/* RODAPÉ DO MODAL                                           */
+/* ========================================================= */
+
+.bn-modal-footer {
+
+    background: #191b1f;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+
+    padding: 14px 20px;
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 8px;
+
+}
+
+
+/* ========================================================= */
+/* BOTÃO CANCELAR                                            */
+/* ========================================================= */
+
+.bn-btn-cancelar {
+
+    background: #292d33;
+
+    color: #d1d5db;
+
+    border: 1px solid #3b4048;
+
+    border-radius: 8px;
+
+    padding: 8px 16px;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+}
+
+.bn-btn-cancelar:hover {
+
+    background: #343941;
+
+    color: #fff;
+
+}
+
+
+/* ========================================================= */
+/* BOTÃO SALVAR                                              */
+/* ========================================================= */
+
+.bn-btn-salvar {
+
+    border-radius: 8px;
+
+    padding: 8px 17px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+/* ========================================================= */
+/* ANIMAÇÃO MODAL                                            */
+/* ========================================================= */
+
+#modalGrupo .modal-dialog {
+
+    transform: translateY(-8px);
+
+    transition: transform 0.2s ease;
+
+}
+
+#modalGrupo.show .modal-dialog {
+
+    transform: translateY(0);
+
+}
+
+
+/* ========================================================= */
+/* FUNDO DO MODAL                                            */
+/* ========================================================= */
+
+.modal-backdrop.show {
+
+    opacity: 0.75;
+
+}
+
+
+/* ========================================================= */
+/* RESPONSIVO                                                 */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+
+    .grupos-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+    }
+
+    .grupos-header .btn {
+
+        width: 100%;
+
+    }
+
+    .grupos-card .table {
+
+        min-width: 850px;
+
+    }
+
+}
+
+</style>
+
+
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                             -->
+<!-- ===================================================== -->
+
+<div class="grupos-header">
+
+    <div>
+
+        <h2 class="titulo mb-1">
+            📦 Grupos de Entrega
+        </h2>
+
+        <div class="text-secondary">
+            Organize as entregas de fardamento por grupos.
         </div>
 
     </div>
 
 
-    <!-- ===================================================== -->
-    <!-- GRUPOS                                                 -->
-    <!-- ===================================================== -->
+    <div>
 
-    <div class="card-bn">
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="abrirModalGrupo()">
 
-        <div class="card-body">
+            ➕ Novo Grupo
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
+        </button>
 
-                <h5 class="mb-0">
-                    📋 Grupos cadastrados
-                </h5>
+    </div>
 
-                <span class="badge bg-secondary">
-                    {{ grupos|length }} grupo(s)
-                </span>
-
-            </div>
+</div>
 
 
-            {% if grupos %}
+<!-- ===================================================== -->
+<!-- GRUPOS                                                 -->
+<!-- ===================================================== -->
 
-            <div class="table-responsive">
+<div class="grupos-card">
 
-                <table class="table table-bordered table-hover align-middle">
+    <!-- CABEÇALHO DO CARD -->
 
-                    <thead>
+    <div class="grupos-card-header">
 
-                        <tr>
+        <h5>
+            📋 Grupos cadastrados
+        </h5>
 
-                            <th>
-                                Grupo
-                            </th>
+        <span class="badge bg-secondary">
 
-                            <th>
-                                Temporada
-                            </th>
+            {{ grupos|length }}
+            grupo{% if grupos|length != 1 %}s{% endif %}
 
-                            <th class="text-center">
-                                Entregas
-                            </th>
+        </span>
 
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Cadastro
-                            </th>
-
-                            <th
-                                class="text-center"
-                                style="width: 180px;">
-
-                                Ações
-
-                            </th>
-
-                        </tr>
-
-                    </thead>
+    </div>
 
 
-                    <tbody>
+    {% if grupos %}
 
-                        {% for grupo in grupos %}
+    <!-- ================================================= -->
+    <!-- TABELA                                             -->
+    <!-- ================================================= -->
 
-                        <tr>
+    <div class="table-responsive">
 
-                            <!-- ================================= -->
-                            <!-- GRUPO                             -->
-                            <!-- ================================= -->
+        <table class="table table-hover align-middle">
 
-                            <td>
+            <thead>
 
-                                <strong>
-                                    📦 {{ grupo.nome }}
-                                </strong>
+                <tr>
 
-                                {% if grupo.descricao %}
+                    <th>
+                        Grupo
+                    </th>
 
-                                <br>
+                    <th>
+                        Temporada
+                    </th>
 
-                                <small class="text-secondary">
-                                    {{ grupo.descricao }}
-                                </small>
+                    <th class="text-center">
+                        Entregas
+                    </th>
 
-                                {% endif %}
+                    <th>
+                        Status
+                    </th>
 
-                            </td>
+                    <th>
+                        Cadastro
+                    </th>
 
+                    <th
+                        class="text-center"
+                        style="width: 180px;">
 
-                            <!-- ================================= -->
-                            <!-- TEMPORADA                         -->
-                            <!-- ================================= -->
+                        Ações
 
-                            <td>
+                    </th>
 
-                                {% if grupo.temporada_nome %}
+                </tr>
 
-                                    {{ grupo.temporada_nome }}
-
-                                    {% if grupo.temporada_ano %}
-
-                                        <small class="text-secondary">
-                                            — {{ grupo.temporada_ano }}
-                                        </small>
-
-                                    {% endif %}
-
-                                {% else %}
-
-                                    <span class="text-secondary">
-                                        Não informada
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
+            </thead>
 
 
-                            <!-- ================================= -->
-                            <!-- ENTREGAS                          -->
-                            <!-- ================================= -->
+            <tbody>
 
-                            <td class="text-center">
+                {% for grupo in grupos %}
 
-                                <span class="badge bg-primary">
-                                    {{ grupo.quantidade_termos }}
+                <tr>
+
+                    <!-- ================================= -->
+                    <!-- GRUPO                             -->
+                    <!-- ================================= -->
+
+                    <td>
+
+                        <div class="grupo-nome">
+
+                            📦 {{ grupo.nome }}
+
+                        </div>
+
+
+                        {% if grupo.descricao %}
+
+                        <span class="grupo-descricao">
+
+                            {{ grupo.descricao }}
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ================================= -->
+                    <!-- TEMPORADA                         -->
+                    <!-- ================================= -->
+
+                    <td>
+
+                        {% if grupo.temporada_nome %}
+
+                            <span class="grupo-temporada">
+
+                                {{ grupo.temporada_nome }}
+
+                            </span>
+
+                            {% if grupo.temporada_ano %}
+
+                                <span class="grupo-ano">
+
+                                    — {{ grupo.temporada_ano }}
+
                                 </span>
 
-                            </td>
+                            {% endif %}
+
+                        {% else %}
+
+                            <span class="text-secondary">
+                                Não informada
+                            </span>
+
+                        {% endif %}
+
+                    </td>
 
 
-                            <!-- ================================= -->
-                            <!-- STATUS                            -->
-                            <!-- ================================= -->
+                    <!-- ================================= -->
+                    <!-- ENTREGAS                          -->
+                    <!-- ================================= -->
 
-                            <td>
+                    <td class="text-center">
 
-                                {% if grupo.status == "ATIVO" %}
+                        <span class="badge-entregas">
 
-                                    <span class="badge bg-success">
-                                        🟢 ATIVO
-                                    </span>
+                            {{ grupo.quantidade_termos }}
 
-                                {% else %}
+                        </span>
 
-                                    <span class="badge bg-secondary">
-                                        {{ grupo.status or '-' }}
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
+                    </td>
 
 
-                            <!-- ================================= -->
-                            <!-- DATA                              -->
-                            <!-- ================================= -->
+                    <!-- ================================= -->
+                    <!-- STATUS                            -->
+                    <!-- ================================= -->
 
-                            <td>
+                    <td>
 
-                                {% if grupo.data_cadastro %}
+                        {% if grupo.status == "ATIVO" %}
 
-                                    {{ grupo.data_cadastro.strftime('%d/%m/%Y') }}
+                            <span class="status-grupo status-ativo">
 
-                                {% else %}
+                                🟢 ATIVO
 
-                                    -
+                            </span>
 
-                                {% endif %}
+                        {% else %}
 
-                            </td>
+                            <span class="status-grupo status-outro">
 
+                                {{ grupo.status or '-' }}
 
-                            <!-- ================================= -->
-                            <!-- AÇÕES                             -->
-                            <!-- ================================= -->
+                            </span>
 
-                            <td class="text-center">
+                        {% endif %}
 
-                                <div class="d-flex justify-content-center gap-1">
-
-                                    <a href="/admin/fardamento/grupos/{{ grupo.id }}"
-                                        class="btn btn-sm btn-outline-primary"
-                                        title="Visualizar grupo">
-
-                                        👁️ Ver
-
-                                    </a>
+                    </td>
 
 
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-secondary"
-                                        title="Editar grupo"
-                                        onclick="editarGrupo({{ grupo.id }})">
+                    <!-- ================================= -->
+                    <!-- DATA                              -->
+                    <!-- ================================= -->
 
-                                        ✏️
+                    <td>
 
-                                    </button>
+                        {% if grupo.data_cadastro %}
+
+                            <span class="grupo-data">
+
+                                {{ grupo.data_cadastro.strftime('%d/%m/%Y') }}
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="text-secondary">
+                                -
+                            </span>
+
+                        {% endif %}
+
+                    </td>
 
 
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        title="Excluir grupo"
-                                        onclick="excluirGrupo({{ grupo.id }})">
+                    <!-- ================================= -->
+                    <!-- AÇÕES                             -->
+                    <!-- ================================= -->
 
-                                        🗑️
+                    <td class="text-center">
 
-                                    </button>
+                        <div class="grupo-acoes">
 
-                                </div>
+                            <a
+                                href="/admin/fardamento/grupos/{{ grupo.id }}"
+                                class="btn btn-sm btn-outline-primary"
+                                title="Visualizar grupo">
 
-                            </td>
+                                👁️
 
-                        </tr>
+                            </a>
 
-                        {% endfor %}
 
-                    </tbody>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-secondary"
+                                title="Editar grupo"
+                                onclick="editarGrupo({{ grupo.id }})">
 
-                </table>
+                                ✏️
 
-            </div>
+                            </button>
 
-            {% else %}
 
-            <!-- ================================================= -->
-            <!-- SEM GRUPOS                                        -->
-            <!-- ================================================= -->
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger"
+                                title="Excluir grupo"
+                                onclick="excluirGrupo({{ grupo.id }}, {{ grupo.nome|tojson }})">
 
-            <div class="text-center text-secondary py-5">
+                                🗑️
 
-                <div style="font-size: 45px;">
-                    📦
-                </div>
+                            </button>
 
-                <h5 class="mt-3">
-                    Nenhum grupo cadastrado
-                </h5>
+                        </div>
 
-                <p>
-                    Crie um grupo para organizar suas entregas
-                    de fardamento.
-                </p>
+                    </td>
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    onclick="abrirModalGrupo()">
+                </tr>
 
-                    ➕ Criar primeiro grupo
+                {% endfor %}
 
-                </button>
+            </tbody>
 
-            </div>
-
-            {% endif %}
-
-        </div>
+        </table>
 
     </div>
+
+
+    {% else %}
+
+    <!-- ================================================= -->
+    <!-- SEM GRUPOS                                        -->
+    <!-- ================================================= -->
+
+    <div class="grupos-vazio">
+
+        <div class="grupos-vazio-icone">
+            📦
+        </div>
+
+        <h5>
+            Nenhum grupo cadastrado
+        </h5>
+
+        <p>
+            Crie um grupo para organizar suas entregas
+            de fardamento.
+        </p>
+
+        <button
+            type="button"
+            class="btn btn-primary"
+            onclick="abrirModalGrupo()">
+
+            ➕ Criar primeiro grupo
+
+        </button>
+
+    </div>
+
+    {% endif %}
 
 </div>
 
@@ -330,9 +1053,7 @@ Grupos de Entrega
 
         <div class="modal-content bn-modal">
 
-            <!-- ================================================= -->
-            <!-- CABEÇALHO                                         -->
-            <!-- ================================================= -->
+            <!-- CABEÇALHO -->
 
             <div class="modal-header bn-modal-header">
 
@@ -360,6 +1081,7 @@ Grupos de Entrega
 
                 </div>
 
+
                 <button
                     type="button"
                     class="btn-close btn-close-white"
@@ -370,9 +1092,7 @@ Grupos de Entrega
             </div>
 
 
-            <!-- ================================================= -->
-            <!-- CORPO                                             -->
-            <!-- ================================================= -->
+            <!-- CORPO -->
 
             <div class="modal-body bn-modal-body">
 
@@ -479,9 +1199,7 @@ Grupos de Entrega
             </div>
 
 
-            <!-- ================================================= -->
-            <!-- RODAPÉ                                             -->
-            <!-- ================================================= -->
+            <!-- RODAPÉ -->
 
             <div class="modal-footer bn-modal-footer">
 
@@ -494,12 +1212,14 @@ Grupos de Entrega
 
                 </button>
 
+
                 <button
                     type="button"
                     class="btn btn-primary bn-btn-salvar"
                     onclick="salvarGrupo()">
 
                     💾
+
                     <span id="textoBotaoSalvar">
                         Salvar Grupo
                     </span>
@@ -514,297 +1234,6 @@ Grupos de Entrega
 
 </div>
 
-<style>
-
-<style>
-
-/* ========================================================= */
-/* MODAL GRUPOS DE ENTREGA                                   */
-/* ========================================================= */
-
-.bn-modal {
-
-    border: 1px solid rgba(255, 255, 255, 0.08);
-
-    border-radius: 16px;
-
-    overflow: hidden;
-
-    background: #1f2227;
-
-    color: #fff;
-
-    box-shadow:
-        0 18px 50px rgba(0, 0, 0, 0.45);
-}
-
-
-/* ========================================================= */
-/* CABEÇALHO                                                 */
-/* ========================================================= */
-
-.bn-modal-header {
-
-    background: #17191d;
-
-    color: #fff;
-
-    padding: 20px 22px;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.bn-modal-header > div:first-child {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 13px;
-}
-
-.bn-modal-icon {
-
-    width: 42px;
-    height: 42px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    background: rgba(255, 255, 255, 0.07);
-
-    border: 1px solid rgba(255, 255, 255, 0.08);
-
-    border-radius: 10px;
-
-    font-size: 21px;
-}
-
-.bn-modal-header .modal-title {
-
-    margin: 0;
-
-    font-size: 18px;
-
-    font-weight: 600;
-
-    color: #fff;
-}
-
-.bn-modal-header small {
-
-    display: block;
-
-    margin-top: 2px;
-
-    color: #9ca3af;
-
-    font-size: 12px;
-}
-
-
-/* ========================================================= */
-/* CORPO                                                      */
-/* ========================================================= */
-
-.bn-modal-body {
-
-    padding: 25px 24px 20px;
-
-    background: #1f2227;
-}
-
-
-/* ========================================================= */
-/* LABELS                                                     */
-/* ========================================================= */
-
-.bn-label {
-
-    font-weight: 600;
-
-    font-size: 13px;
-
-    color: #e5e7eb;
-
-    margin-bottom: 8px;
-}
-
-
-/* ========================================================= */
-/* CAMPOS                                                     */
-/* ========================================================= */
-
-.bn-input {
-
-    background: #292d33;
-
-    border: 1px solid #3b4048;
-
-    color: #f1f3f5;
-
-    border-radius: 9px;
-
-    padding: 10px 12px;
-
-    font-size: 14px;
-
-    transition:
-        border-color 0.15s ease,
-        box-shadow 0.15s ease,
-        background 0.15s ease;
-}
-
-.bn-input::placeholder {
-
-    color: #7f8791;
-}
-
-.bn-input:focus {
-
-    background: #2d3239;
-
-    color: #fff;
-
-    border-color: #6c757d;
-
-    box-shadow:
-        0 0 0 3px rgba(108, 117, 125, 0.15);
-}
-
-
-/* SELECT */
-
-select.bn-input {
-
-    color: #f1f3f5;
-
-}
-
-select.bn-input option {
-
-    background: #292d33;
-
-    color: #fff;
-}
-
-
-/* TEXTAREA */
-
-textarea.bn-input {
-
-    resize: vertical;
-}
-
-
-/* ========================================================= */
-/* TEXTO DE AJUDA                                             */
-/* ========================================================= */
-
-.bn-modal .form-text {
-
-    font-size: 11px;
-
-    color: #7f8791;
-
-    margin-top: 6px;
-}
-
-
-/* ========================================================= */
-/* RODAPÉ                                                     */
-/* ========================================================= */
-
-.bn-modal-footer {
-
-    background: #191b1f;
-
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-
-    padding: 14px 20px;
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: 8px;
-}
-
-
-/* ========================================================= */
-/* CANCELAR                                                   */
-/* ========================================================= */
-
-.bn-btn-cancelar {
-
-    background: #292d33;
-
-    color: #d1d5db;
-
-    border: 1px solid #3b4048;
-
-    border-radius: 8px;
-
-    padding: 8px 16px;
-
-    font-size: 13px;
-
-    font-weight: 500;
-}
-
-.bn-btn-cancelar:hover {
-
-    background: #343941;
-
-    color: #fff;
-}
-
-
-/* ========================================================= */
-/* SALVAR                                                     */
-/* ========================================================= */
-
-.bn-btn-salvar {
-
-    border-radius: 8px;
-
-    padding: 8px 17px;
-
-    font-size: 13px;
-
-    font-weight: 600;
-}
-
-
-/* ========================================================= */
-/* ANIMAÇÃO                                                   */
-/* ========================================================= */
-
-#modalGrupo .modal-dialog {
-
-    transform: translateY(-8px);
-
-    transition: transform 0.2s ease;
-}
-
-#modalGrupo.show .modal-dialog {
-
-    transform: translateY(0);
-}
-
-
-/* ========================================================= */
-/* FUNDO ATRÁS DO MODAL                                       */
-/* ========================================================= */
-
-.modal-backdrop.show {
-
-    opacity: 0.75;
-}
-
-</style>
 
 <!-- ========================================================= -->
 <!-- JAVASCRIPT                                                -->
@@ -815,18 +1244,23 @@ textarea.bn-input {
 function abrirModalGrupo() {
 
     document.getElementById("grupo_id").value = "";
+
     document.getElementById("grupo_nome").value = "";
+
     document.getElementById("grupo_descricao").value = "";
+
     document.getElementById("grupo_temporada").value = "";
 
     document.getElementById("modalGrupoTitulo").innerText =
         "📦 Novo Grupo";
+
 
     const modal = new bootstrap.Modal(
         document.getElementById("modalGrupo")
     );
 
     modal.show();
+
 }
 
 
@@ -846,24 +1280,32 @@ function editarGrupo(id) {
                 );
 
                 return;
+
             }
 
+
             const grupo = data.grupo;
+
 
             document.getElementById("grupo_id").value =
                 grupo.id;
 
+
             document.getElementById("grupo_nome").value =
                 grupo.nome || "";
+
 
             document.getElementById("grupo_descricao").value =
                 grupo.descricao || "";
 
+
             document.getElementById("grupo_temporada").value =
                 grupo.temporada_id || "";
 
+
             document.getElementById("modalGrupoTitulo").innerText =
-                "Editar Grupo";
+                "✏️ Editar Grupo";
+
 
             const modal = new bootstrap.Modal(
                 document.getElementById("modalGrupo")
@@ -894,11 +1336,14 @@ function salvarGrupo() {
     const id =
         document.getElementById("grupo_id").value;
 
+
     const nome =
         document.getElementById("grupo_nome").value.trim();
 
+
     const descricao =
         document.getElementById("grupo_descricao").value.trim();
+
 
     const temporadaId =
         document.getElementById("grupo_temporada").value;
@@ -910,7 +1355,10 @@ function salvarGrupo() {
             "Informe o nome do grupo."
         );
 
+        document.getElementById("grupo_nome").focus();
+
         return;
+
     }
 
 
@@ -920,9 +1368,10 @@ function salvarGrupo() {
             "Selecione uma temporada para o grupo."
         );
 
-    document.getElementById("grupo_temporada").focus();
+        document.getElementById("grupo_temporada").focus();
 
         return;
+
     }
 
 
@@ -1011,19 +1460,26 @@ function excluirGrupo(id, nome) {
 
 
     if (!confirmar) {
+
         return;
+
     }
 
 
     fetch(
         `/admin/fardamento/grupos/${id}/excluir`,
         {
+
             method: "POST",
 
             headers: {
+
                 "Content-Type": "application/json",
+
                 "X-Requested-With": "XMLHttpRequest"
+
             }
+
         }
     )
 
@@ -1033,8 +1489,11 @@ function excluirGrupo(id, nome) {
 
         let data;
 
+
         try {
+
             data = JSON.parse(texto);
+
         }
 
         catch (e) {
@@ -1047,16 +1506,22 @@ function excluirGrupo(id, nome) {
             throw new Error(
                 "O servidor não retornou uma resposta válida."
             );
+
         }
 
 
         if (!response.ok) {
 
             throw new Error(
+
                 data.mensagem ||
+
                 data.erro ||
+
                 "Erro ao excluir o grupo."
+
             );
+
         }
 
 
@@ -1073,12 +1538,16 @@ function excluirGrupo(id, nome) {
             window.location.reload();
 
             return;
+
         }
 
 
         alert(
+
             data.mensagem ||
+
             "Não foi possível excluir o grupo."
+
         );
 
     })
@@ -1091,8 +1560,11 @@ function excluirGrupo(id, nome) {
         );
 
         alert(
+
             error.message ||
+
             "Ocorreu um erro ao excluir o grupo."
+
         );
 
     });
