@@ -4,6 +4,7 @@ from openpyxl.styles import Font, Alignment
 from urllib.parse import quote
 from flask import send_file
 from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
+from utils.pdf_financeiro_periodo import gerar_pdf_financeiro_periodo
 from io import BytesIO
 from utils.pdf_fardamento import (
     gerar_pdf_fardamento,
@@ -8163,82 +8164,271 @@ def relatorio_financeiro_categorias():
 
     db = SessionLocal()
 
-    temporada = request.args.get("temporada", "2026")
+    try:
 
-    receitas_categoria = db.execute(
-        text("""
-            SELECT
-                categoria,
-                COUNT(*) AS quantidade,
-                COALESCE(SUM(valor), 0) AS total
-            FROM financeiro
-            WHERE tipo = 'RECEITA'
-              AND temporada = :temporada
-            GROUP BY categoria
-            ORDER BY total DESC
-        """),
-        {
-            "temporada": temporada
-        }
-    ).fetchall()
+        temporada = request.args.get(
+            "temporada",
+            "2026"
+        )
 
-    despesas_categoria = db.execute(
-        text("""
-            SELECT
-                categoria,
-                COUNT(*) AS quantidade,
-                COALESCE(SUM(valor), 0) AS total
-            FROM financeiro
-            WHERE tipo = 'DESPESA'
-              AND temporada = :temporada
-            GROUP BY categoria
-            ORDER BY total DESC
-        """),
-        {
-            "temporada": temporada
-        }
-    ).fetchall()
+        receitas_categoria = db.execute(
+            text("""
+                SELECT
+                    categoria,
+                    COUNT(*) AS quantidade,
+                    COALESCE(SUM(valor), 0) AS total
+                FROM financeiro
+                WHERE tipo = 'RECEITA'
+                  AND temporada = :temporada
+                GROUP BY categoria
+                ORDER BY total DESC
+            """),
+            {
+                "temporada": temporada
+            }
+        ).fetchall()
 
-    total_receitas = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor), 0)
-            FROM financeiro
-            WHERE tipo = 'RECEITA'
-              AND temporada = :temporada
-        """),
-        {
-            "temporada": temporada
-        }
-    ).scalar()
+        despesas_categoria = db.execute(
+            text("""
+                SELECT
+                    categoria,
+                    COUNT(*) AS quantidade,
+                    COALESCE(SUM(valor), 0) AS total
+                FROM financeiro
+                WHERE tipo = 'DESPESA'
+                  AND temporada = :temporada
+                GROUP BY categoria
+                ORDER BY total DESC
+            """),
+            {
+                "temporada": temporada
+            }
+        ).fetchall()
 
-    total_despesas = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor), 0)
-            FROM financeiro
-            WHERE tipo = 'DESPESA'
-              AND temporada = :temporada
-        """),
-        {
-            "temporada": temporada
-        }
-    ).scalar()
+        total_receitas = db.execute(
+            text("""
+                SELECT COALESCE(SUM(valor), 0)
+                FROM financeiro
+                WHERE tipo = 'RECEITA'
+                  AND temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar()
 
-    db.close()
+        total_despesas = db.execute(
+            text("""
+                SELECT COALESCE(SUM(valor), 0)
+                FROM financeiro
+                WHERE tipo = 'DESPESA'
+                  AND temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar()
 
-    pdf = gerar_pdf_financeiro_categoria(
-        receitas_categoria,
-        despesas_categoria,
-        total_receitas,
-        total_despesas,
-        temporada
-    )
+        pdf = gerar_pdf_financeiro_categoria(
+            receitas_categoria,
+            despesas_categoria,
+            total_receitas,
+            total_despesas,
+            temporada
+        )
 
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        download_name=f"Relatorio_Financeiro_Categorias_{temporada}.pdf",
-        as_attachment=False
-    )
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            download_name=(
+                f"Relatorio_Financeiro_Categorias_{temporada}.pdf"
+            ),
+            as_attachment=False
+        )
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/financeiro/relatorio-periodo")
+def relatorio_financeiro_periodo():
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        temporada = request.args.get(
+            "temporada",
+            "2026"
+        )
+
+        data_inicio = request.args.get(
+            "data_inicio",
+            f"{temporada}-01-01"
+        )
+
+        data_fim = request.args.get(
+            "data_fim",
+            f"{temporada}-12-31"
+        )
+
+        movimentacoes = db.execute(
+            text("""
+                SELECT
+                    TO_CHAR(
+                        CAST(data_movimento AS DATE),
+                        'MM/YYYY'
+                    ) AS mes,
+
+                    COUNT(*) AS quantidade,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN tipo = 'RECEITA'
+                                THEN valor
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS receitas,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN tipo = 'DESPESA'
+                                THEN valor
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS despesas
+
+                FROM financeiro
+
+                WHERE temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+
+                GROUP BY
+                    TO_CHAR(
+                        CAST(data_movimento AS DATE),
+                        'MM/YYYY'
+                    ),
+
+                    EXTRACT(
+                        YEAR FROM CAST(data_movimento AS DATE)
+                    ),
+
+                    EXTRACT(
+                        MONTH FROM CAST(data_movimento AS DATE)
+                    )
+
+                ORDER BY
+                    EXTRACT(
+                        YEAR FROM CAST(data_movimento AS DATE)
+                    ),
+
+                    EXTRACT(
+                        MONTH FROM CAST(data_movimento AS DATE)
+                    )
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).fetchall()
+
+        total_receitas = db.execute(
+            text("""
+                SELECT
+                    COALESCE(SUM(valor), 0)
+
+                FROM financeiro
+
+                WHERE tipo = 'RECEITA'
+                  AND temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).scalar()
+
+        total_despesas = db.execute(
+            text("""
+                SELECT
+                    COALESCE(SUM(valor), 0)
+
+                FROM financeiro
+
+                WHERE tipo = 'DESPESA'
+                  AND temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).scalar()
+
+        quantidade_movimentacoes = db.execute(
+            text("""
+                SELECT
+                    COUNT(*)
+
+                FROM financeiro
+
+                WHERE temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).scalar()
+
+        pdf = gerar_pdf_financeiro_periodo(
+            movimentacoes,
+            total_receitas,
+            total_despesas,
+            quantidade_movimentacoes,
+            temporada,
+            data_inicio,
+            data_fim
+        )
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            download_name=(
+                f"Relatorio_Financeiro_Periodo_{temporada}.pdf"
+            ),
+            as_attachment=False
+        )
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/rifas")
 def rifas():

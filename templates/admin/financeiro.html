@@ -551,8 +551,9 @@ Financeiro
 
                         <button
                             type="button"
-                            class="btn btn-outline-light w-100 p-3"
-                            disabled>
+                            class="btn btn-outline-warning w-100 p-3"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalRelatorioPeriodo">
 
                             <div class="fs-4">
                                 📅
@@ -715,6 +716,182 @@ Financeiro
 
 </div>
 
+<!-- =====================================================
+     MODAL - RELATÓRIO FINANCEIRO POR PERÍODO
+===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalRelatorioPeriodo"
+    tabindex="-1"
+    aria-labelledby="modalRelatorioPeriodoLabel"
+    aria-hidden="true">
+
+
+    <div class="modal-dialog modal-md modal-dialog-centered">
+
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title"
+                    id="modalRelatorioPeriodoLabel">
+
+                    📅 Relatório por Período
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+
+                </button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                method="GET"
+                action="/admin/financeiro/relatorio-periodo"
+                target="_blank">
+
+
+                <div class="modal-body">
+
+
+                    <!-- TEMPORADA -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            📅 Temporada
+
+                        </label>
+
+
+                        <select
+                            name="temporada"
+                            id="temporadaRelatorioPeriodo"
+                            class="form-select"
+                            required>
+
+                            <option value="2026">
+                                2026
+                            </option>
+
+                            <option value="2027">
+                                2027
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DATA INICIAL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            📆 Data inicial
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            name="data_inicio"
+                            id="dataInicioRelatorioPeriodo"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <!-- DATA FINAL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            📆 Data final
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            name="data_fim"
+                            id="dataFimRelatorioPeriodo"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <div class="alert alert-secondary mb-0">
+
+                        <small>
+
+                            O relatório apresentará as movimentações
+                            financeiras do período informado, agrupadas
+                            por mês.
+
+                        </small>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
+
+                        📄 Gerar Relatório
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+</div>
 
 {% if request.args.get('novo') == 'ok' %}
 
@@ -858,5 +1035,52 @@ document.addEventListener(
 
 </script>
 
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        const temporada =
+            document.getElementById(
+                "temporadaRelatorioPeriodo"
+            );
+
+        const dataInicio =
+            document.getElementById(
+                "dataInicioRelatorioPeriodo"
+            );
+
+        const dataFim =
+            document.getElementById(
+                "dataFimRelatorioPeriodo"
+            );
+
+
+        function atualizarPeriodo(){
+
+            const ano = temporada.value;
+
+            dataInicio.value =
+                `${ano}-01-01`;
+
+            dataFim.value =
+                `${ano}-12-31`;
+
+        }
+
+
+        temporada.addEventListener(
+            "change",
+            atualizarPeriodo
+        );
+
+
+        atualizarPeriodo();
+
+    }
+);
+
+</script>
 
 {% endblock %}
