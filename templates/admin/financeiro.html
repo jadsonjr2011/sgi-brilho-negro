@@ -62,7 +62,6 @@ Financeiro
     </div>
 
 
-
     <div class="col-md-4">
 
         <div class="card-resumo">
@@ -82,7 +81,6 @@ Financeiro
         </div>
 
     </div>
-
 
 
     <div class="col-md-4">
@@ -127,7 +125,6 @@ Financeiro
     </button>
 
 
-
     <a
         href="/admin/financeiro/movimentacoes"
         class="btn btn-info">
@@ -135,7 +132,6 @@ Financeiro
         📋 Ver Movimentações
 
     </a>
-
 
 
     <a
@@ -148,9 +144,22 @@ Financeiro
     </a>
 
 
-</div>
+    <button
+        type="button"
+        class="btn btn-warning"
+        data-bs-toggle="modal"
+        data-bs-target="#modalRelatoriosFinanceiros">
+
+        📊 Relatórios Financeiros
+
+    </button>
+
 
 </div>
+
+
+</div>
+
 
 <!-- =====================================================
      MODAL - NOVA MOVIMENTAÇÃO
@@ -164,250 +173,239 @@ Financeiro
     <div class="modal-dialog modal-lg modal-dialog-centered">
 
 
-    <div class="modal-content bg-dark text-white">
+        <div class="modal-content bg-dark text-white">
 
 
-        <!-- CABEÇALHO -->
+            <!-- CABEÇALHO -->
 
-        <div class="modal-header">
+            <div class="modal-header">
 
-            <h5 class="modal-title">
+                <h5 class="modal-title">
 
-                💰 Nova Movimentação
+                    💰 Nova Movimentação
 
-            </h5>
-
-
-            <button
-                type="button"
-                class="btn-close btn-close-white"
-                data-bs-dismiss="modal"
-                aria-label="Fechar">
-
-            </button>
-
-        </div>
-
-
-
-        <!-- FORMULÁRIO -->
-
-        <form
-        method="POST"
-        action="/admin/financeiro/nova"
-        onsubmit="return validarCategoria()">
-
-
-            <div class="modal-body">
-
-
-                <!-- PRIMEIRA LINHA -->
-
-                <div class="row">
-
-
-                    <div class="col-md-4 mb-3">
-
-                        <label class="form-label">
-                            📅 Temporada
-                        </label>
-
-
-                        <select
-                            name="temporada"
-                            class="form-select"
-                            required>
-
-                        <option value="">
-                            Selecione a temporada
-                        </option>
-
-                        <option value="2026">
-                            2026
-                        </option>
-
-                        <option value="2027">
-                            2027
-                        </option>
-
-                        </select>
-
-                    </div>
-
-
-
-                    <div class="col-md-4 mb-3">
-
-                        <label class="form-label">
-                            Tipo
-                        </label>
-
-
-                        <select
-                            name="tipo"
-                            id="tipoMovimento"
-                            class="form-select"
-                            onchange="atualizarCategorias()"
-                            required>
-
-
-                        <option value="">
-                            Selecione o tipo
-                        </option>
-
-
-                        <option value="DESPESA">
-                            Despesa
-                        </option>
-
-
-                        <option value="RECEITA">
-                            Receita
-                        </option>
-
-
-                        </select>
-
-                </div>
-
-
-
-                    <div class="col-md-4 mb-3">
-
-                        <label class="form-label">
-                            📅 Data
-                        </label>
-
-
-                        <input
-                            type="date"
-                            name="data_movimento"
-                            class="form-control"
-                            required>
-
-                    </div>
-
-
-                </div>
-
-
-
-                <hr>
-
-
-
-                <!-- CATEGORIA -->
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Categoria
-                    </label>
-
-
-                    <select
-                        name="categoria"
-                        id="categoriaMovimento"
-                        class="form-select"
-                        required>
-
-                    </select>
-
-                </div>
-
-
-
-                <!-- DESCRIÇÃO -->
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Descrição
-                    </label>
-
-
-                    <input
-                        type="text"
-                        name="descricao"
-                        class="form-control"
-                        placeholder="Descrição da movimentação"
-                        required>
-
-                </div>
-
-
-
-                <!-- VALOR -->
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Valor
-                    </label>
-
-
-                    <input
-                        type="text"
-                        name="valor"
-                        class="form-control"
-                        placeholder="0,00"
-                        inputmode="decimal"
-                        required>
-
-                </div>
-
-
-
-                <!-- OBSERVAÇÃO -->
-
-                <div class="mb-2">
-
-                    <label class="form-label">
-                        Observação
-                    </label>
-
-
-                    <textarea
-                        name="observacao"
-                        class="form-control"
-                        rows="3"></textarea>
-
-                </div>
-
-
-            </div>
-
-
-
-            <!-- RODAPÉ -->
-
-            <div class="modal-footer financeiro-modal-acoes">
-
-
-                <button
-                    type="submit"
-                    class="btn btn-success">
-
-                    💾 Salvar
-
-                </button>
-
+                </h5>
 
 
                 <button
                     type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-
-                    Cancelar
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
 
                 </button>
-
 
             </div>
 
 
-        </form>
+            <!-- FORMULÁRIO -->
+
+            <form
+                method="POST"
+                action="/admin/financeiro/nova"
+                onsubmit="return validarCategoria()">
+
+
+                <div class="modal-body">
+
+
+                    <!-- PRIMEIRA LINHA -->
+
+                    <div class="row">
+
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                📅 Temporada
+                            </label>
+
+
+                            <select
+                                name="temporada"
+                                class="form-select"
+                                required>
+
+                                <option value="">
+                                    Selecione a temporada
+                                </option>
+
+                                <option value="2026">
+                                    2026
+                                </option>
+
+                                <option value="2027">
+                                    2027
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                Tipo
+                            </label>
+
+
+                            <select
+                                name="tipo"
+                                id="tipoMovimento"
+                                class="form-select"
+                                onchange="atualizarCategorias()"
+                                required>
+
+                                <option value="">
+                                    Selecione o tipo
+                                </option>
+
+                                <option value="DESPESA">
+                                    Despesa
+                                </option>
+
+                                <option value="RECEITA">
+                                    Receita
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                📅 Data
+                            </label>
+
+
+                            <input
+                                type="date"
+                                name="data_movimento"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <!-- CATEGORIA -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Categoria
+                        </label>
+
+
+                        <select
+                            name="categoria"
+                            id="categoriaMovimento"
+                            class="form-select"
+                            required>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DESCRIÇÃO -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Descrição
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="descricao"
+                            class="form-control"
+                            placeholder="Descrição da movimentação"
+                            required>
+
+                    </div>
+
+
+                    <!-- VALOR -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Valor
+                        </label>
+
+
+                        <input
+                            type="text"
+                            name="valor"
+                            class="form-control"
+                            placeholder="0,00"
+                            inputmode="decimal"
+                            required>
+
+                    </div>
+
+
+                    <!-- OBSERVAÇÃO -->
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Observação
+                        </label>
+
+
+                        <textarea
+                            name="observacao"
+                            class="form-control"
+                            rows="3"></textarea>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer financeiro-modal-acoes">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Salvar
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
 
 
     </div>
@@ -416,7 +414,307 @@ Financeiro
 </div>
 
 
+<!-- =====================================================
+     MODAL - RELATÓRIOS FINANCEIROS
+===================================================== -->
+
+<div class="modal fade"
+     id="modalRelatoriosFinanceiros"
+     tabindex="-1"
+     aria-labelledby="modalRelatoriosFinanceirosLabel"
+     aria-hidden="true">
+
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title"
+                    id="modalRelatoriosFinanceirosLabel">
+
+                    📊 Relatórios Financeiros
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+
+                </button>
+
+            </div>
+
+
+            <!-- CONTEÚDO -->
+
+            <div class="modal-body">
+
+
+                <!-- ===========================
+                     DOCUMENTOS
+                ============================ -->
+
+                <h6 class="text-uppercase text-secondary mb-3">
+
+                    📄 Documentos
+
+                </h6>
+
+
+                <div class="row g-3 mb-4">
+
+
+                    <div class="col-md-6">
+
+                        <a
+                            href="/admin/financeiro/prestacao"
+                            target="_blank"
+                            class="btn btn-outline-light w-100 p-3">
+
+                            <div class="fs-4">
+                                📄
+                            </div>
+
+                            <strong>
+                                Prestação de Contas
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Documento oficial da temporada
+
+                            </div>
+
+                        </a>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ===========================
+                     ANÁLISES FINANCEIRAS
+                ============================ -->
+
+                <h6 class="text-uppercase text-secondary mb-3">
+
+                    📊 Análises Financeiras
+
+                </h6>
+
+
+                <div class="row g-3">
+
+
+                    <!-- POR CATEGORIA -->
+
+                    <div class="col-md-6">
+
+                        <a
+                            href="/admin/financeiro/relatorio-categorias"
+                            target="_blank"
+                            class="btn btn-outline-warning w-100 p-3">
+
+                            <div class="fs-4">
+                                📊
+                            </div>
+
+                            <strong>
+                                Por Categoria
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Saiba onde o dinheiro entra e sai
+
+                            </div>
+
+                        </a>
+
+                    </div>
+
+
+                    <!-- POR PERÍODO -->
+
+                    <div class="col-md-6">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-light w-100 p-3"
+                            disabled>
+
+                            <div class="fs-4">
+                                📅
+                            </div>
+
+                            <strong>
+                                Por Período
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Evolução financeira ao longo do tempo
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- RECEITAS X DESPESAS -->
+
+                    <div class="col-md-6">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-light w-100 p-3"
+                            disabled>
+
+                            <div class="fs-4">
+                                🔄
+                            </div>
+
+                            <strong>
+                                Receitas x Despesas
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Comparação das entradas e saídas
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- MAIORES DESPESAS -->
+
+                    <div class="col-md-6">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-light w-100 p-3"
+                            disabled>
+
+                            <div class="fs-4">
+                                💸
+                            </div>
+
+                            <strong>
+                                Maiores Despesas
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Identifique os maiores gastos
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- MAIORES RECEITAS -->
+
+                    <div class="col-md-6">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-light w-100 p-3"
+                            disabled>
+
+                            <div class="fs-4">
+                                💰
+                            </div>
+
+                            <strong>
+                                Maiores Receitas
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Identifique as principais receitas
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- RELATÓRIO DETALHADO -->
+
+                    <div class="col-md-6">
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-light w-100 p-3"
+                            disabled>
+
+                            <div class="fs-4">
+                                🔎
+                            </div>
+
+                            <strong>
+                                Relatório Detalhado
+                            </strong>
+
+                            <div class="small text-secondary mt-1">
+
+                                Consulte todas as movimentações
+
+                            </div>
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+            <!-- RODAPÉ -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
 </div>
+
 
 {% if request.args.get('novo') == 'ok' %}
 
@@ -444,16 +742,17 @@ window.addEventListener("load", function(){
 
 {% endif %}
 
+
 <script>
 
 function atualizarCategorias(){
 
-    let tipo = document.getElementById(
+    const tipo = document.getElementById(
         "tipoMovimento"
     ).value;
 
 
-    let categoria = document.getElementById(
+    const categoria = document.getElementById(
         "categoriaMovimento"
     );
 
@@ -488,9 +787,8 @@ function atualizarCategorias(){
 
         ];
 
-
-    } else {
-
+    }
+    else if(tipo === "RECEITA"){
 
         listaCategorias = [
 
@@ -505,115 +803,11 @@ function atualizarCategorias(){
         ];
 
     }
-
-
-
-    listaCategorias.forEach(function(categoriaTexto){
-
-
-        let option = document.createElement(
-            "option"
-        );
-
-
-        option.value = categoriaTexto;
-
-
-        option.textContent = categoriaTexto;
-
-
-        categoria.appendChild(option);
-
-
-    });
-
-
-}
-
-
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function(){
-
-        atualizarCategorias();
-
-    }
-);
-
-
-</script>
-
-<script>
-
-function atualizarCategorias(){
-
-    let tipo = document.getElementById(
-        "tipoMovimento"
-    ).value;
-
-
-    let categoria = document.getElementById(
-        "categoriaMovimento"
-    );
-
-
-    categoria.innerHTML = `
-        <option value="">
-            Selecione a categoria
-        </option>
-    `;
-
-
-
-    let listaCategorias = [];
-
-
-    if(tipo === "DESPESA"){
-
-
-        listaCategorias = [
-
-            "Transporte",
-            "Uniforme",
-            "Instrumentos",
-            "Manutenção",
-            "Alimentação",
-            "Eventos",
-            "Documentação",
-            "Espaço / Sede",
-            "Tecnologia",
-            "Materiais",
-            "Taxas",
-            "Outros"
-
-        ];
-
-
-    }else{
-
-
-        listaCategorias = [
-
-            "Patrocínio",
-            "Doação",
-            "Mensalidade",
-            "Evento",
-            "Premiação",
-            "Rifas",
-            "Outros"
-
-        ];
-
-
-    }
-
 
 
     listaCategorias.forEach(function(item){
 
-
-        let option = document.createElement(
+        const option = document.createElement(
             "option"
         );
 
@@ -625,43 +819,32 @@ function atualizarCategorias(){
 
         categoria.appendChild(option);
 
-
     });
-
 
 }
 
 
-
 function validarCategoria(){
 
-
-    let categoria = document.getElementById(
+    const categoria = document.getElementById(
         "categoriaMovimento"
     ).value;
 
 
-
     if(categoria === ""){
-
 
         alert(
             "Selecione uma categoria."
         );
 
-
         return false;
-
 
     }
 
 
     return true;
 
-
 }
-
-
 
 
 document.addEventListener(
@@ -673,7 +856,7 @@ document.addEventListener(
     }
 );
 
-
 </script>
+
 
 {% endblock %}

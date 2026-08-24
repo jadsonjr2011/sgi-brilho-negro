@@ -3,6 +3,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
 from urllib.parse import quote
 from flask import send_file
+from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
 from io import BytesIO
 from utils.pdf_fardamento import (
     gerar_pdf_fardamento,
@@ -8151,6 +8152,91 @@ def prestacao_financeira():
         pdf,
         mimetype="application/pdf",
         download_name="Prestacao_Contas_2026.pdf",
+        as_attachment=False
+    )
+
+@app.route("/admin/financeiro/relatorio-categorias")
+def relatorio_financeiro_categorias():
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    temporada = request.args.get("temporada", "2026")
+
+    receitas_categoria = db.execute(
+        text("""
+            SELECT
+                categoria,
+                COUNT(*) AS quantidade,
+                COALESCE(SUM(valor), 0) AS total
+            FROM financeiro
+            WHERE tipo = 'RECEITA'
+              AND temporada = :temporada
+            GROUP BY categoria
+            ORDER BY total DESC
+        """),
+        {
+            "temporada": temporada
+        }
+    ).fetchall()
+
+    despesas_categoria = db.execute(
+        text("""
+            SELECT
+                categoria,
+                COUNT(*) AS quantidade,
+                COALESCE(SUM(valor), 0) AS total
+            FROM financeiro
+            WHERE tipo = 'DESPESA'
+              AND temporada = :temporada
+            GROUP BY categoria
+            ORDER BY total DESC
+        """),
+        {
+            "temporada": temporada
+        }
+    ).fetchall()
+
+    total_receitas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor), 0)
+            FROM financeiro
+            WHERE tipo = 'RECEITA'
+              AND temporada = :temporada
+        """),
+        {
+            "temporada": temporada
+        }
+    ).scalar()
+
+    total_despesas = db.execute(
+        text("""
+            SELECT COALESCE(SUM(valor), 0)
+            FROM financeiro
+            WHERE tipo = 'DESPESA'
+              AND temporada = :temporada
+        """),
+        {
+            "temporada": temporada
+        }
+    ).scalar()
+
+    db.close()
+
+    pdf = gerar_pdf_financeiro_categoria(
+        receitas_categoria,
+        despesas_categoria,
+        total_receitas,
+        total_despesas,
+        temporada
+    )
+
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        download_name=f"Relatorio_Financeiro_Categorias_{temporada}.pdf",
         as_attachment=False
     )
 
