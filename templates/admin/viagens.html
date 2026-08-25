@@ -129,31 +129,76 @@ Viagens
 
                 <td>
 
-                    <div class="viagens-acoes">
+					<div class="viagens-acoes">
 
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-brilho btn-abrir-integrantes"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalIntegrantes"
-                            data-viagem-id="{{ viagem.id }}"
-                            data-viagem-evento="{{ viagem.evento }}"
-                            data-url-salvar="/admin/viagem/{{ viagem.id }}/integrantes/salvar">
+						<!-- INTEGRANTES -->
+						<button
+							type="button"
+							class="btn btn-sm btn-outline-primary btn-abrir-integrantes"
+							data-bs-toggle="modal"
+							data-bs-target="#modalIntegrantes"
+							data-viagem-id="{{ viagem.id }}"
+							data-viagem-evento="{{ viagem.evento }}"
+							data-url-salvar="/admin/viagem/{{ viagem.id }}/integrantes/salvar"
+							title="Gerenciar integrantes">
 
-                            👥 Integrantes
+							👥
 
-                        </button>
+						</button>
 
 
-                        <a
-                            href="/admin/viagem/{{ viagem.id }}"
-                            class="btn btn-sm btn-brilho">
+						<!-- EDITAR -->
+						<button
+							type="button"
+							class="btn btn-sm btn-outline-secondary btn-editar-viagem"
+							data-bs-toggle="modal"
+							data-bs-target="#modalEditarViagem"
+							data-id="{{ viagem.id }}"
+							data-evento="{{ viagem.evento }}"
+							data-destino="{{ viagem.destino }}"
+							data-data-saida="{{ viagem.data_saida.strftime('%Y-%m-%d') }}"
+							data-data-retorno="{% if viagem.data_retorno %}{{ viagem.data_retorno.strftime('%Y-%m-%d') }}{% endif %}"
+							data-responsavel="{{ viagem.responsavel or '' }}"
+							data-observacoes="{{ viagem.observacoes or '' }}"
+							title="Editar viagem">
 
-                            Ver
+							✏️
 
-                        </a>
+						</button>
 
-                    </div>
+
+						<!-- VER -->
+						<a
+							href="/admin/viagem/{{ viagem.id }}"
+							class="btn btn-sm btn-outline-primary"
+							title="Visualizar viagem">
+
+							👁️
+
+						</a>
+
+
+						<!-- EXCLUIR -->
+						<form
+							method="POST"
+							action="/admin/viagem/{{ viagem.id }}/excluir"
+							style="display: inline;"
+							onsubmit="return confirm(
+								'Tem certeza que deseja excluir a viagem {{ viagem.evento }}? Esta ação também removerá os participantes vinculados a ela.'
+							);">
+
+							<button
+								type="submit"
+								class="btn btn-sm btn-outline-danger"
+								title="Excluir viagem">
+
+								🗑️
+
+							</button>
+
+						</form>
+
+					</div>
 
                 </td>
 
@@ -377,6 +422,190 @@ Viagens
 </div>
 
 <!-- =====================================================
+     MODAL EDITAR VIAGEM
+===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalEditarViagem"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    ✏️ Editar Viagem
+
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+
+                </button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                id="formEditarViagem"
+                method="POST">
+
+                <div class="modal-body">
+
+                    <!-- EVENTO -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Evento
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editarEvento"
+                            name="evento"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <!-- DESTINO -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Destino
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editarDestino"
+                            name="destino"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <!-- DATAS -->
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Data saída
+                            </label>
+
+                            <input
+                                type="date"
+                                id="editarDataSaida"
+                                name="data_saida"
+                                class="form-control"
+                                required>
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Data retorno
+                            </label>
+
+                            <input
+                                type="date"
+                                id="editarDataRetorno"
+                                name="data_retorno"
+                                class="form-control">
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- RESPONSÁVEL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Responsável
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editarResponsavel"
+                            name="responsavel"
+                            class="form-control">
+
+                    </div>
+
+
+                    <!-- OBSERVAÇÕES -->
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Observações
+                        </label>
+
+                        <textarea
+                            id="editarObservacoes"
+                            name="observacoes"
+                            class="form-control"
+                            rows="3"></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer viagens-modal-acoes">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-brilho">
+
+                        💾 Salvar alterações
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
      MODAL INTEGRANTES DA VIAGEM
 ===================================================== -->
 
@@ -583,23 +812,88 @@ Viagens
 document.addEventListener("DOMContentLoaded", function () {
 
 
-    const modal = document.getElementById("modalIntegrantes");
+    // ==========================================
+    // ELEMENTOS DO MODAL DE INTEGRANTES
+    // ==========================================
 
-    const form = document.getElementById("formIntegrantesViagem");
+    const modal =
+        document.getElementById("modalIntegrantes");
 
-    const pesquisa = document.getElementById("pesquisaIntegrantes");
 
-    const contador = document.getElementById("contadorIntegrantes");
+    const form =
+        document.getElementById("formIntegrantesViagem");
 
-    const nomeEvento = document.getElementById("nomeEventoIntegrantes");
 
-    const checkboxes = document.querySelectorAll(
-        ".integrante-checkbox"
-    );
+    const pesquisa =
+        document.getElementById("pesquisaIntegrantes");
 
-    const itens = document.querySelectorAll(
-        ".integrante-item"
-    );
+
+    const contador =
+        document.getElementById("contadorIntegrantes");
+
+
+    const nomeEvento =
+        document.getElementById("nomeEventoIntegrantes");
+
+
+    const checkboxes =
+        document.querySelectorAll(
+            ".integrante-checkbox"
+        );
+
+
+    const itens =
+        document.querySelectorAll(
+            ".integrante-item"
+        );
+
+
+
+    // ==========================================
+    // ELEMENTOS DO MODAL DE EDIÇÃO
+    // ==========================================
+
+    const formEditarViagem =
+        document.getElementById(
+            "formEditarViagem"
+        );
+
+
+    const editarEvento =
+        document.getElementById(
+            "editarEvento"
+        );
+
+
+    const editarDestino =
+        document.getElementById(
+            "editarDestino"
+        );
+
+
+    const editarDataSaida =
+        document.getElementById(
+            "editarDataSaida"
+        );
+
+
+    const editarDataRetorno =
+        document.getElementById(
+            "editarDataRetorno"
+        );
+
+
+    const editarResponsavel =
+        document.getElementById(
+            "editarResponsavel"
+        );
+
+
+    const editarObservacoes =
+        document.getElementById(
+            "editarObservacoes"
+        );
+
 
 
     // ==========================================
@@ -610,8 +904,65 @@ document.addEventListener("DOMContentLoaded", function () {
         {{ selecionados_por_viagem | tojson }};
 
 
+
     // ==========================================
-    // ABRIR MODAL
+    // EDITAR VIAGEM
+    // ==========================================
+
+    document.querySelectorAll(
+        ".btn-editar-viagem"
+    ).forEach(function (botao) {
+
+        botao.addEventListener(
+            "click",
+            function () {
+
+                const id =
+                    this.dataset.id;
+
+
+                // URL DO FORMULÁRIO
+
+                formEditarViagem.action =
+                    "/admin/viagem/"
+                    + id
+                    + "/editar";
+
+
+                // PREENCHER CAMPOS
+
+                editarEvento.value =
+                    this.dataset.evento || "";
+
+
+                editarDestino.value =
+                    this.dataset.destino || "";
+
+
+                editarDataSaida.value =
+                    this.dataset.dataSaida || "";
+
+
+                editarDataRetorno.value =
+                    this.dataset.dataRetorno || "";
+
+
+                editarResponsavel.value =
+                    this.dataset.responsavel || "";
+
+
+                editarObservacoes.value =
+                    this.dataset.observacoes || "";
+
+            }
+        );
+
+    });
+
+
+
+    // ==========================================
+    // ABRIR MODAL DE INTEGRANTES
     // ==========================================
 
     document.querySelectorAll(
@@ -625,8 +976,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 const viagemId =
                     this.dataset.viagemId;
 
+
                 const evento =
                     this.dataset.viagemEvento;
+
 
 
                 // Nome do evento
@@ -635,9 +988,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     "— " + evento;
 
 
+
                 // URL para salvar
 
-                form.action = this.dataset.urlSalvar;
+                form.action =
+                    this.dataset.urlSalvar;
+
 
 
                 // Limpa todas as marcações
@@ -645,16 +1001,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 checkboxes.forEach(
                     function (checkbox) {
 
-                        checkbox.checked = false;
+                        checkbox.checked =
+                            false;
 
                     }
                 );
 
 
+
                 // Busca os selecionados dessa viagem
 
                 const selecionados =
-                    selecionadosPorViagem[viagemId] || [];
+                    selecionadosPorViagem[
+                        viagemId
+                    ] || [];
+
 
 
                 // Marca os integrantes
@@ -664,12 +1025,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         const checkbox =
                             document.getElementById(
-                                "integrante_" + integranteId
+                                "integrante_" +
+                                integranteId
                             );
+
 
                         if (checkbox) {
 
-                            checkbox.checked = true;
+                            checkbox.checked =
+                                true;
 
                         }
 
@@ -677,18 +1041,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
 
+
                 // Limpa pesquisa
 
                 pesquisa.value = "";
 
 
+
                 itens.forEach(
                     function (item) {
 
-                        item.style.display = "";
+                        item.style.display =
+                            "";
 
                     }
                 );
+
 
 
                 atualizarContador();
@@ -699,8 +1067,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
+
     // ==========================================
-    // PESQUISA
+    // PESQUISA DE INTEGRANTES
     // ==========================================
 
     pesquisa.addEventListener(
@@ -713,15 +1082,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 .trim();
 
 
+
             itens.forEach(
                 function (item) {
 
                     const nome =
                         item.dataset.nome;
 
+
                     const codigo =
                         item.dataset.codigo
                         .toLowerCase();
+
 
 
                     if (
@@ -730,11 +1102,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         codigo.includes(termo)
                     ) {
 
-                        item.style.display = "";
+                        item.style.display =
+                            "";
 
                     } else {
 
-                        item.style.display = "none";
+                        item.style.display =
+                            "none";
 
                     }
 
@@ -743,6 +1117,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
+
 
 
     // ==========================================
@@ -765,10 +1140,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
                     if (
-                        item.style.display !== "none"
+                        item.style.display !==
+                        "none"
                     ) {
 
-                        checkbox.checked = true;
+                        checkbox.checked =
+                            true;
 
                     }
 
@@ -780,6 +1157,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
+
 
 
     // ==========================================
@@ -795,7 +1173,8 @@ document.addEventListener("DOMContentLoaded", function () {
             checkboxes.forEach(
                 function (checkbox) {
 
-                    checkbox.checked = false;
+                    checkbox.checked =
+                        false;
 
                 }
             );
@@ -805,6 +1184,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
+
 
 
     // ==========================================
@@ -823,6 +1203,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
+
     function atualizarContador() {
 
         const selecionados =
@@ -832,8 +1213,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         contador.textContent =
-            selecionados + " selecionado"
-            + (selecionados === 1 ? "" : "s");
+            selecionados +
+            " selecionado" +
+            (
+                selecionados === 1
+                    ? ""
+                    : "s"
+            );
 
     }
 

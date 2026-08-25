@@ -7555,6 +7555,103 @@ def nova_viagem():
 
     return redirect("/admin/viagens")
 
+@app.route("/admin/viagem/<int:id>/editar", methods=["POST"])
+def editar_viagem(id):
+
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # ATUALIZAR VIAGEM
+        # ==========================================
+
+        db.execute(
+            text("""
+                UPDATE viagens
+
+                SET
+                    evento = :evento,
+                    destino = :destino,
+                    data_saida = :data_saida,
+                    data_retorno = :data_retorno,
+                    responsavel = :responsavel,
+                    observacoes = :observacoes
+
+                WHERE id = :id
+            """),
+            {
+                "id": id,
+                "evento": request.form["evento"],
+                "destino": request.form["destino"],
+                "data_saida": request.form["data_saida"],
+                "data_retorno": request.form["data_retorno"] or None,
+                "responsavel": request.form["responsavel"],
+                "observacoes": request.form["observacoes"]
+            }
+        )
+
+        db.commit()
+
+    finally:
+
+        db.close()
+
+    return redirect("/admin/viagens")
+
+
+@app.route("/admin/viagem/<int:id>/excluir", methods=["POST"])
+def excluir_viagem(id):
+
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # EXCLUIR PARTICIPANTES DA VIAGEM
+        # ==========================================
+
+        db.execute(
+            text("""
+                DELETE FROM viagem_integrantes
+
+                WHERE viagem_id = :id
+            """),
+            {
+                "id": id
+            }
+        )
+
+
+        # ==========================================
+        # EXCLUIR VIAGEM
+        # ==========================================
+
+        db.execute(
+            text("""
+                DELETE FROM viagens
+
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        )
+
+
+        db.commit()
+
+    finally:
+
+        db.close()
+
+    return redirect("/admin/viagens")
 
 @app.route("/admin/viagem/<int:id>/integrantes")
 def integrantes_viagem(id):
