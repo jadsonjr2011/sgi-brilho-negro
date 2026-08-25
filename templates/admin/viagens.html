@@ -12,43 +12,48 @@ Viagens
 
 <div class="card-bn viagens-container">
 
-<!-- ===========================
-     CABEÇALHO
-============================ -->
+<!-- ===================================================== -->
+<!-- CABEÇALHO                                            -->
+<!-- ===================================================== -->
 
 <div class="viagens-cabecalho">
 
-    <div class="viagens-titulo-area">
-
-        <h2 class="titulo mb-0">
-
+    <div>
+        <h2 class="titulo mb-1">
             🚌 Viagens
-
         </h2>
+
+        <div class="text-secondary">
+            Organize e acompanhe as viagens da banda.
+        </div>
+    </div>
+
+
+    <div class="viagens-acoes">
+
+        <a
+            href="/admin/viagens/relatorio"
+            target="_blank"
+            class="btn btn-brilho">
+
+            📄 Relatório Geral
+
+        </a>
+
+
+        <button
+            type="button"
+            class="btn btn-brilho"
+            data-bs-toggle="modal"
+            data-bs-target="#modalViagem">
+
+            ➕ Nova Viagem
+
+        </button>
 
     </div>
 
-    <a
-        href="/admin/viagens/relatorio"
-        target="_blank"
-        class="btn btn-brilho">
-
-        📄 Relatório Geral
-
-    </a>
-
-    <button
-        type="button"
-        class="btn btn-brilho viagens-nova"
-        data-bs-toggle="modal"
-        data-bs-target="#modalViagem">
-
-        ➕ Nova Viagem
-
-    </button>
-
 </div>
-
 
 <!-- ===========================
      TABELA
