@@ -5,6 +5,7 @@ from urllib.parse import quote
 from flask import send_file
 from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
 from utils.pdf_financeiro_periodo import gerar_pdf_financeiro_periodo
+from utils.pdf_relatorio_viagens import gerar_pdf_relatorio_viagens
 from io import BytesIO
 from utils.pdf_fardamento import (
     gerar_pdf_fardamento,
@@ -7804,7 +7805,20 @@ def termo_individual_viagem(viagem_id, integrante_id):
         integrante_id
     )
 
+@app.route("/admin/viagens/relatorio")
+def relatorio_geral_viagens():
 
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    pdf = gerar_pdf_relatorio_viagens()
+
+    return send_file(
+        pdf,
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name="relatorio_geral_viagens.pdf"
+    )
 
 @app.route("/admin/financeiro")
 def financeiro():
