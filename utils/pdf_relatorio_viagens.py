@@ -213,7 +213,7 @@ def gerar_pdf_relatorio_viagens():
 
                 ORDER BY
                     v.data_saida DESC,
-                    v.id DESC
+                    v.id ASC
             """)
         ).mappings().all()
 
