@@ -7436,7 +7436,7 @@ def viagens():
 
             GROUP BY v.id
 
-            ORDER BY v.data_saida DESC
+            ORDER BY v.data_saida ASC
         """)
     ).mappings().all()
 
