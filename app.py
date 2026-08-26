@@ -5,6 +5,7 @@ from urllib.parse import quote
 from flask import send_file
 from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
 from utils.pdf_financeiro_periodo import gerar_pdf_financeiro_periodo
+from utils.pdf_financeiro_receitas_despesas import gerar_pdf_receitas_despesas
 from utils.pdf_relatorio_viagens import gerar_pdf_relatorio_viagens
 from io import BytesIO
 from utils.pdf_fardamento import (
@@ -8536,6 +8537,347 @@ def relatorio_financeiro_periodo():
             ),
             as_attachment=False
         )
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/financeiro/receitas-despesas")
+def relatorio_financeiro_receitas_despesas():
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        temporada = request.args.get(
+            "temporada",
+            "2026"
+        )
+
+        data_inicio = request.args.get(
+            "data_inicio",
+            f"{temporada}-01-01"
+        )
+
+        data_fim = request.args.get(
+            "data_fim",
+            f"{temporada}-12-31"
+        )
+
+
+        # =================================================
+        # TOTAL DE RECEITAS
+        # =================================================
+
+        total_receitas = db.execute(
+            text("""
+                SELECT
+                    COALESCE(SUM(valor), 0)
+
+                FROM financeiro
+
+                WHERE tipo = 'RECEITA'
+                  AND temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).scalar() or 0
+
+
+        # =================================================
+        # TOTAL DE DESPESAS
+        # =================================================
+
+        total_despesas = db.execute(
+            text("""
+                SELECT
+                    COALESCE(SUM(valor), 0)
+
+                FROM financeiro
+
+                WHERE tipo = 'DESPESA'
+                  AND temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).scalar() or 0
+
+
+        # =================================================
+        # RESULTADO
+        # =================================================
+
+        resultado = (
+            total_receitas
+            - total_despesas
+        )
+
+
+        # =================================================
+        # PERCENTUAL DE DESPESAS SOBRE RECEITAS
+        # =================================================
+
+        if total_receitas > 0:
+
+            percentual_despesas = (
+                total_despesas
+                / total_receitas
+            ) * 100
+
+        else:
+
+            percentual_despesas = 0
+
+
+        # =================================================
+        # EVOLUÇÃO MENSAL
+        # =================================================
+
+        dados_mensais = db.execute(
+            text("""
+                SELECT
+
+                    TO_CHAR(
+                        CAST(data_movimento AS DATE),
+                        'MM/YYYY'
+                    ) AS mes,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN tipo = 'RECEITA'
+                                THEN valor
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS receitas,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN tipo = 'DESPESA'
+                                THEN valor
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS despesas
+
+                FROM financeiro
+
+                WHERE temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+
+                GROUP BY
+
+                    TO_CHAR(
+                        CAST(data_movimento AS DATE),
+                        'MM/YYYY'
+                    ),
+
+                    EXTRACT(
+                        YEAR FROM CAST(data_movimento AS DATE)
+                    ),
+
+                    EXTRACT(
+                        MONTH FROM CAST(data_movimento AS DATE)
+                    )
+
+                ORDER BY
+
+                    EXTRACT(
+                        YEAR FROM CAST(data_movimento AS DATE)
+                    ),
+
+                    EXTRACT(
+                        MONTH FROM CAST(data_movimento AS DATE)
+                    )
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).fetchall()
+
+
+        movimentos_mensais = []
+
+        for item in dados_mensais:
+
+            receitas_mes = item.receitas or 0
+            despesas_mes = item.despesas or 0
+
+            movimentos_mensais.append({
+
+                "mes": item.mes,
+
+                "receitas": receitas_mes,
+
+                "despesas": despesas_mes,
+
+                "resultado": (
+                    receitas_mes
+                    - despesas_mes
+                )
+
+            })
+
+
+        # =================================================
+        # PRINCIPAIS RECEITAS POR CATEGORIA
+        # =================================================
+
+        dados_receitas = db.execute(
+            text("""
+                SELECT
+                    categoria,
+                    COALESCE(SUM(valor), 0) AS valor
+
+                FROM financeiro
+
+                WHERE tipo = 'RECEITA'
+                  AND temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+
+                GROUP BY categoria
+
+                ORDER BY valor DESC
+
+                LIMIT 5
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).fetchall()
+
+
+        maiores_receitas = [
+
+            {
+                "categoria": item.categoria,
+                "valor": item.valor or 0
+            }
+
+            for item in dados_receitas
+
+        ]
+
+
+        # =================================================
+        # PRINCIPAIS DESPESAS POR CATEGORIA
+        # =================================================
+
+        dados_despesas = db.execute(
+            text("""
+                SELECT
+                    categoria,
+                    COALESCE(SUM(valor), 0) AS valor
+
+                FROM financeiro
+
+                WHERE tipo = 'DESPESA'
+                  AND temporada = :temporada
+
+                  AND CAST(data_movimento AS DATE)
+                      BETWEEN CAST(:data_inicio AS DATE)
+                      AND CAST(:data_fim AS DATE)
+
+                GROUP BY categoria
+
+                ORDER BY valor DESC
+
+                LIMIT 5
+            """),
+            {
+                "temporada": temporada,
+                "data_inicio": data_inicio,
+                "data_fim": data_fim
+            }
+        ).fetchall()
+
+
+        maiores_despesas = [
+
+            {
+                "categoria": item.categoria,
+                "valor": item.valor or 0
+            }
+
+            for item in dados_despesas
+
+        ]
+
+
+        # =================================================
+        # GERAR PDF
+        # =================================================
+
+        pdf = gerar_pdf_receitas_despesas(
+
+            temporada=temporada,
+
+            data_inicio=data_inicio,
+
+            data_fim=data_fim,
+
+            total_receitas=total_receitas,
+
+            total_despesas=total_despesas,
+
+            resultado=resultado,
+
+            percentual_despesas=percentual_despesas,
+
+            movimentos_mensais=movimentos_mensais,
+
+            maiores_receitas=maiores_receitas,
+
+            maiores_despesas=maiores_despesas
+
+        )
+
+
+        return send_file(
+
+            pdf,
+
+            mimetype="application/pdf",
+
+            download_name=(
+                f"Relatorio_Receitas_Despesas_{temporada}.pdf"
+            ),
+
+            as_attachment=False
+
+        )
+
 
     finally:
 

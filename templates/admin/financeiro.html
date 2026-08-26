@@ -133,17 +133,6 @@ Financeiro
 
     </a>
 
-
-    <a
-        href="/admin/financeiro/prestacao"
-        target="_blank"
-        class="btn btn-primary">
-
-        📄 Prestação de Contas
-
-    </a>
-
-
     <button
         type="button"
         class="btn btn-warning"
@@ -580,8 +569,9 @@ Financeiro
 
                         <button
                             type="button"
-                            class="btn btn-outline-light w-100 p-3"
-                            disabled>
+                            class="btn btn-outline-warning w-100 p-3"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalReceitasDespesas">
 
                             <div class="fs-4">
                                 🔄
@@ -893,6 +883,184 @@ Financeiro
 
 </div>
 
+<!-- =====================================================
+     MODAL - RECEITAS X DESPESAS
+===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalReceitasDespesas"
+    tabindex="-1"
+    aria-labelledby="modalReceitasDespesasLabel"
+    aria-hidden="true">
+
+
+    <div class="modal-dialog modal-md modal-dialog-centered">
+
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5
+                    class="modal-title"
+                    id="modalReceitasDespesasLabel">
+
+                    🔄 Receitas x Despesas
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+
+                </button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                method="GET"
+                action="/admin/financeiro/receitas-despesas"
+                target="_blank">
+
+
+                <div class="modal-body">
+
+
+                    <!-- TEMPORADA -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            📅 Temporada
+
+                        </label>
+
+
+                        <select
+                            name="temporada"
+                            id="temporadaReceitasDespesas"
+                            class="form-select"
+                            required>
+
+                            <option value="2026">
+                                2026
+                            </option>
+
+                            <option value="2027">
+                                2027
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DATA INICIAL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            📆 Data inicial
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            name="data_inicio"
+                            id="dataInicioReceitasDespesas"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <!-- DATA FINAL -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+
+                            📆 Data final
+
+                        </label>
+
+
+                        <input
+                            type="date"
+                            name="data_fim"
+                            id="dataFimReceitasDespesas"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <div class="alert alert-secondary mb-0">
+
+                        <small>
+
+                            O relatório comparará as receitas e despesas
+                            do período informado, apresentando o resultado
+                            financeiro, a evolução mensal e as principais
+                            categorias.
+
+                        </small>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
+
+                        📄 Gerar Relatório
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+</div>
+
 {% if request.args.get('novo') == 'ok' %}
 
 <script>
@@ -1077,6 +1245,54 @@ document.addEventListener(
 
 
         atualizarPeriodo();
+
+    }
+);
+
+</script>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function(){
+
+        const temporada =
+            document.getElementById(
+                "temporadaReceitasDespesas"
+            );
+
+        const dataInicio =
+            document.getElementById(
+                "dataInicioReceitasDespesas"
+            );
+
+        const dataFim =
+            document.getElementById(
+                "dataFimReceitasDespesas"
+            );
+
+
+        function atualizarPeriodoReceitasDespesas(){
+
+            const ano = temporada.value;
+
+            dataInicio.value =
+                `${ano}-01-01`;
+
+            dataFim.value =
+                `${ano}-12-31`;
+
+        }
+
+
+        temporada.addEventListener(
+            "change",
+            atualizarPeriodoReceitasDespesas
+        );
+
+
+        atualizarPeriodoReceitasDespesas();
 
     }
 );
