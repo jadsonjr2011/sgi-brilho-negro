@@ -1,0 +1,854 @@
+{% extends 'layout/base_admin.html' %}
+
+
+{% block titulo %}
+Detalhes do Controle Financeiro
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+
+    <!-- ================================================= -->
+    <!-- CABEÇALHO                                         -->
+    <!-- ================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h2 class="titulo mb-0">
+
+            🎯 Controle Financeiro
+
+        </h2>
+
+
+        <a
+            href="/admin/financeiro/controles"
+            class="btn btn-secondary">
+
+            ← Voltar
+
+        </a>
+
+    </div>
+
+
+    <hr>
+
+
+    <!-- ================================================= -->
+    <!-- DADOS DO CONTROLE                                 -->
+    <!-- ================================================= -->
+
+    <div class="row mt-4">
+
+
+        <!-- PESSOA -->
+
+        <div class="col-md-6 mb-3">
+
+            <div class="card bg-dark text-white h-100">
+
+                <div class="card-body">
+
+                    <h6 class="text-secondary">
+                        👤 Pessoa
+                    </h6>
+
+                    <h4>
+
+                        {{ controle.nome_pessoa or 'Não informado' }}
+
+                    </h4>
+
+
+                    {% if controle.integrante_id %}
+
+                        <span class="badge bg-info">
+                            Integrante
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-secondary">
+                            Externo
+                        </span>
+
+                    {% endif %}
+
+
+                    {% if controle.telefone %}
+
+                        <div class="mt-2 text-secondary">
+
+                            📱 {{ controle.telefone }}
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CONTROLE -->
+
+        <div class="col-md-6 mb-3">
+
+            <div class="card bg-dark text-white h-100">
+
+                <div class="card-body">
+
+                    <h6 class="text-secondary">
+                        📦 Controle
+                    </h6>
+
+
+                    <h4>
+
+                        {{ controle.descricao }}
+
+                    </h4>
+
+
+                    <div class="mt-2">
+
+                        <strong>
+                            Tipo:
+                        </strong>
+
+                        {{ controle.tipo }}
+
+                    </div>
+
+
+                    <div>
+
+                        <strong>
+                            Temporada:
+                        </strong>
+
+                        {{ controle.temporada }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- INFORMAÇÕES DO PEDIDO                             -->
+    <!-- ================================================= -->
+
+    <div class="card bg-dark text-white mb-4">
+
+        <div class="card-body">
+
+            <h5 class="mb-3">
+                📋 Informações do Pedido
+            </h5>
+
+
+            <div class="row">
+
+
+                <div class="col-md-3 mb-3">
+
+                    <small class="text-secondary">
+                        Quantidade
+                    </small>
+
+                    <div class="fs-5">
+
+                        {{ controle.quantidade }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3 mb-3">
+
+                    <small class="text-secondary">
+                        Tamanho
+                    </small>
+
+                    <div class="fs-5">
+
+                        {{ controle.tamanho or '-' }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3 mb-3">
+
+                    <small class="text-secondary">
+                        Valor unitário
+                    </small>
+
+                    <div class="fs-5">
+
+                        R$
+                        {{ "%.2f"|format(
+                            controle.valor_unitario or 0
+                        )|replace(".", ",") }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-3 mb-3">
+
+                    <small class="text-secondary">
+                        Valor total
+                    </small>
+
+                    <div class="fs-5">
+
+                        R$
+                        {{ "%.2f"|format(
+                            valor_total
+                        )|replace(".", ",") }}
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            {% if controle.observacao %}
+
+                <hr>
+
+                <div>
+
+                    <small class="text-secondary">
+                        Observação
+                    </small>
+
+                    <div class="mt-1">
+
+                        {{ controle.observacao }}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- RESUMO FINANCEIRO                                 -->
+    <!-- ================================================= -->
+
+    <div class="row text-center mb-4">
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    💰
+                </div>
+
+                <div class="numero">
+
+                    R$
+                    {{ "%.2f"|format(
+                        valor_total
+                    )|replace(".", ",") }}
+
+                </div>
+
+                <div class="descricao">
+                    Valor Total
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    ✅
+                </div>
+
+                <div class="numero">
+
+                    R$
+                    {{ "%.2f"|format(
+                        valor_pago
+                    )|replace(".", ",") }}
+
+                </div>
+
+                <div class="descricao">
+                    Valor Pago
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    ⏳
+                </div>
+
+                <div class="numero">
+
+                    R$
+                    {{ "%.2f"|format(
+                        valor_pendente
+                    )|replace(".", ",") }}
+
+                </div>
+
+                <div class="descricao">
+                    Restante
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- STATUS                                            -->
+    <!-- ================================================= -->
+
+    <div class="text-center mb-4">
+
+
+        {% if status == 'PAGO' %}
+
+            <span class="badge bg-success fs-6 p-2">
+
+                ✅ Pago
+
+            </span>
+
+
+        {% elif status == 'PARCIAL' %}
+
+            <span class="badge bg-warning text-dark fs-6 p-2">
+
+                ⚠️ Pagamento Parcial
+
+            </span>
+
+
+        {% elif status == 'CANCELADO' %}
+
+            <span class="badge bg-danger fs-6 p-2">
+
+                ❌ Cancelado
+
+            </span>
+
+
+        {% else %}
+
+            <span class="badge bg-secondary fs-6 p-2">
+
+                ⏳ Pendente
+
+            </span>
+
+        {% endif %}
+
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- PAGAMENTOS                                       -->
+    <!-- ================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+
+        <h4 class="titulo mb-0">
+
+            💳 Pagamentos
+
+        </h4>
+
+
+        {% if status != 'PAGO' and status != 'CANCELADO' %}
+
+            <button
+                type="button"
+                class="btn btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#modalPagamento">
+
+                ➕ Registrar Pagamento
+
+            </button>
+
+        {% endif %}
+
+
+    </div>
+
+
+    <div class="table-responsive">
+
+
+        <table class="table table-dark table-hover align-middle">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Data
+                    </th>
+
+                    <th>
+                        Forma
+                    </th>
+
+                    <th>
+                        Valor
+                    </th>
+
+                    <th>
+                        Comprovante
+                    </th>
+
+                    <th>
+                        Observação
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+                {% for pagamento in pagamentos %}
+
+
+                <tr>
+
+
+                    <td>
+
+                        {{ pagamento.data_pagamento }}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if pagamento.forma_pagamento == 'PIX' %}
+
+                            <span class="badge bg-info">
+                                💠 PIX
+                            </span>
+
+                        {% elif pagamento.forma_pagamento == 'DINHEIRO' %}
+
+                            <span class="badge bg-success">
+                                💵 Dinheiro
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+
+                                {{ pagamento.forma_pagamento }}
+
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+
+                            R$
+                            {{ "%.2f"|format(
+                                pagamento.valor or 0
+                            )|replace(".", ",") }}
+
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        {% if pagamento.comprovante %}
+
+                            {{ pagamento.comprovante }}
+
+                        {% else %}
+
+                            -
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        {{ pagamento.observacao or '-' }}
+
+                    </td>
+
+
+                </tr>
+
+
+                {% else %}
+
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        class="text-center text-secondary py-4">
+
+                        Nenhum pagamento registrado.
+
+                    </td>
+
+                </tr>
+
+
+                {% endfor %}
+
+
+            </tbody>
+
+
+        </table>
+
+    </div>
+
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MODAL - REGISTRAR PAGAMENTO                           -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalPagamento"
+    tabindex="-1"
+    aria-hidden="true">
+
+
+    <div class="modal-dialog modal-md modal-dialog-centered">
+
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+
+                    💳 Registrar Pagamento
+
+                </h5>
+
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+
+                </button>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="/admin/financeiro/controles/{{ controle.id }}/pagamento"
+                onsubmit="return validarPagamento()">
+
+
+                <div class="modal-body">
+
+
+                    <!-- VALOR -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            💰 Valor pago
+                        </label>
+
+                        <input
+                            type="text"
+                            name="valor"
+                            id="valorPagamento"
+                            class="form-control"
+                            placeholder="0,00"
+                            inputmode="decimal"
+                            required>
+
+                    </div>
+
+
+                    <!-- FORMA -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            💳 Forma de pagamento
+                        </label>
+
+                        <select
+                            name="forma_pagamento"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+                                Selecione
+                            </option>
+
+                            <option value="PIX">
+                                💠 PIX
+                            </option>
+
+                            <option value="DINHEIRO">
+                                💵 Dinheiro
+                            </option>
+
+                            <option value="OUTRO">
+                                💳 Outro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DATA -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            📅 Data do pagamento
+                        </label>
+
+                        <input
+                            type="date"
+                            name="data_pagamento"
+                            class="form-control"
+                            required>
+
+                    </div>
+
+
+                    <!-- COMPROVANTE -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            📎 Comprovante
+                        </label>
+
+                        <textarea
+                            name="comprovante"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Número, identificação ou observação do comprovante..."></textarea>
+
+                    </div>
+
+
+                    <!-- OBSERVAÇÃO -->
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Observação
+                        </label>
+
+                        <textarea
+                            name="observacao"
+                            class="form-control"
+                            rows="2"
+                            placeholder="Observação sobre o pagamento..."></textarea>
+
+                    </div>
+
+
+                    <div class="alert alert-secondary mb-0">
+
+                        <small>
+
+                            Restante atual:
+
+                            <strong>
+                                R$
+                                {{ "%.2f"|format(
+                                    valor_pendente
+                                )|replace(".", ",") }}
+                            </strong>
+
+                        </small>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="modal-footer">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Registrar Pagamento
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function validarPagamento(){
+
+    const campo =
+        document.getElementById(
+            "valorPagamento"
+        );
+
+    let valor =
+        campo.value.trim();
+
+
+    if(!valor){
+
+        alert(
+            "Informe o valor do pagamento."
+        );
+
+        return false;
+
+    }
+
+
+    valor =
+        valor.replace(/\./g, "")
+             .replace(",", ".");
+
+
+    valor =
+        parseFloat(valor);
+
+
+    if(isNaN(valor) || valor <= 0){
+
+        alert(
+            "Informe um valor de pagamento válido."
+        );
+
+        return false;
+
+    }
+
+
+    const restante =
+        {{ valor_pendente|float }};
+
+
+    if(valor > restante + 0.01){
+
+        alert(
+            "O valor informado é maior que o valor pendente."
+        );
+
+        return false;
+
+    }
+
+
+    campo.value =
+        valor.toFixed(2).replace(".", ",");
+
+
+    return true;
+
+}
+
+</script>
+
+
+{% endblock %}

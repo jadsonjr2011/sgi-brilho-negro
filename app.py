@@ -8883,6 +8883,1111 @@ def relatorio_financeiro_receitas_despesas():
 
         db.close()
 
+@app.route("/admin/financeiro/controles")
+def controles_financeiros():
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # CONTROLES FINANCEIROS
+        # =====================================================
+
+        controles = db.execute(
+            text("""
+                SELECT
+                    c.id,
+                    c.temporada,
+                    c.tipo,
+                    c.descricao,
+                    c.integrante_id,
+                    c.nome_pessoa,
+                    c.telefone,
+                    c.quantidade,
+                    c.tamanho,
+                    c.valor_unitario,
+                    c.valor_total,
+                    c.status,
+                    c.observacao,
+                    c.data_cadastro,
+
+                    COALESCE(
+                        SUM(p.valor),
+                        0
+                    ) AS valor_pago
+
+                FROM controles_financeiros c
+
+                LEFT JOIN controles_financeiros_pagamentos p
+                    ON p.controle_id = c.id
+
+                GROUP BY
+                    c.id,
+                    c.temporada,
+                    c.tipo,
+                    c.descricao,
+                    c.integrante_id,
+                    c.nome_pessoa,
+                    c.telefone,
+                    c.quantidade,
+                    c.tamanho,
+                    c.valor_unitario,
+                    c.valor_total,
+                    c.status,
+                    c.observacao,
+                    c.data_cadastro
+
+                ORDER BY
+                    c.id DESC
+            """)
+        ).fetchall()
+
+
+        # =====================================================
+        # INTEGRANTES
+        # =====================================================
+        # Lista usada no modal "Novo Controle".
+        #
+        # Não depende dos controles financeiros.
+        # Busca diretamente os integrantes cadastrados,
+        # aprovados e ativos.
+        # =====================================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.nome,
+                    i.codigo_integrante,
+                    i.funcao,
+                    i.calcado
+
+                FROM integrantes i
+
+                WHERE
+                    i.status = 'APROVADO'
+                    AND i.situacao = 'ATIVO'
+
+                ORDER BY
+                    i.nome
+            """)
+        ).fetchall()
+
+
+        # =====================================================
+        # RESUMO
+        # =====================================================
+
+        total_pedidos = len(controles)
+
+        valor_total = sum(
+            float(item.valor_total or 0)
+            for item in controles
+        )
+
+        valor_pago = sum(
+            float(item.valor_pago or 0)
+            for item in controles
+        )
+
+        valor_pendente = (
+            valor_total
+            - valor_pago
+        )
+
+
+        # =====================================================
+        # QUANTIDADE DE PEDIDOS PAGOS / PENDENTES
+        # =====================================================
+
+        pedidos_pagos = 0
+        pedidos_pendentes = 0
+
+
+        for item in controles:
+
+            total = float(
+                item.valor_total or 0
+            )
+
+            pago = float(
+                item.valor_pago or 0
+            )
+
+            if total > 0 and pago >= total:
+
+                pedidos_pagos += 1
+
+            else:
+
+                pedidos_pendentes += 1
+
+
+        # =====================================================
+        # TEMPLATE
+        # =====================================================
+
+        return render_template(
+            "admin/controles_financeiros.html",
+
+            controles=controles,
+
+            integrantes=integrantes,
+
+            total_pedidos=total_pedidos,
+
+            pedidos_pagos=pedidos_pagos,
+
+            pedidos_pendentes=pedidos_pendentes,
+
+            valor_total=valor_total,
+
+            valor_pago=valor_pago,
+
+            valor_pendente=valor_pendente
+        )
+
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/financeiro/controles/<int:id>/pagamento", methods=["POST"])
+def registrar_pagamento_controle(id):
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # BUSCAR CONTROLE
+        # =====================================================
+
+        controle = db.execute(
+            text("""
+                SELECT
+                    id,
+                    valor_total,
+                    status
+                FROM controles_financeiros
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()
+
+
+        if not controle:
+
+            return redirect(
+                "/admin/financeiro/controles"
+            )
+
+
+        # =====================================================
+        # DADOS DO FORMULÁRIO
+        # =====================================================
+
+        valor_texto = (
+            request.form.get("valor") or ""
+        ).strip()
+
+        forma_pagamento = (
+            request.form.get("forma_pagamento") or ""
+        ).strip().upper()
+
+        data_pagamento = (
+            request.form.get("data_pagamento") or ""
+        ).strip()
+
+        comprovante = (
+            request.form.get("comprovante") or ""
+        ).strip()
+
+        observacao = (
+            request.form.get("observacao") or ""
+        ).strip()
+
+
+        # =====================================================
+        # VALIDAR VALOR
+        # =====================================================
+
+        if not valor_texto:
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}"
+            )
+
+
+        try:
+
+            valor_texto = (
+                valor_texto
+                .replace(".", "")
+                .replace(",", ".")
+            )
+
+            valor = float(valor_texto)
+
+        except ValueError:
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}"
+            )
+
+
+        if valor <= 0:
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}"
+            )
+
+
+        # =====================================================
+        # VALIDAR FORMA DE PAGAMENTO
+        # =====================================================
+
+        if not forma_pagamento:
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}"
+            )
+
+
+        # =====================================================
+        # VALIDAR DATA
+        # =====================================================
+
+        if not data_pagamento:
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}"
+            )
+
+
+        # =====================================================
+        # VALOR TOTAL DO CONTROLE
+        # =====================================================
+
+        valor_total = float(
+            controle.valor_total or 0
+        )
+
+
+        # =====================================================
+        # TOTAL JÁ PAGO
+        # =====================================================
+
+        valor_pago_atual = db.execute(
+            text("""
+                SELECT
+                    COALESCE(
+                        SUM(valor),
+                        0
+                    )
+                FROM controles_financeiros_pagamentos
+                WHERE controle_id = :controle_id
+            """),
+            {
+                "controle_id": id
+            }
+        ).scalar()
+
+
+        valor_pago_atual = float(
+            valor_pago_atual or 0
+        )
+
+
+        # =====================================================
+        # VALIDAÇÃO DO VALOR
+        # =====================================================
+
+        valor_pendente = (
+            valor_total
+            - valor_pago_atual
+        )
+
+
+        if valor > valor_pendente + 0.01:
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}"
+            )
+
+
+        # =====================================================
+        # REGISTRAR PAGAMENTO
+        # =====================================================
+
+        db.execute(
+            text("""
+                INSERT INTO
+                    controles_financeiros_pagamentos
+                (
+                    controle_id,
+                    valor,
+                    forma_pagamento,
+                    data_pagamento,
+                    comprovante,
+                    observacao,
+                    data_cadastro
+                )
+                VALUES
+                (
+                    :controle_id,
+                    :valor,
+                    :forma_pagamento,
+                    :data_pagamento,
+                    :comprovante,
+                    :observacao,
+                    CURRENT_TIMESTAMP
+                )
+            """),
+            {
+                "controle_id": id,
+                "valor": valor,
+                "forma_pagamento": forma_pagamento,
+                "data_pagamento": data_pagamento,
+                "comprovante": comprovante or None,
+                "observacao": observacao or None
+            }
+        )
+
+
+        # =====================================================
+        # NOVO TOTAL PAGO
+        # =====================================================
+
+        novo_valor_pago = db.execute(
+            text("""
+                SELECT
+                    COALESCE(
+                        SUM(valor),
+                        0
+                    )
+                FROM controles_financeiros_pagamentos
+                WHERE controle_id = :controle_id
+            """),
+            {
+                "controle_id": id
+            }
+        ).scalar()
+
+
+        novo_valor_pago = float(
+            novo_valor_pago or 0
+        )
+
+
+        # =====================================================
+        # DEFINIR NOVO STATUS
+        # =====================================================
+
+        if novo_valor_pago >= valor_total - 0.01:
+
+            novo_status = "PAGO"
+
+        elif novo_valor_pago > 0:
+
+            novo_status = "PARCIAL"
+
+        else:
+
+            novo_status = "PENDENTE"
+
+
+        # =====================================================
+        # ATUALIZAR CONTROLE
+        # =====================================================
+
+        db.execute(
+            text("""
+                UPDATE controles_financeiros
+
+                SET status = :status
+
+                WHERE id = :id
+            """),
+            {
+                "status": novo_status,
+                "id": id
+            }
+        )
+
+
+        # =====================================================
+        # CONFIRMAR
+        # =====================================================
+
+        db.commit()
+
+
+        # =====================================================
+        # VOLTAR PARA O CONTROLE
+        # =====================================================
+
+        return redirect(
+            f"/admin/financeiro/controles/{id}"
+        )
+
+
+    except Exception as e:
+
+        db.rollback()
+
+        print(
+            "ERRO AO REGISTRAR PAGAMENTO:",
+            e
+        )
+
+        return redirect(
+            f"/admin/financeiro/controles/{id}"
+        )
+
+
+    finally:
+
+        db.close()        
+
+@app.route("/admin/financeiro/controles/novo", methods=["POST"])
+def novo_controle_financeiro():
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        origem_pessoa = request.form.get(
+            "origem_pessoa",
+            "EXTERNA"
+        )
+
+        integrante_id = None
+        nome_pessoa = None
+        telefone = None
+
+        # =================================================
+        # INTEGRANTE CADASTRADO
+        # =================================================
+
+        if origem_pessoa == "INTEGRANTE":
+
+            integrante_id = request.form.get(
+                "integrante_id"
+            )
+
+            if not integrante_id:
+                return redirect(
+                    "/admin/financeiro/controles?erro=integrante"
+                )
+
+            integrante = db.execute(
+                text("""
+                    SELECT
+                        id,
+                        nome,
+                        telefone
+                    FROM integrantes
+                    WHERE id = :id
+                """),
+                {
+                    "id": integrante_id
+                }
+            ).fetchone()
+
+            if not integrante:
+                return redirect(
+                    "/admin/financeiro/controles?erro=integrante"
+                )
+
+            nome_pessoa = integrante.nome
+            telefone = integrante.telefone
+
+        # =================================================
+        # PESSOA EXTERNA
+        # =================================================
+
+        else:
+
+            nome_pessoa = request.form.get(
+                "nome_pessoa",
+                ""
+            ).strip()
+
+            telefone = request.form.get(
+                "telefone",
+                ""
+            ).strip()
+
+            if not nome_pessoa:
+
+                return redirect(
+                    "/admin/financeiro/controles?erro=nome"
+                )
+
+        # =================================================
+        # DADOS DO CONTROLE
+        # =================================================
+
+        temporada = request.form.get(
+            "temporada"
+        )
+
+        tipo = request.form.get(
+            "tipo"
+        )
+
+        descricao = request.form.get(
+            "descricao"
+        ).strip()
+
+        tamanho = request.form.get(
+            "tamanho"
+        ).strip()
+
+        quantidade = int(
+            request.form.get(
+                "quantidade",
+                1
+            )
+        )
+
+        valor_unitario = request.form.get(
+            "valor_unitario",
+            "0"
+        )
+
+        valor_unitario = (
+            valor_unitario
+            .replace(".", "")
+            .replace(",", ".")
+        )
+
+        valor_unitario = float(
+            valor_unitario
+        )
+
+        valor_total = (
+            quantidade
+            * valor_unitario
+        )
+
+        observacao = request.form.get(
+            "observacao",
+            ""
+        ).strip()
+
+        # =================================================
+        # SALVAR
+        # =================================================
+
+        db.execute(
+            text("""
+                INSERT INTO controles_financeiros
+                (
+                    temporada,
+                    tipo,
+                    descricao,
+                    integrante_id,
+                    nome_pessoa,
+                    telefone,
+                    quantidade,
+                    tamanho,
+                    valor_unitario,
+                    valor_total,
+                    status,
+                    observacao
+                )
+
+                VALUES
+                (
+                    :temporada,
+                    :tipo,
+                    :descricao,
+                    :integrante_id,
+                    :nome_pessoa,
+                    :telefone,
+                    :quantidade,
+                    :tamanho,
+                    :valor_unitario,
+                    :valor_total,
+                    'PENDENTE',
+                    :observacao
+                )
+            """),
+            {
+                "temporada": temporada,
+                "tipo": tipo,
+                "descricao": descricao,
+                "integrante_id": integrante_id,
+                "nome_pessoa": nome_pessoa,
+                "telefone": telefone,
+                "quantidade": quantidade,
+                "tamanho": tamanho,
+                "valor_unitario": valor_unitario,
+                "valor_total": valor_total,
+                "observacao": observacao
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            "/admin/financeiro/controles?novo=ok"
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+@app.route("/admin/financeiro/controles/<int:id>")
+def detalhe_controle_financeiro(id):
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # CONTROLE
+        # =====================================================
+
+        controle = db.execute(
+            text("""
+                SELECT
+                    c.id,
+                    c.temporada,
+                    c.tipo,
+                    c.descricao,
+                    c.integrante_id,
+                    c.nome_pessoa,
+                    c.telefone,
+                    c.quantidade,
+                    c.tamanho,
+                    c.valor_unitario,
+                    c.valor_total,
+                    c.status,
+                    c.observacao,
+                    c.data_cadastro
+                FROM controles_financeiros c
+                WHERE c.id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()
+
+
+        if not controle:
+
+            return redirect(
+                "/admin/financeiro/controles"
+            )
+
+
+        # =====================================================
+        # PAGAMENTOS
+        # =====================================================
+
+        pagamentos = db.execute(
+            text("""
+                SELECT
+                    id,
+                    controle_id,
+                    valor,
+                    forma_pagamento,
+                    data_pagamento,
+                    comprovante,
+                    observacao,
+                    data_cadastro
+
+                FROM controles_financeiros_pagamentos
+
+                WHERE controle_id = :controle_id
+
+                ORDER BY
+                    data_pagamento DESC,
+                    id DESC
+            """),
+            {
+                "controle_id": id
+            }
+        ).fetchall()
+
+
+        # =====================================================
+        # TOTAL PAGO
+        # =====================================================
+
+        valor_pago = db.execute(
+            text("""
+                SELECT
+                    COALESCE(SUM(valor), 0)
+
+                FROM controles_financeiros_pagamentos
+
+                WHERE controle_id = :controle_id
+            """),
+            {
+                "controle_id": id
+            }
+        ).scalar() or 0
+
+
+        valor_total = float(
+            controle.valor_total or 0
+        )
+
+        valor_pago = float(
+            valor_pago or 0
+        )
+
+        valor_pendente = (
+            valor_total
+            - valor_pago
+        )
+
+
+        # =====================================================
+        # STATUS CALCULADO
+        # =====================================================
+
+        if controle.status == "CANCELADO":
+
+            status = "CANCELADO"
+
+        elif valor_pago >= valor_total and valor_total > 0:
+
+            status = "PAGO"
+
+        elif valor_pago > 0:
+
+            status = "PARCIAL"
+
+        else:
+
+            status = "PENDENTE"
+
+
+        return render_template(
+            "admin/detalhe_controle_financeiro.html",
+            controle=controle,
+            pagamentos=pagamentos,
+            valor_total=valor_total,
+            valor_pago=valor_pago,
+            valor_pendente=valor_pendente,
+            status=status
+        )
+
+
+    finally:
+
+        db.close()
+
+@app.route(
+    "/admin/financeiro/controles/<int:id>/editar",
+    methods=["GET", "POST"]
+)
+def editar_controle_financeiro(id):
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # BUSCAR CONTROLE
+        # =====================================================
+
+        controle = db.execute(
+            text("""
+                SELECT
+                    id,
+                    temporada,
+                    tipo,
+                    descricao,
+                    integrante_id,
+                    nome_pessoa,
+                    telefone,
+                    quantidade,
+                    tamanho,
+                    valor_unitario,
+                    valor_total,
+                    status,
+                    observacao,
+                    data_cadastro
+
+                FROM controles_financeiros
+
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).fetchone()
+
+
+        if not controle:
+
+            return redirect(
+                "/admin/financeiro/controles"
+            )
+
+
+        # =====================================================
+        # POST - SALVAR ALTERAÇÕES
+        # =====================================================
+
+        if request.method == "POST":
+
+            temporada = request.form.get(
+                "temporada"
+            )
+
+            tipo = request.form.get(
+                "tipo"
+            )
+
+            descricao = request.form.get(
+                "descricao"
+            )
+
+            origem_pessoa = request.form.get(
+                "origem_pessoa"
+            )
+
+            integrante_id = request.form.get(
+                "integrante_id"
+            )
+
+            nome_pessoa = request.form.get(
+                "nome_pessoa"
+            )
+
+            telefone = request.form.get(
+                "telefone"
+            )
+
+            tamanho = request.form.get(
+                "tamanho"
+            )
+
+            quantidade = request.form.get(
+                "quantidade"
+            )
+
+            valor_unitario = request.form.get(
+                "valor_unitario"
+            )
+
+            observacao = request.form.get(
+                "observacao"
+            )
+
+
+            # =================================================
+            # CONVERTER VALORES
+            # =================================================
+
+            quantidade = int(
+                quantidade or 1
+            )
+
+
+            valor_unitario = (
+                valor_unitario
+                or "0"
+            )
+
+            valor_unitario = valor_unitario.replace(
+                ".",
+                ""
+            )
+
+            valor_unitario = valor_unitario.replace(
+                ",",
+                "."
+            )
+
+            valor_unitario = float(
+                valor_unitario
+            )
+
+
+            valor_total = (
+                quantidade
+                * valor_unitario
+            )
+
+
+            # =================================================
+            # PESSOA
+            # =================================================
+
+            if origem_pessoa == "INTEGRANTE":
+
+                if not integrante_id:
+
+                    return redirect(
+                        f"/admin/financeiro/controles/{id}/editar"
+                    )
+
+
+                integrante = db.execute(
+                    text("""
+                        SELECT
+                            nome,
+                            telefone
+
+                        FROM integrantes
+
+                        WHERE id = :id
+                    """),
+                    {
+                        "id": integrante_id
+                    }
+                ).fetchone()
+
+
+                if not integrante:
+
+                    return redirect(
+                        f"/admin/financeiro/controles/{id}/editar"
+                    )
+
+
+                integrante_id = int(
+                    integrante_id
+                )
+
+                nome_pessoa = integrante.nome
+
+                telefone = integrante.telefone
+
+
+            else:
+
+                integrante_id = None
+
+                nome_pessoa = (
+                    nome_pessoa or ""
+                ).strip()
+
+                telefone = (
+                    telefone or ""
+                ).strip()
+
+
+            # =================================================
+            # ATUALIZAR
+            # =================================================
+
+            db.execute(
+                text("""
+                    UPDATE controles_financeiros
+
+                    SET
+                        temporada = :temporada,
+                        tipo = :tipo,
+                        descricao = :descricao,
+                        integrante_id = :integrante_id,
+                        nome_pessoa = :nome_pessoa,
+                        telefone = :telefone,
+                        quantidade = :quantidade,
+                        tamanho = :tamanho,
+                        valor_unitario = :valor_unitario,
+                        valor_total = :valor_total,
+                        observacao = :observacao
+
+                    WHERE id = :id
+                """),
+                {
+                    "temporada": temporada,
+                    "tipo": tipo,
+                    "descricao": descricao,
+                    "integrante_id": integrante_id,
+                    "nome_pessoa": nome_pessoa,
+                    "telefone": telefone,
+                    "quantidade": quantidade,
+                    "tamanho": tamanho,
+                    "valor_unitario": valor_unitario,
+                    "valor_total": valor_total,
+                    "observacao": observacao,
+                    "id": id
+                }
+            )
+
+
+            db.commit()
+
+
+            return redirect(
+                f"/admin/financeiro/controles/{id}?editado=ok"
+            )
+
+
+        # =====================================================
+        # INTEGRANTES
+        # =====================================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    telefone
+
+                FROM integrantes
+
+                ORDER BY nome
+            """)
+        ).fetchall()
+
+
+        # =====================================================
+        # ORIGEM DA PESSOA
+        # =====================================================
+
+        origem_pessoa = (
+            "INTEGRANTE"
+            if controle.integrante_id
+            else "EXTERNA"
+        )
+
+
+        return render_template(
+            "admin/editar_controle_financeiro.html",
+            controle=controle,
+            integrantes=integrantes,
+            origem_pessoa=origem_pessoa
+        )
+
+
+    finally:
+
+        db.close()        
+
 @app.route("/admin/rifas")
 def rifas():
 

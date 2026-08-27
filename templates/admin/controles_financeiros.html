@@ -1,0 +1,1618 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Controles Financeiros
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ===================================================== */
+/* LISTA DE INTEGRANTES                                  */
+/* ===================================================== */
+
+.lista-integrantes-controle {
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.03);
+}
+
+.integrante-opcao {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    width: 100%;
+
+    padding: 10px 12px;
+
+    border: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+
+    background: transparent;
+    color: #fff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        color 0.15s ease;
+}
+
+.integrante-opcao:last-child {
+    border-bottom: 0;
+}
+
+.integrante-opcao:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.integrante-opcao.selecionado {
+    background: rgba(13,110,253,0.20);
+    border-left: 3px solid #0d6efd;
+}
+
+.integrante-opcao .nome-integrante {
+    font-weight: 600;
+}
+
+.integrante-opcao .codigo-integrante {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.sem-integrantes {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+}
+
+/* ===================================================== */
+/* INTEGRANTE SELECIONADO                                */
+/* ===================================================== */
+
+.integrante-selecionado {
+    display: none;
+
+    margin-top: 10px;
+    padding: 10px 12px;
+
+    border-radius: 8px;
+
+    background: rgba(25,135,84,0.12);
+    border: 1px solid rgba(25,135,84,0.25);
+}
+
+.integrante-selecionado.ativo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.integrante-selecionado-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.integrante-selecionado-nome {
+    font-weight: 600;
+}
+
+.integrante-selecionado-codigo {
+    color: #888;
+    font-size: 0.8rem;
+}
+
+/* ===================================================== */
+/* CARDS DE RESUMO                                       */
+/* ===================================================== */
+
+.card-resumo {
+    padding: 18px;
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.card-resumo .icone {
+    font-size: 1.6rem;
+    margin-bottom: 5px;
+}
+
+.card-resumo .numero {
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.card-resumo .descricao {
+    color: #888;
+    font-size: 0.85rem;
+}
+
+/* ===================================================== */
+/* TABELA                                                */
+/* ===================================================== */
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+</style>
+
+
+<div class="card-bn">
+
+
+    <!-- ================================================= -->
+    <!-- CABEÇALHO                                         -->
+    <!-- ================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h2 class="titulo mb-0">
+            🎯 Controles Financeiros
+        </h2>
+
+    </div>
+
+
+    <hr>
+
+
+    <!-- ================================================= -->
+    <!-- RESUMO                                            -->
+    <!-- ================================================= -->
+
+    <div class="row text-center mt-4">
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    📋
+                </div>
+
+                <div class="numero">
+                    {{ total_pedidos }}
+                </div>
+
+                <div class="descricao">
+                    Controles
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    💰
+                </div>
+
+                <div class="numero">
+
+                    R$
+                    {{ "%.2f"|format(valor_total)|replace(".", ",") }}
+
+                </div>
+
+                <div class="descricao">
+                    Valor Total
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+
+            <div class="card-resumo">
+
+                <div class="icone">
+                    ⏳
+                </div>
+
+                <div class="numero">
+
+                    R$
+                    {{ "%.2f"|format(valor_pendente)|replace(".", ",") }}
+
+                </div>
+
+                <div class="descricao">
+                    Pendente
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- AÇÕES                                             -->
+    <!-- ================================================= -->
+
+    <div class="mt-4 mb-4">
+
+        <button
+            type="button"
+            class="btn btn-success"
+            data-bs-toggle="modal"
+            data-bs-target="#modalNovoControle">
+
+            ➕ Novo Controle
+
+        </button>
+
+
+        <a
+            href="/admin/financeiro"
+            class="btn btn-secondary">
+
+            ← Voltar ao Financeiro
+
+        </a>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CONTROLES                                         -->
+    <!-- ================================================= -->
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Pessoa</th>
+                    <th>Controle</th>
+                    <th>Tamanho</th>
+                    <th>Qtd.</th>
+                    <th>Total</th>
+                    <th>Pago</th>
+                    <th>Restante</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for item in controles %}
+
+                <tr>
+
+                    <td>
+
+                        {% if item.integrante_id %}
+
+                            <strong>
+                                {{ item.nome_pessoa or 'Integrante' }}
+                            </strong>
+
+                        {% else %}
+
+                            <strong>
+                                {{ item.nome_pessoa }}
+                            </strong>
+
+                            <small class="d-block text-secondary">
+                                Externo
+                            </small>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <strong>
+                            {{ item.descricao }}
+                        </strong>
+
+                        <small class="d-block text-secondary">
+                            {{ item.tipo }}
+                        </small>
+
+                    </td>
+
+
+                    <td>
+                        {{ item.tamanho or '-' }}
+                    </td>
+
+
+                    <td>
+                        {{ item.quantidade }}
+                    </td>
+
+
+                    <td>
+
+                        R$
+
+                        {{ "%.2f"|format(
+                            item.valor_total or 0
+                        )|replace(".", ",") }}
+
+                    </td>
+
+
+                    <td>
+
+                        R$
+
+                        {{ "%.2f"|format(
+                            item.valor_pago or 0
+                        )|replace(".", ",") }}
+
+                    </td>
+
+
+                    <td>
+
+                        R$
+
+                        {{ "%.2f"|format(
+                            (item.valor_total or 0)
+                            -
+                            (item.valor_pago or 0)
+                        )|replace(".", ",") }}
+
+                    </td>
+
+
+                    <td>
+
+                        {% if item.status == 'PAGO' %}
+
+                            <span class="badge bg-success">
+                                Pago
+                            </span>
+
+                        {% elif item.status == 'PARCIAL' %}
+
+                            <span class="badge bg-warning text-dark">
+                                Parcial
+                            </span>
+
+                        {% elif item.status == 'CANCELADO' %}
+
+                            <span class="badge bg-danger">
+                                Cancelado
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-secondary">
+                                Pendente
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="d-flex gap-1">
+
+                            <a
+                                href="/admin/financeiro/controles/{{ item.id }}"
+                                class="btn btn-sm btn-info">
+
+                                👁️ Ver
+
+                            </a>
+
+
+                            <a
+                                href="/admin/financeiro/controles/{{ item.id }}/editar"
+                                class="btn btn-sm btn-warning">
+
+                                ✏️ Editar
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td
+                        colspan="9"
+                        class="text-center text-secondary py-5">
+
+                        Nenhum controle cadastrado.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- MODAL - NOVO CONTROLE                                -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalNovoControle"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+
+            <!-- ================================================= -->
+            <!-- CABEÇALHO DO MODAL                                -->
+            <!-- ================================================= -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    🎯 Novo Controle Financeiro
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="/admin/financeiro/controles/novo"
+                onsubmit="return validarNovoControle()">
+
+
+                <div class="modal-body">
+
+
+                    <!-- ================================================= -->
+                    <!-- TEMPORADA / TIPO                                  -->
+                    <!-- ================================================= -->
+
+                    <div class="row">
+
+
+                        <div class="col-md-4 mb-3">
+
+                            <label class="form-label">
+                                📅 Temporada
+                            </label>
+
+                            <select
+                                name="temporada"
+                                class="form-select"
+                                required>
+
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option value="2026">
+                                    2026
+                                </option>
+
+                                <option value="2027">
+                                    2027
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-md-8 mb-3">
+
+                            <label class="form-label">
+                                Tipo
+                            </label>
+
+                            <select
+                                name="tipo"
+                                class="form-select"
+                                required>
+
+                                <option value="">
+                                    Selecione
+                                </option>
+
+                                <option value="CAMISA">
+                                    👕 Camisa
+                                </option>
+
+                                <option value="OUTRO">
+                                    📦 Outro
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <!-- ================================================= -->
+                    <!-- PESSOA                                            -->
+                    <!-- ================================================= -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            👤 Pessoa
+                        </label>
+
+
+                        <select
+                            id="origemPessoaControle"
+                            name="origem_pessoa"
+                            class="form-select"
+                            required>
+
+                            <option value="EXTERNA">
+                                Pessoa externa
+                            </option>
+
+                            <option value="INTEGRANTE">
+                                Integrante cadastrado
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- INTEGRANTE                                         -->
+                    <!-- ================================================= -->
+
+                    <div
+                        id="campoIntegrante"
+                        class="mb-3"
+                        style="display:none;">
+
+                        <label class="form-label">
+                            👥 Integrante
+                        </label>
+
+
+                        <!-- CAMPO OCULTO QUE REALMENTE SERÁ ENVIADO -->
+
+                        <input
+                            type="hidden"
+                            name="integrante_id"
+                            id="integranteControle"
+                            value="">
+
+
+                        <!-- PESQUISA -->
+
+                        <input
+                            type="text"
+                            id="pesquisaIntegranteControle"
+                            class="form-control mb-2"
+                            placeholder="🔎 Pesquisar integrante pelo nome..."
+                            autocomplete="off">
+
+
+                        <!-- LISTA -->
+
+                        <div
+                            id="listaIntegrantesControle"
+                            class="lista-integrantes-controle">
+
+                            {% for integrante in integrantes %}
+
+                            <button
+                                type="button"
+                                class="integrante-opcao"
+                                data-id="{{ integrante.id }}"
+                                data-nome="{{ integrante.nome|lower }}"
+                                data-nome-original="{{ integrante.nome }}"
+                                data-codigo="{{ integrante.codigo_integrante or '' }}">
+
+                                <span class="nome-integrante">
+
+                                    {{ integrante.nome }}
+
+                                </span>
+
+
+                                {% if integrante.codigo_integrante %}
+
+                                <span class="codigo-integrante">
+
+                                    {{ integrante.codigo_integrante }}
+
+                                </span>
+
+                                {% endif %}
+
+                            </button>
+
+                            {% else %}
+
+                            <div class="sem-integrantes">
+
+                                Nenhum integrante disponível.
+
+                            </div>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        <!-- INTEGRANTE SELECIONADO -->
+
+                        <div
+                            id="integranteSelecionado"
+                            class="integrante-selecionado">
+
+                            <div class="integrante-selecionado-info">
+
+                                <span
+                                    id="nomeIntegranteSelecionado"
+                                    class="integrante-selecionado-nome">
+                                </span>
+
+                                <span
+                                    id="codigoIntegranteSelecionado"
+                                    class="integrante-selecionado-codigo">
+                                </span>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                id="limparIntegrante"
+                                class="btn btn-sm btn-outline-danger">
+
+                                ✕ Alterar
+
+                            </button>
+
+                        </div>
+
+
+                        <small class="text-secondary">
+
+                            Digite o nome acima e clique no integrante
+                            para selecionar.
+
+                        </small>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- PESSOA EXTERNA                                    -->
+                    <!-- ================================================= -->
+
+                    <div id="camposPessoaExterna">
+
+
+                        <div class="row">
+
+
+                            <div class="col-md-8 mb-3">
+
+                                <label class="form-label">
+                                    Nome
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="nome_pessoa"
+                                    id="nomePessoaControle"
+                                    class="form-control"
+                                    placeholder="Nome da pessoa">
+
+
+                            </div>
+
+
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label">
+                                    Telefone
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="telefone"
+                                    id="telefonePessoaControle"
+                                    class="form-control"
+                                    placeholder="(84) 99999-9999">
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- DESCRIÇÃO                                         -->
+                    <!-- ================================================= -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            📝 Descrição
+                        </label>
+
+                        <input
+                            type="text"
+                            name="descricao"
+                            class="form-control"
+                            placeholder="Ex.: Camisa Brilho Negro"
+                            required>
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- TAMANHO / QUANTIDADE                              -->
+                    <!-- ================================================= -->
+
+                    <div class="row">
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                📏 Tamanho
+                            </label>
+
+                            <input
+                                type="text"
+                                name="tamanho"
+                                class="form-control"
+                                placeholder="Ex.: M, GG, 12, 40...">
+
+                            <small class="text-secondary">
+                                Campo livre.
+                            </small>
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                🔢 Quantidade
+                            </label>
+
+                            <input
+                                type="number"
+                                name="quantidade"
+                                id="quantidadeControle"
+                                class="form-control"
+                                value="1"
+                                min="1"
+                                required>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- VALOR                                             -->
+                    <!-- ================================================= -->
+
+                    <div class="row">
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                💵 Valor unitário
+                            </label>
+
+                            <input
+                                type="text"
+                                name="valor_unitario"
+                                id="valorUnitarioControle"
+                                class="form-control"
+                                placeholder="0,00"
+                                inputmode="decimal"
+                                required>
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                💰 Valor total
+                            </label>
+
+                            <input
+                                type="text"
+                                id="valorTotalControle"
+                                class="form-control"
+                                value="R$ 0,00"
+                                readonly>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- ================================================= -->
+                    <!-- OBSERVAÇÃO                                        -->
+                    <!-- ================================================= -->
+
+                    <div class="mb-2">
+
+                        <label class="form-label">
+                            Observação
+                        </label>
+
+                        <textarea
+                            name="observacao"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Informações adicionais..."></textarea>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- RODAPÉ                                             -->
+                <!-- ================================================= -->
+
+                <div class="modal-footer">
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        💾 Salvar Controle
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- JAVASCRIPT                                            -->
+<!-- ===================================================== -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    /* ===================================================== */
+    /* ELEMENTOS                                             */
+    /* ===================================================== */
+
+    const origemPessoa =
+        document.getElementById(
+            "origemPessoaControle"
+        );
+
+
+    const campoIntegrante =
+        document.getElementById(
+            "campoIntegrante"
+        );
+
+
+    const camposPessoaExterna =
+        document.getElementById(
+            "camposPessoaExterna"
+        );
+
+
+    const integranteControle =
+        document.getElementById(
+            "integranteControle"
+        );
+
+
+    const pesquisaIntegrante =
+        document.getElementById(
+            "pesquisaIntegranteControle"
+        );
+
+
+    const listaIntegrantes =
+        document.getElementById(
+            "listaIntegrantesControle"
+        );
+
+
+    const nomePessoa =
+        document.getElementById(
+            "nomePessoaControle"
+        );
+
+
+    const telefonePessoa =
+        document.getElementById(
+            "telefonePessoaControle"
+        );
+
+
+    const integranteSelecionado =
+        document.getElementById(
+            "integranteSelecionado"
+        );
+
+
+    const nomeSelecionado =
+        document.getElementById(
+            "nomeIntegranteSelecionado"
+        );
+
+
+    const codigoSelecionado =
+        document.getElementById(
+            "codigoIntegranteSelecionado"
+        );
+
+
+    const limparIntegrante =
+        document.getElementById(
+            "limparIntegrante"
+        );
+
+
+    const quantidade =
+        document.getElementById(
+            "quantidadeControle"
+        );
+
+
+    const valorUnitario =
+        document.getElementById(
+            "valorUnitarioControle"
+        );
+
+
+    const valorTotal =
+        document.getElementById(
+            "valorTotalControle"
+        );
+
+
+    /* ===================================================== */
+    /* ALTERAR ORIGEM                                        */
+    /* ===================================================== */
+
+    function alterarOrigemPessoa() {
+
+
+        if (
+            origemPessoa.value === "INTEGRANTE"
+        ) {
+
+
+            campoIntegrante.style.display =
+                "block";
+
+
+            camposPessoaExterna.style.display =
+                "none";
+
+
+            nomePessoa.disabled =
+                true;
+
+
+            telefonePessoa.disabled =
+                true;
+
+
+            nomePessoa.required =
+                false;
+
+
+            telefonePessoa.required =
+                false;
+
+
+            nomePessoa.value =
+                "";
+
+
+            telefonePessoa.value =
+                "";
+
+
+        } else {
+
+
+            campoIntegrante.style.display =
+                "none";
+
+
+            camposPessoaExterna.style.display =
+                "block";
+
+
+            nomePessoa.disabled =
+                false;
+
+
+            telefonePessoa.disabled =
+                false;
+
+
+            nomePessoa.required =
+                true;
+
+
+            integranteControle.value =
+                "";
+
+
+            limparSelecaoIntegrante();
+
+
+        }
+
+    }
+
+
+    /* ===================================================== */
+    /* FILTRAR INTEGRANTES                                   */
+    /* ===================================================== */
+
+    function filtrarIntegrantes() {
+
+
+        const termo =
+            pesquisaIntegrante.value
+                .toLowerCase()
+                .trim();
+
+
+        const opcoes =
+            listaIntegrantes.querySelectorAll(
+                ".integrante-opcao"
+            );
+
+
+        let encontrados = 0;
+
+
+        opcoes.forEach(function (opcao) {
+
+
+            const nome =
+                (
+                    opcao.dataset.nomeOriginal ||
+                    ""
+                ).toLowerCase();
+
+
+            const codigo =
+                (
+                    opcao.dataset.codigo ||
+                    ""
+                ).toLowerCase();
+
+
+            const corresponde =
+                !termo ||
+                nome.includes(termo) ||
+                codigo.includes(termo);
+
+
+            if (corresponde) {
+
+
+                opcao.style.display =
+                    "flex";
+
+
+                encontrados++;
+
+
+            } else {
+
+
+                opcao.style.display =
+                    "none";
+
+            }
+
+        });
+
+
+        let mensagem =
+            listaIntegrantes.querySelector(
+                ".sem-resultado-pesquisa"
+            );
+
+
+        if (encontrados === 0) {
+
+
+            if (!mensagem) {
+
+
+                mensagem =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                mensagem.className =
+                    "sem-integrantes sem-resultado-pesquisa";
+
+
+                mensagem.textContent =
+                    "Nenhum integrante encontrado.";
+
+
+                listaIntegrantes.appendChild(
+                    mensagem
+                );
+
+            }
+
+
+        } else if (mensagem) {
+
+
+            mensagem.remove();
+
+        }
+
+    }
+
+
+    /* ===================================================== */
+    /* SELECIONAR INTEGRANTE                                 */
+    /* ===================================================== */
+
+    function selecionarIntegrante(botao) {
+
+
+        const id =
+            botao.dataset.id;
+
+
+        const nome =
+            botao.dataset.nomeOriginal ||
+            "";
+
+
+        const codigo =
+            botao.dataset.codigo ||
+            "";
+
+
+        if (!id) {
+            return;
+        }
+
+
+        /* Guarda o ID para o formulário */
+
+        integranteControle.value =
+            id;
+
+
+        /* Mostra o selecionado */
+
+        nomeSelecionado.textContent =
+            nome;
+
+
+        codigoSelecionado.textContent =
+            codigo
+                ? "Matrícula: " + codigo
+                : "";
+
+
+        integranteSelecionado.classList.add(
+            "ativo"
+        );
+
+
+        /* Marca visualmente */
+
+        listaIntegrantes
+            .querySelectorAll(
+                ".integrante-opcao"
+            )
+            .forEach(function (opcao) {
+
+                opcao.classList.remove(
+                    "selecionado"
+                );
+
+            });
+
+
+        botao.classList.add(
+            "selecionado"
+        );
+
+
+        /*
+         * Esconde a lista depois da seleção.
+         * O usuário pode clicar em "Alterar"
+         * para escolher outro.
+         */
+
+        listaIntegrantes.style.display =
+            "none";
+
+
+        pesquisaIntegrante.style.display =
+            "none";
+
+
+        pesquisaIntegrante.value =
+            "";
+
+    }
+
+
+    /* ===================================================== */
+    /* LIMPAR SELEÇÃO                                        */
+    /* ===================================================== */
+
+    function limparSelecaoIntegrante() {
+
+
+        integranteControle.value =
+            "";
+
+
+        integranteSelecionado.classList.remove(
+            "ativo"
+        );
+
+
+        nomeSelecionado.textContent =
+            "";
+
+
+        codigoSelecionado.textContent =
+            "";
+
+
+        listaIntegrantes
+            .querySelectorAll(
+                ".integrante-opcao"
+            )
+            .forEach(function (opcao) {
+
+                opcao.classList.remove(
+                    "selecionado"
+                );
+
+                opcao.style.display =
+                    "flex";
+
+            });
+
+
+        pesquisaIntegrante.value =
+            "";
+
+
+        listaIntegrantes.style.display =
+            "block";
+
+
+        pesquisaIntegrante.style.display =
+            "block";
+
+    }
+
+
+    /* ===================================================== */
+    /* EVENTO DA ORIGEM                                      */
+    /* ===================================================== */
+
+    origemPessoa.addEventListener(
+        "change",
+        alterarOrigemPessoa
+    );
+
+
+    /* ===================================================== */
+    /* PESQUISA                                              */
+    /* ===================================================== */
+
+    pesquisaIntegrante.addEventListener(
+        "input",
+        filtrarIntegrantes
+    );
+
+
+    /* ===================================================== */
+    /* CLIQUE NOS INTEGRANTES                                */
+    /* ===================================================== */
+
+    listaIntegrantes.addEventListener(
+        "click",
+        function (event) {
+
+
+            const botao =
+                event.target.closest(
+                    ".integrante-opcao"
+                );
+
+
+            if (!botao) {
+                return;
+            }
+
+
+            selecionarIntegrante(
+                botao
+            );
+
+        }
+    );
+
+
+    /* ===================================================== */
+    /* ALTERAR INTEGRANTE                                    */
+    /* ===================================================== */
+
+    limparIntegrante.addEventListener(
+        "click",
+        function () {
+
+            limparSelecaoIntegrante();
+
+            pesquisaIntegrante.focus();
+
+        }
+    );
+
+
+    /* ===================================================== */
+    /* CALCULAR TOTAL                                        */
+    /* ===================================================== */
+
+    function calcularTotalControle() {
+
+
+        const qtd =
+            parseFloat(
+                quantidade.value
+            ) || 0;
+
+
+        let valor =
+            valorUnitario.value
+                .trim();
+
+
+        /*
+         * Aceita:
+         *
+         * 49,99
+         * 49.99
+         * 1.249,99
+         *
+         */
+
+        if (
+            valor.includes(",")
+        ) {
+
+            valor =
+                valor
+                    .replace(
+                        /\./g,
+                        ""
+                    )
+                    .replace(
+                        ",",
+                        "."
+                    );
+
+        }
+
+
+        const valorNumerico =
+            parseFloat(valor)
+            || 0;
+
+
+        const total =
+            qtd *
+            valorNumerico;
+
+
+        valorTotal.value =
+            "R$ " +
+            total
+                .toFixed(2)
+                .replace(
+                    ".",
+                    ","
+                );
+
+    }
+
+
+    quantidade.addEventListener(
+        "input",
+        calcularTotalControle
+    );
+
+
+    valorUnitario.addEventListener(
+        "input",
+        calcularTotalControle
+    );
+
+
+    /* ===================================================== */
+    /* VALIDAÇÃO                                            */
+    /* ===================================================== */
+
+    window.validarNovoControle =
+        function () {
+
+
+            const origem =
+                origemPessoa.value;
+
+
+            const integrante =
+                integranteControle.value;
+
+
+            const nome =
+                nomePessoa.value.trim();
+
+
+            if (
+                origem === "INTEGRANTE"
+                &&
+                !integrante
+            ) {
+
+
+                alert(
+                    "Selecione um integrante."
+                );
+
+
+                pesquisaIntegrante.focus();
+
+
+                return false;
+
+            }
+
+
+            if (
+                origem === "EXTERNA"
+                &&
+                !nome
+            ) {
+
+
+                alert(
+                    "Informe o nome da pessoa."
+                );
+
+
+                nomePessoa.focus();
+
+
+                return false;
+
+            }
+
+
+            return true;
+
+        };
+
+
+    /* ===================================================== */
+    /* INICIALIZAÇÃO                                         */
+    /* ===================================================== */
+
+    alterarOrigemPessoa();
+
+
+    calcularTotalControle();
+
+
+});
+
+</script>
+
+{% endblock %}

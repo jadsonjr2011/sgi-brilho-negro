@@ -1,0 +1,728 @@
+{% extends 'layout/base_admin.html' %}
+
+
+{% block titulo %}
+Editar Controle Financeiro
+{% endblock %}
+
+
+{% block titulo_pagina %}
+Editar Controle Financeiro
+{% endblock %}
+
+
+{% block conteudo %}
+
+
+<div class="card-bn">
+
+
+    <!-- ================================================= -->
+    <!-- CABEÇALHO                                         -->
+    <!-- ================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <h2 class="titulo mb-0">
+
+            ✏️ Editar Controle
+
+        </h2>
+
+
+        <a
+            href="/admin/financeiro/controles/{{ controle.id }}"
+            class="btn btn-secondary">
+
+            ← Voltar
+
+        </a>
+
+    </div>
+
+
+    <hr>
+
+
+    <!-- ================================================= -->
+    <!-- FORMULÁRIO                                        -->
+    <!-- ================================================= -->
+
+    <form
+        method="POST"
+        onsubmit="return validarEdicaoControle()">
+
+
+        <!-- ================================================= -->
+        <!-- TEMPORADA / TIPO                                  -->
+        <!-- ================================================= -->
+
+        <div class="row">
+
+
+            <div class="col-md-4 mb-3">
+
+                <label class="form-label">
+
+                    📅 Temporada
+
+                </label>
+
+
+                <select
+                    name="temporada"
+                    class="form-select"
+                    required>
+
+                    <option value="2026"
+                        {% if controle.temporada|string == '2026' %}
+                            selected
+                        {% endif %}>
+
+                        2026
+
+                    </option>
+
+
+                    <option value="2027"
+                        {% if controle.temporada|string == '2027' %}
+                            selected
+                        {% endif %}>
+
+                        2027
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="col-md-8 mb-3">
+
+                <label class="form-label">
+
+                    Tipo
+
+                </label>
+
+
+                <select
+                    name="tipo"
+                    class="form-select"
+                    required>
+
+
+                    <option value="CAMISA"
+                        {% if controle.tipo == 'CAMISA' %}
+                            selected
+                        {% endif %}>
+
+                        👕 Camisa
+
+                    </option>
+
+
+                    <option value="OUTRO"
+                        {% if controle.tipo == 'OUTRO' %}
+                            selected
+                        {% endif %}>
+
+                        📦 Outro
+
+                    </option>
+
+
+                </select>
+
+            </div>
+
+
+        </div>
+
+
+        <hr>
+
+
+        <!-- ================================================= -->
+        <!-- PESSOA                                             -->
+        <!-- ================================================= -->
+
+        <div class="mb-3">
+
+            <label class="form-label">
+
+                👤 Pessoa
+
+            </label>
+
+
+            <select
+                name="origem_pessoa"
+                id="origemPessoaControle"
+                class="form-select"
+                onchange="alterarOrigemPessoa()"
+                required>
+
+
+                <option value="EXTERNA"
+                    {% if origem_pessoa == 'EXTERNA' %}
+                        selected
+                    {% endif %}>
+
+                    Pessoa externa
+
+                </option>
+
+
+                <option value="INTEGRANTE"
+                    {% if origem_pessoa == 'INTEGRANTE' %}
+                        selected
+                    {% endif %}>
+
+                    Integrante cadastrado
+
+                </option>
+
+
+            </select>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- INTEGRANTE                                          -->
+        <!-- ================================================= -->
+
+        <div
+            id="campoIntegrante"
+            class="mb-3">
+
+
+            <label class="form-label">
+
+                👥 Integrante
+
+            </label>
+
+
+            <select
+                name="integrante_id"
+                id="integranteControle"
+                class="form-select">
+
+
+                <option value="">
+                    Selecione o integrante
+                </option>
+
+
+                {% for integrante in integrantes %}
+
+                    <option
+                        value="{{ integrante.id }}"
+                        {% if controle.integrante_id == integrante.id %}
+                            selected
+                        {% endif %}>
+
+                        {{ integrante.nome }}
+
+                    </option>
+
+                {% endfor %}
+
+
+            </select>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- PESSOA EXTERNA                                     -->
+        <!-- ================================================= -->
+
+        <div
+            id="camposPessoaExterna">
+
+
+            <div class="row">
+
+
+                <div class="col-md-8 mb-3">
+
+                    <label class="form-label">
+
+                        Nome
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="nome_pessoa"
+                        id="nomePessoaControle"
+                        class="form-control"
+                        value="{{ controle.nome_pessoa or '' }}"
+                        placeholder="Nome da pessoa">
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label class="form-label">
+
+                        Telefone
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="telefone"
+                        class="form-control"
+                        value="{{ controle.telefone or '' }}"
+                        placeholder="(84) 99999-9999">
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- DESCRIÇÃO                                          -->
+        <!-- ================================================= -->
+
+        <div class="mb-3">
+
+
+            <label class="form-label">
+
+                📝 Descrição
+
+            </label>
+
+
+            <input
+                type="text"
+                name="descricao"
+                class="form-control"
+                value="{{ controle.descricao or '' }}"
+                required>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- TAMANHO / QUANTIDADE                               -->
+        <!-- ================================================= -->
+
+        <div class="row">
+
+
+            <div class="col-md-6 mb-3">
+
+
+                <label class="form-label">
+
+                    📏 Tamanho
+
+                </label>
+
+
+                <input
+                    type="text"
+                    name="tamanho"
+                    class="form-control"
+                    value="{{ controle.tamanho or '' }}"
+                    placeholder="Ex.: M, GG, 12, 40...">
+
+
+                <small class="text-secondary">
+
+                    Campo livre.
+
+                </small>
+
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+
+                <label class="form-label">
+
+                    🔢 Quantidade
+
+                </label>
+
+
+                <input
+                    type="number"
+                    name="quantidade"
+                    id="quantidadeControle"
+                    class="form-control"
+                    value="{{ controle.quantidade or 1 }}"
+                    min="1"
+                    required
+                    oninput="calcularTotalControle()">
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- VALORES                                             -->
+        <!-- ================================================= -->
+
+        <div class="row">
+
+
+            <div class="col-md-6 mb-3">
+
+
+                <label class="form-label">
+
+                    💵 Valor unitário
+
+                </label>
+
+
+                <input
+                    type="text"
+                    name="valor_unitario"
+                    id="valorUnitarioControle"
+                    class="form-control"
+                    value="{{ '%.2f'|format(controle.valor_unitario or 0)|replace('.', ',') }}"
+                    inputmode="decimal"
+                    required
+                    oninput="calcularTotalControle()">
+
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+
+                <label class="form-label">
+
+                    💰 Valor total
+
+                </label>
+
+
+                <input
+                    type="text"
+                    id="valorTotalControle"
+                    class="form-control"
+                    value="R$ 0,00"
+                    readonly>
+
+
+            </div>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- OBSERVAÇÃO                                         -->
+        <!-- ================================================= -->
+
+        <div class="mb-4">
+
+
+            <label class="form-label">
+
+                📝 Observação
+
+            </label>
+
+
+            <textarea
+                name="observacao"
+                class="form-control"
+                rows="4"
+                placeholder="Informações adicionais...">{{ controle.observacao or '' }}</textarea>
+
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- AVISO                                              -->
+        <!-- ================================================= -->
+
+        <div class="alert alert-info">
+
+            <strong>
+                ℹ️ Atenção:
+            </strong>
+
+            Os pagamentos já registrados não serão alterados.
+            O valor pago continuará sendo controlado pelo histórico
+            de pagamentos.
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- AÇÕES                                              -->
+        <!-- ================================================= -->
+
+        <div class="d-flex gap-2">
+
+
+            <button
+                type="submit"
+                class="btn btn-success">
+
+                💾 Salvar Alterações
+
+            </button>
+
+
+            <a
+                href="/admin/financeiro/controles/{{ controle.id }}"
+                class="btn btn-secondary">
+
+                Cancelar
+
+            </a>
+
+
+        </div>
+
+
+    </form>
+
+
+</div>
+
+
+<script>
+
+
+// =====================================================
+// ORIGEM DA PESSOA
+// =====================================================
+
+function alterarOrigemPessoa() {
+
+
+    const origem =
+        document.getElementById(
+            "origemPessoaControle"
+        ).value;
+
+
+    const campoIntegrante =
+        document.getElementById(
+            "campoIntegrante"
+        );
+
+
+    const camposExterna =
+        document.getElementById(
+            "camposPessoaExterna"
+        );
+
+
+    const integrante =
+        document.getElementById(
+            "integranteControle"
+        );
+
+
+    const nome =
+        document.getElementById(
+            "nomePessoaControle"
+        );
+
+
+    if(origem === "INTEGRANTE") {
+
+
+        campoIntegrante.style.display =
+            "block";
+
+
+        camposExterna.style.display =
+            "none";
+
+
+        integrante.required =
+            true;
+
+
+        nome.required =
+            false;
+
+
+    } else {
+
+
+        campoIntegrante.style.display =
+            "none";
+
+
+        camposExterna.style.display =
+            "block";
+
+
+        integrante.required =
+            false;
+
+
+        nome.required =
+            true;
+
+
+    }
+
+}
+
+
+// =====================================================
+// CALCULAR TOTAL
+// =====================================================
+
+function calcularTotalControle() {
+
+
+    const quantidade =
+        parseFloat(
+            document.getElementById(
+                "quantidadeControle"
+            ).value
+        ) || 0;
+
+
+    let valor =
+        document.getElementById(
+            "valorUnitarioControle"
+        ).value;
+
+
+    valor =
+        valor.replace(/\./g, "");
+
+
+    valor =
+        valor.replace(",", ".");
+
+
+    valor =
+        parseFloat(valor) || 0;
+
+
+    const total =
+        quantidade * valor;
+
+
+    document.getElementById(
+        "valorTotalControle"
+    ).value =
+
+        "R$ " +
+
+        total.toLocaleString(
+            "pt-BR",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
+
+}
+
+
+// =====================================================
+// VALIDAÇÃO
+// =====================================================
+
+function validarEdicaoControle() {
+
+
+    const origem =
+        document.getElementById(
+            "origemPessoaControle"
+        ).value;
+
+
+    const integrante =
+        document.getElementById(
+            "integranteControle"
+        ).value;
+
+
+    const nome =
+        document.getElementById(
+            "nomePessoaControle"
+        ).value.trim();
+
+
+    if(
+        origem === "INTEGRANTE"
+        &&
+        !integrante
+    ) {
+
+        alert(
+            "Selecione o integrante."
+        );
+
+        return false;
+
+    }
+
+
+    if(
+        origem === "EXTERNA"
+        &&
+        !nome
+    ) {
+
+        alert(
+            "Informe o nome da pessoa."
+        );
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+// =====================================================
+// INICIALIZAÇÃO
+// =====================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        alterarOrigemPessoa();
+
+        calcularTotalControle();
+
+    }
+);
+
+
+</script>
+
+
+{% endblock %}
