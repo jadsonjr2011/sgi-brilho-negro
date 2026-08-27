@@ -9703,6 +9703,180 @@ def detalhe_controle_financeiro(id):
 
         db.close()
 
+@app.route("/admin/financeiro/controles/relatorio")
+def relatorio_controles_financeiros():
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # =====================================================
+        # CONTROLES FINANCEIROS
+        # =====================================================
+
+        controles = db.execute(
+            text("""
+                SELECT
+                    c.id,
+                    c.temporada,
+                    c.tipo,
+                    c.descricao,
+                    c.integrante_id,
+                    c.nome_pessoa,
+                    c.telefone,
+                    c.quantidade,
+                    c.tamanho,
+                    c.valor_unitario,
+                    c.valor_total,
+                    c.status,
+                    c.observacao,
+                    c.data_cadastro,
+
+                    COALESCE(
+                        SUM(p.valor),
+                        0
+                    ) AS valor_pago
+
+                FROM controles_financeiros c
+
+                LEFT JOIN controles_financeiros_pagamentos p
+                    ON p.controle_id = c.id
+
+                GROUP BY
+                    c.id,
+                    c.temporada,
+                    c.tipo,
+                    c.descricao,
+                    c.integrante_id,
+                    c.nome_pessoa,
+                    c.telefone,
+                    c.quantidade,
+                    c.tamanho,
+                    c.valor_unitario,
+                    c.valor_total,
+                    c.status,
+                    c.observacao,
+                    c.data_cadastro
+
+                ORDER BY
+                    c.id DESC
+            """)
+        ).fetchall()
+
+
+        # =====================================================
+        # TEMPORADA
+        # =====================================================
+
+        temporada = request.args.get(
+            "temporada",
+            "2026"
+        )
+
+
+        # =====================================================
+        # FILTRAR TEMPORADA
+        # =====================================================
+
+        controles = [
+            item
+            for item in controles
+            if str(item.temporada) == str(temporada)
+        ]
+
+
+        # =====================================================
+        # CONVERTER PARA DICIONÁRIOS
+        # =====================================================
+
+        controles_pdf = []
+
+        for item in controles:
+
+            controles_pdf.append({
+
+                "id": item.id,
+
+                "temporada": item.temporada,
+
+                "tipo": item.tipo,
+
+                "descricao": item.descricao,
+
+                "integrante_id": item.integrante_id,
+
+                "nome_pessoa": item.nome_pessoa,
+
+                "telefone": item.telefone,
+
+                "quantidade": item.quantidade,
+
+                "tamanho": item.tamanho,
+
+                "valor_unitario": item.valor_unitario,
+
+                "valor_total": item.valor_total,
+
+                "valor_pago": item.valor_pago,
+
+                "status": item.status,
+
+                "observacao": item.observacao,
+
+                "data_cadastro": item.data_cadastro
+
+            })
+
+
+        # =====================================================
+        # GERAR PDF
+        # =====================================================
+
+        from utils.pdf_relatorio_controles import (
+            gerar_pdf_relatorio_controles
+        )
+
+
+        pdf = gerar_pdf_relatorio_controles(
+            temporada=temporada,
+            controles=controles_pdf
+        )
+
+
+        # =====================================================
+        # RETORNAR PDF
+        # =====================================================
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=(
+                f"relatorio_controles_financeiros_"
+                f"{temporada}.pdf"
+            )
+        )
+
+
+    except Exception as e:
+
+        print(
+            "ERRO AO GERAR RELATÓRIO DE CONTROLES:",
+            e
+        )
+
+        return redirect(
+            "/admin/financeiro/controles"
+        )
+
+
+    finally:
+
+        db.close()
+
 @app.route(
     "/admin/financeiro/controles/<int:id>/editar",
     methods=["GET", "POST"]
