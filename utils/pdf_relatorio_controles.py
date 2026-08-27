@@ -14,9 +14,10 @@ from reportlab.platypus import (
     Paragraph,
     Spacer,
     Table,
-    TableStyle
+    TableStyle,
+    PageBreak,
+    KeepTogether
 )
-
 
 # =========================================================
 # CONFIGURAÇÕES
@@ -333,31 +334,21 @@ def criar_tabela_resumo(
     dados = [
 
         [
-            "CONTROLES",
+            "PEDIDOS",
             "PAGOS",
             "PARCIAIS",
-            "PENDENTES"
-        ],
-
-        [
-            str(total_controles),
-            str(quantidade_pagos),
-            str(quantidade_parciais),
-            str(quantidade_pendentes)
-        ],
-
-        [
+            "PENDENTES",
             "VALOR PAGO",
-            "VALOR PENDENTE",
-            "",
-            ""
+            "VALOR PENDENTE"
         ],
 
         [
+            quantidade_formatada(total_controles),
+            quantidade_formatada(quantidade_pagos),
+            quantidade_formatada(quantidade_parciais),
+            quantidade_formatada(quantidade_pendentes),
             moeda(total_pago),
-            moeda(total_pendente),
-            "",
-            ""
+            moeda(total_pendente)
         ]
 
     ]
@@ -365,10 +356,12 @@ def criar_tabela_resumo(
     tabela = Table(
         dados,
         colWidths=[
-            42 * mm,
-            42 * mm,
-            42 * mm,
-            42 * mm
+            27 * mm,
+            23 * mm,
+            27 * mm,
+            28 * mm,
+            35 * mm,
+            43 * mm
         ]
     )
 
@@ -400,6 +393,13 @@ def criar_tabela_resumo(
                 "Helvetica-Bold"
             ),
 
+            (
+                "FONTSIZE",
+                (0, 0),
+                (-1, 0),
+                7.5
+            ),
+
             # =================================================
             # VALORES
             # =================================================
@@ -413,16 +413,34 @@ def criar_tabela_resumo(
 
             (
                 "FONTSIZE",
-                (0, 0),
-                (-1, -1),
-                8
+                (0, 1),
+                (-1, 1),
+                9
             ),
+
+            (
+                "TEXTCOLOR",
+                (0, 1),
+                (-1, 1),
+                colors.HexColor("#222222")
+            ),
+
+            # =================================================
+            # ALINHAMENTO
+            # =================================================
 
             (
                 "ALIGN",
                 (0, 0),
                 (-1, -1),
                 "CENTER"
+            ),
+
+            (
+                "ALIGN",
+                (4, 1),
+                (5, 1),
+                "RIGHT"
             ),
 
             (
@@ -433,39 +451,7 @@ def criar_tabela_resumo(
             ),
 
             # =================================================
-            # SEGUNDA LINHA DE RESUMO
-            # =================================================
-
-            (
-                "BACKGROUND",
-                (0, 2),
-                (1, 2),
-                colors.HexColor("#333333")
-            ),
-
-            (
-                "TEXTCOLOR",
-                (0, 2),
-                (1, 2),
-                colors.white
-            ),
-
-            (
-                "FONTNAME",
-                (0, 2),
-                (1, 2),
-                "Helvetica-Bold"
-            ),
-
-            (
-                "FONTNAME",
-                (0, 3),
-                (1, 3),
-                "Helvetica-Bold"
-            ),
-
-            # =================================================
-            # BORDAS
+            # GRADE
             # =================================================
 
             (
@@ -484,17 +470,35 @@ def criar_tabela_resumo(
                 colors.HexColor("#cccccc")
             ),
 
+            # =================================================
+            # ESPAÇAMENTO
+            # =================================================
+
             (
                 "TOPPADDING",
                 (0, 0),
-                (-1, -1),
-                7
+                (-1, 0),
+                6
             ),
 
             (
                 "BOTTOMPADDING",
                 (0, 0),
-                (-1, -1),
+                (-1, 0),
+                6
+            ),
+
+            (
+                "TOPPADDING",
+                (0, 1),
+                (-1, 1),
+                7
+            ),
+
+            (
+                "BOTTOMPADDING",
+                (0, 1),
+                (-1, 1),
                 7
             )
 
@@ -870,6 +874,269 @@ def criar_tabela_controles(controles):
 
 
 # =========================================================
+# TABELA RESUMO POR TAMANHO
+# =========================================================
+
+def criar_tabela_resumo_tamanhos(controles):
+
+    tamanhos_ordem = [
+        "PP",
+        "P",
+        "M",
+        "G",
+        "GG",
+        "XG",
+        "XXG",
+        "XXXL"
+    ]
+
+    quantidades = {}
+
+    for item in controles:
+
+        tamanho = (
+            str(item.get("tamanho") or "-")
+            .strip()
+            .upper()
+        )
+
+        quantidade = item.get("quantidade", 0) or 0
+
+        try:
+            quantidade = float(quantidade)
+        except Exception:
+            quantidade = 0
+
+        quantidades[tamanho] = (
+            quantidades.get(tamanho, 0)
+            + quantidade
+        )
+
+    tamanhos_encontrados = [
+        tamanho
+        for tamanho in tamanhos_ordem
+        if tamanho in quantidades
+    ]
+
+    outros = sorted(
+        [
+            tamanho
+            for tamanho in quantidades
+            if tamanho not in tamanhos_ordem
+        ]
+    )
+
+    tamanhos_finais = (
+        tamanhos_encontrados
+        + outros
+    )
+
+    dados = [
+
+        [
+            "TAM.",
+            "QTD."
+        ]
+
+    ]
+
+    total_quantidade = 0
+
+    for tamanho in tamanhos_finais:
+
+        quantidade = quantidades[tamanho]
+
+        total_quantidade += quantidade
+
+        dados.append([
+
+            tamanho,
+
+            quantidade_formatada(
+                quantidade
+            )
+
+        ])
+
+    dados.append([
+
+        "TOTAL",
+
+        quantidade_formatada(
+            total_quantidade
+        )
+
+    ])
+
+    tabela = Table(
+        dados,
+        colWidths=[
+            35 * mm,
+            35 * mm
+        ],
+        hAlign="LEFT"
+    )
+
+    estilo = [
+
+        # =====================================================
+        # CABEÇALHO
+        # =====================================================
+
+        (
+            "BACKGROUND",
+            (0, 0),
+            (-1, 0),
+            colors.HexColor("#333333")
+        ),
+
+        (
+            "TEXTCOLOR",
+            (0, 0),
+            (-1, 0),
+            colors.white
+        ),
+
+        (
+            "FONTNAME",
+            (0, 0),
+            (-1, 0),
+            "Helvetica-Bold"
+        ),
+
+        (
+            "FONTSIZE",
+            (0, 0),
+            (-1, 0),
+            8
+        ),
+
+        (
+            "ALIGN",
+            (0, 0),
+            (-1, 0),
+            "CENTER"
+        ),
+
+        # =====================================================
+        # CORPO
+        # =====================================================
+
+        (
+            "FONTNAME",
+            (0, 1),
+            (-1, -2),
+            "Helvetica"
+        ),
+
+        (
+            "FONTSIZE",
+            (0, 1),
+            (-1, -2),
+            8
+        ),
+
+        (
+            "ALIGN",
+            (0, 1),
+            (0, -1),
+            "CENTER"
+        ),
+
+        (
+            "ALIGN",
+            (1, 1),
+            (1, -1),
+            "CENTER"
+        ),
+
+        # =====================================================
+        # TOTAL
+        # =====================================================
+
+        (
+            "BACKGROUND",
+            (0, -1),
+            (-1, -1),
+            colors.HexColor("#eeeeee")
+        ),
+
+        (
+            "FONTNAME",
+            (0, -1),
+            (-1, -1),
+            "Helvetica-Bold"
+        ),
+
+        (
+            "FONTSIZE",
+            (0, -1),
+            (-1, -1),
+            8
+        ),
+
+        # =====================================================
+        # GRADE
+        # =====================================================
+
+        (
+            "BOX",
+            (0, 0),
+            (-1, -1),
+            0.5,
+            colors.HexColor("#999999")
+        ),
+
+        (
+            "INNERGRID",
+            (0, 0),
+            (-1, -1),
+            0.25,
+            colors.HexColor("#cccccc")
+        ),
+
+        # =====================================================
+        # ALTERNÂNCIA
+        # =====================================================
+
+        (
+            "ROWBACKGROUNDS",
+            (0, 1),
+            (-1, -2),
+            [
+                colors.white,
+                colors.HexColor("#f5f5f5")
+            ]
+        ),
+
+        # =====================================================
+        # ESPAÇAMENTO
+        # =====================================================
+
+        (
+            "TOPPADDING",
+            (0, 0),
+            (-1, -1),
+            4
+        ),
+
+        (
+            "BOTTOMPADDING",
+            (0, 0),
+            (-1, -1),
+            4
+        )
+
+    ]
+
+    tabela.setStyle(
+        TableStyle(estilo)
+    )
+
+    return tabela
+
+
+# =========================================================
 # GERAR PDF
 # =========================================================
 
@@ -915,10 +1182,33 @@ def gerar_pdf_relatorio_controles(
     controles = controles or []
 
     # =====================================================
+    # ORDENAR CONTROLES POR STATUS
+    # =====================================================
+
+    ordem_status = {
+        "PAGO": 1,
+        "PARCIAL": 2,
+        "PENDENTE": 3,
+        "CANCELADO": 4
+    }
+
+    controles = sorted(
+        controles,
+        key=lambda item: ordem_status.get(
+            item.get("status") or "PENDENTE",
+            3
+        )
+    )
+
+    # =====================================================
     # CALCULAR RESUMO
     # =====================================================
 
-    total_controles = len(controles)
+    # Total de peças/pedidos.
+    # Não considera a quantidade de registros,
+    # e sim a QTD. solicitada em cada controle.
+
+    total_controles = 0
 
     total_valor = 0
     total_pago = 0
@@ -929,6 +1219,26 @@ def gerar_pdf_relatorio_controles(
     quantidade_pendentes = 0
 
     for item in controles:
+
+        # =================================================
+        # QUANTIDADE DO PEDIDO
+        # =================================================
+
+        quantidade = item.get(
+            "quantidade",
+            0
+        ) or 0
+
+        try:
+            quantidade = float(quantidade)
+        except Exception:
+            quantidade = 0
+
+        total_controles += quantidade
+
+        # =================================================
+        # VALORES
+        # =================================================
 
         total = float(
             item.get("valor_total", 0) or 0
@@ -947,26 +1257,32 @@ def gerar_pdf_relatorio_controles(
         total_pago += pago
         total_pendente += restante
 
+        # =================================================
+        # STATUS
+        # =================================================
+
         status = (
             item.get("status")
             or "PENDENTE"
         )
 
         if status == "CANCELADO":
-
             continue
+
+        # Agora os status também consideram a quantidade
+        # de peças, e não apenas a quantidade de registros.
 
         if pago >= total and total > 0:
 
-            quantidade_pagos += 1
+            quantidade_pagos += quantidade
 
         elif pago > 0:
 
-            quantidade_parciais += 1
+            quantidade_parciais += quantidade
 
         else:
 
-            quantidade_pendentes += 1
+            quantidade_pendentes += quantidade
 
     # =====================================================
     # TÍTULO DA SEÇÃO
@@ -1113,6 +1429,33 @@ def gerar_pdf_relatorio_controles(
                 estilos["normal"]
             )
 
+        )
+
+    # =====================================================
+    # RESUMO POR TAMANHO
+    # =====================================================
+
+    if controles:
+
+        resumo_tamanhos = [
+
+            Spacer(1, 12),
+
+            Paragraph(
+                "Resumo por Tamanho",
+                estilos["secao"]
+            ),
+
+            criar_tabela_resumo_tamanhos(
+                controles
+            )
+
+        ]
+
+        elementos.append(
+            KeepTogether(
+                resumo_tamanhos
+            )
         )
 
     # =====================================================
