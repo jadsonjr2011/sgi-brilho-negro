@@ -6,15 +6,94 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
-from collections import OrderedDict
-
 from reportlab.platypus import (
     Paragraph,
     SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
-    PageBreak,
+)
+
+
+# =========================================================
+# CONFIGURAÇÃO DA RIFA
+# =========================================================
+#
+# ALTERE SOMENTE ESTES CAMPOS
+# =========================================================
+
+VALOR_POR_NUMERO = 2.00
+
+# Quantidade de pessoas que receberão rifas
+QUANTIDADE_PESSOAS = 50
+
+# Quantidade de rifas que cada pessoa receberá
+RIFAS_POR_PESSOA = 25
+
+# Número onde a sequência começa
+NUMERO_INICIAL = 2321
+
+# Nome que aparecerá nas rifas
+VENDEDOR = "Brilho Negro"
+
+PREMIO = "Prêmio da Rifa"
+
+DATA_SORTEIO = "03/09/2026"
+
+
+# =========================================================
+# CÁLCULO AUTOMÁTICO
+# =========================================================
+
+TOTAL_RIFAS = (
+    QUANTIDADE_PESSOAS
+    * RIFAS_POR_PESSOA
+)
+
+NUMERO_FINAL = (
+    NUMERO_INICIAL
+    + TOTAL_RIFAS
+    - 1
+)
+
+
+# =========================================================
+# CAMINHOS
+# =========================================================
+
+PASTA_PROGRAMA = os.path.dirname(
+    os.path.abspath(__file__)
+)
+
+
+# A pasta static/img fica junto do .py
+PASTA_LOGO = os.path.join(
+    PASTA_PROGRAMA,
+    "static",
+    "img"
+)
+
+
+CAMINHO_LOGO = os.path.join(
+    PASTA_LOGO,
+    "logo_transparente.png"
+)
+
+
+# =========================================================
+# NOME DO ARQUIVO
+# =========================================================
+
+NOME_ARQUIVO = (
+    f"rifas_avulsas_"
+    f"{NUMERO_INICIAL:03d}_a_"
+    f"{NUMERO_FINAL:03d}.pdf"
+)
+
+
+CAMINHO_PDF = os.path.join(
+    PASTA_PROGRAMA,
+    NOME_ARQUIVO
 )
 
 
@@ -91,7 +170,7 @@ class TabelaRifaComLogo(Table):
         canvas.saveState()
 
         # =====================================================
-        # LOGO
+        # TAMANHO DA LOGO
         # =====================================================
 
         tamanho_logo = min(
@@ -105,8 +184,11 @@ class TabelaRifaComLogo(Table):
         # =====================================================
 
         try:
+
             canvas.setFillAlpha(0.10)
+
         except Exception:
+
             pass
 
         # =====================================================
@@ -114,11 +196,13 @@ class TabelaRifaComLogo(Table):
         # =====================================================
 
         y = (
-            self.altura_rifa - tamanho_logo
+            self.altura_rifa
+            - tamanho_logo
         ) / 2
 
         x_canhoto = (
-            self.largura_canhoto - tamanho_logo
+            self.largura_canhoto
+            - tamanho_logo
         ) / 2
 
         # =====================================================
@@ -139,79 +223,53 @@ class TabelaRifaComLogo(Table):
 
 
 # =========================================================
-# GERAR PDF DA RIFA
+# GERAR PDF
 # =========================================================
 
-def gerar_pdf_rifa(rifa, numeros):
-
-    """
-    Gera PDF das rifas.
-
-    Layout:
-
-    A4 retrato
-
-    Duas rifas lado a lado.
-
-    Cada rifa possui:
-
-    - Canhoto maior
-    - Comprovante menor
-    - Número em destaque
-    - Vendedor com primeiro e segundo nome
-    - Campo NOME
-    - Campo TEL
-    - Campo ENDEREÇO
-    - Prêmio
-    - Valor
-    - Data do sorteio
-
-    Altura reduzida para permitir aproximadamente
-    11 rifas por coluna.
-    """
+def gerar_pdf_rifas_avulsas():
 
     buffer = BytesIO()
 
-    # =========================================================
+    # =====================================================
     # TAMANHO DA PÁGINA
-    # =========================================================
+    # =====================================================
 
     largura_pagina, altura_pagina = A4
 
-    # =========================================================
+    # =====================================================
     # MARGENS
-    # =========================================================
+    # =====================================================
 
     margem_horizontal = 3 * mm
     margem_vertical = 3 * mm
 
-    # =========================================================
-    # ESPAÇO ENTRE AS DUAS RIFAS
-    # =========================================================
+    # =====================================================
+    # ESPAÇAMENTO ENTRE RIFAS
+    # =====================================================
 
     espacamento_colunas = 3 * mm
 
-    # =========================================================
+    # =====================================================
     # LARGURA UTILIZÁVEL
-    # =========================================================
+    # =====================================================
 
     largura_util = (
         largura_pagina
         - (2 * margem_horizontal)
     )
 
-    # =========================================================
+    # =====================================================
     # LARGURA DE CADA RIFA
-    # =========================================================
+    # =====================================================
 
     largura_rifa = (
         largura_util
         - espacamento_colunas
     ) / 2
 
-    # =========================================================
+    # =====================================================
     # DOCUMENTO
-    # =========================================================
+    # =====================================================
 
     doc = SimpleDocTemplate(
         buffer,
@@ -224,43 +282,23 @@ def gerar_pdf_rifa(rifa, numeros):
 
     estilos = getSampleStyleSheet()
 
-    # =========================================================
+    # =====================================================
     # ALTURA DA RIFA
-    # =========================================================
-    #
-    # 23 mm permite aproximadamente 11 rifas por coluna,
-    # mantendo uma pequena folga para separação.
-    #
+    # =====================================================
 
-    altura_rifa = 23 * mm
+    altura_rifa = 24 * mm
 
-    # =========================================================
-    # ESTILO GERAL
-    # =========================================================
-
-    estilo_rifa = ParagraphStyle(
-        "RifaTitulo",
-        parent=estilos["Normal"],
-        alignment=1,
-        fontName="Helvetica-Bold",
-        fontSize=8,
-        leading=8,
-        textColor=colors.HexColor("#1a252f"),
-        spaceAfter=0,
-        spaceBefore=0,
-    )
-
-    # =========================================================
-    # VENDEDOR
-    # =========================================================
+    # =====================================================
+    # ESTILOS
+    # =====================================================
 
     estilo_vendedor_label = ParagraphStyle(
         "VendedorLabel",
         parent=estilos["Normal"],
         alignment=0,
         fontName="Helvetica-Bold",
-        fontSize=5,
-        leading=5,
+        fontSize=6,
+        leading=6,
         textColor=colors.HexColor("#6c757d"),
         spaceAfter=0,
         spaceBefore=0,
@@ -271,32 +309,32 @@ def gerar_pdf_rifa(rifa, numeros):
         parent=estilos["Normal"],
         alignment=0,
         fontName="Helvetica-Bold",
-        fontSize=7,
-        leading=7,
+        fontSize=7.5,
+        leading=7.5,
         textColor=colors.HexColor("#1a252f"),
         spaceAfter=0,
         spaceBefore=0,
     )
 
-    # =========================================================
-    # CAMPOS DO CANHOTO
-    # =========================================================
+    # =====================================================
+    # CAMPOS NOME / TEL / ENDEREÇO
+    # =====================================================
 
     estilo_campo = ParagraphStyle(
         "Campo",
         parent=estilos["Normal"],
         alignment=0,
-        fontName="Helvetica",
-        fontSize=5.5,
-        leading=5.5,
-        textColor=colors.HexColor("#495057"),
+        fontName="Helvetica-Bold",
+        fontSize=6.5,
+        leading=6.5,
+        textColor=colors.HexColor("#343a40"),
         spaceAfter=0,
         spaceBefore=0,
     )
 
-    # =========================================================
-    # NÚMERO DO COMPROVANTE
-    # =========================================================
+    # =====================================================
+    # NÚMERO
+    # =====================================================
 
     estilo_numero_principal = ParagraphStyle(
         "NumeroPrincipal",
@@ -310,132 +348,74 @@ def gerar_pdf_rifa(rifa, numeros):
         spaceBefore=0,
     )
 
-    # =========================================================
-    # INFORMAÇÕES DO COMPROVANTE
-    # =========================================================
+    # =====================================================
+    # PRÊMIO
+    # =====================================================
 
     estilo_premio = ParagraphStyle(
         "Premio",
         parent=estilos["Normal"],
         alignment=1,
         fontName="Helvetica-Bold",
-        fontSize=5.7,
-        leading=6,
+        fontSize=8,
+        leading=8.5,
         textColor=colors.HexColor("#2c3e50"),
         spaceAfter=0,
         spaceBefore=0,
     )
 
-    estilo_valor_principal = ParagraphStyle(
-        "ValorPrincipal",
-        parent=estilos["Normal"],
-        alignment=1,
-        fontName="Helvetica-Bold",
-        fontSize=5.8,
-        leading=6,
-        textColor=colors.HexColor("#1a252f"),
-        spaceAfter=0,
-        spaceBefore=0,
-    )
+    # =====================================================
+    # DATA
+    # =====================================================
 
     estilo_data = ParagraphStyle(
         "Data",
         parent=estilos["Normal"],
         alignment=1,
         fontName="Helvetica-Bold",
-        fontSize=5.5,
-        leading=6,
+        fontSize=7.5,
+        leading=8,
         textColor=colors.HexColor("#495057"),
         spaceAfter=0,
         spaceBefore=0,
     )
 
-    # =========================================================
-    # DADOS DA RIFA
-    # =========================================================
+    # =====================================================
+    # VALOR FORMATADO
+    # =====================================================
 
-    valor = rifa.get("valor_numero") or 0
-
-    try:
-
-        valor_formatado = (
-            f"{float(valor):,.2f}"
-            .replace(",", "X")
-            .replace(".", ",")
-            .replace("X", ".")
-        )
-
-    except Exception:
-
-        valor_formatado = "0,00"
-
-    data_sorteio = rifa.get("data_sorteio")
-
-    if data_sorteio:
-
-        data_sorteio = data_sorteio.strftime(
-            "%d/%m/%Y"
-        )
-
-    else:
-
-        data_sorteio = "-"
-
-    premio = rifa.get("premio") or "-"
-
-    # =========================================================
-    # LOGO
-    # =========================================================
-
-    raiz_projeto = os.path.dirname(
-        os.path.dirname(
-            os.path.abspath(__file__)
-        )
+    valor_formatado = (
+        f"{VALOR_POR_NUMERO:,.2f}"
+        .replace(",", "X")
+        .replace(".", ",")
+        .replace("X", ".")
     )
 
-    caminho_logo = os.path.join(
-        raiz_projeto,
-        "static",
-        "img",
-        "logo_transparente.png",
-    )
+    # =====================================================
+    # DIMENSÕES
+    # =====================================================
 
-    # =========================================================
-    # NÚMEROS
-    # =========================================================
-
-    numeros_para_imprimir = [
-        numero
-        for numero in numeros
-        if numero.get("numero") is not None
-    ]
-
-    elementos = []
-
-    # =========================================================
-    # DIMENSÕES DA RIFA
-    # =========================================================
-
-    # Canhoto maior
     largura_canhoto = 56 * mm
 
-    # Comprovante menor
     largura_principal = (
         largura_rifa
         - largura_canhoto
     )
 
-    # =========================================================
-    # LIMITAR NOME DO VENDEDOR
-    # =========================================================
+    # =====================================================
+    # NOME DO VENDEDOR
+    # =====================================================
 
     def nome_curto_vendedor(nome):
 
         if not nome:
-
             return "SEM VENDEDOR"
 
-        partes = str(nome).strip().split()
+        partes = (
+            str(nome)
+            .strip()
+            .split()
+        )
 
         if len(partes) >= 2:
 
@@ -450,29 +430,104 @@ def gerar_pdf_rifa(rifa, numeros):
 
         return "SEM VENDEDOR"
 
-    # =========================================================
-    # CRIAR BILHETE
-    # =========================================================
+    # =====================================================
+    # CAMPO COM LINHA
+    # =====================================================
+
+    def criar_campo_linha(
+        texto,
+        altura=3.5 * mm
+    ):
+
+        return Table(
+            [
+                [
+                    Paragraph(
+                        texto,
+                        estilo_campo,
+                    )
+                ]
+            ],
+
+            colWidths=[
+                largura_canhoto - 4 * mm
+            ],
+
+            rowHeights=[
+                altura
+            ],
+
+            style=TableStyle([
+
+                (
+                    "LINEBELOW",
+                    (0, 0),
+                    (-1, -1),
+                    0.6,
+                    colors.black,
+                ),
+
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "BOTTOM",
+                ),
+
+            ]),
+        )
+
+    # =====================================================
+    # CRIAR UMA RIFA
+    # =====================================================
 
     def criar_bilhete(numero):
 
         numero_formatado = (
-            f"{int(numero['numero']):03d}"
+            f"{int(numero):03d}"
         )
 
-        vendedor_nome = nome_curto_vendedor(
-            numero.get("vendedor_nome")
+        vendedor_nome = (
+            nome_curto_vendedor(VENDEDOR)
         )
 
-        # =====================================================
+        # =================================================
         # CANHOTO
-        # =====================================================
+        # =================================================
 
         conteudo_canhoto = [
 
-            # -------------------------------------------------
+            # =================================================
             # VENDEDOR + NÚMERO
-            # -------------------------------------------------
+            # =================================================
 
             Table(
                 [
@@ -484,6 +539,7 @@ def gerar_pdf_rifa(rifa, numeros):
 
                         Paragraph(
                             f"Nº {numero_formatado}",
+
                             ParagraphStyle(
                                 "NumeroCanhoto",
                                 parent=estilo_numero_principal,
@@ -544,9 +600,9 @@ def gerar_pdf_rifa(rifa, numeros):
                 ]),
             ),
 
-            # -------------------------------------------------
+            # =================================================
             # NOME DO VENDEDOR
-            # -------------------------------------------------
+            # =================================================
 
             Paragraph(
                 vendedor_nome,
@@ -555,71 +611,21 @@ def gerar_pdf_rifa(rifa, numeros):
 
             Spacer(
                 1,
-                0.15 * mm,
+                0.3 * mm,
             ),
 
-            # -------------------------------------------------
+            # =================================================
             # NOME
-            # -------------------------------------------------
+            # =================================================
 
-            Table(
-                [
-                    [
-                        Paragraph(
-                            "NOME:",
-                            estilo_campo,
-                        )
-                    ]
-                ],
-
-                colWidths=[
-                    largura_canhoto - 4 * mm
-                ],
-
-                rowHeights=[
-                    2.7 * mm
-                ],
-
-                style=TableStyle([
-
-                    (
-                        "LINEBELOW",
-                        (0, 0),
-                        (-1, -1),
-                        0.5,
-                        colors.black,
-                    ),
-
-                    (
-                        "LEFTPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "RIGHTPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "TOPPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "BOTTOMPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                ]),
+            criar_campo_linha(
+                "NOME:",
+                3.8 * mm
             ),
+
+            # =================================================
+            # ESPAÇO PARA PREENCHER NOME
+            # =================================================
 
             Table(
                 [[""]],
@@ -629,7 +635,7 @@ def gerar_pdf_rifa(rifa, numeros):
                 ],
 
                 rowHeights=[
-                    2.5 * mm
+                    3.0 * mm
                 ],
 
                 style=TableStyle([
@@ -638,138 +644,34 @@ def gerar_pdf_rifa(rifa, numeros):
                         "LINEBELOW",
                         (0, 0),
                         (-1, -1),
-                        0.5,
+                        0.6,
                         colors.black,
                     ),
 
                 ]),
             ),
 
-            # -------------------------------------------------
+            # =================================================
             # TELEFONE
-            # -------------------------------------------------
+            # =================================================
 
-            Table(
-                [
-                    [
-                        Paragraph(
-                            "TEL:",
-                            estilo_campo,
-                        )
-                    ]
-                ],
-
-                colWidths=[
-                    largura_canhoto - 4 * mm
-                ],
-
-                rowHeights=[
-                    2.7 * mm
-                ],
-
-                style=TableStyle([
-
-                    (
-                        "LINEBELOW",
-                        (0, 0),
-                        (-1, -1),
-                        0.5,
-                        colors.black,
-                    ),
-
-                    (
-                        "LEFTPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "RIGHTPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "TOPPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "BOTTOMPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                ]),
+            criar_campo_linha(
+                "TEL:",
+                3.8 * mm
             ),
 
-            # -------------------------------------------------
+            # =================================================
             # ENDEREÇO
-            # -------------------------------------------------
+            # =================================================
 
-            Table(
-                [
-                    [
-                        Paragraph(
-                            "ENDEREÇO:",
-                            estilo_campo,
-                        )
-                    ]
-                ],
-
-                colWidths=[
-                    largura_canhoto - 4 * mm
-                ],
-
-                rowHeights=[
-                    2.7 * mm
-                ],
-
-                style=TableStyle([
-
-                    (
-                        "LINEBELOW",
-                        (0, 0),
-                        (-1, -1),
-                        0.5,
-                        colors.black,
-                    ),
-
-                    (
-                        "LEFTPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "RIGHTPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "TOPPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                    (
-                        "BOTTOMPADDING",
-                        (0, 0),
-                        (-1, -1),
-                        0,
-                    ),
-
-                ]),
+            criar_campo_linha(
+                "ENDEREÇO:",
+                3.8 * mm
             ),
+
+            # =================================================
+            # ESPAÇO FINAL
+            # =================================================
 
             Table(
                 [[""]],
@@ -779,7 +681,7 @@ def gerar_pdf_rifa(rifa, numeros):
                 ],
 
                 rowHeights=[
-                    2.3 * mm
+                    3.0 * mm
                 ],
 
                 style=TableStyle([
@@ -788,7 +690,7 @@ def gerar_pdf_rifa(rifa, numeros):
                         "LINEBELOW",
                         (0, 0),
                         (-1, -1),
-                        0.5,
+                        0.6,
                         colors.black,
                     ),
 
@@ -796,16 +698,16 @@ def gerar_pdf_rifa(rifa, numeros):
             ),
         ]
 
-        # =====================================================
+        # =================================================
         # COMPROVANTE
-        # =====================================================
+        # =================================================
 
         principal = Table(
             [
 
-                # -------------------------------------------------
+                # =================================================
                 # NÚMERO
-                # -------------------------------------------------
+                # =================================================
 
                 [
                     Paragraph(
@@ -814,24 +716,24 @@ def gerar_pdf_rifa(rifa, numeros):
                     )
                 ],
 
-                # -------------------------------------------------
-                # PRÊMIO + VALOR NA MESMA LINHA
-                # -------------------------------------------------
+                # =================================================
+                # PRÊMIO + VALOR
+                # =================================================
 
                 [
                     Paragraph(
-                        f"🏆 Prêmio  R$ {valor_formatado}",
+                        f"🏆 {PREMIO}  R$ {valor_formatado}",
                         estilo_premio,
                     )
                 ],
 
-                # -------------------------------------------------
-                # DATA NA MESMA LINHA
-                # -------------------------------------------------
+                # =================================================
+                # DATA
+                # =================================================
 
                 [
                     Paragraph(
-                        f"📅 Sorteio  {data_sorteio}",
+                        f"📅 Sorteio  {DATA_SORTEIO}",
                         estilo_data,
                     )
                 ],
@@ -844,8 +746,8 @@ def gerar_pdf_rifa(rifa, numeros):
 
             rowHeights=[
                 7 * mm,
+                7 * mm,
                 6 * mm,
-                5 * mm,
             ],
         )
 
@@ -897,9 +799,9 @@ def gerar_pdf_rifa(rifa, numeros):
             ])
         )
 
-        # =====================================================
+        # =================================================
         # RIFA COMPLETA
-        # =====================================================
+        # =================================================
 
         tabela = TabelaRifaComLogo(
 
@@ -919,7 +821,7 @@ def gerar_pdf_rifa(rifa, numeros):
                 altura_rifa
             ],
 
-            caminho_logo=caminho_logo,
+            caminho_logo=CAMINHO_LOGO,
 
             largura_canhoto=largura_canhoto,
 
@@ -932,20 +834,12 @@ def gerar_pdf_rifa(rifa, numeros):
         tabela.setStyle(
             TableStyle([
 
-                # =================================================
-                # FUNDO DO CANHOTO
-                # =================================================
-
                 (
                     "BACKGROUND",
                     (0, 0),
                     (0, 0),
                     colors.HexColor("#f8f9fa"),
                 ),
-
-                # =================================================
-                # BORDA EXTERNA
-                # =================================================
 
                 (
                     "BOX",
@@ -955,10 +849,6 @@ def gerar_pdf_rifa(rifa, numeros):
                     colors.HexColor("#1a252f"),
                 ),
 
-                # =================================================
-                # DIVISÃO CANHOTO / COMPROVANTE
-                # =================================================
-
                 (
                     "LINEAFTER",
                     (0, 0),
@@ -967,20 +857,12 @@ def gerar_pdf_rifa(rifa, numeros):
                     colors.HexColor("#6c757d"),
                 ),
 
-                # =================================================
-                # ALINHAMENTO
-                # =================================================
-
                 (
                     "VALIGN",
                     (0, 0),
                     (-1, -1),
                     "TOP",
                 ),
-
-                # =================================================
-                # PADDING
-                # =================================================
 
                 (
                     "LEFTPADDING",
@@ -1015,158 +897,37 @@ def gerar_pdf_rifa(rifa, numeros):
 
         return tabela
 
-    # =========================================================
-    # AGRUPAR POR VENDEDOR
-    # =========================================================
+    # =====================================================
+    # ELEMENTOS DO PDF
+    # =====================================================
 
-    grupos_vendedores = OrderedDict()
+    elementos = []
 
-    for numero in numeros_para_imprimir:
+    # =====================================================
+    # GERAR TODOS OS NÚMEROS
+    # =====================================================
 
-        vendedor_nome = (
-            numero.get("vendedor_nome")
-            or "SEM VENDEDOR"
+    numeros = range(
+        NUMERO_INICIAL,
+        NUMERO_FINAL + 1
+    )
+
+    linha_rifas = []
+
+    for numero in numeros:
+
+        linha_rifas.append(
+            criar_bilhete(numero)
         )
 
-        if vendedor_nome not in grupos_vendedores:
-
-            grupos_vendedores[vendedor_nome] = []
-
-        grupos_vendedores[vendedor_nome].append(
-            numero
-        )
-
-    # =========================================================
-    # GERAR PDF
-    # =========================================================
-
-    primeiro_grupo = True
-
-    for vendedor_nome, numeros_vendedor in grupos_vendedores.items():
-
-        # =====================================================
-        # NOVA PÁGINA PARA CADA VENDEDOR
-        # =====================================================
-
-        if not primeiro_grupo:
-
-            elementos.append(
-                PageBreak()
-            )
-
-        primeiro_grupo = False
-
-        # =====================================================
+        # =================================================
         # DUAS RIFAS POR LINHA
-        # =====================================================
+        # =================================================
 
-        linha_rifas = []
-
-        for numero in numeros_vendedor:
-
-            linha_rifas.append(
-                criar_bilhete(numero)
-            )
-
-            # =================================================
-            # FECHA COM DUAS RIFAS
-            # =================================================
-
-            if len(linha_rifas) == 2:
-
-                linha = Table(
-                    [
-                        linha_rifas
-                    ],
-
-                    colWidths=[
-                        largura_rifa,
-                        largura_rifa,
-                    ],
-
-                    rowHeights=[
-                        altura_rifa
-                    ],
-
-                    hAlign="LEFT",
-
-                    spaceBefore=0,
-
-                    spaceAfter=0,
-                )
-
-                linha.setStyle(
-                    TableStyle([
-
-                        (
-                            "LEFTPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-
-                        (
-                            "RIGHTPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-
-                        (
-                            "TOPPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-
-                        (
-                            "BOTTOMPADDING",
-                            (0, 0),
-                            (-1, -1),
-                            0,
-                        ),
-
-                        # =================================================
-                        # ESPAÇO ENTRE AS RIFAS
-                        # =================================================
-
-                        (
-                            "LEFTPADDING",
-                            (1, 0),
-                            (1, 0),
-                            espacamento_colunas,
-                        ),
-
-                    ])
-                )
-
-                elementos.append(
-                    linha
-                )
-
-                # Espaço mínimo entre linhas
-                elementos.append(
-                    Spacer(
-                        1,
-                        0.8 * mm,
-                    )
-                )
-
-                linha_rifas = []
-
-        # =====================================================
-        # ÚLTIMA RIFA ÍMPAR
-        # =====================================================
-
-        if linha_rifas:
+        if len(linha_rifas) == 2:
 
             linha = Table(
-                [
-                    [
-                        linha_rifas[0],
-                        "",
-                    ]
-                ],
+                [linha_rifas],
 
                 colWidths=[
                     largura_rifa,
@@ -1178,6 +939,10 @@ def gerar_pdf_rifa(rifa, numeros):
                 ],
 
                 hAlign="LEFT",
+
+                spaceBefore=0,
+
+                spaceAfter=0,
             )
 
             linha.setStyle(
@@ -1211,32 +976,245 @@ def gerar_pdf_rifa(rifa, numeros):
                         0,
                     ),
 
+                    (
+                        "LEFTPADDING",
+                        (1, 0),
+                        (1, 0),
+                        espacamento_colunas,
+                    ),
+
                 ])
             )
 
+            elementos.append(linha)
+
             elementos.append(
-                linha
+                Spacer(
+                    1,
+                    0.8 * mm,
+                )
             )
 
-    # =========================================================
-    # SEM NÚMEROS
-    # =========================================================
+            linha_rifas = []
 
-    if not numeros_para_imprimir:
+    # =====================================================
+    # ÚLTIMA RIFA ÍMPAR
+    # =====================================================
 
-        elementos.append(
-            Paragraph(
-                "Nenhum número disponível para geração da rifa.",
-                estilo_rifa,
-            )
+    if linha_rifas:
+
+        linha = Table(
+            [
+                [
+                    linha_rifas[0],
+                    "",
+                ]
+            ],
+
+            colWidths=[
+                largura_rifa,
+                largura_rifa,
+            ],
+
+            rowHeights=[
+                altura_rifa
+            ],
+
+            hAlign="LEFT",
         )
 
-    # =========================================================
+        linha.setStyle(
+            TableStyle([
+
+                (
+                    "LEFTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "RIGHTPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    0,
+                ),
+
+            ])
+        )
+
+        elementos.append(linha)
+
+    # =====================================================
     # GERAR PDF
-    # =========================================================
+    # =====================================================
 
     doc.build(elementos)
 
     buffer.seek(0)
 
-    return buffer
+    with open(
+        CAMINHO_PDF,
+        "wb"
+    ) as arquivo:
+
+        arquivo.write(
+            buffer.getvalue()
+        )
+
+    return CAMINHO_PDF
+
+
+# =========================================================
+# EXECUÇÃO DIRETA
+# =========================================================
+
+if __name__ == "__main__":
+
+    print()
+    print("=" * 65)
+    print("             GERADOR DE RIFAS AVULSAS")
+    print("=" * 65)
+    print()
+
+    print(
+        f"Valor por número      : R$ {VALOR_POR_NUMERO:.2f}"
+    )
+
+    print(
+        f"Quantidade de pessoas : {QUANTIDADE_PESSOAS}"
+    )
+
+    print(
+        f"Rifas por pessoa      : {RIFAS_POR_PESSOA}"
+    )
+
+    print(
+        f"Total de rifas        : {TOTAL_RIFAS}"
+    )
+
+    print(
+        f"Número inicial        : {NUMERO_INICIAL:03d}"
+    )
+
+    print(
+        f"Número final          : {NUMERO_FINAL:03d}"
+    )
+
+    print(
+        f"Vendedor              : {VENDEDOR}"
+    )
+
+    print(
+        f"Prêmio                : {PREMIO}"
+    )
+
+    print(
+        f"Data do sorteio       : {DATA_SORTEIO}"
+    )
+
+    print()
+
+    # =====================================================
+    # CONFERÊNCIA
+    # =====================================================
+
+    print(
+        f"Distribuição          : "
+        f"{QUANTIDADE_PESSOAS} pessoas x "
+        f"{RIFAS_POR_PESSOA} rifas"
+    )
+
+    print(
+        f"                       = {TOTAL_RIFAS} rifas"
+    )
+
+    print()
+
+    # =====================================================
+    # VERIFICAR LOGO
+    # =====================================================
+
+    if not os.path.exists(CAMINHO_LOGO):
+
+        print("AVISO: Logo não encontrada!")
+        print()
+        print("Esperado em:")
+        print(CAMINHO_LOGO)
+        print()
+
+    else:
+
+        print("Logo encontrada.")
+
+    # =====================================================
+    # GERAR
+    # =====================================================
+
+    try:
+
+        caminho = gerar_pdf_rifas_avulsas()
+
+        print()
+        print("=" * 65)
+        print("              PDF GERADO COM SUCESSO!")
+        print("=" * 65)
+        print()
+
+        print("Arquivo:")
+        print(caminho)
+
+        print()
+
+        print(
+            f"Total de rifas: {TOTAL_RIFAS}"
+        )
+
+        print(
+            f"Sequência: "
+            f"{NUMERO_INICIAL:03d} "
+            f"até "
+            f"{NUMERO_FINAL:03d}"
+        )
+
+        print()
+
+        print(
+            f"Cada pessoa recebe: "
+            f"{RIFAS_POR_PESSOA} rifas"
+        )
+
+        print(
+            f"Quantidade de pessoas: "
+            f"{QUANTIDADE_PESSOAS}"
+        )
+
+        print()
+
+        print("=" * 65)
+
+    except Exception as erro:
+
+        print()
+        print("=" * 65)
+        print("                ERRO AO GERAR O PDF")
+        print("=" * 65)
+        print()
+
+        print(erro)
+
+        print()

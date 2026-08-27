@@ -1,0 +1,1542 @@
+[1mdiff --git a/templates/admin/movimentacoes.html b/templates/admin/movimentacoes.html[m
+[1mindex 092d7d9..cb83a9d 100644[m
+[1m--- a/templates/admin/movimentacoes.html[m
+[1m+++ b/templates/admin/movimentacoes.html[m
+[36m@@ -15,11 +15,13 @@[m [mMovimentações Financeiras[m
+ [m
+ <div class="d-flex justify-content-between align-items-center mb-3">[m
+ [m
+[32m+[m[32m    <h2 class="titulo mb-0">[m
+[32m+[m[32m        📋 Movimentações Financeiras[m
+[32m+[m[32m    </h2>[m
+ [m
+[31m-<h2 class="titulo">[m
+[31m-📋 Movimentações Financeiras[m
+[31m-</h2>[m
+[31m-[m
+[32m+[m[32m    <a href="/admin/financeiro" class="btn btn-secondary">[m
+[32m+[m[32m        ← Voltar[m
+[32m+[m[32m    </a>[m
+ [m
+ </div>[m
+ [m
+[1mdiff --git a/utils/pdf_rifa_avulsa.py b/utils/pdf_rifa_avulsa.py[m
+[1mindex ae1f9e8..eb62d18 100644[m
+[1m--- a/utils/pdf_rifa_avulsa.py[m
+[1m+++ b/utils/pdf_rifa_avulsa.py[m
+[36m@@ -6,15 +6,94 @@[m [mfrom reportlab.lib.pagesizes import A4[m
+ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet[m
+ from reportlab.lib.units import mm[m
+ from reportlab.lib.utils import ImageReader[m
+[31m-from collections import OrderedDict[m
+[31m-[m
+ from reportlab.platypus import ([m
+     Paragraph,[m
+     SimpleDocTemplate,[m
+     Spacer,[m
+     Table,[m
+     TableStyle,[m
+[31m-    PageBreak,[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# =========================================================[m
+[32m+[m[32m# CONFIGURAÇÃO DA RIFA[m
+[32m+[m[32m# =========================================================[m
+[32m+[m[32m#[m
+[32m+[m[32m# ALTERE SOMENTE ESTES CAMPOS[m
+[32m+[m[32m# =========================================================[m
+[32m+[m
+[32m+[m[32mVALOR_POR_NUMERO = 2.00[m
+[32m+[m
+[32m+[m[32m# Quantidade de pessoas que receberão rifas[m
+[32m+[m[32mQUANTIDADE_PESSOAS = 50[m
+[32m+[m
+[32m+[m[32m# Quantidade de rifas que cada pessoa receberá[m
+[32m+[m[32mRIFAS_POR_PESSOA = 25[m
+[32m+[m
+[32m+[m[32m# Número onde a sequência começa[m
+[32m+[m[32mNUMERO_INICIAL = 2321[m
+[32m+[m
+[32m+[m[32m# Nome que aparecerá nas rifas[m
+[32m+[m[32mVENDEDOR = "Brilho Negro"[m
+[32m+[m
+[32m+[m[32mPREMIO = "Prêmio da Rifa"[m
+[32m+[m
+[32m+[m[32mDATA_SORTEIO = "03/09/2026"[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# =========================================================[m
+[32m+[m[32m# CÁLCULO AUTOMÁTICO[m
+[32m+[m[32m# =========================================================[m
+[32m+[m
+[32m+[m[32mTOTAL_RIFAS = ([m
+[32m+[m[32m    QUANTIDADE_PESSOAS[m
+[32m+[m[32m    * RIFAS_POR_PESSOA[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m[32mNUMERO_FINAL = ([m
+[32m+[m[32m    NUMERO_INICIAL[m
+[32m+[m[32m    + TOTAL_RIFAS[m
+[32m+[m[32m    - 1[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# =========================================================[m
+[32m+[m[32m# CAMINHOS[m
+[32m+[m[32m# =========================================================[m
+[32m+[m
+[32m+[m[32mPASTA_PROGRAMA = os.path.dirname([m
+[32m+[m[32m    os.path.abspath(__file__)[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# A pasta static/img fica junto do .py[m
+[32m+[m[32mPASTA_LOGO = os.path.join([m
+[32m+[m[32m    PASTA_PROGRAMA,[m
+[32m+[m[32m    "static",[m
+[32m+[m[32m    "img"[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mCAMINHO_LOGO = os.path.join([m
+[32m+[m[32m    PASTA_LOGO,[m
+[32m+[m[32m    "logo_transparente.png"[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# =========================================================[m
+[32m+[m[32m# NOME DO ARQUIVO[m
+[32m+[m[32m# =========================================================[m
+[32m+[m
+[32m+[m[32mNOME_ARQUIVO = ([m
+[32m+[m[32m    f"rifas_avulsas_"[m
+[32m+[m[32m    f"{NUMERO_INICIAL:03d}_a_"[m
+[32m+[m[32m    f"{NUMERO_FINAL:03d}.pdf"[m
+[32m+[m[32m)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mCAMINHO_PDF = os.path.join([m
+[32m+[m[32m    PASTA_PROGRAMA,[m
+[32m+[m[32m    NOME_ARQUIVO[m
+ )[m
+ [m
+ [m
+[36m@@ -91,7 +170,7 @@[m [mclass TabelaRifaComLogo(Table):[m
+         canvas.saveState()[m
+ [m
+         # =====================================================[m
+[31m-        # LOGO[m
+[32m+[m[32m        # TAMANHO DA LOGO[m
+         # =====================================================[m
+ [m
+         tamanho_logo = min([m
+[36m@@ -105,8 +184,11 @@[m [mclass TabelaRifaComLogo(Table):[m
+         # =====================================================[m
+ [m
+         try:[m
+[32m+[m
+             canvas.setFillAlpha(0.10)[m
+[32m+[m
+         except Exception:[m
+[32m+[m
+             pass[m
+ [m
+         # =====================================================[m
+[36m@@ -114,11 +196,13 @@[m [mclass TabelaRifaComLogo(Table):[m
+         # =====================================================[m
+ [m
+         y = ([m
+[31m-            self.altura_rifa - tamanho_logo[m
+[32m+[m[32m            self.altura_rifa[m
+[32m+[m[32m            - tamanho_logo[m
+         ) / 2[m
+ [m
+         x_canhoto = ([m
+[31m-            self.largura_canhoto - tamanho_logo[m
+[32m+[m[32m            self.largura_canhoto[m
+[32m+[m[32m            - tamanho_logo[m
+         ) / 2[m
+ [m
+         # =====================================================[m
+[36m@@ -139,79 +223,53 @@[m [mclass TabelaRifaComLogo(Table):[m
+ [m
+ [m
+ # =========================================================[m
+[31m-# GERAR PDF DA RIFA[m
+[32m+[m[32m# GERAR PDF[m
+ # =========================================================[m
+ [m
+[31m-def gerar_pdf_rifa(rifa, numeros):[m
+[31m-[m
+[31m-    """[m
+[31m-    Gera PDF das rifas.[m
+[31m-[m
+[31m-    Layout:[m
+[31m-[m
+[31m-    A4 retrato[m
+[31m-[m
+[31m-    Duas rifas lado a lado.[m
+[31m-[m
+[31m-    Cada rifa possui:[m
+[31m-[m
+[31m-    - Canhoto maior[m
+[31m-    - Comprovante menor[m
+[31m-    - Número em destaque[m
+[31m-    - Vendedor com primeiro e segundo nome[m
+[31m-    - Campo NOME[m
+[31m-    - Campo TEL[m
+[31m-    - Campo ENDEREÇO[m
+[31m-    - Prêmio[m
+[31m-    - Valor[m
+[31m-    - Data do sorteio[m
+[31m-[m
+[31m-    Altura reduzida para permitir aproximadamente[m
+[31m-    11 rifas por coluna.[m
+[31m-    """[m
+[32m+[m[32mdef gerar_pdf_rifas_avulsas():[m
+ [m
+     buffer = BytesIO()[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+     # TAMANHO DA PÁGINA[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     largura_pagina, altura_pagina = A4[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+     # MARGENS[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     margem_horizontal = 3 * mm[m
+     margem_vertical = 3 * mm[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # ESPAÇO ENTRE AS DUAS RIFAS[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # ESPAÇAMENTO ENTRE RIFAS[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     espacamento_colunas = 3 * mm[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+     # LARGURA UTILIZÁVEL[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     largura_util = ([m
+         largura_pagina[m
+         - (2 * margem_horizontal)[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+     # LARGURA DE CADA RIFA[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     largura_rifa = ([m
+         largura_util[m
+         - espacamento_colunas[m
+     ) / 2[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+     # DOCUMENTO[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     doc = SimpleDocTemplate([m
+         buffer,[m
+[36m@@ -224,43 +282,23 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+ [m
+     estilos = getSampleStyleSheet()[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+     # ALTURA DA RIFA[m
+[31m-    # =========================================================[m
+[31m-    #[m
+[31m-    # 23 mm permite aproximadamente 11 rifas por coluna,[m
+[31m-    # mantendo uma pequena folga para separação.[m
+[31m-    #[m
+[32m+[m[32m    # =====================================================[m
+ [m
+[31m-    altura_rifa = 23 * mm[m
+[31m-[m
+[31m-    # =========================================================[m
+[31m-    # ESTILO GERAL[m
+[31m-    # =========================================================[m
+[31m-[m
+[31m-    estilo_rifa = ParagraphStyle([m
+[31m-        "RifaTitulo",[m
+[31m-        parent=estilos["Normal"],[m
+[31m-        alignment=1,[m
+[31m-        fontName="Helvetica-Bold",[m
+[31m-        fontSize=8,[m
+[31m-        leading=8,[m
+[31m-        textColor=colors.HexColor("#1a252f"),[m
+[31m-        spaceAfter=0,[m
+[31m-        spaceBefore=0,[m
+[31m-    )[m
+[32m+[m[32m    altura_rifa = 24 * mm[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # VENDEDOR[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # ESTILOS[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     estilo_vendedor_label = ParagraphStyle([m
+         "VendedorLabel",[m
+         parent=estilos["Normal"],[m
+         alignment=0,[m
+         fontName="Helvetica-Bold",[m
+[31m-        fontSize=5,[m
+[31m-        leading=5,[m
+[32m+[m[32m        fontSize=6,[m
+[32m+[m[32m        leading=6,[m
+         textColor=colors.HexColor("#6c757d"),[m
+         spaceAfter=0,[m
+         spaceBefore=0,[m
+[36m@@ -271,32 +309,32 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+         parent=estilos["Normal"],[m
+         alignment=0,[m
+         fontName="Helvetica-Bold",[m
+[31m-        fontSize=7,[m
+[31m-        leading=7,[m
+[32m+[m[32m        fontSize=7.5,[m
+[32m+[m[32m        leading=7.5,[m
+         textColor=colors.HexColor("#1a252f"),[m
+         spaceAfter=0,[m
+         spaceBefore=0,[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # CAMPOS DO CANHOTO[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # CAMPOS NOME / TEL / ENDEREÇO[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     estilo_campo = ParagraphStyle([m
+         "Campo",[m
+         parent=estilos["Normal"],[m
+         alignment=0,[m
+[31m-        fontName="Helvetica",[m
+[31m-        fontSize=5.5,[m
+[31m-        leading=5.5,[m
+[31m-        textColor=colors.HexColor("#495057"),[m
+[32m+[m[32m        fontName="Helvetica-Bold",[m
+[32m+[m[32m        fontSize=6.5,[m
+[32m+[m[32m        leading=6.5,[m
+[32m+[m[32m        textColor=colors.HexColor("#343a40"),[m
+         spaceAfter=0,[m
+         spaceBefore=0,[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # NÚMERO DO COMPROVANTE[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # NÚMERO[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     estilo_numero_principal = ParagraphStyle([m
+         "NumeroPrincipal",[m
+[36m@@ -310,132 +348,74 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+         spaceBefore=0,[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # INFORMAÇÕES DO COMPROVANTE[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # PRÊMIO[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     estilo_premio = ParagraphStyle([m
+         "Premio",[m
+         parent=estilos["Normal"],[m
+         alignment=1,[m
+         fontName="Helvetica-Bold",[m
+[31m-        fontSize=5.7,[m
+[31m-        leading=6,[m
+[32m+[m[32m        fontSize=8,[m
+[32m+[m[32m        leading=8.5,[m
+         textColor=colors.HexColor("#2c3e50"),[m
+         spaceAfter=0,[m
+         spaceBefore=0,[m
+     )[m
+ [m
+[31m-    estilo_valor_principal = ParagraphStyle([m
+[31m-        "ValorPrincipal",[m
+[31m-        parent=estilos["Normal"],[m
+[31m-        alignment=1,[m
+[31m-        fontName="Helvetica-Bold",[m
+[31m-        fontSize=5.8,[m
+[31m-        leading=6,[m
+[31m-        textColor=colors.HexColor("#1a252f"),[m
+[31m-        spaceAfter=0,[m
+[31m-        spaceBefore=0,[m
+[31m-    )[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # DATA[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     estilo_data = ParagraphStyle([m
+         "Data",[m
+         parent=estilos["Normal"],[m
+         alignment=1,[m
+         fontName="Helvetica-Bold",[m
+[31m-        fontSize=5.5,[m
+[31m-        leading=6,[m
+[32m+[m[32m        fontSize=7.5,[m
+[32m+[m[32m        leading=8,[m
+         textColor=colors.HexColor("#495057"),[m
+         spaceAfter=0,[m
+         spaceBefore=0,[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # DADOS DA RIFA[m
+[31m-    # =========================================================[m
+[31m-[m
+[31m-    valor = rifa.get("valor_numero") or 0[m
+[31m-[m
+[31m-    try:[m
+[31m-[m
+[31m-        valor_formatado = ([m
+[31m-            f"{float(valor):,.2f}"[m
+[31m-            .replace(",", "X")[m
+[31m-            .replace(".", ",")[m
+[31m-            .replace("X", ".")[m
+[31m-        )[m
+[31m-[m
+[31m-    except Exception:[m
+[31m-[m
+[31m-        valor_formatado = "0,00"[m
+[31m-[m
+[31m-    data_sorteio = rifa.get("data_sorteio")[m
+[31m-[m
+[31m-    if data_sorteio:[m
+[31m-[m
+[31m-        data_sorteio = data_sorteio.strftime([m
+[31m-            "%d/%m/%Y"[m
+[31m-        )[m
+[31m-[m
+[31m-    else:[m
+[31m-[m
+[31m-        data_sorteio = "-"[m
+[31m-[m
+[31m-    premio = rifa.get("premio") or "-"[m
+[31m-[m
+[31m-    # =========================================================[m
+[31m-    # LOGO[m
+[31m-    # =========================================================[m
+[31m-[m
+[31m-    raiz_projeto = os.path.dirname([m
+[31m-        os.path.dirname([m
+[31m-            os.path.abspath(__file__)[m
+[31m-        )[m
+[31m-    )[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # VALOR FORMATADO[m
+[32m+[m[32m    # =====================================================[m
+ [m
+[31m-    caminho_logo = os.path.join([m
+[31m-        raiz_projeto,[m
+[31m-        "static",[m
+[31m-        "img",[m
+[31m-        "logo_transparente.png",[m
+[32m+[m[32m    valor_formatado = ([m
+[32m+[m[32m        f"{VALOR_POR_NUMERO:,.2f}"[m
+[32m+[m[32m        .replace(",", "X")[m
+[32m+[m[32m        .replace(".", ",")[m
+[32m+[m[32m        .replace("X", ".")[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # NÚMEROS[m
+[31m-    # =========================================================[m
+[31m-[m
+[31m-    numeros_para_imprimir = [[m
+[31m-        numero[m
+[31m-        for numero in numeros[m
+[31m-        if numero.get("numero") is not None[m
+[31m-    ][m
+[31m-[m
+[31m-    elementos = [][m
+[31m-[m
+[31m-    # =========================================================[m
+[31m-    # DIMENSÕES DA RIFA[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # DIMENSÕES[m
+[32m+[m[32m    # =====================================================[m
+ [m
+[31m-    # Canhoto maior[m
+     largura_canhoto = 56 * mm[m
+ [m
+[31m-    # Comprovante menor[m
+     largura_principal = ([m
+         largura_rifa[m
+         - largura_canhoto[m
+     )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # LIMITAR NOME DO VENDEDOR[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # NOME DO VENDEDOR[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     def nome_curto_vendedor(nome):[m
+ [m
+         if not nome:[m
+[31m-[m
+             return "SEM VENDEDOR"[m
+ [m
+[31m-        partes = str(nome).strip().split()[m
+[32m+[m[32m        partes = ([m
+[32m+[m[32m            str(nome)[m
+[32m+[m[32m            .strip()[m
+[32m+[m[32m            .split()[m
+[32m+[m[32m        )[m
+ [m
+         if len(partes) >= 2:[m
+ [m
+[36m@@ -450,29 +430,104 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+ [m
+         return "SEM VENDEDOR"[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # CRIAR BILHETE[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # CAMPO COM LINHA[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m
+[32m+[m[32m    def criar_campo_linha([m
+[32m+[m[32m        texto,[m
+[32m+[m[32m        altura=3.5 * mm[m
+[32m+[m[32m    ):[m
+[32m+[m
+[32m+[m[32m        return Table([m
+[32m+[m[32m            [[m
+[32m+[m[32m                [[m
+[32m+[m[32m                    Paragraph([m
+[32m+[m[32m                        texto,[m
+[32m+[m[32m                        estilo_campo,[m
+[32m+[m[32m                    )[m
+[32m+[m[32m                ][m
+[32m+[m[32m            ],[m
+[32m+[m
+[32m+[m[32m            colWidths=[[m
+[32m+[m[32m                largura_canhoto - 4 * mm[m
+[32m+[m[32m            ],[m
+[32m+[m
+[32m+[m[32m            rowHeights=[[m
+[32m+[m[32m                altura[m
+[32m+[m[32m            ],[m
+[32m+[m
+[32m+[m[32m            style=TableStyle([[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "LINEBELOW",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0.6,[m
+[32m+[m[32m                    colors.black,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "LEFTPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "RIGHTPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "TOPPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "BOTTOMPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "VALIGN",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    "BOTTOM",[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m            ]),[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # CRIAR UMA RIFA[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     def criar_bilhete(numero):[m
+ [m
+         numero_formatado = ([m
+[31m-            f"{int(numero['numero']):03d}"[m
+[32m+[m[32m            f"{int(numero):03d}"[m
+         )[m
+ [m
+[31m-        vendedor_nome = nome_curto_vendedor([m
+[31m-            numero.get("vendedor_nome")[m
+[32m+[m[32m        vendedor_nome = ([m
+[32m+[m[32m            nome_curto_vendedor(VENDEDOR)[m
+         )[m
+ [m
+[31m-        # =====================================================[m
+[32m+[m[32m        # =================================================[m
+         # CANHOTO[m
+[31m-        # =====================================================[m
+[32m+[m[32m        # =================================================[m
+ [m
+         conteudo_canhoto = [[m
+ [m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m            # =================================================[m
+             # VENDEDOR + NÚMERO[m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m            # =================================================[m
+ [m
+             Table([m
+                 [[m
+[36m@@ -484,6 +539,7 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+ [m
+                         Paragraph([m
+                             f"Nº {numero_formatado}",[m
+[32m+[m
+                             ParagraphStyle([m
+                                 "NumeroCanhoto",[m
+                                 parent=estilo_numero_principal,[m
+[36m@@ -544,9 +600,9 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                 ]),[m
+             ),[m
+ [m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m            # =================================================[m
+             # NOME DO VENDEDOR[m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m            # =================================================[m
+ [m
+             Paragraph([m
+                 vendedor_nome,[m
+[36m@@ -555,29 +611,31 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+ [m
+             Spacer([m
+                 1,[m
+[31m-                0.15 * mm,[m
+[32m+[m[32m                0.3 * mm,[m
+             ),[m
+ [m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m            # =================================================[m
+             # NOME[m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m            # =================================================[m
+[32m+[m
+[32m+[m[32m            criar_campo_linha([m
+[32m+[m[32m                "NOME:",[m
+[32m+[m[32m                3.8 * mm[m
+[32m+[m[32m            ),[m
+[32m+[m
+[32m+[m[32m            # =================================================[m
+[32m+[m[32m            # ESPAÇO PARA PREENCHER NOME[m
+[32m+[m[32m            # =================================================[m
+ [m
+             Table([m
+[31m-                [[m
+[31m-                    [[m
+[31m-                        Paragraph([m
+[31m-                            "NOME:",[m
+[31m-                            estilo_campo,[m
+[31m-                        )[m
+[31m-                    ][m
+[31m-                ],[m
+[32m+[m[32m                [[""]],[m
+ [m
+                 colWidths=[[m
+                     largura_canhoto - 4 * mm[m
+                 ],[m
+ [m
+                 rowHeights=[[m
+[31m-                    2.7 * mm[m
+[32m+[m[32m                    3.0 * mm[m
+                 ],[m
+ [m
+                 style=TableStyle([[m
+[36m@@ -586,41 +644,35 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                         "LINEBELOW",[m
+                         (0, 0),[m
+                         (-1, -1),[m
+[31m-                        0.5,[m
+[32m+[m[32m                        0.6,[m
+                         colors.black,[m
+                     ),[m
+ [m
+[31m-                    ([m
+[31m-                        "LEFTPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[32m+[m[32m                ]),[m
+[32m+[m[32m            ),[m
+ [m
+[31m-                    ([m
+[31m-                        "RIGHTPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[32m+[m[32m            # =================================================[m
+[32m+[m[32m            # TELEFONE[m
+[32m+[m[32m            # =================================================[m
+ [m
+[31m-                    ([m
+[31m-                        "TOPPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[32m+[m[32m            criar_campo_linha([m
+[32m+[m[32m                "TEL:",[m
+[32m+[m[32m                3.8 * mm[m
+[32m+[m[32m            ),[m
+ [m
+[31m-                    ([m
+[31m-                        "BOTTOMPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[32m+[m[32m            # =================================================[m
+[32m+[m[32m            # ENDEREÇO[m
+[32m+[m[32m            # =================================================[m
+ [m
+[31m-                ]),[m
+[32m+[m[32m            criar_campo_linha([m
+[32m+[m[32m                "ENDEREÇO:",[m
+[32m+[m[32m                3.8 * mm[m
+             ),[m
+ [m
+[32m+[m[32m            # =================================================[m
+[32m+[m[32m            # ESPAÇO FINAL[m
+[32m+[m[32m            # =================================================[m
+[32m+[m
+             Table([m
+                 [[""]],[m
+ [m
+[36m@@ -629,7 +681,7 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                 ],[m
+ [m
+                 rowHeights=[[m
+[31m-                    2.5 * mm[m
+[32m+[m[32m                    3.0 * mm[m
+                 ],[m
+ [m
+                 style=TableStyle([[m
+[36m@@ -638,214 +690,64 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                         "LINEBELOW",[m
+                         (0, 0),[m
+                         (-1, -1),[m
+[31m-                        0.5,[m
+[32m+[m[32m                        0.6,[m
+                         colors.black,[m
+                     ),[m
+ [m
+                 ]),[m
+             ),[m
+[32m+[m[32m        ][m
+ [m
+[31m-            # -------------------------------------------------[m
+[31m-            # TELEFONE[m
+[31m-            # -------------------------------------------------[m
+[32m+[m[32m        # =================================================[m
+[32m+[m[32m        # COMPROVANTE[m
+[32m+[m[32m        # =================================================[m
+[32m+[m
+[32m+[m[32m        principal = Table([m
+[32m+[m[32m            [[m
+[32m+[m
+[32m+[m[32m                # =================================================[m
+[32m+[m[32m                # NÚMERO[m
+[32m+[m[32m                # =================================================[m
+ [m
+[31m-            Table([m
+                 [[m
+[31m-                    [[m
+[31m-                        Paragraph([m
+[31m-                            "TEL:",[m
+[31m-                            estilo_campo,[m
+[31m-                        )[m
+[31m-                    ][m
+[32m+[m[32m                    Paragraph([m
+[32m+[m[32m                        f"Nº {numero_formatado}",[m
+[32m+[m[32m                        estilo_numero_principal,[m
+[32m+[m[32m                    )[m
+                 ],[m
+ [m
+[31m-                colWidths=[[m
+[31m-                    largura_canhoto - 4 * mm[m
+[32m+[m[32m                # =================================================[m
+[32m+[m[32m                # PRÊMIO + VALOR[m
+[32m+[m[32m                # =================================================[m
+[32m+[m
+[32m+[m[32m                [[m
+[32m+[m[32m                    Paragraph([m
+[32m+[m[32m                        f"🏆 {PREMIO}  R$ {valor_formatado}",[m
+[32m+[m[32m                        estilo_premio,[m
+[32m+[m[32m                    )[m
+                 ],[m
+ [m
+[31m-                rowHeights=[[m
+[31m-                    2.7 * mm[m
+[32m+[m[32m                # =================================================[m
+[32m+[m[32m                # DATA[m
+[32m+[m[32m                # =================================================[m
+[32m+[m
+[32m+[m[32m                [[m
+[32m+[m[32m                    Paragraph([m
+[32m+[m[32m                        f"📅 Sorteio  {DATA_SORTEIO}",[m
+[32m+[m[32m                        estilo_data,[m
+[32m+[m[32m                    )[m
+                 ],[m
+ [m
+[31m-                style=TableStyle([[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "LINEBELOW",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0.5,[m
+[31m-                        colors.black,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "LEFTPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "RIGHTPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "TOPPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "BOTTOMPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                ]),[m
+[31m-            ),[m
+[31m-[m
+[31m-            # -------------------------------------------------[m
+[31m-            # ENDEREÇO[m
+[31m-            # -------------------------------------------------[m
+[31m-[m
+[31m-            Table([m
+[31m-                [[m
+[31m-                    [[m
+[31m-                        Paragraph([m
+[31m-                            "ENDEREÇO:",[m
+[31m-                            estilo_campo,[m
+[31m-                        )[m
+[31m-                    ][m
+[31m-                ],[m
+[31m-[m
+[31m-                colWidths=[[m
+[31m-                    largura_canhoto - 4 * mm[m
+[31m-                ],[m
+[31m-[m
+[31m-                rowHeights=[[m
+[31m-                    2.7 * mm[m
+[31m-                ],[m
+[31m-[m
+[31m-                style=TableStyle([[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "LINEBELOW",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0.5,[m
+[31m-                        colors.black,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "LEFTPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "RIGHTPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "TOPPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "BOTTOMPADDING",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                ]),[m
+[31m-            ),[m
+[31m-[m
+[31m-            Table([m
+[31m-                [[""]],[m
+[31m-[m
+[31m-                colWidths=[[m
+[31m-                    largura_canhoto - 4 * mm[m
+[31m-                ],[m
+[31m-[m
+[31m-                rowHeights=[[m
+[31m-                    2.3 * mm[m
+[31m-                ],[m
+[31m-[m
+[31m-                style=TableStyle([[m
+[31m-[m
+[31m-                    ([m
+[31m-                        "LINEBELOW",[m
+[31m-                        (0, 0),[m
+[31m-                        (-1, -1),[m
+[31m-                        0.5,[m
+[31m-                        colors.black,[m
+[31m-                    ),[m
+[31m-[m
+[31m-                ]),[m
+[31m-            ),[m
+[31m-        ][m
+[31m-[m
+[31m-        # =====================================================[m
+[31m-        # COMPROVANTE[m
+[31m-        # =====================================================[m
+[31m-[m
+[31m-        principal = Table([m
+[31m-            [[m
+[31m-[m
+[31m-                # -------------------------------------------------[m
+[31m-                # NÚMERO[m
+[31m-                # -------------------------------------------------[m
+[31m-[m
+[31m-                [[m
+[31m-                    Paragraph([m
+[31m-                        f"Nº {numero_formatado}",[m
+[31m-                        estilo_numero_principal,[m
+[31m-                    )[m
+[31m-                ],[m
+[31m-[m
+[31m-                # -------------------------------------------------[m
+[31m-                # PRÊMIO + VALOR NA MESMA LINHA[m
+[31m-                # -------------------------------------------------[m
+[31m-[m
+[31m-                [[m
+[31m-                    Paragraph([m
+[31m-                        f"🏆 Prêmio  R$ {valor_formatado}",[m
+[31m-                        estilo_premio,[m
+[31m-                    )[m
+[31m-                ],[m
+[31m-[m
+[31m-                # -------------------------------------------------[m
+[31m-                # DATA NA MESMA LINHA[m
+[31m-                # -------------------------------------------------[m
+[31m-[m
+[31m-                [[m
+[31m-                    Paragraph([m
+[31m-                        f"📅 Sorteio  {data_sorteio}",[m
+[31m-                        estilo_data,[m
+[31m-                    )[m
+[31m-                ],[m
+[31m-[m
+[31m-            ],[m
+[32m+[m[32m            ],[m
+ [m
+             colWidths=[[m
+                 largura_principal - 3 * mm[m
+             ],[m
+ [m
+             rowHeights=[[m
+[32m+[m[32m                7 * mm,[m
+                 7 * mm,[m
+                 6 * mm,[m
+[31m-                5 * mm,[m
+             ],[m
+         )[m
+ [m
+[36m@@ -897,9 +799,9 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+             ])[m
+         )[m
+ [m
+[31m-        # =====================================================[m
+[32m+[m[32m        # =================================================[m
+         # RIFA COMPLETA[m
+[31m-        # =====================================================[m
+[32m+[m[32m        # =================================================[m
+ [m
+         tabela = TabelaRifaComLogo([m
+ [m
+[36m@@ -919,7 +821,7 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                 altura_rifa[m
+             ],[m
+ [m
+[31m-            caminho_logo=caminho_logo,[m
+[32m+[m[32m            caminho_logo=CAMINHO_LOGO,[m
+ [m
+             largura_canhoto=largura_canhoto,[m
+ [m
+[36m@@ -932,10 +834,6 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+         tabela.setStyle([m
+             TableStyle([[m
+ [m
+[31m-                # =================================================[m
+[31m-                # FUNDO DO CANHOTO[m
+[31m-                # =================================================[m
+[31m-[m
+                 ([m
+                     "BACKGROUND",[m
+                     (0, 0),[m
+[36m@@ -943,10 +841,6 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                     colors.HexColor("#f8f9fa"),[m
+                 ),[m
+ [m
+[31m-                # =================================================[m
+[31m-                # BORDA EXTERNA[m
+[31m-                # =================================================[m
+[31m-[m
+                 ([m
+                     "BOX",[m
+                     (0, 0),[m
+[36m@@ -955,10 +849,6 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                     colors.HexColor("#1a252f"),[m
+                 ),[m
+ [m
+[31m-                # =================================================[m
+[31m-                # DIVISÃO CANHOTO / COMPROVANTE[m
+[31m-                # =================================================[m
+[31m-[m
+                 ([m
+                     "LINEAFTER",[m
+                     (0, 0),[m
+[36m@@ -967,10 +857,6 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                     colors.HexColor("#6c757d"),[m
+                 ),[m
+ [m
+[31m-                # =================================================[m
+[31m-                # ALINHAMENTO[m
+[31m-                # =================================================[m
+[31m-[m
+                 ([m
+                     "VALIGN",[m
+                     (0, 0),[m
+[36m@@ -978,10 +864,6 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                     "TOP",[m
+                 ),[m
+ [m
+[31m-                # =================================================[m
+[31m-                # PADDING[m
+[31m-                # =================================================[m
+[31m-[m
+                 ([m
+                     "LEFTPADDING",[m
+                     (0, 0),[m
+[36m@@ -1015,158 +897,37 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+ [m
+         return tabela[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # AGRUPAR POR VENDEDOR[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # ELEMENTOS DO PDF[m
+[32m+[m[32m    # =====================================================[m
+ [m
+[31m-    grupos_vendedores = OrderedDict()[m
+[32m+[m[32m    elementos = [][m
+ [m
+[31m-    for numero in numeros_para_imprimir:[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # GERAR TODOS OS NÚMEROS[m
+[32m+[m[32m    # =====================================================[m
+ [m
+[31m-        vendedor_nome = ([m
+[31m-            numero.get("vendedor_nome")[m
+[31m-            or "SEM VENDEDOR"[m
+[31m-        )[m
+[32m+[m[32m    numeros = range([m
+[32m+[m[32m        NUMERO_INICIAL,[m
+[32m+[m[32m        NUMERO_FINAL + 1[m
+[32m+[m[32m    )[m
+ [m
+[31m-        if vendedor_nome not in grupos_vendedores:[m
+[32m+[m[32m    linha_rifas = [][m
+ [m
+[31m-            grupos_vendedores[vendedor_nome] = [][m
+[32m+[m[32m    for numero in numeros:[m
+ [m
+[31m-        grupos_vendedores[vendedor_nome].append([m
+[31m-            numero[m
+[32m+[m[32m        linha_rifas.append([m
+[32m+[m[32m            criar_bilhete(numero)[m
+         )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # GERAR PDF[m
+[31m-    # =========================================================[m
+[31m-[m
+[31m-    primeiro_grupo = True[m
+[31m-[m
+[31m-    for vendedor_nome, numeros_vendedor in grupos_vendedores.items():[m
+[31m-[m
+[31m-        # =====================================================[m
+[31m-        # NOVA PÁGINA PARA CADA VENDEDOR[m
+[31m-        # =====================================================[m
+[31m-[m
+[31m-        if not primeiro_grupo:[m
+[31m-[m
+[31m-            elementos.append([m
+[31m-                PageBreak()[m
+[31m-            )[m
+[31m-[m
+[31m-        primeiro_grupo = False[m
+[31m-[m
+[31m-        # =====================================================[m
+[32m+[m[32m        # =================================================[m
+         # DUAS RIFAS POR LINHA[m
+[31m-        # =====================================================[m
+[31m-[m
+[31m-        linha_rifas = [][m
+[31m-[m
+[31m-        for numero in numeros_vendedor:[m
+[31m-[m
+[31m-            linha_rifas.append([m
+[31m-                criar_bilhete(numero)[m
+[31m-            )[m
+[31m-[m
+[31m-            # =================================================[m
+[31m-            # FECHA COM DUAS RIFAS[m
+[31m-            # =================================================[m
+[31m-[m
+[31m-            if len(linha_rifas) == 2:[m
+[31m-[m
+[31m-                linha = Table([m
+[31m-                    [[m
+[31m-                        linha_rifas[m
+[31m-                    ],[m
+[31m-[m
+[31m-                    colWidths=[[m
+[31m-                        largura_rifa,[m
+[31m-                        largura_rifa,[m
+[31m-                    ],[m
+[32m+[m[32m        # =================================================[m
+ [m
+[31m-                    rowHeights=[[m
+[31m-                        altura_rifa[m
+[31m-                    ],[m
+[31m-[m
+[31m-                    hAlign="LEFT",[m
+[31m-[m
+[31m-                    spaceBefore=0,[m
+[31m-[m
+[31m-                    spaceAfter=0,[m
+[31m-                )[m
+[31m-[m
+[31m-                linha.setStyle([m
+[31m-                    TableStyle([[m
+[31m-[m
+[31m-                        ([m
+[31m-                            "LEFTPADDING",[m
+[31m-                            (0, 0),[m
+[31m-                            (-1, -1),[m
+[31m-                            0,[m
+[31m-                        ),[m
+[31m-[m
+[31m-                        ([m
+[31m-                            "RIGHTPADDING",[m
+[31m-                            (0, 0),[m
+[31m-                            (-1, -1),[m
+[31m-                            0,[m
+[31m-                        ),[m
+[31m-[m
+[31m-                        ([m
+[31m-                            "TOPPADDING",[m
+[31m-                            (0, 0),[m
+[31m-                            (-1, -1),[m
+[31m-                            0,[m
+[31m-                        ),[m
+[31m-[m
+[31m-                        ([m
+[31m-                            "BOTTOMPADDING",[m
+[31m-                            (0, 0),[m
+[31m-                            (-1, -1),[m
+[31m-                            0,[m
+[31m-                        ),[m
+[31m-[m
+[31m-                        # =================================================[m
+[31m-                        # ESPAÇO ENTRE AS RIFAS[m
+[31m-                        # =================================================[m
+[31m-[m
+[31m-                        ([m
+[31m-                            "LEFTPADDING",[m
+[31m-                            (1, 0),[m
+[31m-                            (1, 0),[m
+[31m-                            espacamento_colunas,[m
+[31m-                        ),[m
+[31m-[m
+[31m-                    ])[m
+[31m-                )[m
+[31m-[m
+[31m-                elementos.append([m
+[31m-                    linha[m
+[31m-                )[m
+[31m-[m
+[31m-                # Espaço mínimo entre linhas[m
+[31m-                elementos.append([m
+[31m-                    Spacer([m
+[31m-                        1,[m
+[31m-                        0.8 * mm,[m
+[31m-                    )[m
+[31m-                )[m
+[31m-[m
+[31m-                linha_rifas = [][m
+[31m-[m
+[31m-        # =====================================================[m
+[31m-        # ÚLTIMA RIFA ÍMPAR[m
+[31m-        # =====================================================[m
+[31m-[m
+[31m-        if linha_rifas:[m
+[32m+[m[32m        if len(linha_rifas) == 2:[m
+ [m
+             linha = Table([m
+[31m-                [[m
+[31m-                    [[m
+[31m-                        linha_rifas[0],[m
+[31m-                        "",[m
+[31m-                    ][m
+[31m-                ],[m
+[32m+[m[32m                [linha_rifas],[m
+ [m
+                 colWidths=[[m
+                     largura_rifa,[m
+[36m@@ -1178,6 +939,10 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                 ],[m
+ [m
+                 hAlign="LEFT",[m
+[32m+[m
+[32m+[m[32m                spaceBefore=0,[m
+[32m+[m
+[32m+[m[32m                spaceAfter=0,[m
+             )[m
+ [m
+             linha.setStyle([m
+[36m@@ -1211,32 +976,245 @@[m [mdef gerar_pdf_rifa(rifa, numeros):[m
+                         0,[m
+                     ),[m
+ [m
+[32m+[m[32m                    ([m
+[32m+[m[32m                        "LEFTPADDING",[m
+[32m+[m[32m                        (1, 0),[m
+[32m+[m[32m                        (1, 0),[m
+[32m+[m[32m                        espacamento_colunas,[m
+[32m+[m[32m                    ),[m
+[32m+[m
+                 ])[m
+             )[m
+ [m
+[32m+[m[32m            elementos.append(linha)[m
+[32m+[m
+             elementos.append([m
+[31m-                linha[m
+[32m+[m[32m                Spacer([m
+[32m+[m[32m                    1,[m
+[32m+[m[32m                    0.8 * mm,[m
+[32m+[m[32m                )[m
+             )[m
+ [m
+[31m-    # =========================================================[m
+[31m-    # SEM NÚMEROS[m
+[31m-    # =========================================================[m
+[32m+[m[32m            linha_rifas = [][m
+ [m
+[31m-    if not numeros_para_imprimir:[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # ÚLTIMA RIFA ÍMPAR[m
+[32m+[m[32m    # =====================================================[m
+ [m
+[31m-        elementos.append([m
+[31m-            Paragraph([m
+[31m-                "Nenhum número disponível para geração da rifa.",[m
+[31m-                estilo_rifa,[m
+[31m-            )[m
+[32m+[m[32m    if linha_rifas:[m
+[32m+[m
+[32m+[m[32m        linha = Table([m
+[32m+[m[32m            [[m
+[32m+[m[32m                [[m
+[32m+[m[32m                    linha_rifas[0],[m
+[32m+[m[32m                    "",[m
+[32m+[m[32m                ][m
+[32m+[m[32m            ],[m
+[32m+[m
+[32m+[m[32m            colWidths=[[m
+[32m+[m[32m                largura_rifa,[m
+[32m+[m[32m                largura_rifa,[m
+[32m+[m[32m            ],[m
+[32m+[m
+[32m+[m[32m            rowHeights=[[m
+[32m+[m[32m                altura_rifa[m
+[32m+[m[32m            ],[m
+[32m+[m
+[32m+[m[32m            hAlign="LEFT",[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        linha.setStyle([m
+[32m+[m[32m            TableStyle([[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "LEFTPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "RIGHTPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "TOPPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m                ([m
+[32m+[m[32m                    "BOTTOMPADDING",[m
+[32m+[m[32m                    (0, 0),[m
+[32m+[m[32m                    (-1, -1),[m
+[32m+[m[32m                    0,[m
+[32m+[m[32m                ),[m
+[32m+[m
+[32m+[m[32m            ])[m
+         )[m
+ [m
+[31m-    # =========================================================[m
+[32m+[m[32m        elementos.append(linha)[m
+[32m+[m
+[32m+[m[32m    # =====================================================[m
+     # GERAR PDF[m
+[31m-    # =========================================================[m
+[32m+[m[32m    # =====================================================[m
+ [m
+     doc.build(elementos)[m
+ [m
+     buffer.seek(0)[m
+ [m
+[31m-    return buffer[m
+\ No newline at end of file[m
+[32m+[m[32m    with open([m
+[32m+[m[32m        CAMINHO_PDF,[m
+[32m+[m[32m        "wb"[m
+[32m+[m[32m    ) as arquivo:[m
+[32m+[m
+[32m+[m[32m        arquivo.write([m
+[32m+[m[32m            buffer.getvalue()[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m    return CAMINHO_PDF[m
+[32m+[m
+[32m+[m
+[32m+[m[32m# =========================================================[m
+[32m+[m[32m# EXECUÇÃO DIRETA[m
+[32m+[m[32m# =========================================================[m
+[32m+[m
+[32m+[m[32mif __name__ == "__main__":[m
+[32m+[m
+[32m+[m[32m    print()[m
+[32m+[m[32m    print("=" * 65)[m
+[32m+[m[32m    print("             GERADOR DE RIFAS AVULSAS")[m
+[32m+[m[32m    print("=" * 65)[m
+[32m+[m[32m    print()[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Valor por número      : R$ {VALOR_POR_NUMERO:.2f}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Quantidade de pessoas : {QUANTIDADE_PESSOAS}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Rifas por pessoa      : {RIFAS_POR_PESSOA}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Total de rifas        : {TOTAL_RIFAS}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Número inicial        : {NUMERO_INICIAL:03d}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Número final          : {NUMERO_FINAL:03d}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Vendedor              : {VENDEDOR}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Prêmio                : {PREMIO}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Data do sorteio       : {DATA_SORTEIO}"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print()[m
+[32m+[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # CONFERÊNCIA[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"Distribuição          : "[m
+[32m+[m[32m        f"{QUANTIDADE_PESSOAS} pessoas x "[m
+[32m+[m[32m        f"{RIFAS_POR_PESSOA} rifas"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print([m
+[32m+[m[32m        f"                       = {TOTAL_RIFAS} rifas"[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m[32m    print()[m
+[32m+[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # VERIFICAR LOGO[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m
+[32m+[m[32m    if not os.path.exists(CAMINHO_LOGO):[m
+[32m+[m
+[32m+[m[32m        print("AVISO: Logo não encontrada!")[m
+[32m+[m[32m        print()[m
+[32m+[m[32m        print("Esperado em:")[m
+[32m+[m[32m        print(CAMINHO_LOGO)[m
+[32m+[m[32m        print()[m
+[32m+[m
+[32m+[m[32m    else:[m
+[32m+[m
+[32m+[m[32m        print("Logo encontrada.")[m
+[32m+[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m[32m    # GERAR[m
+[32m+[m[32m    # =====================================================[m
+[32m+[m
+[32m+[m[32m    try:[m
+[32m+[m
+[32m+[m[32m        caminho = gerar_pdf_rifas_avulsas()[m
+[32m+[m
+[32m+[m[32m        print()[m
+[32m+[m[32m        print("=" * 65)[m
+[32m+[m[32m        print("              PDF GERADO COM SUCESSO!")[m
+[32m+[m[32m        print("=" * 65)[m
+[32m+[m[32m        print()[m
+[32m+[m
+[32m+[m[32m        print("Arquivo:")[m
+[32m+[m[32m        print(caminho)[m
+[32m+[m
+[32m+[m[32m        print()[m
+[32m+[m
+[32m+[m[32m        print([m
+[32m+[m[32m            f"Total de rifas: {TOTAL_RIFAS}"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        print([m
+[32m+[m[32m            f"Sequência: "[m
+[32m+[m[32m            f"{NUMERO_INICIAL:03d} "[m
+[32m+[m[32m            f"até "[m
+[32m+[m[32m            f"{NUMERO_FINAL:03d}"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        print()[m
+[32m+[m
+[32m+[m[32m        print([m
+[32m+[m[32m            f"Cada pessoa recebe: "[m
+[32m+[m[32m            f"{RIFAS_POR_PESSOA} rifas"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        print([m
+[32m+[m[32m            f"Quantidade de pessoas: "[m
+[32m+[m[32m            f"{QUANTIDADE_PESSOAS}"[m
+[32m+[m[32m        )[m
+[32m+[m
+[32m+[m[32m        print()[m
+[32m+[m
+[32m+[m[32m        print("=" * 65)[m
+[32m+[m
+[32m+[m[32m    except Exception as erro:[m
+[32m+[m
+[32m+[m[32m        print()[m
+[32m+[m[32m        print("=" * 65)[m
+[32m+[m[32m        print("                ERRO AO GERAR O PDF")[m
+[32m+[m[32m        print("=" * 65)[m
+[32m+[m[32m        print()[m
+[32m+[m
+[32m+[m[32m        print(erro)[m
+[32m+[m
+[32m+[m[32m        print()[m
+\ No newline at end of file[m
