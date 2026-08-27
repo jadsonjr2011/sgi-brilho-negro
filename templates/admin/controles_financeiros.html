@@ -13,36 +13,26 @@ Controles Financeiros
 /* ===================================================== */
 
 .lista-integrantes-controle {
-
     max-height: 260px;
     overflow-y: auto;
-
     border: 1px solid rgba(255,255,255,0.10);
     border-radius: 8px;
-
     background: rgba(255,255,255,0.03);
 }
 
 .integrante-opcao {
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 10px;
     width: 100%;
-
     padding: 10px 12px;
-
     border: 0;
     border-bottom: 1px solid rgba(255,255,255,0.06);
-
     background: transparent;
     color: #fff;
-
     text-align: left;
     cursor: pointer;
-
     transition:
         background 0.15s ease,
         color 0.15s ease;
@@ -57,9 +47,7 @@ Controles Financeiros
 }
 
 .integrante-opcao.selecionado {
-
     background: rgba(13,110,253,0.20);
-
     border-left: 3px solid #0d6efd;
 }
 
@@ -68,17 +56,13 @@ Controles Financeiros
 }
 
 .integrante-opcao .codigo-integrante {
-
     color: #888;
     font-size: 0.85rem;
 }
 
 .sem-integrantes {
-
     padding: 20px;
-
     text-align: center;
-
     color: #888;
 }
 
@@ -88,31 +72,22 @@ Controles Financeiros
 /* ===================================================== */
 
 .integrante-selecionado {
-
     display: none;
-
     margin-top: 10px;
     padding: 10px 12px;
-
     border-radius: 8px;
-
     background: rgba(25,135,84,0.12);
-
     border: 1px solid rgba(25,135,84,0.25);
 }
 
 .integrante-selecionado.ativo {
-
     display: flex;
-
     align-items: center;
     justify-content: space-between;
-
     gap: 10px;
 }
 
 .integrante-selecionado-info {
-
     display: flex;
     flex-direction: column;
 }
@@ -122,7 +97,6 @@ Controles Financeiros
 }
 
 .integrante-selecionado-codigo {
-
     color: #888;
     font-size: 0.8rem;
 }
@@ -133,34 +107,24 @@ Controles Financeiros
 /* ===================================================== */
 
 .card-resumo {
-
     padding: 18px;
-
     border-radius: 12px;
-
     background: rgba(255,255,255,0.04);
-
     border: 1px solid rgba(255,255,255,0.08);
 }
 
 .card-resumo .icone {
-
     font-size: 1.6rem;
-
     margin-bottom: 5px;
 }
 
 .card-resumo .numero {
-
     font-size: 1.4rem;
-
     font-weight: 700;
 }
 
 .card-resumo .descricao {
-
     color: #888;
-
     font-size: 0.85rem;
 }
 
@@ -170,35 +134,24 @@ Controles Financeiros
 /* ===================================================== */
 
 .filtros-controles {
-
     padding: 18px;
-
     margin-top: 20px;
     margin-bottom: 20px;
-
     border-radius: 12px;
-
     background: rgba(255,255,255,0.03);
-
     border: 1px solid rgba(255,255,255,0.08);
 }
 
 .filtros-controles .form-label {
-
     font-weight: 600;
-
     font-size: 0.9rem;
-
     margin-bottom: 6px;
 }
 
 .filtros-controles .form-control,
 .filtros-controles .form-select {
-
     background-color: #212529;
-
     color: #fff;
-
     border: 1px solid rgba(255,255,255,0.15);
 }
 
@@ -208,20 +161,14 @@ Controles Financeiros
 
 .filtros-controles .form-control:focus,
 .filtros-controles .form-select:focus {
-
     background-color: #212529;
-
     color: #fff;
-
     border-color: rgba(255,255,255,0.35);
-
     box-shadow: none;
 }
 
 .filtros-controles .form-select option {
-
     background-color: #212529;
-
     color: #fff;
 }
 
@@ -231,16 +178,11 @@ Controles Financeiros
 /* ===================================================== */
 
 .btn-limpar-filtros {
-
     height: 38px;
-
     display: flex;
-
     align-items: center;
     justify-content: center;
-
     gap: 5px;
-
     white-space: nowrap;
 }
 
@@ -250,11 +192,8 @@ Controles Financeiros
 /* ===================================================== */
 
 .resultado-filtros {
-
     color: #888;
-
     font-size: 0.85rem;
-
     margin-top: 12px;
 }
 
@@ -269,7 +208,6 @@ Controles Financeiros
 
 .table td,
 .table th {
-
     vertical-align: middle;
 }
 
@@ -279,7 +217,6 @@ Controles Financeiros
 /* ===================================================== */
 
 .grupo-controle {
-
     font-weight: 600;
 }
 
@@ -298,7 +235,6 @@ Controles Financeiros
 /* ===================================================== */
 
 #nenhumResultadoFiltro {
-
     display: none;
 }
 
@@ -307,7 +243,6 @@ Controles Financeiros
 
 <div class="card-bn">
 
-
     <!-- ================================================= -->
     <!-- CABEÇALHO                                         -->
     <!-- ================================================= -->
@@ -315,13 +250,10 @@ Controles Financeiros
     <div class="d-flex justify-content-between align-items-center mb-3">
 
         <h2 class="titulo mb-0">
-
             🎯 Controles Financeiros
-
         </h2>
 
     </div>
-
 
     <hr>
 
@@ -332,7 +264,6 @@ Controles Financeiros
 
     <div class="row text-center mt-4">
 
-
         <div class="col-md-4 mb-3">
 
             <div class="card-resumo">
@@ -342,15 +273,11 @@ Controles Financeiros
                 </div>
 
                 <div class="numero">
-
                     {{ total_pedidos }}
-
                 </div>
 
                 <div class="descricao">
-
                     Controles
-
                 </div>
 
             </div>
@@ -369,15 +296,12 @@ Controles Financeiros
                 <div class="numero">
 
                     R$
-
                     {{ "{:,.2f}".format(valor_total or 0).replace(",", "X").replace(".", ",").replace("X", ".") }}
 
                 </div>
 
                 <div class="descricao">
-
                     Valor Total
-
                 </div>
 
             </div>
@@ -396,21 +320,17 @@ Controles Financeiros
                 <div class="numero">
 
                     R$
-
                     {{ "{:,.2f}".format(valor_pendente or 0).replace(",", "X").replace(".", ",").replace("X", ".") }}
 
                 </div>
 
                 <div class="descricao">
-
                     Pendente
-
                 </div>
 
             </div>
 
         </div>
-
 
     </div>
 
@@ -420,7 +340,6 @@ Controles Financeiros
     <!-- ================================================= -->
 
     <div class="mt-4 mb-4">
-
 
         <button
             type="button"
@@ -433,14 +352,13 @@ Controles Financeiros
         </button>
 
 
-        <a
-            href="/admin/financeiro/controles/relatorio"
-            target="_blank"
-            class="btn btn-warning">
-
+        <button
+            type="button"
+            class="btn btn-warning"
+            data-bs-toggle="modal"
+            data-bs-target="#modalRelatorioControles">
             📄 Relatório de Pagamentos
-
-        </a>
+        </button>
 
 
         <a
@@ -450,7 +368,6 @@ Controles Financeiros
             ← Voltar ao Financeiro
 
         </a>
-
 
     </div>
 
@@ -462,7 +379,6 @@ Controles Financeiros
     <div class="filtros-controles">
 
         <div class="row g-3">
-
 
             <!-- PESQUISA -->
 
@@ -509,9 +425,7 @@ Controles Financeiros
                     {% for item in itens_fardamento %}
 
                     <option value="{{ item.nome|lower }}">
-
                         {{ item.nome }}
-
                     </option>
 
                     {% endfor %}
@@ -585,9 +499,7 @@ Controles Financeiros
                     {% for temporada in temporadas %}
 
                     <option value="{{ temporada.ano }}">
-
                         {{ temporada.nome }}
-
                     </option>
 
                     {% endfor %}
@@ -612,7 +524,6 @@ Controles Financeiros
                 </button>
 
             </div>
-
 
         </div>
 
@@ -653,23 +564,14 @@ Controles Financeiros
                 <tr>
 
                     <th>Pessoa</th>
-
                     <th>Grupo</th>
-
                     <th>Controle</th>
-
                     <th>Tamanho</th>
-
                     <th>Qtd.</th>
-
                     <th>Total</th>
-
                     <th>Pago</th>
-
                     <th>Restante</th>
-
                     <th>Status</th>
-
                     <th>Ações</th>
 
                 </tr>
@@ -685,11 +587,13 @@ Controles Financeiros
                     class="linha-controle"
 
                     data-pesquisa="
-                        {{ (
-                            (item.nome_pessoa or '') ~ ' ' ~
-                            (item.grupo or '') ~ ' ' ~
-                            (item.descricao or '')
-                        )|lower|trim }}
+                        {{
+                            (
+                                (item.nome_pessoa or '') ~ ' ' ~
+                                (item.grupo or '') ~ ' ' ~
+                                (item.descricao or '')
+                            )|lower|trim
+                        }}
                     "
 
                     data-grupo="{{ (item.grupo or '')|lower }}"
@@ -698,7 +602,6 @@ Controles Financeiros
 
                     data-temporada="{{ item.temporada }}">
 
-                    
                     <!-- PESSOA -->
 
                     <td>
@@ -706,23 +609,17 @@ Controles Financeiros
                         {% if item.integrante_id %}
 
                             <strong>
-
                                 {{ item.nome_pessoa or 'Integrante' }}
-
                             </strong>
 
                         {% else %}
 
                             <strong>
-
                                 {{ item.nome_pessoa }}
-
                             </strong>
 
                             <small class="d-block text-secondary">
-
                                 Externo
-
                             </small>
 
                         {% endif %}
@@ -735,9 +632,7 @@ Controles Financeiros
                     <td>
 
                         <strong class="grupo-controle">
-
                             {{ item.grupo or '-' }}
-
                         </strong>
 
                     </td>
@@ -748,15 +643,11 @@ Controles Financeiros
                     <td>
 
                         <strong>
-
                             {{ item.descricao }}
-
                         </strong>
 
                         <small class="d-block text-secondary">
-
                             {{ item.tipo }}
-
                         </small>
 
                     </td>
@@ -765,18 +656,14 @@ Controles Financeiros
                     <!-- TAMANHO -->
 
                     <td>
-
                         {{ item.tamanho or '-' }}
-
                     </td>
 
 
                     <!-- QUANTIDADE -->
 
                     <td>
-
                         {{ item.quantidade }}
-
                     </td>
 
 
@@ -808,11 +695,11 @@ Controles Financeiros
 
                         R$
 
-                        {{ "%.2f"|format(
+                        {{ "{:,.2f}".format(
                             (item.valor_total or 0)
                             -
                             (item.valor_pago or 0)
-                        )|replace(".", ",") }}
+                        ).replace(",", "X").replace(".", ",").replace("X", ".") }}
 
                     </td>
 
@@ -824,33 +711,25 @@ Controles Financeiros
                         {% if item.status == 'PAGO' %}
 
                             <span class="badge bg-success">
-
                                 Pago
-
                             </span>
 
                         {% elif item.status == 'PARCIAL' %}
 
                             <span class="badge bg-warning text-dark">
-
                                 Parcial
-
                             </span>
 
                         {% elif item.status == 'CANCELADO' %}
 
                             <span class="badge bg-danger">
-
                                 Cancelado
-
                             </span>
 
                         {% else %}
 
                             <span class="badge bg-secondary">
-
                                 Pendente
-
                             </span>
 
                         {% endif %}
@@ -884,7 +763,6 @@ Controles Financeiros
                         </div>
 
                     </td>
-
 
                 </tr>
 
@@ -922,7 +800,6 @@ Controles Financeiros
 
                 {% endif %}
 
-
             </tbody>
 
         </table>
@@ -930,6 +807,7 @@ Controles Financeiros
     </div>
 
 </div>
+
 
 
 <!-- ===================================================== -->
@@ -952,9 +830,7 @@ Controles Financeiros
             <div class="modal-header">
 
                 <h5 class="modal-title">
-
                     🎯 Novo Controle Financeiro
-
                 </h5>
 
                 <button
@@ -962,7 +838,6 @@ Controles Financeiros
                     class="btn-close btn-close-white"
                     data-bs-dismiss="modal"
                     aria-label="Fechar">
-
                 </button>
 
             </div>
@@ -972,7 +847,6 @@ Controles Financeiros
                 method="POST"
                 action="/admin/financeiro/controles/novo"
                 onsubmit="return validarNovoControle()">
-
 
                 <div class="modal-body">
 
@@ -986,9 +860,7 @@ Controles Financeiros
                         <div class="col-md-4 mb-3">
 
                             <label class="form-label">
-
                                 📅 Temporada
-
                             </label>
 
                             <select
@@ -997,17 +869,13 @@ Controles Financeiros
                                 required>
 
                                 <option value="">
-
                                     Selecione
-
                                 </option>
 
                                 {% for temporada in temporadas %}
 
                                 <option value="{{ temporada.ano }}">
-
                                     {{ temporada.nome }}
-
                                 </option>
 
                                 {% endfor %}
@@ -1029,9 +897,7 @@ Controles Financeiros
                     <div class="mb-3">
 
                         <label class="form-label">
-
                             📦 Grupo
-
                         </label>
 
                         <select
@@ -1040,17 +906,13 @@ Controles Financeiros
                             required>
 
                             <option value="">
-
                                 Selecione o grupo
-
                             </option>
 
                             {% for item in itens_fardamento %}
 
                             <option value="{{ item.nome }}">
-
                                 {{ item.nome }}
-
                             </option>
 
                             {% endfor %}
@@ -1058,9 +920,7 @@ Controles Financeiros
                         </select>
 
                         <small class="text-secondary">
-
                             Os grupos são carregados dos itens ativos de fardamento.
-
                         </small>
 
                     </div>
@@ -1073,11 +933,8 @@ Controles Financeiros
                     <div class="mb-3">
 
                         <label class="form-label">
-
                             👤 Pessoa
-
                         </label>
-
 
                         <select
                             id="origemPessoaControle"
@@ -1086,15 +943,11 @@ Controles Financeiros
                             required>
 
                             <option value="EXTERNA">
-
                                 Pessoa externa
-
                             </option>
 
                             <option value="INTEGRANTE">
-
                                 Integrante cadastrado
-
                             </option>
 
                         </select>
@@ -1112,9 +965,7 @@ Controles Financeiros
                         style="display:none;">
 
                         <label class="form-label">
-
                             👥 Integrante
-
                         </label>
 
 
@@ -1148,18 +999,14 @@ Controles Financeiros
                                 data-codigo="{{ integrante.codigo_integrante or '' }}">
 
                                 <span class="nome-integrante">
-
                                     {{ integrante.nome }}
-
                                 </span>
 
 
                                 {% if integrante.codigo_integrante %}
 
                                 <span class="codigo-integrante">
-
                                     {{ integrante.codigo_integrante }}
-
                                 </span>
 
                                 {% endif %}
@@ -1169,9 +1016,7 @@ Controles Financeiros
                             {% else %}
 
                             <div class="sem-integrantes">
-
                                 Nenhum integrante disponível.
-
                             </div>
 
                             {% endfor %}
@@ -1233,9 +1078,7 @@ Controles Financeiros
                             <div class="col-md-8 mb-3">
 
                                 <label class="form-label">
-
                                     Nome
-
                                 </label>
 
                                 <input
@@ -1251,9 +1094,7 @@ Controles Financeiros
                             <div class="col-md-4 mb-3">
 
                                 <label class="form-label">
-
                                     Telefone
-
                                 </label>
 
                                 <input
@@ -1277,9 +1118,7 @@ Controles Financeiros
                     <div class="mb-3">
 
                         <label class="form-label">
-
                             📝 Descrição
-
                         </label>
 
                         <input
@@ -1301,9 +1140,7 @@ Controles Financeiros
                         <div class="col-md-6 mb-3">
 
                             <label class="form-label">
-
                                 📏 Tamanho
-
                             </label>
 
                             <input
@@ -1313,9 +1150,7 @@ Controles Financeiros
                                 placeholder="Ex.: M, GG, 12, 40...">
 
                             <small class="text-secondary">
-
                                 Campo livre.
-
                             </small>
 
                         </div>
@@ -1324,9 +1159,7 @@ Controles Financeiros
                         <div class="col-md-6 mb-3">
 
                             <label class="form-label">
-
                                 🔢 Quantidade
-
                             </label>
 
                             <input
@@ -1352,9 +1185,7 @@ Controles Financeiros
                         <div class="col-md-6 mb-3">
 
                             <label class="form-label">
-
                                 💵 Valor unitário
-
                             </label>
 
                             <input
@@ -1372,9 +1203,7 @@ Controles Financeiros
                         <div class="col-md-6 mb-3">
 
                             <label class="form-label">
-
                                 💰 Valor total
-
                             </label>
 
                             <input
@@ -1396,9 +1225,7 @@ Controles Financeiros
                     <div class="mb-2">
 
                         <label class="form-label">
-
                             Observação
-
                         </label>
 
                         <textarea
@@ -1409,16 +1236,14 @@ Controles Financeiros
 
                     </div>
 
-
                 </div>
 
 
                 <!-- ================================================= -->
-                <!-- RODAPÉ                                            -->
+                <!-- RODAPÉ                                             -->
                 <!-- ================================================= -->
 
                 <div class="modal-footer">
-
 
                     <button
                         type="submit"
@@ -1438,9 +1263,7 @@ Controles Financeiros
 
                     </button>
 
-
                 </div>
-
 
             </form>
 
@@ -1450,9 +1273,174 @@ Controles Financeiros
 
 </div>
 
+<!-- ===================================================== -->
+<!-- MODAL - RELATÓRIO DE PAGAMENTOS                      -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalRelatorioControles"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-md modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <!-- CABEÇALHO -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    📄 Relatório de Pagamentos
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+
+            <form
+                method="GET"
+                action="/admin/financeiro/controles/relatorio"
+                target="_blank">
+
+                <div class="modal-body">
+
+                    <!-- TEMPORADA -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            📅 Temporada
+                        </label>
+
+                        <select
+                            name="temporada"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+                                Selecione a temporada
+                            </option>
+
+                            {% for temporada in temporadas %}
+
+                            <option value="{{ temporada.ano }}">
+
+                                {{ temporada.nome }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- GRUPO -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            📦 Grupo
+                        </label>
+
+                        <select
+                            name="grupo"
+                            class="form-select">
+
+                            <option value="">
+                                Todos os grupos
+                            </option>
+
+                            {% for item in itens_fardamento %}
+
+                            <option value="{{ item.nome }}">
+
+                                {{ item.nome }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <small class="text-secondary">
+                            Deixe como "Todos os grupos" para gerar o
+                            relatório completo da temporada.
+                        </small>
+
+                    </div>
+
+
+                    <!-- INFORMAÇÃO -->
+
+                    <div
+                        class="p-3 rounded"
+                        style="
+                            background: rgba(255,255,255,0.04);
+                            border: 1px solid rgba(255,255,255,0.08);
+                        ">
+
+                        <div class="fw-semibold mb-1">
+                            📊 Relatório financeiro
+                        </div>
+
+                        <div class="small text-secondary">
+
+                            O relatório apresentará os controles
+                            financeiros e os respectivos pagamentos
+                            conforme os filtros selecionados.
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- RODAPÉ -->
+
+                <div class="modal-footer">
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
+
+                        📄 Gerar Relatório
+
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
 
 <!-- ===================================================== -->
-<!-- JAVASCRIPT                                           -->
+<!-- JAVASCRIPT                                            -->
 <!-- ===================================================== -->
 
 <script>
@@ -1465,51 +1453,31 @@ document.addEventListener("DOMContentLoaded", function () {
     /* ===================================================== */
 
     const pesquisaControles =
-        document.getElementById(
-            "pesquisaControles"
-        );
-
+        document.getElementById("pesquisaControles");
 
     const filtroGrupo =
-        document.getElementById(
-            "filtroGrupo"
-        );
-
+        document.getElementById("filtroGrupo");
 
     const filtroStatus =
-        document.getElementById(
-            "filtroStatus"
-        );
-
+        document.getElementById("filtroStatus");
 
     const filtroTemporada =
-        document.getElementById(
-            "filtroTemporada"
-        );
+        document.getElementById("filtroTemporada");
 
+    const btnRelatorioControles =
+        document.getElementById("btnRelatorioControles");
 
     const limparFiltros =
-        document.getElementById(
-            "limparFiltros"
-        );
-
+        document.getElementById("limparFiltros");
 
     const quantidadeResultados =
-        document.getElementById(
-            "quantidadeResultados"
-        );
-
+        document.getElementById("quantidadeResultados");
 
     const linhas =
-        document.querySelectorAll(
-            ".linha-controle"
-        );
-
+        document.querySelectorAll(".linha-controle");
 
     const nenhumResultado =
-        document.getElementById(
-            "nenhumResultadoFiltro"
-        );
+        document.getElementById("nenhumResultadoFiltro");
 
 
     /* ===================================================== */
@@ -1517,7 +1485,6 @@ document.addEventListener("DOMContentLoaded", function () {
     /* ===================================================== */
 
     function aplicarFiltros() {
-
 
         const pesquisa =
             (
@@ -1554,7 +1521,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         linhas.forEach(function (linha) {
-
 
             const texto =
                 (
@@ -1798,16 +1764,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* ALTERAR ORIGEM                                       */
+    /* ALTERAR ORIGEM                                        */
     /* ===================================================== */
 
     function alterarOrigemPessoa() {
 
-
         if (
             origemPessoa.value === "INTEGRANTE"
         ) {
-
 
             campoIntegrante.style.display =
                 "block";
@@ -1840,9 +1804,7 @@ document.addEventListener("DOMContentLoaded", function () {
             telefonePessoa.value =
                 "";
 
-
         } else {
-
 
             campoIntegrante.style.display =
                 "none";
@@ -1876,11 +1838,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* FILTRAR INTEGRANTES                                  */
+    /* FILTRAR INTEGRANTES                                   */
     /* ===================================================== */
 
     function filtrarIntegrantes() {
-
 
         const termo =
             pesquisaIntegrante.value
@@ -1898,7 +1859,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         opcoes.forEach(function (opcao) {
-
 
             const nome =
                 (
@@ -1945,9 +1905,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (encontrados === 0) {
 
-
             if (!mensagem) {
-
 
                 mensagem =
                     document.createElement(
@@ -1969,7 +1927,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-
         } else if (mensagem) {
 
             mensagem.remove();
@@ -1980,11 +1937,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* SELECIONAR INTEGRANTE                                */
+    /* SELECIONAR INTEGRANTE                                 */
     /* ===================================================== */
 
     function selecionarIntegrante(botao) {
-
 
         const id =
             botao.dataset.id;
@@ -2057,11 +2013,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* LIMPAR SELEÇÃO                                       */
+    /* LIMPAR SELEÇÃO                                        */
     /* ===================================================== */
 
     function limparSelecaoIntegrante() {
-
 
         integranteControle.value =
             "";
@@ -2111,7 +2066,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* EVENTO DA ORIGEM                                     */
+    /* EVENTO DA ORIGEM                                      */
     /* ===================================================== */
 
     origemPessoa.addEventListener(
@@ -2121,7 +2076,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* PESQUISA DE INTEGRANTES                              */
+    /* PESQUISA DE INTEGRANTES                               */
     /* ===================================================== */
 
     pesquisaIntegrante.addEventListener(
@@ -2131,13 +2086,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* CLIQUE NOS INTEGRANTES                               */
+    /* CLIQUE NOS INTEGRANTES                                */
     /* ===================================================== */
 
     listaIntegrantes.addEventListener(
         "click",
         function (event) {
-
 
             const botao =
                 event.target.closest(
@@ -2159,7 +2113,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* ALTERAR INTEGRANTE                                   */
+    /* ALTERAR INTEGRANTE                                    */
     /* ===================================================== */
 
     limparIntegrante.addEventListener(
@@ -2175,11 +2129,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* CALCULAR TOTAL                                       */
+    /* CALCULAR TOTAL                                        */
     /* ===================================================== */
 
     function calcularTotalControle() {
-
 
         const qtd =
             parseFloat(
@@ -2205,13 +2158,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
         const valorNumerico =
-            parseFloat(valor)
-            || 0;
+            parseFloat(valor) || 0;
 
 
         const total =
-            qtd *
-            valorNumerico;
+            qtd * valorNumerico;
 
 
         valorTotal.value =
@@ -2236,12 +2187,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     /* ===================================================== */
-    /* VALIDAÇÃO                                            */
+    /* VALIDAÇÃO                                             */
     /* ===================================================== */
 
     window.validarNovoControle =
         function () {
-
 
             const origem =
                 origemPessoa.value;
@@ -2256,11 +2206,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             if (
-                origem === "INTEGRANTE"
-                &&
+                origem === "INTEGRANTE" &&
                 !integrante
             ) {
-
 
                 alert(
                     "Selecione um integrante."
@@ -2276,11 +2224,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
             if (
-                origem === "EXTERNA"
-                &&
+                origem === "EXTERNA" &&
                 !nome
             ) {
-
 
                 alert(
                     "Informe o nome da pessoa."
@@ -2295,13 +2241,33 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
+            const valor =
+                valorUnitario.value
+                    .trim();
+
+
+            if (!valor) {
+
+                alert(
+                    "Informe o valor unitário."
+                );
+
+
+                valorUnitario.focus();
+
+
+                return false;
+
+            }
+
+
             return true;
 
         };
 
 
     /* ===================================================== */
-    /* INICIALIZAÇÃO                                        */
+    /* INICIALIZAÇÃO                                         */
     /* ===================================================== */
 
     alterarOrigemPessoa();

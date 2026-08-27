@@ -10035,17 +10035,12 @@ def relatorio_controles_financeiros():
     try:
 
         # =====================================================
-        # TEMPORADA
+        # TEMPORADA SELECIONADA
         # =====================================================
 
         temporada = (
             request.args.get("temporada") or ""
         ).strip()
-
-
-        # =====================================================
-        # VALIDAR TEMPORADA
-        # =====================================================
 
         if not temporada:
 
@@ -10053,6 +10048,9 @@ def relatorio_controles_financeiros():
                 "/admin/financeiro/controles"
             )
 
+        # =====================================================
+        # BUSCAR TEMPORADA
+        # =====================================================
 
         temporada_db = db.execute(
             text("""
@@ -10073,13 +10071,15 @@ def relatorio_controles_financeiros():
             }
         ).fetchone()
 
+        # =====================================================
+        # VALIDAR TEMPORADA
+        # =====================================================
 
         if not temporada_db:
 
             return redirect(
                 "/admin/financeiro/controles"
             )
-
 
         # =====================================================
         # CONTROLES FINANCEIROS
@@ -10142,7 +10142,6 @@ def relatorio_controles_financeiros():
             }
         ).fetchall()
 
-
         # =====================================================
         # CONVERTER PARA DICIONÁRIOS
         # =====================================================
@@ -10154,39 +10153,23 @@ def relatorio_controles_financeiros():
             controles_pdf.append({
 
                 "id": item.id,
-
                 "temporada": item.temporada,
-
                 "tipo": item.tipo,
-
                 "grupo": item.grupo,
-
                 "descricao": item.descricao,
-
                 "integrante_id": item.integrante_id,
-
                 "nome_pessoa": item.nome_pessoa,
-
                 "telefone": item.telefone,
-
                 "quantidade": item.quantidade,
-
                 "tamanho": item.tamanho,
-
                 "valor_unitario": item.valor_unitario,
-
                 "valor_total": item.valor_total,
-
                 "valor_pago": item.valor_pago,
-
                 "status": item.status,
-
                 "observacao": item.observacao,
-
                 "data_cadastro": item.data_cadastro
 
             })
-
 
         # =====================================================
         # GERAR PDF
@@ -10196,12 +10179,10 @@ def relatorio_controles_financeiros():
             gerar_pdf_relatorio_controles
         )
 
-
         pdf = gerar_pdf_relatorio_controles(
             temporada=temporada_db.ano,
             controles=controles_pdf
         )
-
 
         # =====================================================
         # RETORNAR PDF
@@ -10209,29 +10190,37 @@ def relatorio_controles_financeiros():
 
         return send_file(
             pdf,
-
             mimetype="application/pdf",
-
             as_attachment=False,
-
             download_name=(
                 "relatorio_controles_financeiros_"
                 f"{temporada_db.ano}.pdf"
             )
         )
 
-
     except Exception as e:
 
+        import traceback
+
         print(
-            "ERRO AO GERAR RELATÓRIO DE CONTROLES:",
-            e
+            "\n====================================================="
+        )
+        print(
+            "ERRO AO GERAR RELATÓRIO DE CONTROLES"
+        )
+        print(
+            "====================================================="
         )
 
-        return redirect(
-            "/admin/financeiro/controles"
+        print(
+            traceback.format_exc()
         )
 
+        return (
+            f"<pre>ERRO AO GERAR RELATÓRIO:\n\n"
+            f"{traceback.format_exc()}</pre>",
+            500
+        )
 
     finally:
 
