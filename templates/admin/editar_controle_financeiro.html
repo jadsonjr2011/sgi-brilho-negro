@@ -101,39 +101,37 @@ Editar Controle Financeiro
             <div class="col-md-8 mb-3">
 
                 <label class="form-label">
-
-                    Tipo
-
+                    📦 Grupo
                 </label>
 
-
                 <select
-                    name="tipo"
+                    name="grupo"
                     class="form-select"
                     required>
 
-
-                    <option value="CAMISA"
-                        {% if controle.tipo == 'CAMISA' %}
-                            selected
-                        {% endif %}>
-
-                        👕 Camisa
-
+                    <option value="">
+                        Selecione o grupo
                     </option>
 
+                    {% for item in itens_fardamento %}
 
-                    <option value="OUTRO"
-                        {% if controle.tipo == 'OUTRO' %}
-                            selected
-                        {% endif %}>
+                        <option
+                            value="{{ item.nome }}"
+                            {% if controle.grupo == item.nome %}
+                                selected
+                            {% endif %}>
 
-                        📦 Outro
+                            {{ item.nome }}
 
-                    </option>
+                        </option>
 
+                    {% endfor %}
 
                 </select>
+
+                <small class="text-secondary">
+                    Os grupos são carregados dos itens ativos de fardamento.
+                </small>
 
             </div>
 
