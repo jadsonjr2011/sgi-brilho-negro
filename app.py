@@ -10049,6 +10049,14 @@ def relatorio_controles_financeiros():
             )
 
         # =====================================================
+        # GRUPO SELECIONADO
+        # =====================================================
+
+        grupo = (
+            request.args.get("grupo") or ""
+        ).strip()
+
+        # =====================================================
         # BUSCAR TEMPORADA
         # =====================================================
 
@@ -10117,6 +10125,12 @@ def relatorio_controles_financeiros():
                 WHERE
                     c.temporada = :temporada
 
+                    AND (
+                        :grupo = ''
+                        OR LOWER(TRIM(c.grupo)) =
+                           LOWER(TRIM(:grupo))
+                    )
+
                 GROUP BY
                     c.id,
                     c.temporada,
@@ -10138,7 +10152,8 @@ def relatorio_controles_financeiros():
                     c.id DESC
             """),
             {
-                "temporada": temporada_db.ano
+                "temporada": temporada_db.ano,
+                "grupo": grupo
             }
         ).fetchall()
 
@@ -10181,6 +10196,7 @@ def relatorio_controles_financeiros():
 
         pdf = gerar_pdf_relatorio_controles(
             temporada=temporada_db.ano,
+            grupo=grupo,
             controles=controles_pdf
         )
 

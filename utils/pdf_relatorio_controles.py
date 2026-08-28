@@ -19,6 +19,7 @@ from reportlab.platypus import (
     KeepTogether
 )
 
+
 # =========================================================
 # CONFIGURAÇÕES
 # =========================================================
@@ -205,6 +206,50 @@ def adicionar_cabecalho(canvas, doc):
         f"Temporada {temporada}"
     )
 
+    # =====================================================
+    # GRUPO
+    # =====================================================
+
+    grupo = getattr(
+        doc,
+        "grupo",
+        ""
+    )
+
+    if grupo:
+
+        canvas.setFont(
+            "Helvetica-Bold",
+            10
+        )
+
+        canvas.setFillColor(
+            colors.HexColor("#333333")
+        )
+
+        canvas.drawCentredString(
+            largura / 2,
+            altura - 243,
+            f"Grupo: {grupo}"
+        )
+
+    else:
+
+        canvas.setFont(
+            "Helvetica",
+            10
+        )
+
+        canvas.setFillColor(
+            colors.HexColor("#666666")
+        )
+
+        canvas.drawCentredString(
+            largura / 2,
+            altura - 243,
+            "Todos os grupos"
+        )
+
     canvas.restoreState()
 
 
@@ -368,10 +413,6 @@ def criar_tabela_resumo(
     tabela.setStyle(
         TableStyle([
 
-            # =================================================
-            # CABEÇALHO
-            # =================================================
-
             (
                 "BACKGROUND",
                 (0, 0),
@@ -400,10 +441,6 @@ def criar_tabela_resumo(
                 7.5
             ),
 
-            # =================================================
-            # VALORES
-            # =================================================
-
             (
                 "FONTNAME",
                 (0, 1),
@@ -424,10 +461,6 @@ def criar_tabela_resumo(
                 (-1, 1),
                 colors.HexColor("#222222")
             ),
-
-            # =================================================
-            # ALINHAMENTO
-            # =================================================
 
             (
                 "ALIGN",
@@ -450,10 +483,6 @@ def criar_tabela_resumo(
                 "MIDDLE"
             ),
 
-            # =================================================
-            # GRADE
-            # =================================================
-
             (
                 "BOX",
                 (0, 0),
@@ -469,10 +498,6 @@ def criar_tabela_resumo(
                 0.25,
                 colors.HexColor("#cccccc")
             ),
-
-            # =================================================
-            # ESPAÇAMENTO
-            # =================================================
 
             (
                 "TOPPADDING",
@@ -640,10 +665,6 @@ def criar_tabela_controles(controles):
 
     estilo = [
 
-        # =====================================================
-        # CABEÇALHO
-        # =====================================================
-
         (
             "BACKGROUND",
             (0, 0),
@@ -685,10 +706,6 @@ def criar_tabela_controles(controles):
             (-1, -1),
             "MIDDLE"
         ),
-
-        # =====================================================
-        # CORPO
-        # =====================================================
 
         (
             "FONTNAME",
@@ -732,10 +749,6 @@ def criar_tabela_controles(controles):
             "LEFT"
         ),
 
-        # =====================================================
-        # GRADE
-        # =====================================================
-
         (
             "GRID",
             (0, 0),
@@ -743,10 +756,6 @@ def criar_tabela_controles(controles):
             0.3,
             colors.HexColor("#cccccc")
         ),
-
-        # =====================================================
-        # ALTERNÂNCIA
-        # =====================================================
 
         (
             "ROWBACKGROUNDS",
@@ -757,10 +766,6 @@ def criar_tabela_controles(controles):
                 colors.HexColor("#f5f5f5")
             ]
         ),
-
-        # =====================================================
-        # ESPAÇAMENTO
-        # =====================================================
 
         (
             "TOPPADDING",
@@ -900,7 +905,10 @@ def criar_tabela_resumo_tamanhos(controles):
             .upper()
         )
 
-        quantidade = item.get("quantidade", 0) or 0
+        quantidade = (
+            item.get("quantidade", 0)
+            or 0
+        )
 
         try:
             quantidade = float(quantidade)
@@ -979,10 +987,6 @@ def criar_tabela_resumo_tamanhos(controles):
 
     estilo = [
 
-        # =====================================================
-        # CABEÇALHO
-        # =====================================================
-
         (
             "BACKGROUND",
             (0, 0),
@@ -1018,10 +1022,6 @@ def criar_tabela_resumo_tamanhos(controles):
             "CENTER"
         ),
 
-        # =====================================================
-        # CORPO
-        # =====================================================
-
         (
             "FONTNAME",
             (0, 1),
@@ -1050,10 +1050,6 @@ def criar_tabela_resumo_tamanhos(controles):
             "CENTER"
         ),
 
-        # =====================================================
-        # TOTAL
-        # =====================================================
-
         (
             "BACKGROUND",
             (0, -1),
@@ -1075,10 +1071,6 @@ def criar_tabela_resumo_tamanhos(controles):
             8
         ),
 
-        # =====================================================
-        # GRADE
-        # =====================================================
-
         (
             "BOX",
             (0, 0),
@@ -1095,10 +1087,6 @@ def criar_tabela_resumo_tamanhos(controles):
             colors.HexColor("#cccccc")
         ),
 
-        # =====================================================
-        # ALTERNÂNCIA
-        # =====================================================
-
         (
             "ROWBACKGROUNDS",
             (0, 1),
@@ -1108,10 +1096,6 @@ def criar_tabela_resumo_tamanhos(controles):
                 colors.HexColor("#f5f5f5")
             ]
         ),
-
-        # =====================================================
-        # ESPAÇAMENTO
-        # =====================================================
 
         (
             "TOPPADDING",
@@ -1142,7 +1126,8 @@ def criar_tabela_resumo_tamanhos(controles):
 
 def gerar_pdf_relatorio_controles(
     temporada,
-    controles
+    controles,
+    grupo=None
 ):
 
     buffer = BytesIO()
@@ -1156,12 +1141,18 @@ def gerar_pdf_relatorio_controles(
         rightMargin=18 * mm,
         leftMargin=18 * mm,
 
-        topMargin=92 * mm,
+        topMargin=98 * mm,
         bottomMargin=22 * mm
 
     )
 
     documento.temporada = temporada
+
+    documento.grupo = (
+        grupo
+        if grupo
+        else ""
+    )
 
     estilos = criar_estilos()
 
@@ -1203,10 +1194,6 @@ def gerar_pdf_relatorio_controles(
     # =====================================================
     # CALCULAR RESUMO
     # =====================================================
-
-    # Total de peças/pedidos.
-    # Não considera a quantidade de registros,
-    # e sim a QTD. solicitada em cada controle.
 
     total_controles = 0
 
@@ -1268,9 +1255,6 @@ def gerar_pdf_relatorio_controles(
 
         if status == "CANCELADO":
             continue
-
-        # Agora os status também consideram a quantidade
-        # de peças, e não apenas a quantidade de registros.
 
         if pago >= total and total > 0:
 
@@ -1425,7 +1409,7 @@ def gerar_pdf_relatorio_controles(
         elementos.append(
 
             Paragraph(
-                "Nenhum controle financeiro cadastrado.",
+                "Nenhum controle financeiro cadastrado para os filtros selecionados.",
                 estilos["normal"]
             )
 
