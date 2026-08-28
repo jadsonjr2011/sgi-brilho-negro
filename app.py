@@ -754,6 +754,7 @@ def admin():
         "abrir_instrumentos"
     )
 
+
     db = SessionLocal()
 
     try:
@@ -862,54 +863,18 @@ def admin():
 
 
         # ==========================================
-        # ANIVERSARIANTES DO MÊS
+        # DATA / MÊS ATUAL
         # ==========================================
 
-        mes_atual = datetime.now(
+        agora = datetime.now(
             ZoneInfo("America/Sao_Paulo")
-        ).month
+        )
 
-
-        aniversariantes = db.execute(
-            text("""
-                SELECT
-                    id,
-                    codigo_integrante,
-                    nome,
-                    data_nascimento,
-                    cidade,
-                    funcao,
-
-                    TO_CHAR(
-                        CAST(data_nascimento AS DATE),
-                        'DD/MM'
-                    ) AS aniversario
-
-                FROM integrantes
-
-                WHERE data_nascimento IS NOT NULL
-                AND data_nascimento <> ''
-                AND status = 'APROVADO'
-                AND situacao = 'ATIVO'
-
-                AND EXTRACT(
-                    MONTH FROM CAST(data_nascimento AS DATE)
-                ) = :mes
-
-                ORDER BY
-                    EXTRACT(
-                        DAY FROM CAST(data_nascimento AS DATE)
-                    ),
-                    LOWER(nome)
-            """),
-            {
-                "mes": mes_atual
-            }
-        ).mappings().all()
+        mes_atual = agora.month
 
 
         # ==========================================
-        # NOME DO MÊS
+        # NOME DOS MESES
         # ==========================================
 
         meses = [
@@ -928,7 +893,120 @@ def admin():
             "Dezembro"
         ]
 
+
         mes_nome = meses[mes_atual]
+
+
+        # ==========================================
+        # TODOS OS ANIVERSARIANTES DO ANO
+        # ==========================================
+        #
+        # Busca todos de uma vez.
+        # O filtro é feito somente por mês/dia.
+        #
+        # ==========================================
+
+        aniversariantes_ano = db.execute(
+            text("""
+                SELECT
+                    id,
+                    codigo_integrante,
+                    nome,
+                    cidade,
+                    funcao,
+
+                    EXTRACT(
+                        MONTH FROM CAST(data_nascimento AS DATE)
+                    ) AS mes_aniversario,
+
+                    EXTRACT(
+                        DAY FROM CAST(data_nascimento AS DATE)
+                    ) AS dia_aniversario,
+
+                    TO_CHAR(
+                        CAST(data_nascimento AS DATE),
+                        'DD/MM'
+                    ) AS aniversario
+
+                FROM integrantes
+
+                WHERE data_nascimento IS NOT NULL
+                AND data_nascimento <> ''
+                AND status = 'APROVADO'
+                AND situacao = 'ATIVO'
+
+                ORDER BY
+                    EXTRACT(
+                        MONTH FROM CAST(data_nascimento AS DATE)
+                    ),
+                    EXTRACT(
+                        DAY FROM CAST(data_nascimento AS DATE)
+                    ),
+                    LOWER(nome)
+            """)
+        ).mappings().all()
+
+
+        # ==========================================
+        # ORGANIZAR ANIVERSARIANTES POR MÊS
+        # ==========================================
+
+        aniversariantes_por_mes = {
+
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+            7: [],
+            8: [],
+            9: [],
+            10: [],
+            11: [],
+            12: []
+
+        }
+
+
+        for pessoa in aniversariantes_ano:
+
+            mes = int(
+                pessoa["mes_aniversario"]
+            )
+
+            aniversariantes_por_mes[mes].append({
+
+                "id": pessoa["id"],
+
+                "codigo_integrante":
+                    pessoa["codigo_integrante"],
+
+                "nome":
+                    pessoa["nome"],
+
+                "cidade":
+                    pessoa["cidade"] or "-",
+
+                "funcao":
+                    pessoa["funcao"] or "-",
+
+                "aniversario":
+                    pessoa["aniversario"]
+
+            })
+
+
+        # ==========================================
+        # ANIVERSARIANTES DO MÊS ATUAL
+        # ==========================================
+
+        aniversariantes = (
+            aniversariantes_por_mes.get(
+                mes_atual,
+                []
+            )
+        )
 
 
     finally:
@@ -954,7 +1032,12 @@ def admin():
 
         # ANIVERSARIANTES
         aniversariantes=aniversariantes,
+        aniversariantes_por_mes=aniversariantes_por_mes,
         mes_nome=mes_nome,
+        mes_atual=mes_atual,
+
+        # MESES
+        meses=meses,
 
         # INSCRIÇÕES
         status_inscricoes=status_inscricoes,

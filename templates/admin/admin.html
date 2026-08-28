@@ -973,11 +973,16 @@
 
         </div>
 
-        <div style="color: #ffc107; font-weight: 700;">
+        <button
+            type="button"
+            class="btn btn-sm btn-warning"
+            data-bs-toggle="modal"
+            data-bs-target="#modalAniversariantes">
 
+            🎂
             {{ aniversariantes|length }}
 
-        </div>
+        </button>
 
     </div>
 
@@ -1074,17 +1079,32 @@
     </h3>
 
 
-    {% if aniversariantes %}
+    <div class="d-flex align-items-center gap-2">
 
-    <span class="badge bg-warning text-dark">
+        {% if aniversariantes %}
 
-        {{ aniversariantes|length }}
+        <span class="badge bg-warning text-dark">
 
-        aniversariante{% if aniversariantes|length != 1 %}s{% endif %}
+            {{ aniversariantes|length }}
 
-    </span>
+            aniversariante{% if aniversariantes|length != 1 %}s{% endif %}
 
-    {% endif %}
+        </span>
+
+        {% endif %}
+
+
+        <button
+            type="button"
+            class="btn btn-outline-warning btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#modalAniversariantes">
+
+            📅 Ver outros meses
+
+        </button>
+
+    </div>
 
 </div>
 
@@ -1133,12 +1153,6 @@
             <span class="dia-numero">
 
                 {{ pessoa.aniversario }}
-
-            </span>
-
-            <span class="dia-label">
-
-                DIA
 
             </span>
 
@@ -1225,8 +1239,441 @@
 
 {% endif %}
 
+<!-- ===================================================== -->
+<!-- MODAL DE ANIVERSARIANTES                             -->
+<!-- ===================================================== -->
+
+<div
+    class="modal fade"
+    id="modalAniversariantes"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content bg-dark text-white">
+
+            <!-- ================================================= -->
+            <!-- CABEÇALHO                                        -->
+            <!-- ================================================= -->
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    🎂 Aniversariantes por mês
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- CORPO                                             -->
+            <!-- ================================================= -->
+
+            <div class="modal-body">
+
+                <p class="text-secondary mb-4">
+
+                    Selecione o mês para consultar os aniversariantes.
+
+                </p>
+
+
+                <!-- ================================================= -->
+                <!-- MESES                                             -->
+                <!-- ================================================= -->
+
+                <div class="row g-2">
+
+                    {% for numero, nome in [
+                        (1, "Janeiro"),
+                        (2, "Fevereiro"),
+                        (3, "Março"),
+                        (4, "Abril"),
+                        (5, "Maio"),
+                        (6, "Junho"),
+                        (7, "Julho"),
+                        (8, "Agosto"),
+                        (9, "Setembro"),
+                        (10, "Outubro"),
+                        (11, "Novembro"),
+                        (12, "Dezembro")
+                    ] %}
+
+                    <div class="col-6 col-md-3">
+
+                        <button
+                            type="button"
+                            class="btn w-100 btn-outline-secondary botao-mes-aniversariante"
+                            data-mes="{{ numero }}"
+                            onclick="mostrarAniversariantesMes({{ numero }})">
+
+                            <span class="icone-mes">
+                                📅
+                            </span>
+
+                            {{ nome }}
+
+                        </button>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <hr class="my-4">
+
+
+                <!-- ================================================= -->
+                <!-- RESULTADO                                        -->
+                <!-- ================================================= -->
+
+                <div id="resultadoAniversariantes">
+
+                    <div class="text-center text-secondary py-4">
+
+                        <div style="font-size: 2rem;">
+                            🎂
+                        </div>
+
+                        <div class="mt-2">
+
+                            Selecione um mês acima para consultar.
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- RODAPÉ                                            -->
+            <!-- ================================================= -->
+
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+
+                    Fechar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
+
+
+<!-- ===================================================== -->
+<!-- DADOS DOS ANIVERSARIANTES                            -->
+<!-- ===================================================== -->
+
+<script>
+
+const aniversariantesPorMes =
+    {{ aniversariantes_por_mes | tojson }};
+
+
+const nomesMeses = {
+
+    1: "Janeiro",
+    2: "Fevereiro",
+    3: "Março",
+    4: "Abril",
+    5: "Maio",
+    6: "Junho",
+    7: "Julho",
+    8: "Agosto",
+    9: "Setembro",
+    10: "Outubro",
+    11: "Novembro",
+    12: "Dezembro"
+
+};
+
+
+/* ===================================================== */
+/* MOSTRAR ANIVERSARIANTES DO MÊS                       */
+/* ===================================================== */
+
+function mostrarAniversariantesMes(mes) {
+
+    const resultado =
+        document.getElementById(
+            "resultadoAniversariantes"
+        );
+
+
+    const pessoas =
+        aniversariantesPorMes[mes] || [];
+
+
+    /* ========================================== */
+    /* ATUALIZAR BOTÕES DOS MESES                 */
+    /* ========================================== */
+
+    document
+        .querySelectorAll(
+            ".botao-mes-aniversariante"
+        )
+        .forEach(
+            function (botao) {
+
+                const numero =
+                    parseInt(
+                        botao.dataset.mes
+                    );
+
+
+                const icone =
+                    botao.querySelector(
+                        ".icone-mes"
+                    );
+
+
+                if (numero === mes) {
+
+                    botao.classList.remove(
+                        "btn-outline-secondary"
+                    );
+
+                    botao.classList.add(
+                        "btn-warning"
+                    );
+
+                    icone.textContent = "🎂";
+
+                }
+
+                else {
+
+                    botao.classList.remove(
+                        "btn-warning"
+                    );
+
+                    botao.classList.add(
+                        "btn-outline-secondary"
+                    );
+
+                    icone.textContent = "📅";
+
+                }
+
+            }
+        );
+
+
+    /* ========================================== */
+    /* NENHUM ANIVERSARIANTE                      */
+    /* ========================================== */
+
+    if (pessoas.length === 0) {
+
+        resultado.innerHTML = `
+
+            <div class="text-center text-secondary py-4">
+
+                <div style="font-size: 2rem;">
+                    🎂
+                </div>
+
+                <div class="mt-2">
+                    Nenhum aniversariante em
+                    <strong>${nomesMeses[mes]}</strong>.
+                </div>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /* ========================================== */
+    /* TÍTULO                                     */
+    /* ========================================== */
+
+    let html = `
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <h4 class="titulo mb-0">
+
+                🎂 Aniversariantes de ${nomesMeses[mes]}
+
+            </h4>
+
+            <span class="badge bg-warning text-dark">
+
+                ${pessoas.length}
+
+                ${pessoas.length === 1
+                    ? "aniversariante"
+                    : "aniversariantes"}
+
+            </span>
+
+        </div>
+
+
+        <div class="aniversariantes-cabecalho">
+
+            <div>
+                Dia
+            </div>
+
+            <div>
+                Integrante
+            </div>
+
+            <div>
+                Cidade
+            </div>
+
+            <div>
+                Função
+            </div>
+
+        </div>
+
+
+        <div class="aniversariantes-lista">
+
+    `;
+
+
+    /* ========================================== */
+    /* LISTA                                      */
+    /* ========================================== */
+
+    pessoas.forEach(
+        function (pessoa) {
+
+            html += `
+
+                <div class="aniversariante-item">
+
+                    <div class="aniversariante-dia">
+
+                        <span class="dia-numero">
+                            ${pessoa.aniversario}
+                        </span>
+
+                    </div>
+
+
+                    <div class="aniversariante-integrante">
+
+                        <span class="mobile-label">
+                            Integrante
+                        </span>
+
+                        <strong>
+                            ${pessoa.nome}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="aniversariante-cidade">
+
+                        <span class="mobile-label">
+                            Cidade
+                        </span>
+
+                        <span>
+                            ${pessoa.cidade || "-"}
+                        </span>
+
+                    </div>
+
+
+                    <div class="aniversariante-funcao">
+
+                        <span class="mobile-label">
+                            Função
+                        </span>
+
+                        <span>
+                            ${pessoa.funcao || "-"}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+        </div>
+
+    `;
+
+
+    resultado.innerHTML = html;
+
+}
+
+
+/* ===================================================== */
+/* ABRIR MODAL                                           */
+/* ===================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const modal =
+            document.getElementById(
+                "modalAniversariantes"
+            );
+
+
+        if (!modal) {
+            return;
+        }
+
+
+        modal.addEventListener(
+            "shown.bs.modal",
+            function () {
+
+                mostrarAniversariantesMes(
+                    {{ mes_atual }}
+                );
+
+            }
+        );
+
+    }
+);
+
+</script>
 
 <!-- ===================================================== -->
 <!-- MODAL DE RELATÓRIOS                                  -->
