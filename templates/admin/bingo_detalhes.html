@@ -1531,6 +1531,64 @@ Bingo
 
 }
 
+/* ============================================================
+   BOTÃO — REMOVER PRÊMIO
+   ============================================================ */
+
+.btn-remover-premio {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid rgba(220, 53, 69, 0.30);
+    border-radius: 9px;
+
+    background: rgba(220, 53, 69, 0.08);
+    color: #ff7b87;
+
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-remover-premio:hover {
+    background: rgba(220, 53, 69, 0.18);
+    border-color: rgba(220, 53, 69, 0.60);
+    color: #ff9aa3;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 12px rgba(220, 53, 69, 0.18);
+}
+
+.btn-remover-premio:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-remover-premio:focus {
+    outline: none;
+
+    box-shadow:
+        0 0 0 3px rgba(220, 53, 69, 0.12);
+}
+
 </style>
 
 <div class="bingo-detalhes-container">
@@ -2748,299 +2806,492 @@ Bingo
     class="bingo-modal-overlay"
     onclick="fecharModalEditarFora(event)">
 
+    <div
+        class="bingo-modal"
+        onclick="event.stopPropagation()">
 
-<div
-    class="bingo-modal"
-    onclick="event.stopPropagation()">
+        <div class="bingo-modal-cabecalho">
 
-    <div class="bingo-modal-cabecalho">
+            <div class="bingo-modal-titulo">
 
-        <div class="bingo-modal-titulo">
-
-            <div class="bingo-modal-icone">
-                🎱
-            </div>
-
-            <div>
-
-                <h3>
-                    Editar Bingo
-                </h3>
-
-                <p>
-                    Altere as informações deste Bingo.
-                </p>
-
-            </div>
-
-        </div>
-
-        <button
-            type="button"
-            class="btn-fechar-bingo-modal"
-            onclick="fecharModalEditarBingo()">
-
-            ×
-
-        </button>
-
-    </div>
-
-
-    <form
-        method="POST"
-        action="/admin/bingo/{{ bingo.id }}/editar">
-
-        <div class="bingo-modal-corpo">
-
-            <div class="bingo-form-grid">
-
-                <div class="bingo-form-grupo full">
-
-                    <label for="editar_bingo_nome">
-                        Nome do Bingo *
-                    </label>
-
-                    <input
-                        type="text"
-                        id="editar_bingo_nome"
-                        name="nome"
-                        value="{{ bingo.nome or '' }}"
-                        placeholder="Ex.: Bingo Beneficente Brilho Negro"
-                        required>
-
+                <div class="bingo-modal-icone">
+                    🎱
                 </div>
 
+                <div>
 
-                <div class="bingo-form-grupo">
+                    <h3>
+                        Editar Bingo
+                    </h3>
 
-                    <label for="editar_bingo_temporada">
-                        Temporada
-                    </label>
-
-                    <select
-                        id="editar_bingo_temporada"
-                        name="temporada_id">
-
-                        <option value="">
-                            Sem temporada
-                        </option>
-
-                        {% for temporada in temporadas %}
-
-                            <option
-                                value="{{ temporada.id }}"
-                                {% if bingo.temporada_id == temporada.id %}selected{% endif %}>
-
-                                {{ temporada.nome }}
-
-                                {% if temporada.ano %}
-                                    — {{ temporada.ano }}
-                                {% endif %}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <div class="bingo-form-grupo">
-
-                    <label for="editar_bingo_status">
-                        Status
-                    </label>
-
-                    <select
-                        id="editar_bingo_status"
-                        name="status">
-
-                        <option
-                            value="PLANEJADO"
-                            {% if bingo.status == 'PLANEJADO' %}selected{% endif %}>
-                            Planejado
-                        </option>
-
-                        <option
-                            value="ABERTO"
-                            {% if bingo.status == 'ABERTO' %}selected{% endif %}>
-                            Aberto
-                        </option>
-
-                        <option
-                            value="EM_ANDAMENTO"
-                            {% if bingo.status == 'EM_ANDAMENTO' %}selected{% endif %}>
-                            Em andamento
-                        </option>
-
-                        <option
-                            value="ENCERRADO"
-                            {% if bingo.status == 'ENCERRADO' %}selected{% endif %}>
-                            Encerrado
-                        </option>
-
-                        <option
-                            value="CANCELADO"
-                            {% if bingo.status == 'CANCELADO' %}selected{% endif %}>
-                            Cancelado
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <div class="bingo-form-grupo">
-
-                    <label for="editar_bingo_data">
-                        Data *
-                    </label>
-
-                    <input
-                        type="date"
-                        id="editar_bingo_data"
-                        name="data"
-                        value="{{ bingo.data.strftime('%Y-%m-%d') if bingo.data else '' }}"
-                        required>
-
-                </div>
-
-
-                <div class="bingo-form-grupo">
-
-                    <label for="editar_bingo_horario">
-                        Horário
-                    </label>
-
-                    <input
-                        type="time"
-                        id="editar_bingo_horario"
-                        name="horario"
-                        value="{{ bingo.horario.strftime('%H:%M') if bingo.horario and bingo.horario.strftime is defined else (bingo.horario or '') }}">
-
-                </div>
-
-
-                <div class="bingo-form-grupo full">
-
-                    <label for="editar_bingo_local">
-                        Local
-                    </label>
-
-                    <input
-                        type="text"
-                        id="editar_bingo_local"
-                        name="local"
-                        value="{{ bingo.local or '' }}"
-                        placeholder="Ex.: Feira Livre de João Câmara">
-
-                </div>
-
-
-                <div class="bingo-form-grupo">
-
-                    <label for="editar_bingo_valor">
-                        Valor da Cartela *
-                    </label>
-
-                    <input
-                        type="text"
-                        id="editar_bingo_valor"
-                        name="valor_cartela"
-                        value="{{ '%.2f'|format((bingo.valor_cartela or 0)|float) }}"
-                        placeholder="Ex.: 5,00"
-                        inputmode="decimal"
-                        required>
-
-                    <span class="bingo-form-ajuda">
-                        Informe o valor em reais.
-                    </span>
-
-                </div>
-
-
-                <div class="bingo-form-grupo">
-
-                    <label for="editar_bingo_quantidade">
-                        Quantidade Inicial de Cartelas *
-                    </label>
-
-                    <input
-                        type="number"
-                        id="editar_bingo_quantidade"
-                        name="quantidade_cartelas"
-                        min="1"
-                        value="{{ bingo.quantidade_cartelas or 1 }}"
-                        required>
-
-                    <span class="bingo-form-ajuda">
-                        Essa quantidade serve como configuração inicial.
-                        Novas cartelas devem ser geradas pela operação
-                        "Gerar Cartelas".
-                    </span>
-
-                </div>
-
-
-                <div class="bingo-form-grupo full">
-
-                    <label for="editar_bingo_descricao">
-                        Descrição
-                    </label>
-
-                    <textarea
-                        id="editar_bingo_descricao"
-                        name="descricao"
-                        placeholder="Informações sobre o Bingo...">{{ bingo.descricao or '' }}</textarea>
-
-                </div>
-
-
-                <div class="bingo-form-grupo full">
-
-                    <label for="editar_bingo_observacoes">
-                        Observações
-                    </label>
-
-                    <textarea
-                        id="editar_bingo_observacoes"
-                        name="observacoes"
-                        placeholder="Observações internas...">{{ bingo.observacoes or '' }}</textarea>
+                    <p>
+                        Altere as informações deste Bingo.
+                    </p>
 
                 </div>
 
             </div>
-
-        </div>
-
-
-        <div class="bingo-modal-rodape">
 
             <button
                 type="button"
-                class="btn-cancelar-bingo"
+                class="btn-fechar-bingo-modal"
                 onclick="fecharModalEditarBingo()">
 
-                Cancelar
-
-            </button>
-
-            <button
-                type="submit"
-                class="btn-salvar-bingo">
-
-                ✓ Salvar Alterações
+                ×
 
             </button>
 
         </div>
 
-    </form>
 
-</div>
+        <form
+            method="POST"
+            action="/admin/bingo/{{ bingo.id }}/editar">
 
+            <div class="bingo-modal-corpo">
+
+                <div class="bingo-form-grid">
+
+
+                    <!-- =================================================
+                         NOME
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="editar_bingo_nome">
+                            Nome do Bingo *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editar_bingo_nome"
+                            name="nome"
+                            value="{{ bingo.nome or '' }}"
+                            placeholder="Ex.: Bingo Beneficente Brilho Negro"
+                            required>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         TEMPORADA
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="editar_bingo_temporada">
+                            Temporada
+                        </label>
+
+                        <select
+                            id="editar_bingo_temporada"
+                            name="temporada_id">
+
+                            <option value="">
+                                Sem temporada
+                            </option>
+
+                            {% for temporada in temporadas %}
+
+                                <option
+                                    value="{{ temporada.id }}"
+                                    {% if bingo.temporada_id == temporada.id %}selected{% endif %}>
+
+                                    {{ temporada.nome }}
+
+                                    {% if temporada.ano %}
+                                        — {{ temporada.ano }}
+                                    {% endif %}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         STATUS
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="editar_bingo_status">
+                            Status
+                        </label>
+
+                        <select
+                            id="editar_bingo_status"
+                            name="status">
+
+                            <option
+                                value="PLANEJADO"
+                                {% if bingo.status == 'PLANEJADO' %}selected{% endif %}>
+
+                                Planejado
+
+                            </option>
+
+                            <option
+                                value="ABERTO"
+                                {% if bingo.status == 'ABERTO' %}selected{% endif %}>
+
+                                Aberto
+
+                            </option>
+
+                            <option
+                                value="EM_ANDAMENTO"
+                                {% if bingo.status == 'EM_ANDAMENTO' %}selected{% endif %}>
+
+                                Em andamento
+
+                            </option>
+
+                            <option
+                                value="ENCERRADO"
+                                {% if bingo.status == 'ENCERRADO' %}selected{% endif %}>
+
+                                Encerrado
+
+                            </option>
+
+                            <option
+                                value="CANCELADO"
+                                {% if bingo.status == 'CANCELADO' %}selected{% endif %}>
+
+                                Cancelado
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         DATA
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="editar_bingo_data">
+                            Data *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="editar_bingo_data"
+                            name="data"
+                            value="{{ bingo.data.strftime('%Y-%m-%d') if bingo.data else '' }}"
+                            required>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         HORÁRIO
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="editar_bingo_horario">
+                            Horário
+                        </label>
+
+                        <input
+                            type="time"
+                            id="editar_bingo_horario"
+                            name="horario"
+                            value="{{ bingo.horario.strftime('%H:%M') if bingo.horario and bingo.horario.strftime is defined else (bingo.horario or '') }}">
+
+                    </div>
+
+
+                    <!-- =================================================
+                         LOCAL
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="editar_bingo_local">
+                            Local
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editar_bingo_local"
+                            name="local"
+                            value="{{ bingo.local or '' }}"
+                            placeholder="Ex.: Feira Livre de João Câmara">
+
+                    </div>
+
+
+                    <!-- =================================================
+                         VALOR DA CARTELA
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="editar_bingo_valor">
+                            Valor da Cartela *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editar_bingo_valor"
+                            name="valor_cartela"
+                            value="{{ '%.2f'|format((bingo.valor_cartela or 0)|float) }}"
+                            placeholder="Ex.: 5,00"
+                            inputmode="decimal"
+                            required>
+
+                        <span class="bingo-form-ajuda">
+                            Informe o valor em reais.
+                        </span>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         QUANTIDADE DE CARTELAS
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="editar_bingo_quantidade">
+                            Quantidade Inicial de Cartelas *
+                        </label>
+
+                        <input
+                            type="number"
+                            id="editar_bingo_quantidade"
+                            name="quantidade_cartelas"
+                            min="1"
+                            value="{{ bingo.quantidade_cartelas or 1 }}"
+                            required>
+
+                        <span class="bingo-form-ajuda">
+                            Essa quantidade serve como configuração inicial.
+                            Novas cartelas devem ser geradas pela operação
+                            "Gerar Cartelas".
+                        </span>
+
+                    </div>
+
+
+                    <!-- ============================================================
+                         PRÊMIOS
+                         ============================================================ -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <div class="bingo-secao-titulo">
+
+                            <span>🏆</span>
+
+                            <div>
+
+                                <strong>
+                                    Prêmios
+                                </strong>
+
+                                <small>
+                                    Edite, remova ou adicione os prêmios deste Bingo.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div id="editarListaPremios">
+
+                            {% for premio in premios %}
+
+                            <div class="bingo-premio-item">
+
+                                <input
+                                    type="hidden"
+                                    name="premio_id[]"
+                                    value="{{ premio.id }}">
+
+
+                                <!-- ORDEM -->
+
+                                <div class="bingo-premio-campo ordem">
+
+                                    <label>
+                                        Ordem
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        name="premio_ordem[]"
+                                        min="1"
+                                        value="{{ premio.ordem or loop.index }}">
+
+                                </div>
+
+
+                                <!-- PRÊMIO -->
+
+                                <div class="bingo-premio-campo">
+
+                                    <label>
+                                        Prêmio
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="premio_nome[]"
+                                        value="{{ premio.premio or '' }}"
+                                        placeholder="Ex.: 1º Prêmio">
+
+                                </div>
+
+
+                                <!-- DESCRIÇÃO -->
+
+                                <div class="bingo-premio-campo">
+
+                                    <label>
+                                        Descrição
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="premio_descricao[]"
+                                        value="{{ premio.descricao or '' }}"
+                                        placeholder="Descrição do prêmio">
+
+                                </div>
+
+
+                                <!-- VALOR -->
+
+                                <div class="bingo-premio-campo valor">
+
+                                    <label>
+                                        Valor
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        name="premio_valor[]"
+                                        value="{% if premio.valor is not none %}{{ '%.2f'|format(premio.valor|float) }}{% endif %}"
+                                        placeholder="R$ 0,00"
+                                        inputmode="decimal">
+
+                                </div>
+
+
+                                <!-- REMOVER -->
+
+                                <button
+                                    type="button"
+                                    class="btn-remover-premio"
+                                    onclick="removerPremioEdicao(this)"
+                                    title="Remover prêmio">
+
+                                    ×
+
+                                </button>
+
+                            </div>
+
+                            {% endfor %}
+
+                        </div>
+
+
+                        <!-- ADICIONAR -->
+
+                        <button
+                            type="button"
+                            class="btn-adicionar-premio"
+                            onclick="adicionarPremioEdicao()">
+
+                            + Adicionar prêmio
+
+                        </button>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         DESCRIÇÃO
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="editar_bingo_descricao">
+                            Descrição
+                        </label>
+
+                        <textarea
+                            id="editar_bingo_descricao"
+                            name="descricao"
+                            placeholder="Informações sobre o Bingo...">{{ bingo.descricao or '' }}</textarea>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         OBSERVAÇÕES
+                         ================================================= -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="editar_bingo_observacoes">
+                            Observações
+                        </label>
+
+                        <textarea
+                            id="editar_bingo_observacoes"
+                            name="observacoes"
+                            placeholder="Observações internas...">{{ bingo.observacoes or '' }}</textarea>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RODAPÉ
+                 ================================================= -->
+
+            <div class="bingo-modal-rodape">
+
+                <button
+                    type="button"
+                    class="btn-cancelar-bingo"
+                    onclick="fecharModalEditarBingo()">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-salvar-bingo">
+
+                    ✓ Salvar Alterações
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
 

@@ -374,7 +374,7 @@ Bingo
 
 
 /* ============================================================
-   MODAL — NOVO BINGO
+   MODAL
    ============================================================ */
 
 .bingo-modal-overlay {
@@ -395,7 +395,7 @@ Bingo
 
 .bingo-modal {
     width: 100%;
-    max-width: 760px;
+    max-width: 820px;
     max-height: 92vh;
     overflow-y: auto;
     background: #1c1f26;
@@ -539,6 +539,149 @@ Bingo
     font-size: 11px;
 }
 
+
+/* ============================================================
+   PREMIAÇÃO
+   ============================================================ */
+
+.bingo-premiacao-container {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    padding: 18px;
+    background: rgba(20, 22, 27, 0.75);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 14px;
+}
+
+.bingo-premiacao-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.bingo-premiacao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bingo-premiacao-icone {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(212, 175, 55, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.bingo-premiacao-titulo strong {
+    color: #ffffff;
+    font-size: 15px;
+}
+
+.bingo-premiacao-titulo span {
+    color: #888888;
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+}
+
+.btn-adicionar-premio {
+    border: 1px solid #d4af37;
+    background: rgba(212, 175, 55, 0.10);
+    color: #d4af37;
+    border-radius: 8px;
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-adicionar-premio:hover {
+    background: #d4af37;
+    color: #111111;
+}
+
+
+/* ============================================================
+   ITEM PRÊMIO
+   ============================================================ */
+
+.bingo-premio-item {
+    position: relative;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    background: rgba(28, 31, 38, 0.80);
+}
+
+.bingo-premio-item:last-child {
+    margin-bottom: 0;
+}
+
+.bingo-premio-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 13px;
+}
+
+.bingo-premio-numero {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #d4af37;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.btn-remover-premio {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(220, 53, 69, 0.12);
+    color: #ff7b87;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.btn-remover-premio:hover {
+    background: rgba(220, 53, 69, 0.25);
+}
+
+.bingo-premio-grid {
+    display: grid;
+    grid-template-columns: 90px 1fr 150px;
+    gap: 12px;
+}
+
+.bingo-premio-grid .bingo-premio-descricao {
+    grid-column: 1 / -1;
+}
+
+.bingo-premio-vazio {
+    color: #777777;
+    font-size: 13px;
+    text-align: center;
+    padding: 12px;
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+
+/* ============================================================
+   RODAPÉ
+   ============================================================ */
+
 .bingo-modal-rodape {
     padding: 18px 24px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -591,7 +734,6 @@ Bingo
     }
 
 }
-
 
 @media (max-width: 700px) {
 
@@ -651,6 +793,23 @@ Bingo
         padding: 15px 18px;
     }
 
+    .bingo-premiacao-cabecalho {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-adicionar-premio {
+        width: 100%;
+    }
+
+    .bingo-premio-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bingo-premio-grid .bingo-premio-descricao {
+        grid-column: auto;
+    }
+
 }
 
 </style>
@@ -705,8 +864,6 @@ Bingo
 <div class="bingo-resumo">
 
 
-    <!-- BINGOS -->
-
     <div class="bingo-card-resumo">
 
         <div class="bingo-card-resumo-topo">
@@ -727,8 +884,6 @@ Bingo
 
     </div>
 
-
-    <!-- CARTELAS GERADAS -->
 
     <div class="bingo-card-resumo">
 
@@ -751,8 +906,6 @@ Bingo
     </div>
 
 
-    <!-- CARTELAS VENDIDAS -->
-
     <div class="bingo-card-resumo">
 
         <div class="bingo-card-resumo-topo">
@@ -774,8 +927,6 @@ Bingo
     </div>
 
 
-    <!-- BINGOS ATIVOS -->
-
     <div class="bingo-card-resumo">
 
         <div class="bingo-card-resumo-topo">
@@ -792,7 +943,8 @@ Bingo
 
         <div class="bingo-card-resumo-valor">
 
-            {{ bingos
+            {{
+                bingos
                 | selectattr('status', 'in', ['ABERTO', 'EM_ANDAMENTO'])
                 | list
                 | length
@@ -841,10 +993,6 @@ Bingo
 
             <div class="bingo-item">
 
-
-                <!-- =================================================
-                     TOPO DO ITEM
-                     ================================================= -->
 
                 <div class="bingo-item-topo">
 
@@ -902,10 +1050,6 @@ Bingo
                 </div>
 
 
-                <!-- =================================================
-                     ESTATÍSTICAS
-                     ================================================= -->
-
                 <div class="bingo-estatisticas">
 
 
@@ -951,10 +1095,6 @@ Bingo
                 </div>
 
 
-                <!-- =================================================
-                     AÇÕES
-                     ================================================= -->
-
                 <div class="bingo-item-acoes">
 
                     <a
@@ -976,10 +1116,6 @@ Bingo
 
         {% else %}
 
-
-            <!-- =================================================
-                 ESTADO VAZIO
-                 ================================================= -->
 
             <div class="bingo-vazio">
 
@@ -1031,10 +1167,6 @@ Bingo
         onclick="event.stopPropagation()">
 
 
-        <!-- =====================================================
-             CABEÇALHO DO MODAL
-             ===================================================== -->
-
         <div class="bingo-modal-cabecalho">
 
             <div class="bingo-modal-titulo">
@@ -1070,13 +1202,11 @@ Bingo
         </div>
 
 
-        <!-- =====================================================
-             FORMULÁRIO
-             ===================================================== -->
-
         <form
             method="POST"
-            action="/admin/bingo/novo">
+            action="/admin/bingo/novo"
+            id="formNovoBingo">
+
 
             <div class="bingo-modal-corpo">
 
@@ -1265,6 +1395,67 @@ Bingo
                     </div>
 
 
+                    <!-- =================================================
+                         PREMIAÇÃO
+                         ================================================= -->
+
+                    <div class="bingo-premiacao-container">
+
+
+                        <div class="bingo-premiacao-cabecalho">
+
+
+                            <div class="bingo-premiacao-titulo">
+
+                                <div class="bingo-premiacao-icone">
+                                    🏆
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        Premiação do Bingo
+                                    </strong>
+
+                                    <span>
+                                        Cadastre os prêmios que serão entregues.
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="btn-adicionar-premio"
+                                onclick="adicionarPremio()">
+
+                                ＋ Adicionar prêmio
+
+                            </button>
+
+
+                        </div>
+
+
+                        <div id="listaPremios">
+
+                            <div
+                                id="premiosVazio"
+                                class="bingo-premio-vazio">
+
+                                Nenhum prêmio cadastrado.
+                                Clique em <strong>“Adicionar prêmio”</strong> para começar.
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
                     <!-- DESCRIÇÃO -->
 
                     <div class="bingo-form-grupo full">
@@ -1302,10 +1493,6 @@ Bingo
             </div>
 
 
-            <!-- =================================================
-                 RODAPÉ
-                 ================================================= -->
-
             <div class="bingo-modal-rodape">
 
                 <button
@@ -1328,6 +1515,7 @@ Bingo
 
             </div>
 
+
         </form>
 
     </div>
@@ -1336,10 +1524,17 @@ Bingo
 
 
 <!-- ============================================================
-     JAVASCRIPT — MODAL
+     JAVASCRIPT
      ============================================================ -->
 
 <script>
+
+let contadorPremios = 0;
+
+
+/* ============================================================
+   ABRIR MODAL
+   ============================================================ */
 
 function abrirModalNovoBingo() {
 
@@ -1366,6 +1561,10 @@ function abrirModalNovoBingo() {
 }
 
 
+/* ============================================================
+   FECHAR MODAL
+   ============================================================ */
+
 function fecharModalNovoBingo() {
 
     const modal = document.getElementById("modalNovoBingo");
@@ -1381,6 +1580,10 @@ function fecharModalNovoBingo() {
 }
 
 
+/* ============================================================
+   FECHAR CLICANDO FORA
+   ============================================================ */
+
 function fecharModalFora(event) {
 
     if (event.target.id === "modalNovoBingo") {
@@ -1392,11 +1595,241 @@ function fecharModalFora(event) {
 }
 
 
+/* ============================================================
+   ADICIONAR PRÊMIO
+   ============================================================ */
+
+function adicionarPremio() {
+
+    contadorPremios++;
+
+    const lista = document.getElementById("listaPremios");
+
+    const vazio = document.getElementById("premiosVazio");
+
+    if (vazio) {
+        vazio.remove();
+    }
+
+
+    const premio = document.createElement("div");
+
+    premio.className = "bingo-premio-item";
+
+    premio.dataset.premio = contadorPremios;
+
+
+    premio.innerHTML = `
+
+        <div class="bingo-premio-topo">
+
+            <div class="bingo-premio-numero">
+
+                🏆
+
+                <span>
+                    Prêmio ${contadorPremios}
+                </span>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn-remover-premio"
+                onclick="removerPremio(this)"
+                title="Remover prêmio">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div class="bingo-premio-grid">
+
+
+            <!-- ORDEM -->
+
+            <div class="bingo-form-grupo">
+
+                <label>
+                    Ordem
+                </label>
+
+                <input
+                    type="number"
+                    name="premio_ordem[]"
+                    value="${contadorPremios}"
+                    min="1"
+                    required>
+
+            </div>
+
+
+            <!-- NOME -->
+
+            <div class="bingo-form-grupo">
+
+                <label>
+                    Prêmio *
+                </label>
+
+                <input
+                    type="text"
+                    name="premio_nome[]"
+                    placeholder="Ex.: 1º Prêmio — TV"
+                    required>
+
+            </div>
+
+
+            <!-- VALOR -->
+
+            <div class="bingo-form-grupo">
+
+                <label>
+                    Valor estimado
+                </label>
+
+                <input
+                    type="text"
+                    name="premio_valor[]"
+                    placeholder="Ex.: 1.500,00"
+                    inputmode="decimal">
+
+            </div>
+
+
+            <!-- DESCRIÇÃO -->
+
+            <div class="bingo-form-grupo bingo-premio-descricao">
+
+                <label>
+                    Descrição
+                </label>
+
+                <input
+                    type="text"
+                    name="premio_descricao[]"
+                    placeholder="Detalhes do prêmio, patrocinador etc.">
+
+            </div>
+
+
+        </div>
+
+    `;
+
+
+    lista.appendChild(premio);
+
+
+    const primeiroCampo = premio.querySelector(
+        'input[name="premio_nome[]"]'
+    );
+
+    if (primeiroCampo) {
+        primeiroCampo.focus();
+    }
+
+}
+
+
+/* ============================================================
+   REMOVER PRÊMIO
+   ============================================================ */
+
+function removerPremio(botao) {
+
+    const premio = botao.closest(".bingo-premio-item");
+
+    if (!premio) {
+        return;
+    }
+
+    premio.remove();
+
+    renumerarPremios();
+
+}
+
+
+/* ============================================================
+   RENUMERAR PRÊMIOS
+   ============================================================ */
+
+function renumerarPremios() {
+
+    const premios = document.querySelectorAll(
+        "#listaPremios .bingo-premio-item"
+    );
+
+
+    premios.forEach(function(premio, index) {
+
+        const numero = index + 1;
+
+
+        const titulo = premio.querySelector(
+            ".bingo-premio-numero span"
+        );
+
+        if (titulo) {
+
+            titulo.textContent =
+                "Prêmio " + numero;
+
+        }
+
+
+        const ordem = premio.querySelector(
+            'input[name="premio_ordem[]"]'
+        );
+
+        if (ordem) {
+
+            ordem.value = numero;
+
+        }
+
+    });
+
+
+    if (premios.length === 0) {
+
+        const lista = document.getElementById("listaPremios");
+
+        const vazio = document.createElement("div");
+
+        vazio.id = "premiosVazio";
+
+        vazio.className = "bingo-premio-vazio";
+
+        vazio.innerHTML = `
+            Nenhum prêmio cadastrado.
+            Clique em <strong>“Adicionar prêmio”</strong> para começar.
+        `;
+
+        lista.appendChild(vazio);
+
+    }
+
+}
+
+
+/* ============================================================
+   ESC
+   ============================================================ */
+
 document.addEventListener("keydown", function(event) {
 
     if (event.key === "Escape") {
 
-        const modal = document.getElementById("modalNovoBingo");
+        const modal =
+            document.getElementById("modalNovoBingo");
+
 
         if (
             modal &&

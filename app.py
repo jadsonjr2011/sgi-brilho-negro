@@ -14626,6 +14626,10 @@ def bingo():
         ).mappings().all()
 
 
+        # =====================================================
+        # EXIBIR
+        # =====================================================
+
         return render_template(
             "admin/bingo.html",
             bingos=lista,
@@ -14642,7 +14646,10 @@ def bingo():
 # NOVO BINGO
 # ============================================================
 
-@app.route("/admin/bingo/novo", methods=["GET", "POST"])
+@app.route(
+    "/admin/bingo/novo",
+    methods=["POST"]
+)
 def bingo_novo():
 
     if not usuario_tem_permissao("bingo"):
@@ -14653,295 +14660,417 @@ def bingo_novo():
     try:
 
         # =====================================================
-        # TEMPORADAS
+        # DADOS DO BINGO
         # =====================================================
 
-        temporadas = db.execute(
-            text("""
-                SELECT
-                    id,
-                    nome,
-                    ano,
-                    status
+        nome = (
+            request.form.get("nome") or ""
+        ).strip()
 
-                FROM temporadas
+        temporada_id = (
+            request.form.get("temporada_id") or None
+        )
 
-                ORDER BY
-                    ano DESC,
-                    nome ASC
-            """)
-        ).mappings().all()
+        data = (
+            request.form.get("data") or None
+        )
+
+        horario = (
+            request.form.get("horario") or None
+        )
+
+        local = (
+            request.form.get("local") or ""
+        ).strip()
+
+        valor_cartela = (
+            request.form.get("valor_cartela") or None
+        )
+
+        quantidade_cartelas = (
+            request.form.get("quantidade_cartelas") or None
+        )
+
+        status = (
+            request.form.get("status")
+            or "PLANEJADO"
+        ).strip()
+
+        descricao = (
+            request.form.get("descricao") or ""
+        ).strip()
+
+        observacoes = (
+            request.form.get("observacoes") or ""
+        ).strip()
 
 
         # =====================================================
-        # POST — CRIAR BINGO
+        # PRÊMIOS
         # =====================================================
 
-        if request.method == "POST":
+        premios_ordem = request.form.getlist(
+            "premio_ordem[]"
+        )
 
-            nome = (
-                request.form.get("nome") or ""
-            ).strip()
+        premios_nome = request.form.getlist(
+            "premio_nome[]"
+        )
 
-            temporada_id = (
-                request.form.get("temporada_id") or None
-            )
+        premios_descricao = request.form.getlist(
+            "premio_descricao[]"
+        )
 
-            data = (
-                request.form.get("data") or None
-            )
-
-            horario = (
-                request.form.get("horario") or None
-            )
-
-            local = (
-                request.form.get("local") or ""
-            ).strip()
-
-            valor_cartela = (
-                request.form.get("valor_cartela") or None
-            )
-
-            quantidade_cartelas = (
-                request.form.get("quantidade_cartelas") or None
-            )
-
-            status = (
-                request.form.get("status")
-                or "PLANEJADO"
-            ).strip()
-
-            descricao = (
-                request.form.get("descricao") or ""
-            ).strip()
-
-            observacoes = (
-                request.form.get("observacoes") or ""
-            ).strip()
+        premios_valor = request.form.getlist(
+            "premio_valor[]"
+        )
 
 
-            # =================================================
-            # VALIDAÇÃO — NOME
-            # =================================================
+        # =====================================================
+        # VALIDAÇÃO — NOME
+        # =====================================================
 
-            if not nome:
-
-                flash(
-                    "Informe o nome do Bingo.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — DATA
-            # =================================================
-
-            if not data:
-
-                flash(
-                    "Informe a data do Bingo.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — VALOR
-            # =================================================
-
-            if not valor_cartela:
-
-                flash(
-                    "Informe o valor da cartela.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — QUANTIDADE
-            # =================================================
-
-            if not quantidade_cartelas:
-
-                flash(
-                    "Informe a quantidade de cartelas.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # CONVERSÃO
-            # =================================================
-
-            try:
-
-                valor_cartela = float(
-                    valor_cartela.replace(",", ".")
-                    if isinstance(valor_cartela, str)
-                    else valor_cartela
-                )
-
-                quantidade_cartelas = int(
-                    quantidade_cartelas
-                )
-
-                temporada_id = (
-                    int(temporada_id)
-                    if temporada_id
-                    else None
-                )
-
-            except (ValueError, TypeError):
-
-                flash(
-                    "Valor, quantidade ou temporada inválidos.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — VALOR NEGATIVO
-            # =================================================
-
-            if valor_cartela < 0:
-
-                flash(
-                    "O valor da cartela não pode ser negativo.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — QUANTIDADE
-            # =================================================
-
-            if quantidade_cartelas <= 0:
-
-                flash(
-                    "A quantidade de cartelas deve ser maior que zero.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="novo"
-                )
-
-
-            # =================================================
-            # INSERT
-            # =================================================
-
-            db.execute(
-                text("""
-                    INSERT INTO bingos (
-                        nome,
-                        temporada_id,
-                        data,
-                        horario,
-                        local,
-                        valor_cartela,
-                        quantidade_cartelas,
-                        status,
-                        descricao,
-                        observacoes,
-                        created_at
-                    )
-
-                    VALUES (
-                        :nome,
-                        :temporada_id,
-                        :data,
-                        :horario,
-                        :local,
-                        :valor_cartela,
-                        :quantidade_cartelas,
-                        :status,
-                        :descricao,
-                        :observacoes,
-                        CURRENT_TIMESTAMP
-                    )
-                """),
-                {
-                    "nome": nome,
-                    "temporada_id": temporada_id,
-                    "data": data,
-                    "horario": horario,
-                    "local": local or None,
-                    "valor_cartela": valor_cartela,
-                    "quantidade_cartelas": quantidade_cartelas,
-                    "status": status,
-                    "descricao": descricao or None,
-                    "observacoes": observacoes or None
-                }
-            )
-
-
-            db.commit()
-
+        if not nome:
 
             flash(
-                "Bingo criado com sucesso!",
-                "success"
+                "Informe o nome do Bingo.",
+                "danger"
             )
-
 
             return redirect("/admin/bingo")
 
 
         # =====================================================
-        # GET — FORMULÁRIO
+        # VALIDAÇÃO — DATA
         # =====================================================
 
-        return render_template(
-            "admin/bingo_form.html",
-            bingo=None,
-            temporadas=temporadas,
-            modo="novo"
+        if not data:
+
+            flash(
+                "Informe a data do Bingo.",
+                "danger"
+            )
+
+            return redirect("/admin/bingo")
+
+
+        # =====================================================
+        # VALIDAÇÃO — VALOR
+        # =====================================================
+
+        if not valor_cartela:
+
+            flash(
+                "Informe o valor da cartela.",
+                "danger"
+            )
+
+            return redirect("/admin/bingo")
+
+
+        # =====================================================
+        # VALIDAÇÃO — QUANTIDADE
+        # =====================================================
+
+        if not quantidade_cartelas:
+
+            flash(
+                "Informe a quantidade de cartelas.",
+                "danger"
+            )
+
+            return redirect("/admin/bingo")
+
+
+        # =====================================================
+        # CONVERSÃO
+        # =====================================================
+
+        try:
+
+            # -------------------------------------------------
+            # VALOR DA CARTELA
+            # -------------------------------------------------
+
+            valor_cartela = str(
+                valor_cartela
+            ).strip()
+
+            valor_cartela = (
+                valor_cartela
+                .replace(".", "")
+                .replace(",", ".")
+            )
+
+            valor_cartela = float(
+                valor_cartela
+            )
+
+
+            # -------------------------------------------------
+            # QUANTIDADE
+            # -------------------------------------------------
+
+            quantidade_cartelas = int(
+                quantidade_cartelas
+            )
+
+
+            # -------------------------------------------------
+            # TEMPORADA
+            # -------------------------------------------------
+
+            temporada_id = (
+                int(temporada_id)
+                if temporada_id
+                else None
+            )
+
+
+        except (ValueError, TypeError):
+
+            flash(
+                "Valor, quantidade ou temporada inválidos.",
+                "danger"
+            )
+
+            return redirect("/admin/bingo")
+
+
+        # =====================================================
+        # VALIDAÇÃO — VALOR NEGATIVO
+        # =====================================================
+
+        if valor_cartela < 0:
+
+            flash(
+                "O valor da cartela não pode ser negativo.",
+                "danger"
+            )
+
+            return redirect("/admin/bingo")
+
+
+        # =====================================================
+        # VALIDAÇÃO — QUANTIDADE
+        # =====================================================
+
+        if quantidade_cartelas <= 0:
+
+            flash(
+                "A quantidade de cartelas deve ser maior que zero.",
+                "danger"
+            )
+
+            return redirect("/admin/bingo")
+
+
+        # =====================================================
+        # INSERT — BINGO
+        # =====================================================
+
+        resultado_bingo = db.execute(
+            text("""
+                INSERT INTO bingos (
+                    nome,
+                    temporada_id,
+                    data,
+                    horario,
+                    local,
+                    valor_cartela,
+                    quantidade_cartelas,
+                    status,
+                    descricao,
+                    observacoes,
+                    created_at
+                )
+
+                VALUES (
+                    :nome,
+                    :temporada_id,
+                    :data,
+                    :horario,
+                    :local,
+                    :valor_cartela,
+                    :quantidade_cartelas,
+                    :status,
+                    :descricao,
+                    :observacoes,
+                    CURRENT_TIMESTAMP
+                )
+
+                RETURNING id
+            """),
+            {
+                "nome": nome,
+                "temporada_id": temporada_id,
+                "data": data,
+                "horario": horario,
+                "local": local or None,
+                "valor_cartela": valor_cartela,
+                "quantidade_cartelas": quantidade_cartelas,
+                "status": status,
+                "descricao": descricao or None,
+                "observacoes": observacoes or None
+            }
+        )
+
+
+        bingo_id = resultado_bingo.scalar()
+
+
+        # =====================================================
+        # GRAVAR PRÊMIOS
+        # =====================================================
+
+        quantidade_premios = len(
+            premios_nome
+        )
+
+
+        for i in range(quantidade_premios):
+
+            # -------------------------------------------------
+            # NOME DO PRÊMIO
+            # -------------------------------------------------
+
+            nome_premio = (
+                premios_nome[i]
+                if i < len(premios_nome)
+                else ""
+            ).strip()
+
+
+            if not nome_premio:
+                continue
+
+
+            # -------------------------------------------------
+            # ORDEM
+            # -------------------------------------------------
+
+            ordem = (
+                premios_ordem[i]
+                if i < len(premios_ordem)
+                else None
+            )
+
+
+            try:
+
+                ordem = int(ordem)
+
+            except (ValueError, TypeError):
+
+                ordem = i + 1
+
+
+            if ordem <= 0:
+                ordem = i + 1
+
+
+            # -------------------------------------------------
+            # DESCRIÇÃO
+            # -------------------------------------------------
+
+            descricao_premio = (
+                premios_descricao[i]
+                if i < len(premios_descricao)
+                else ""
+            ).strip()
+
+
+            # -------------------------------------------------
+            # VALOR
+            # -------------------------------------------------
+
+            valor_premio = (
+                premios_valor[i]
+                if i < len(premios_valor)
+                else ""
+            ).strip()
+
+
+            if valor_premio:
+
+                try:
+
+                    valor_premio = (
+                        valor_premio
+                        .replace(".", "")
+                        .replace(",", ".")
+                    )
+
+                    valor_premio = float(
+                        valor_premio
+                    )
+
+                except (ValueError, TypeError):
+
+                    valor_premio = 0
+
+            else:
+
+                valor_premio = 0
+
+
+            # -------------------------------------------------
+            # INSERT — PREMIAÇÃO
+            # -------------------------------------------------
+
+            db.execute(
+                text("""
+                    INSERT INTO bingo_premiacoes (
+                        bingo_id,
+                        ordem,
+                        descricao,
+                        premio,
+                        valor,
+                        observacao
+                    )
+
+                    VALUES (
+                        :bingo_id,
+                        :ordem,
+                        :descricao,
+                        :premio,
+                        :valor,
+                        :observacao
+                    )
+                """),
+                {
+                    "bingo_id": bingo_id,
+                    "ordem": ordem,
+                    "descricao": (
+                        descricao_premio
+                        or nome_premio
+                    ),
+                    "premio": nome_premio,
+                    "valor": valor_premio,
+                    "observacao": None
+                }
+            )
+
+
+        # =====================================================
+        # COMMIT
+        # =====================================================
+
+        db.commit()
+
+
+        # =====================================================
+        # SUCESSO
+        # =====================================================
+
+        flash(
+            "Bingo criado com sucesso!",
+            "success"
+        )
+
+
+        return redirect(
+            f"/admin/bingo/{bingo_id}"
         )
 
 
@@ -14959,7 +15088,9 @@ def bingo_novo():
             "danger"
         )
 
-        return redirect("/admin/bingo")
+        return redirect(
+            "/admin/bingo"
+        )
 
 
     finally:
@@ -14973,7 +15104,7 @@ def bingo_novo():
 
 @app.route(
     "/admin/bingo/<int:bingo_id>/editar",
-    methods=["GET", "POST"]
+    methods=["POST"]
 )
 def bingo_editar(bingo_id):
 
@@ -14985,31 +15116,22 @@ def bingo_editar(bingo_id):
     try:
 
         # =====================================================
-        # BUSCAR BINGO
+        # VERIFICAR BINGO
         # =====================================================
 
         bingo = db.execute(
             text("""
                 SELECT
-                    b.*,
-                    t.nome AS temporada_nome
-
-                FROM bingos b
-
-                LEFT JOIN temporadas t
-                    ON t.id = b.temporada_id
-
-                WHERE b.id = :id
+                    id,
+                    nome
+                FROM bingos
+                WHERE id = :id
             """),
             {
                 "id": bingo_id
             }
         ).mappings().first()
 
-
-        # =====================================================
-        # BINGO NÃO ENCONTRADO
-        # =====================================================
 
         if not bingo:
 
@@ -15022,296 +15144,449 @@ def bingo_editar(bingo_id):
 
 
         # =====================================================
-        # TEMPORADAS
+        # DADOS DO BINGO
         # =====================================================
 
-        temporadas = db.execute(
-            text("""
-                SELECT
-                    id,
-                    nome,
-                    ano,
-                    status
+        nome = (
+            request.form.get("nome") or ""
+        ).strip()
 
-                FROM temporadas
+        temporada_id = (
+            request.form.get("temporada_id") or None
+        )
 
-                ORDER BY
-                    ano DESC,
-                    nome ASC
-            """)
-        ).mappings().all()
+        data = (
+            request.form.get("data") or None
+        )
+
+        horario = (
+            request.form.get("horario") or None
+        )
+
+        local = (
+            request.form.get("local") or ""
+        ).strip()
+
+        valor_cartela = (
+            request.form.get("valor_cartela") or None
+        )
+
+        quantidade_cartelas = (
+            request.form.get("quantidade_cartelas") or None
+        )
+
+        status = (
+            request.form.get("status")
+            or "PLANEJADO"
+        ).strip()
+
+        descricao = (
+            request.form.get("descricao") or ""
+        ).strip()
+
+        observacoes = (
+            request.form.get("observacoes") or ""
+        ).strip()
 
 
         # =====================================================
-        # POST — ATUALIZAR
+        # PRÊMIOS
         # =====================================================
 
-        if request.method == "POST":
+        premios_ordem = request.form.getlist(
+            "premio_ordem[]"
+        )
 
-            nome = (
-                request.form.get("nome") or ""
-            ).strip()
+        premios_nome = request.form.getlist(
+            "premio_nome[]"
+        )
 
-            temporada_id = (
-                request.form.get("temporada_id") or None
+        premios_descricao = request.form.getlist(
+            "premio_descricao[]"
+        )
+
+        premios_valor = request.form.getlist(
+            "premio_valor[]"
+        )
+
+
+        # =====================================================
+        # VALIDAÇÃO — NOME
+        # =====================================================
+
+        if not nome:
+
+            flash(
+                "Informe o nome do Bingo.",
+                "danger"
             )
 
-            data = (
-                request.form.get("data") or None
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
             )
 
-            horario = (
-                request.form.get("horario") or None
+
+        # =====================================================
+        # VALIDAÇÃO — DATA
+        # =====================================================
+
+        if not data:
+
+            flash(
+                "Informe a data do Bingo.",
+                "danger"
             )
 
-            local = (
-                request.form.get("local") or ""
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
+            )
+
+
+        # =====================================================
+        # VALIDAÇÃO — VALOR
+        # =====================================================
+
+        if not valor_cartela:
+
+            flash(
+                "Informe o valor da cartela.",
+                "danger"
+            )
+
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
+            )
+
+
+        # =====================================================
+        # VALIDAÇÃO — QUANTIDADE
+        # =====================================================
+
+        if not quantidade_cartelas:
+
+            flash(
+                "Informe a quantidade de cartelas.",
+                "danger"
+            )
+
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
+            )
+
+
+        # =====================================================
+        # CONVERSÃO
+        # =====================================================
+
+        try:
+
+            # -------------------------------------------------
+            # VALOR DA CARTELA
+            # -------------------------------------------------
+
+            valor_cartela = str(
+                valor_cartela
             ).strip()
 
             valor_cartela = (
-                request.form.get("valor_cartela") or None
+                valor_cartela
+                .replace(".", "")
+                .replace(",", ".")
             )
 
-            quantidade_cartelas = (
-                request.form.get("quantidade_cartelas") or None
+            valor_cartela = float(
+                valor_cartela
             )
 
-            status = (
-                request.form.get("status")
-                or "PLANEJADO"
+
+            # -------------------------------------------------
+            # QUANTIDADE
+            # -------------------------------------------------
+
+            quantidade_cartelas = int(
+                quantidade_cartelas
+            )
+
+
+            # -------------------------------------------------
+            # TEMPORADA
+            # -------------------------------------------------
+
+            temporada_id = (
+                int(temporada_id)
+                if temporada_id
+                else None
+            )
+
+
+        except (ValueError, TypeError):
+
+            flash(
+                "Valor, quantidade ou temporada inválidos.",
+                "danger"
+            )
+
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
+            )
+
+
+        # =====================================================
+        # VALIDAÇÃO — VALOR NEGATIVO
+        # =====================================================
+
+        if valor_cartela < 0:
+
+            flash(
+                "O valor da cartela não pode ser negativo.",
+                "danger"
+            )
+
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
+            )
+
+
+        # =====================================================
+        # VALIDAÇÃO — QUANTIDADE
+        # =====================================================
+
+        if quantidade_cartelas <= 0:
+
+            flash(
+                "A quantidade de cartelas deve ser maior que zero.",
+                "danger"
+            )
+
+            return redirect(
+                f"/admin/bingo/{bingo_id}"
+            )
+
+
+        # =====================================================
+        # UPDATE — BINGO
+        # =====================================================
+
+        resultado = db.execute(
+            text("""
+                UPDATE bingos
+
+                SET
+                    nome = :nome,
+                    temporada_id = :temporada_id,
+                    data = :data,
+                    horario = :horario,
+                    local = :local,
+                    valor_cartela = :valor_cartela,
+                    quantidade_cartelas = :quantidade_cartelas,
+                    status = :status,
+                    descricao = :descricao,
+                    observacoes = :observacoes
+
+                WHERE id = :id
+            """),
+            {
+                "id": bingo_id,
+                "nome": nome,
+                "temporada_id": temporada_id,
+                "data": data,
+                "horario": horario,
+                "local": local or None,
+                "valor_cartela": valor_cartela,
+                "quantidade_cartelas": quantidade_cartelas,
+                "status": status,
+                "descricao": descricao or None,
+                "observacoes": observacoes or None
+            }
+        )
+
+
+        # =====================================================
+        # VERIFICAR UPDATE
+        # =====================================================
+
+        if resultado.rowcount == 0:
+
+            db.rollback()
+
+            flash(
+                "Bingo não encontrado.",
+                "danger"
+            )
+
+            return redirect(
+                "/admin/bingo"
+            )
+
+
+        # =====================================================
+        # ATUALIZAR PRÊMIOS
+        # =====================================================
+
+        db.execute(
+            text("""
+                DELETE FROM bingo_premiacoes
+
+                WHERE bingo_id = :bingo_id
+            """),
+            {
+                "bingo_id": bingo_id
+            }
+        )
+
+
+        # =====================================================
+        # GRAVAR PRÊMIOS
+        # =====================================================
+
+        quantidade_premios = len(
+            premios_nome
+        )
+
+
+        for i in range(quantidade_premios):
+
+            # -------------------------------------------------
+            # NOME DO PRÊMIO
+            # -------------------------------------------------
+
+            nome_premio = (
+                premios_nome[i]
+                if i < len(premios_nome)
+                else ""
             ).strip()
 
-            descricao = (
-                request.form.get("descricao") or ""
-            ).strip()
 
-            observacoes = (
-                request.form.get("observacoes") or ""
-            ).strip()
+            if not nome_premio:
+                continue
 
 
-            # =================================================
-            # VALIDAÇÃO — NOME
-            # =================================================
+            # -------------------------------------------------
+            # ORDEM
+            # -------------------------------------------------
 
-            if not nome:
+            ordem = (
+                premios_ordem[i]
+                if i < len(premios_ordem)
+                else None
+            )
 
-                flash(
-                    "Informe o nome do Bingo.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — DATA
-            # =================================================
-
-            if not data:
-
-                flash(
-                    "Informe a data do Bingo.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — VALOR
-            # =================================================
-
-            if not valor_cartela:
-
-                flash(
-                    "Informe o valor da cartela.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
-
-
-            # =================================================
-            # VALIDAÇÃO — QUANTIDADE
-            # =================================================
-
-            if not quantidade_cartelas:
-
-                flash(
-                    "Informe a quantidade de cartelas.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
-
-
-            # =================================================
-            # CONVERSÃO
-            # =================================================
 
             try:
 
-                valor_cartela = float(
-                    valor_cartela.replace(",", ".")
-                    if isinstance(valor_cartela, str)
-                    else valor_cartela
-                )
-
-                quantidade_cartelas = int(
-                    quantidade_cartelas
-                )
-
-                temporada_id = (
-                    int(temporada_id)
-                    if temporada_id
-                    else None
-                )
+                ordem = int(ordem)
 
             except (ValueError, TypeError):
 
-                flash(
-                    "Valor, quantidade ou temporada inválidos.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
+                ordem = i + 1
 
 
-            # =================================================
-            # VALIDAÇÃO — VALOR NEGATIVO
-            # =================================================
-
-            if valor_cartela < 0:
-
-                flash(
-                    "O valor da cartela não pode ser negativo.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
+            if ordem <= 0:
+                ordem = i + 1
 
 
-            # =================================================
-            # VALIDAÇÃO — QUANTIDADE
-            # =================================================
+            # -------------------------------------------------
+            # DESCRIÇÃO
+            # -------------------------------------------------
 
-            if quantidade_cartelas <= 0:
-
-                flash(
-                    "A quantidade de cartelas deve ser maior que zero.",
-                    "danger"
-                )
-
-                return render_template(
-                    "admin/bingo_form.html",
-                    bingo=request.form,
-                    temporadas=temporadas,
-                    modo="editar"
-                )
+            descricao_premio = (
+                premios_descricao[i]
+                if i < len(premios_descricao)
+                else ""
+            ).strip()
 
 
-            # =================================================
-            # UPDATE
-            # =================================================
+            # -------------------------------------------------
+            # VALOR
+            # -------------------------------------------------
 
-            resultado = db.execute(
+            valor_premio = (
+                premios_valor[i]
+                if i < len(premios_valor)
+                else ""
+            ).strip()
+
+
+            if valor_premio:
+
+                try:
+
+                    valor_premio = (
+                        valor_premio
+                        .replace(".", "")
+                        .replace(",", ".")
+                    )
+
+                    valor_premio = float(
+                        valor_premio
+                    )
+
+                except (ValueError, TypeError):
+
+                    valor_premio = 0
+
+            else:
+
+                valor_premio = 0
+
+
+            # -------------------------------------------------
+            # INSERT — PRÊMIO
+            # -------------------------------------------------
+
+            db.execute(
                 text("""
-                    UPDATE bingos
+                    INSERT INTO bingo_premiacoes (
+                        bingo_id,
+                        ordem,
+                        descricao,
+                        premio,
+                        valor,
+                        observacao
+                    )
 
-                    SET
-                        nome = :nome,
-                        temporada_id = :temporada_id,
-                        data = :data,
-                        horario = :horario,
-                        local = :local,
-                        valor_cartela = :valor_cartela,
-                        quantidade_cartelas = :quantidade_cartelas,
-                        status = :status,
-                        descricao = :descricao,
-                        observacoes = :observacoes
-
-                    WHERE id = :id
+                    VALUES (
+                        :bingo_id,
+                        :ordem,
+                        :descricao,
+                        :premio,
+                        :valor,
+                        :observacao
+                    )
                 """),
                 {
-                    "id": bingo_id,
-                    "nome": nome,
-                    "temporada_id": temporada_id,
-                    "data": data,
-                    "horario": horario,
-                    "local": local or None,
-                    "valor_cartela": valor_cartela,
-                    "quantidade_cartelas": quantidade_cartelas,
-                    "status": status,
-                    "descricao": descricao or None,
-                    "observacoes": observacoes or None
+                    "bingo_id": bingo_id,
+                    "ordem": ordem,
+                    "descricao": (
+                        descricao_premio
+                        or nome_premio
+                    ),
+                    "premio": nome_premio,
+                    "valor": valor_premio,
+                    "observacao": None
                 }
             )
 
 
-            if resultado.rowcount == 0:
+        # =====================================================
+        # COMMIT
+        # =====================================================
 
-                db.rollback()
-
-                flash(
-                    "Bingo não encontrado.",
-                    "danger"
-                )
-
-                return redirect("/admin/bingo")
-
-
-            db.commit()
-
-
-            flash(
-                "Bingo atualizado com sucesso!",
-                "success"
-            )
-
-
-            return redirect("/admin/bingo")
+        db.commit()
 
 
         # =====================================================
-        # GET — FORMULÁRIO DE EDIÇÃO
+        # SUCESSO
         # =====================================================
 
-        return render_template(
-            "admin/bingo_form.html",
-            bingo=bingo,
-            temporadas=temporadas,
-            modo="editar"
+        flash(
+            "Bingo e premiação atualizados com sucesso!",
+            "success"
+        )
+
+
+        return redirect(
+            f"/admin/bingo/{bingo_id}"
         )
 
 
@@ -15330,14 +15605,13 @@ def bingo_editar(bingo_id):
         )
 
         return redirect(
-            f"/admin/bingo/{bingo_id}/editar"
+            f"/admin/bingo/{bingo_id}"
         )
 
 
     finally:
 
         db.close()
-
 
 # ============================================================
 # ABRIR / VISUALIZAR BINGO
@@ -15414,7 +15688,9 @@ def bingo_detalhes(bingo_id):
             text("""
                 SELECT *
                 FROM bingo_cartelas
+
                 WHERE bingo_id = :bingo_id
+
                 ORDER BY numero
             """),
             {
@@ -15424,19 +15700,93 @@ def bingo_detalhes(bingo_id):
 
 
         # =====================================================
+        # PRÊMIOS
+        # =====================================================
+
+        premios = db.execute(
+            text("""
+                SELECT
+                    id,
+                    bingo_id,
+                    ordem,
+                    descricao,
+                    premio,
+                    valor,
+                    observacao
+
+                FROM bingo_premiacoes
+
+                WHERE bingo_id = :bingo_id
+
+                ORDER BY
+                    ordem ASC,
+                    id ASC
+            """),
+            {
+                "bingo_id": bingo_id
+            }
+        ).mappings().all()
+
+
+        # =====================================================
+        # QUANTIDADE DE CARTELAS
+        # =====================================================
+
+        total_cartelas = int(
+            bingo["total_cartelas"] or 0
+        )
+
+        cartelas_vendidas = int(
+            bingo["cartelas_vendidas"] or 0
+        )
+
+        cartelas_disponiveis = (
+            total_cartelas - cartelas_vendidas
+        )
+
+
+        # =====================================================
+        # VALOR PRESTADO
+        # =====================================================
+
+        valor_cartela = float(
+            bingo["valor_cartela"] or 0
+        )
+
+        valor_prestado = (
+            cartelas_vendidas * valor_cartela
+        )
+
+
+        # =====================================================
         # EXIBIR
         # =====================================================
 
         return render_template(
             "admin/bingo_detalhes.html",
+
             bingo=bingo,
-            cartelas=cartelas
+
+            cartelas=cartelas,
+
+            premios=premios,
+
+            total_cartelas=total_cartelas,
+
+            cartelas_vendidas=cartelas_vendidas,
+
+            cartelas_disponiveis=cartelas_disponiveis,
+
+            valor_prestado=valor_prestado
         )
 
 
     finally:
 
         db.close()
+
+
+
 
 # ============================================================
 # GERAR CARTELAS DO BINGO
@@ -15472,6 +15822,7 @@ def bingo_gerar_cartelas(bingo_id):
             }
         ).mappings().first()
 
+
         if not bingo:
 
             flash(
@@ -15479,18 +15830,25 @@ def bingo_gerar_cartelas(bingo_id):
                 "danger"
             )
 
-            return redirect("/admin/bingo")
+            return redirect(
+                "/admin/bingo"
+            )
 
 
         # =====================================================
         # QUANTIDADE
         # =====================================================
 
-        quantidade = request.form.get("quantidade")
+        quantidade = request.form.get(
+            "quantidade"
+        )
+
 
         try:
 
-            quantidade = int(quantidade)
+            quantidade = int(
+                quantidade
+            )
 
         except (ValueError, TypeError):
 
@@ -15536,7 +15894,9 @@ def bingo_gerar_cartelas(bingo_id):
             text("""
                 SELECT
                     COALESCE(MAX(numero), 0)
+
                 FROM bingo_cartelas
+
                 WHERE bingo_id = :bingo_id
             """),
             {
@@ -15545,7 +15905,9 @@ def bingo_gerar_cartelas(bingo_id):
         ).scalar()
 
 
-        proximo_numero = int(ultimo_numero) + 1
+        proximo_numero = (
+            int(ultimo_numero) + 1
+        )
 
 
         # =====================================================
@@ -15562,7 +15924,9 @@ def bingo_gerar_cartelas(bingo_id):
 
         for i in range(quantidade):
 
-            numero_cartela = proximo_numero + i
+            numero_cartela = (
+                proximo_numero + i
+            )
 
 
             # =================================================
@@ -15734,9 +16098,6 @@ def bingo_gerar_cartelas(bingo_id):
 
         db.close()
 
-# ============================================================
-# REGISTRAR VENDA DE CARTELAS
-# ============================================================
 
 # ============================================================
 # REGISTRAR VENDA DE CARTELAS
@@ -15765,7 +16126,9 @@ def bingo_registrar_venda(bingo_id):
                     id,
                     nome,
                     valor_cartela
+
                 FROM bingos
+
                 WHERE id = :id
             """),
             {
@@ -15781,14 +16144,18 @@ def bingo_registrar_venda(bingo_id):
                 "danger"
             )
 
-            return redirect("/admin/bingo")
+            return redirect(
+                "/admin/bingo"
+            )
 
 
         # =====================================================
         # DADOS DA VENDA
         # =====================================================
 
-        cartela_ids = request.form.getlist("cartela_ids")
+        cartela_ids = request.form.getlist(
+            "cartela_ids"
+        )
 
         comprador = (
             request.form.get("comprador") or ""
@@ -15847,6 +16214,15 @@ def bingo_registrar_venda(bingo_id):
 
 
         # =====================================================
+        # REMOVER IDS DUPLICADOS
+        # =====================================================
+
+        cartela_ids = list(
+            dict.fromkeys(cartela_ids)
+        )
+
+
+        # =====================================================
         # VALIDAR FORMA DE PAGAMENTO
         # =====================================================
 
@@ -15879,12 +16255,16 @@ def bingo_registrar_venda(bingo_id):
                 SELECT
                     id,
                     numero
+
                 FROM bingo_cartelas
+
                 WHERE
                     bingo_id = :bingo_id
                     AND id = ANY(:cartela_ids)
                     AND status = 'DISPONIVEL'
-                ORDER BY numero
+
+                ORDER BY
+                    numero
             """),
             {
                 "bingo_id": bingo_id,
@@ -15915,7 +16295,9 @@ def bingo_registrar_venda(bingo_id):
         # QUANTIDADE
         # =====================================================
 
-        quantidade_vendida = len(cartelas_disponiveis)
+        quantidade_vendida = len(
+            cartelas_disponiveis
+        )
 
 
         # =====================================================
@@ -15927,7 +16309,8 @@ def bingo_registrar_venda(bingo_id):
         )
 
         valor_total = (
-            quantidade_vendida * valor_unitario
+            quantidade_vendida
+            * valor_unitario
         )
 
 
@@ -15973,7 +16356,7 @@ def bingo_registrar_venda(bingo_id):
 
 
         # =====================================================
-        # VERIFICAR SE EXISTE TABELA DE VENDAS DO BINGO
+        # VERIFICAR TABELA DE VENDAS
         # =====================================================
 
         tabela_vendas_existe = db.execute(
@@ -16034,11 +16417,12 @@ def bingo_registrar_venda(bingo_id):
                 }
             )
 
+
             venda_id = venda_resultado.scalar()
 
 
             # =================================================
-            # VINCULAR CARTELAS À VENDA
+            # VERIFICAR TABELA DE ITENS
             # =================================================
 
             tabela_itens_existe = db.execute(
@@ -16052,6 +16436,10 @@ def bingo_registrar_venda(bingo_id):
                 """)
             ).scalar()
 
+
+            # =================================================
+            # VINCULAR CARTELAS À VENDA
+            # =================================================
 
             if tabela_itens_existe:
 
@@ -16084,12 +16472,24 @@ def bingo_registrar_venda(bingo_id):
 
 
         # =====================================================
+        # FORMATAR VALOR
+        # =====================================================
+
+        valor_total_formatado = (
+            f"R$ {valor_total:,.2f}"
+            .replace(",", "X")
+            .replace(".", ",")
+            .replace("X", ".")
+        )
+
+
+        # =====================================================
         # SUCESSO
         # =====================================================
 
         flash(
             f"{quantidade_vendida} cartela(s) registrada(s) como vendida(s)! "
-            f"Total da venda: R$ {valor_total:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            f"Total da venda: {valor_total_formatado}",
             "success"
         )
 
@@ -16117,9 +16517,11 @@ def bingo_registrar_venda(bingo_id):
             f"/admin/bingo/{bingo_id}"
         )
 
+
     finally:
 
         db.close()
+
 
 # ============================================================
 # PDF — PRESTAÇÃO DE CONTAS DO BINGO
@@ -16137,10 +16539,19 @@ def bingo_prestacao_contas_pdf(bingo_id):
 
     try:
 
+        # =====================================================
+        # GERAR PDF
+        # =====================================================
+
         pdf = gerar_pdf_prestacao_bingo(
             db,
             bingo_id
         )
+
+
+        # =====================================================
+        # ENVIAR PDF
+        # =====================================================
 
         from flask import send_file
 
@@ -16152,6 +16563,7 @@ def bingo_prestacao_contas_pdf(bingo_id):
                 f"prestacao_contas_bingo_{bingo_id}.pdf"
             )
         )
+
 
     except Exception as e:
 
@@ -16169,10 +16581,19 @@ def bingo_prestacao_contas_pdf(bingo_id):
             f"/admin/bingo/{bingo_id}"
         )
 
+
     finally:
 
         db.close()
 
+
+# ============================================================
+# EXECUÇÃO
+# ============================================================
+
 if __name__ == "__main__":
 
-    app.run(host="0.0.0.0", port=5000)
+    app.run(
+        host="0.0.0.0",
+        port=5000
+    )
