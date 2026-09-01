@@ -16586,6 +16586,31 @@ def bingo_prestacao_contas_pdf(bingo_id):
 
         db.close()
 
+# ============================================================
+# PDF — APRESENTAÇÃO DA CORPORAÇÃO
+# ============================================================
+
+@app.route("/admin/apresentacao-corporacao")
+def apresentacao_corporacao():
+
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    from utils.pdf_apresentacao_banda import (
+        gerar_pdf_apresentacao_banda
+    )
+
+    pdf = gerar_pdf_apresentacao_banda()
+
+    return (
+        pdf.getvalue(),
+        200,
+        {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": "inline; "
+            "filename=Apresentacao_Brilho_Negro_2019.pdf"
+        }
+    )
 
 # ============================================================
 # EXECUÇÃO

@@ -41,14 +41,22 @@ def adicionar_rodape(canvas, doc):
 
     largura, altura = A4
 
+    # =====================================
+    # LINHA DO RODAPÉ
+    # =====================================
+
     canvas.setStrokeColor(colors.grey)
 
     canvas.line(
-        40,
-        50,
-        largura - 40,
-        50
+        85,
+        48,
+        largura - 57,
+        48
     )
+
+    # =====================================
+    # TEXTO DO RODAPÉ
+    # =====================================
 
     canvas.setFont(
         "Helvetica",
@@ -118,16 +126,18 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
         )
 
         elementos.append(
-            Spacer(1, 5)
+            Spacer(1, 3)
         )
 
     else:
 
         print()
         print("ERRO: Logo não encontrada!")
+
         print(
             "Verifique se existe:"
         )
+
         print(
             os.path.join(
                 BASE_DIR,
@@ -138,15 +148,21 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
         )
 
     # =====================================
-    # NOME DA ASSOCIAÇÃO
+    # ESTILO DO CABEÇALHO
     # =====================================
 
     estilo_cabecalho = ParagraphStyle(
         "Cabecalho",
         parent=estilos["Normal"],
         alignment=TA_CENTER,
-        fontSize=12
+        fontSize=11,
+        leading=13,
+        spaceAfter=0
     )
+
+    # =====================================
+    # NOME DA ASSOCIAÇÃO
+    # =====================================
 
     elementos.append(
         Paragraph(
@@ -156,7 +172,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
     )
 
     elementos.append(
-        Spacer(1, 8)
+        Spacer(1, 3)
     )
 
     # =====================================
@@ -169,13 +185,14 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
             ParagraphStyle(
                 "Nome",
                 parent=estilo_cabecalho,
-                fontSize=20
+                fontSize=18,
+                leading=20
             )
         )
     )
 
     elementos.append(
-        Spacer(1, 8)
+        Spacer(1, 3)
     )
 
     # =====================================
@@ -190,7 +207,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
     )
 
     elementos.append(
-        Spacer(1, 8)
+        Spacer(1, 7)
     )
 
     # =====================================
@@ -206,7 +223,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
     )
 
     elementos.append(
-        Spacer(1, 25)
+        Spacer(1, 8)
     )
 
     # =====================================
@@ -219,13 +236,19 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
             ParagraphStyle(
                 "Titulo",
                 parent=estilo_cabecalho,
-                fontSize=16
+                fontSize=14,
+                leading=17
             )
         )
     )
 
+    # =====================================
+    # ESPAÇO MAIOR ENTRE O TÍTULO
+    # E O INÍCIO DO TEXTO
+    # =====================================
+
     elementos.append(
-        Spacer(1, 20)
+        Spacer(1, 35)
     )
 
 
@@ -237,44 +260,111 @@ def gerar_pdf_apresentacao_banda():
 
     buffer = BytesIO()
 
+    # =====================================
+    # DOCUMENTO A4
+    # =====================================
+
     doc = SimpleDocTemplate(
 
         buffer,
 
         pagesize=A4,
 
-        rightMargin=40,
-        leftMargin=40,
-        topMargin=40,
-        bottomMargin=60
+        # =====================================
+        # MARGENS FORMAIS — ABNT
+        # =====================================
+
+        rightMargin=57,     # 2 cm
+        leftMargin=85,      # 3 cm
+        topMargin=85,       # 3 cm
+        bottomMargin=57     # 2 cm
 
     )
 
     estilos = getSampleStyleSheet()
 
     # =====================================
-    # ESTILO DO TEXTO
+    # TEXTO PRINCIPAL
     # =====================================
 
     estilo = ParagraphStyle(
         "NormalDocumento",
+
         parent=estilos["Normal"],
-        fontSize=11,
-        leading=19,
+
+        fontName="Helvetica",
+
+        fontSize=10.5,
+
+        leading=15,
+
         alignment=TA_JUSTIFY,
-        spaceAfter=12
+
+        spaceAfter=5
     )
 
     # =====================================
-    # ESTILO DOS RESPONSÁVEIS
+    # CARGOS / RESPONSÁVEIS
     # =====================================
 
     estilo_destaque = ParagraphStyle(
         "Destaque",
+
         parent=estilo,
+
+        fontName="Helvetica",
+
         alignment=TA_CENTER,
+
+        fontSize=10.5,
+
+        leading=14,
+
+        spaceAfter=1
+    )
+
+    # =====================================
+    # TÍTULOS DAS SEÇÕES
+    # =====================================
+
+    estilo_secao = ParagraphStyle(
+        "Secao",
+
+        parent=estilo,
+
+        fontName="Helvetica",
+
+        alignment=TA_CENTER,
+
         fontSize=11,
-        leading=18
+
+        leading=14,
+
+        spaceBefore=3,
+
+        spaceAfter=3
+    )
+
+    # =====================================
+    # SAUDAÇÃO FINAL
+    # =====================================
+
+    estilo_final = ParagraphStyle(
+        "Final",
+
+        parent=estilo,
+
+        fontName="Helvetica",
+
+        alignment=TA_CENTER,
+
+        fontSize=11.5,
+
+        leading=14,
+
+        spaceBefore=0,
+
+        spaceAfter=0
     )
 
     elementos = []
@@ -308,7 +398,7 @@ def gerar_pdf_apresentacao_banda():
             """
             Na categoria de <b>Percussão</b>, é uma banda genuinamente
             potiguar, contando atualmente com <b>48 componentes</b> e trazendo
-            um estilo único e marcante em suas apresentações.
+            para suas apresentações um estilo único.
             """,
             estilo
         )
@@ -317,59 +407,118 @@ def gerar_pdf_apresentacao_banda():
     elementos.append(
         Paragraph(
             """
-            Suas peças musicais são <b>“Cold”</b> e
-            <b>“Condor-Andino”</b>.
+            Em seu repertório, apresenta as peças musicais
+            <b>“Cold”</b> e <b>“Condor-Andino”</b>, representando,
+            através da música e da expressão, os dois lados da vida:
+            <b>o bem e o mal</b>.
             """,
             estilo
         )
     )
 
     elementos.append(
-        Spacer(1, 10)
+        Spacer(1, 3)
     )
 
     # =====================================
-    # RESPONSÁVEIS
+    # À FRENTE DA CORPORAÇÃO
     # =====================================
 
     elementos.append(
         Paragraph(
-            "<b>CAPITÃ-MOR: Inajara Manuelly</b>",
+            "<b>À FRENTE DA CORPORAÇÃO</b>",
+            estilo_secao
+        )
+    )
+
+    elementos.append(
+        Paragraph(
+            "<b>Capitã-Mor:</b> Inajara Manuelly",
             estilo_destaque
         )
     )
 
     elementos.append(
         Paragraph(
-            "<b>COREÓGRAFO: Maciel Nascimento</b>",
+            "<b>Coreógrafo:</b> Maciel Nascimento",
             estilo_destaque
         )
     )
 
     elementos.append(
         Paragraph(
-            "<b>REGENTE: Fábio Alves</b>",
+            "<b>Regente:</b> Fábio Alves",
             estilo_destaque
         )
     )
 
     elementos.append(
-        Spacer(1, 20)
+        Spacer(1, 5)
     )
 
     # =====================================
-    # APRESENTAÇÃO FINAL
+    # SEDE E FILIAL
     # =====================================
 
     elementos.append(
         Paragraph(
             """
-            Diretamente do <b>Colégio Fonte</b>, da cidade de
-            <b>João Câmara</b>, com sua filial em <b>Poço Branco</b>,
-            apresentamos a
-            <b>Associação Cultural de Percussão Rudimentar Brilho Negro</b>.
+            A corporação tem sua sede no <b>Colégio Fonte</b>, na cidade de
+            <b>João Câmara</b>, e conta também com uma filial no município de
+            <b>Poço Branco</b>.
             """,
             estilo
+        )
+    )
+
+    elementos.append(
+        Spacer(1, 2)
+    )
+
+    # =====================================
+    # NA GESTÃO
+    # =====================================
+
+    elementos.append(
+        Paragraph(
+            "<b>NA GESTÃO</b>",
+            estilo_secao
+        )
+    )
+
+    elementos.append(
+        Paragraph(
+            "<b>Mantenedora:</b> Carla Geane",
+            estilo_destaque
+        )
+    )
+
+    elementos.append(
+        Paragraph(
+            "<b>Direção:</b> Renata Carvalho",
+            estilo_destaque
+        )
+    )
+
+    # =====================================
+    # ESPAÇO ANTES DA SAUDAÇÃO FINAL
+    # =====================================
+
+    elementos.append(
+        Spacer(1, 25)
+    )
+
+    # =====================================
+    # SAUDAÇÃO FINAL
+    # =====================================
+
+    elementos.append(
+     Paragraph(
+            """
+            <b>Senhoras e senhores,</b> recebam com vocês a
+            <b>Associação Cultural de Percussão Rudimentar Brilho Negro!</b>
+            """,
+            estilo_final
         )
     )
 
