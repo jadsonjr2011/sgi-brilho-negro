@@ -218,6 +218,22 @@
 
                 </a>
 
+                {% if usuario_tem_permissao("bingo") %}
+
+                <a
+                    href="/admin/bingo"
+                    class="menu-admin-item">
+
+                    <span>🎱</span>
+
+                    <span class="texto-menu">
+                        Bingo
+                    </span>
+
+                </a>
+
+                {% endif %}    
+
             </div>
 
 

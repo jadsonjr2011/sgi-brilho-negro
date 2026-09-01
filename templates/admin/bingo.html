@@ -1,0 +1,1416 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Bingo
+{% endblock %}
+
+{% block titulo_pagina %}
+Bingo
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ============================================================
+   BINGO — CONTAINER
+   ============================================================ */
+
+.bingo-container {
+    padding-bottom: 30px;
+}
+
+
+/* ============================================================
+   CABEÇALHO
+   ============================================================ */
+
+.bingo-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.bingo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.bingo-icone {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #d4af37, #9f7f1f);
+    color: #111111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 27px;
+    font-weight: bold;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.bingo-titulo h2 {
+    margin: 0;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.bingo-titulo p {
+    margin: 4px 0 0;
+    color: #cfcfcf;
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   BOTÃO NOVO BINGO
+   ============================================================ */
+
+.btn-novo-bingo {
+    border: none;
+    border-radius: 30px;
+    padding: 12px 22px;
+    background: #d4af37;
+    color: #111111;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.25s;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.30);
+    cursor: pointer;
+}
+
+.btn-novo-bingo,
+.btn-abrir-bingo {
+    text-decoration: none;
+}
+
+.btn-novo-bingo:hover {
+    background: #f1cd57;
+    color: #000000;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.40);
+}
+
+
+/* ============================================================
+   CARDS DE RESUMO
+   ============================================================ */
+
+.bingo-resumo {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.bingo-card-resumo {
+    background: rgba(28, 31, 38, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.20);
+    border-radius: 15px;
+    padding: 18px 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: 0.25s;
+}
+
+.bingo-card-resumo:hover {
+    transform: translateY(-3px);
+    border-color: #d4af37;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.bingo-card-resumo-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bingo-card-resumo-label {
+    color: #cfcfcf;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.bingo-card-resumo-icone {
+    font-size: 23px;
+}
+
+.bingo-card-resumo-valor {
+    margin-top: 7px;
+    font-size: 30px;
+    font-weight: 800;
+    color: #d4af37;
+}
+
+
+/* ============================================================
+   ÁREA DOS BINGOS
+   ============================================================ */
+
+.bingo-secao {
+    background: rgba(28, 31, 38, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+
+.bingo-secao-cabecalho {
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bingo-secao-cabecalho h5 {
+    margin: 0;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.bingo-secao-cabecalho span {
+    color: #9f9f9f;
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   LISTA
+   ============================================================ */
+
+.bingo-lista {
+    padding: 18px;
+}
+
+
+/* ============================================================
+   ITEM DO BINGO
+   ============================================================ */
+
+.bingo-item {
+    background: rgba(20, 22, 27, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 18px;
+    margin-bottom: 14px;
+    transition: 0.25s;
+}
+
+.bingo-item:last-child {
+    margin-bottom: 0;
+}
+
+.bingo-item:hover {
+    border-color: rgba(212, 175, 55, 0.60);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.30);
+    transform: translateY(-1px);
+}
+
+.bingo-item-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.bingo-item-nome {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.bingo-item-info {
+    color: #a9a9a9;
+    font-size: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+}
+
+.bingo-item-info span {
+    display: inline-flex;
+    align-items: center;
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.bingo-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.bingo-status-planejado {
+    background: rgba(212, 175, 55, 0.16);
+    color: #e4c55a;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.bingo-status-aberto {
+    background: rgba(40, 167, 69, 0.15);
+    color: #63d47a;
+    border: 1px solid rgba(40, 167, 69, 0.25);
+}
+
+.bingo-status-andamento {
+    background: rgba(23, 162, 184, 0.15);
+    color: #62d6e8;
+    border: 1px solid rgba(23, 162, 184, 0.25);
+}
+
+.bingo-status-encerrado {
+    background: rgba(255, 255, 255, 0.08);
+    color: #bdbdbd;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.bingo-status-cancelado {
+    background: rgba(220, 53, 69, 0.15);
+    color: #ff7b87;
+    border: 1px solid rgba(220, 53, 69, 0.25);
+}
+
+
+/* ============================================================
+   ESTATÍSTICAS
+   ============================================================ */
+
+.bingo-estatisticas {
+    display: flex;
+    gap: 30px;
+    margin-top: 17px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.bingo-estatistica {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+}
+
+.bingo-estatistica-label {
+    font-size: 12px;
+    color: #888888;
+    margin-bottom: 3px;
+}
+
+.bingo-estatistica-valor {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+
+/* ============================================================
+   BOTÃO ABRIR
+   ============================================================ */
+
+.bingo-item-acoes {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-abrir-bingo {
+    border: 1px solid #d4af37;
+    color: #d4af37;
+    background: transparent;
+    border-radius: 9px;
+    padding: 8px 15px;
+    font-weight: 700;
+    transition: 0.25s;
+    cursor: pointer;
+}
+
+.btn-abrir-bingo:hover {
+    background: #d4af37;
+    color: #111111;
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.20);
+}
+
+
+/* ============================================================
+   ESTADO VAZIO
+   ============================================================ */
+
+.bingo-vazio {
+    text-align: center;
+    padding: 60px 20px;
+    color: #9f9f9f;
+}
+
+.bingo-vazio-icone {
+    font-size: 50px;
+    margin-bottom: 12px;
+}
+
+.bingo-vazio h5 {
+    color: #ffffff;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.bingo-vazio p {
+    margin-bottom: 20px;
+}
+
+
+/* ============================================================
+   MODAL — NOVO BINGO
+   ============================================================ */
+
+.bingo-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.bingo-modal-overlay.ativo {
+    display: flex;
+}
+
+.bingo-modal {
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #1c1f26;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+    animation: bingoModalEntrada 0.22s ease;
+}
+
+@keyframes bingoModalEntrada {
+
+    from {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+.bingo-modal-cabecalho {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.bingo-modal-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bingo-modal-icone {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #d4af37, #9f7f1f);
+    color: #111111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+}
+
+.bingo-modal-titulo h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.bingo-modal-titulo p {
+    margin: 3px 0 0;
+    color: #999999;
+    font-size: 13px;
+}
+
+.btn-fechar-bingo-modal {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cccccc;
+    font-size: 22px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-fechar-bingo-modal:hover {
+    background: rgba(220, 53, 69, 0.18);
+    color: #ff7b87;
+}
+
+.bingo-modal-corpo {
+    padding: 24px;
+}
+
+.bingo-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.bingo-form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.bingo-form-grupo.full {
+    grid-column: 1 / -1;
+}
+
+.bingo-form-grupo label {
+    color: #dddddd;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.bingo-form-grupo input,
+.bingo-form-grupo select,
+.bingo-form-grupo textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 9px;
+    background: #14161b;
+    color: #ffffff;
+    padding: 11px 12px;
+    outline: none;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.bingo-form-grupo input:focus,
+.bingo-form-grupo select:focus,
+.bingo-form-grupo textarea:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10);
+}
+
+.bingo-form-grupo textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.bingo-form-grupo select option {
+    background: #1c1f26;
+    color: #ffffff;
+}
+
+.bingo-form-ajuda {
+    color: #777777;
+    font-size: 11px;
+}
+
+.bingo-modal-rodape {
+    padding: 18px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancelar-bingo {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9px;
+    padding: 10px 18px;
+    background: transparent;
+    color: #bbbbbb;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-cancelar-bingo:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+}
+
+.btn-salvar-bingo {
+    border: none;
+    border-radius: 9px;
+    padding: 10px 20px;
+    background: #d4af37;
+    color: #111111;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-salvar-bingo:hover {
+    background: #f1cd57;
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+
+@media (max-width: 1000px) {
+
+    .bingo-resumo {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .bingo-cabecalho {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-novo-bingo {
+        width: 100%;
+    }
+
+    .bingo-resumo {
+        grid-template-columns: 1fr;
+    }
+
+    .bingo-item-topo {
+        flex-direction: column;
+    }
+
+    .bingo-status {
+        align-self: flex-start;
+    }
+
+    .bingo-estatisticas {
+        flex-wrap: wrap;
+        gap: 18px;
+    }
+
+    .bingo-item-info {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .bingo-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bingo-form-grupo.full {
+        grid-column: auto;
+    }
+
+    .bingo-modal {
+        max-height: 95vh;
+        border-radius: 16px;
+    }
+
+    .bingo-modal-corpo {
+        padding: 18px;
+    }
+
+    .bingo-modal-cabecalho {
+        padding: 16px 18px;
+    }
+
+    .bingo-modal-rodape {
+        padding: 15px 18px;
+    }
+
+}
+
+</style>
+
+
+<div class="bingo-container">
+
+
+<!-- =====================================================
+     CABEÇALHO
+     ===================================================== -->
+
+<div class="bingo-cabecalho">
+
+    <div class="bingo-titulo">
+
+        <div class="bingo-icone">
+            🎱
+        </div>
+
+        <div>
+
+            <h2>Central de Bingo</h2>
+
+            <p>
+                Gerencie Bingos, cartelas, vendas e prestação de contas.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <button
+        type="button"
+        class="btn-novo-bingo"
+        onclick="abrirModalNovoBingo()">
+
+        <span>＋</span>
+
+        Novo Bingo
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     RESUMO
+     ===================================================== -->
+
+<div class="bingo-resumo">
+
+
+    <!-- BINGOS -->
+
+    <div class="bingo-card-resumo">
+
+        <div class="bingo-card-resumo-topo">
+
+            <span class="bingo-card-resumo-label">
+                Bingos
+            </span>
+
+            <span class="bingo-card-resumo-icone">
+                🎱
+            </span>
+
+        </div>
+
+        <div class="bingo-card-resumo-valor">
+            {{ bingos|length }}
+        </div>
+
+    </div>
+
+
+    <!-- CARTELAS GERADAS -->
+
+    <div class="bingo-card-resumo">
+
+        <div class="bingo-card-resumo-topo">
+
+            <span class="bingo-card-resumo-label">
+                Cartelas geradas
+            </span>
+
+            <span class="bingo-card-resumo-icone">
+                🎟️
+            </span>
+
+        </div>
+
+        <div class="bingo-card-resumo-valor">
+            {{ bingos | sum(attribute='total_cartelas') }}
+        </div>
+
+    </div>
+
+
+    <!-- CARTELAS VENDIDAS -->
+
+    <div class="bingo-card-resumo">
+
+        <div class="bingo-card-resumo-topo">
+
+            <span class="bingo-card-resumo-label">
+                Cartelas vendidas
+            </span>
+
+            <span class="bingo-card-resumo-icone">
+                💰
+            </span>
+
+        </div>
+
+        <div class="bingo-card-resumo-valor">
+            {{ bingos | sum(attribute='cartelas_vendidas') }}
+        </div>
+
+    </div>
+
+
+    <!-- BINGOS ATIVOS -->
+
+    <div class="bingo-card-resumo">
+
+        <div class="bingo-card-resumo-topo">
+
+            <span class="bingo-card-resumo-label">
+                Bingos ativos
+            </span>
+
+            <span class="bingo-card-resumo-icone">
+                🟢
+            </span>
+
+        </div>
+
+        <div class="bingo-card-resumo-valor">
+
+            {{ bingos
+                | selectattr('status', 'in', ['ABERTO', 'EM_ANDAMENTO'])
+                | list
+                | length
+            }}
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     LISTA DE BINGOS
+     ===================================================== -->
+
+<div class="bingo-secao">
+
+
+    <div class="bingo-secao-cabecalho">
+
+        <div>
+
+            <h5>
+                Meus Bingos
+            </h5>
+
+            <span>
+                Bingos cadastrados no sistema
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="bingo-lista">
+
+
+        {% if bingos %}
+
+
+            {% for bingo in bingos %}
+
+
+            <div class="bingo-item">
+
+
+                <!-- =================================================
+                     TOPO DO ITEM
+                     ================================================= -->
+
+                <div class="bingo-item-topo">
+
+
+                    <div>
+
+                        <div class="bingo-item-nome">
+                            🎱 {{ bingo.nome }}
+                        </div>
+
+
+                        <div class="bingo-item-info">
+
+                            <span>
+                                📅
+                                {{ bingo.data.strftime('%d/%m/%Y') if bingo.data else '—' }}
+                            </span>
+
+                            <span>
+                                📍
+                                {{ bingo.local or 'Local não informado' }}
+                            </span>
+
+                            <span>
+                                🗓️
+                                {{ bingo.temporada_nome or 'Sem temporada' }}
+                            </span>
+
+                            <span>
+                                💵
+                                R$ {{ "%.2f"|format((bingo.valor_cartela or 0)|float) }}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    {% set classe_status = {
+                        'PLANEJADO': 'bingo-status-planejado',
+                        'ABERTO': 'bingo-status-aberto',
+                        'EM_ANDAMENTO': 'bingo-status-andamento',
+                        'ENCERRADO': 'bingo-status-encerrado',
+                        'CANCELADO': 'bingo-status-cancelado'
+                    }.get(bingo.status, 'bingo-status-encerrado') %}
+
+
+                    <span class="bingo-status {{ classe_status }}">
+
+                        {{ (bingo.status or 'ENCERRADO').replace('_', ' ') }}
+
+                    </span>
+
+
+                </div>
+
+
+                <!-- =================================================
+                     ESTATÍSTICAS
+                     ================================================= -->
+
+                <div class="bingo-estatisticas">
+
+
+                    <div class="bingo-estatistica">
+
+                        <span class="bingo-estatistica-label">
+                            Cartelas
+                        </span>
+
+                        <span class="bingo-estatistica-valor">
+                            {{ bingo.total_cartelas or 0 }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="bingo-estatistica">
+
+                        <span class="bingo-estatistica-label">
+                            Vendidas
+                        </span>
+
+                        <span class="bingo-estatistica-valor">
+                            {{ bingo.cartelas_vendidas or 0 }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="bingo-estatistica">
+
+                        <span class="bingo-estatistica-label">
+                            Disponíveis
+                        </span>
+
+                        <span class="bingo-estatistica-valor">
+                            {{ (bingo.total_cartelas or 0) - (bingo.cartelas_vendidas or 0) }}
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <!-- =================================================
+                     AÇÕES
+                     ================================================= -->
+
+                <div class="bingo-item-acoes">
+
+                    <a
+                        href="/admin/bingo/{{ bingo.id }}"
+                        class="btn-abrir-bingo">
+
+                        Abrir Bingo →
+
+                    </a>
+
+                </div>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <!-- =================================================
+                 ESTADO VAZIO
+                 ================================================= -->
+
+            <div class="bingo-vazio">
+
+                <div class="bingo-vazio-icone">
+                    🎱
+                </div>
+
+                <h5>
+                    Nenhum Bingo cadastrado
+                </h5>
+
+                <p>
+                    Comece criando o primeiro Bingo da Brilho Negro.
+                </p>
+
+                <button
+                    type="button"
+                    class="btn-novo-bingo"
+                    onclick="abrirModalNovoBingo()">
+
+                    ＋ Criar primeiro Bingo
+
+                </button>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+</div>
+
+</div>
+
+
+<!-- ============================================================
+     MODAL — NOVO BINGO
+     ============================================================ -->
+
+<div
+    id="modalNovoBingo"
+    class="bingo-modal-overlay"
+    onclick="fecharModalFora(event)">
+
+    <div
+        class="bingo-modal"
+        onclick="event.stopPropagation()">
+
+
+        <!-- =====================================================
+             CABEÇALHO DO MODAL
+             ===================================================== -->
+
+        <div class="bingo-modal-cabecalho">
+
+            <div class="bingo-modal-titulo">
+
+                <div class="bingo-modal-icone">
+                    🎱
+                </div>
+
+                <div>
+
+                    <h3>
+                        Novo Bingo
+                    </h3>
+
+                    <p>
+                        Cadastre as informações do novo Bingo.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn-fechar-bingo-modal"
+                onclick="fecharModalNovoBingo()">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             FORMULÁRIO
+             ===================================================== -->
+
+        <form
+            method="POST"
+            action="/admin/bingo/novo">
+
+            <div class="bingo-modal-corpo">
+
+                <div class="bingo-form-grid">
+
+
+                    <!-- NOME -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="bingo_nome">
+                            Nome do Bingo *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="bingo_nome"
+                            name="nome"
+                            placeholder="Ex.: Bingo Beneficente Brilho Negro"
+                            required>
+
+                    </div>
+
+
+                    <!-- TEMPORADA -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="bingo_temporada">
+                            Temporada
+                        </label>
+
+                        <select
+                            id="bingo_temporada"
+                            name="temporada_id">
+
+                            <option value="">
+                                Sem temporada
+                            </option>
+
+                            {% for temporada in temporadas %}
+
+                                <option value="{{ temporada.id }}">
+
+                                    {{ temporada.nome }}
+
+                                    {% if temporada.ano %}
+                                        — {{ temporada.ano }}
+                                    {% endif %}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="bingo_status">
+                            Status
+                        </label>
+
+                        <select
+                            id="bingo_status"
+                            name="status">
+
+                            <option value="PLANEJADO">
+                                Planejado
+                            </option>
+
+                            <option value="ABERTO">
+                                Aberto
+                            </option>
+
+                            <option value="EM_ANDAMENTO">
+                                Em andamento
+                            </option>
+
+                            <option value="ENCERRADO">
+                                Encerrado
+                            </option>
+
+                            <option value="CANCELADO">
+                                Cancelado
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- DATA -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="bingo_data">
+                            Data *
+                        </label>
+
+                        <input
+                            type="date"
+                            id="bingo_data"
+                            name="data"
+                            required>
+
+                    </div>
+
+
+                    <!-- HORÁRIO -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="bingo_horario">
+                            Horário
+                        </label>
+
+                        <input
+                            type="time"
+                            id="bingo_horario"
+                            name="horario">
+
+                    </div>
+
+
+                    <!-- LOCAL -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="bingo_local">
+                            Local
+                        </label>
+
+                        <input
+                            type="text"
+                            id="bingo_local"
+                            name="local"
+                            placeholder="Ex.: Feira Livre de João Câmara">
+
+                    </div>
+
+
+                    <!-- VALOR -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="bingo_valor">
+                            Valor da Cartela *
+                        </label>
+
+                        <input
+                            type="text"
+                            id="bingo_valor"
+                            name="valor_cartela"
+                            placeholder="Ex.: 5,00"
+                            inputmode="decimal"
+                            required>
+
+                        <span class="bingo-form-ajuda">
+                            Informe o valor em reais.
+                        </span>
+
+                    </div>
+
+
+                    <!-- QUANTIDADE -->
+
+                    <div class="bingo-form-grupo">
+
+                        <label for="bingo_quantidade">
+                            Quantidade de Cartelas *
+                        </label>
+
+                        <input
+                            type="number"
+                            id="bingo_quantidade"
+                            name="quantidade_cartelas"
+                            min="1"
+                            placeholder="Ex.: 500"
+                            required>
+
+                    </div>
+
+
+                    <!-- DESCRIÇÃO -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="bingo_descricao">
+                            Descrição
+                        </label>
+
+                        <textarea
+                            id="bingo_descricao"
+                            name="descricao"
+                            placeholder="Informações sobre o Bingo..."></textarea>
+
+                    </div>
+
+
+                    <!-- OBSERVAÇÕES -->
+
+                    <div class="bingo-form-grupo full">
+
+                        <label for="bingo_observacoes">
+                            Observações
+                        </label>
+
+                        <textarea
+                            id="bingo_observacoes"
+                            name="observacoes"
+                            placeholder="Observações internas..."></textarea>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 RODAPÉ
+                 ================================================= -->
+
+            <div class="bingo-modal-rodape">
+
+                <button
+                    type="button"
+                    class="btn-cancelar-bingo"
+                    onclick="fecharModalNovoBingo()">
+
+                    Cancelar
+
+                </button>
+
+
+                <button
+                    type="submit"
+                    class="btn-salvar-bingo">
+
+                    ✓ Criar Bingo
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     JAVASCRIPT — MODAL
+     ============================================================ -->
+
+<script>
+
+function abrirModalNovoBingo() {
+
+    const modal = document.getElementById("modalNovoBingo");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("ativo");
+
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function () {
+
+        const campoNome = document.getElementById("bingo_nome");
+
+        if (campoNome) {
+            campoNome.focus();
+        }
+
+    }, 100);
+
+}
+
+
+function fecharModalNovoBingo() {
+
+    const modal = document.getElementById("modalNovoBingo");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("ativo");
+
+    document.body.style.overflow = "";
+
+}
+
+
+function fecharModalFora(event) {
+
+    if (event.target.id === "modalNovoBingo") {
+
+        fecharModalNovoBingo();
+
+    }
+
+}
+
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "Escape") {
+
+        const modal = document.getElementById("modalNovoBingo");
+
+        if (
+            modal &&
+            modal.classList.contains("ativo")
+        ) {
+
+            fecharModalNovoBingo();
+
+        }
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

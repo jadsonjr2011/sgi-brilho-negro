@@ -1,0 +1,3698 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Bingo — {{ bingo.nome }}
+{% endblock %}
+
+{% block titulo_pagina %}
+Bingo
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ============================================================
+   BINGO DETALHES — CONTAINER
+   ============================================================ */
+
+.bingo-detalhes-container {
+    padding-bottom: 30px;
+}
+
+/* ============================================================
+   CABEÇALHO
+   ============================================================ */
+
+.bingo-detalhes-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.bingo-detalhes-titulo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.bingo-detalhes-icone {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #d4af37, #9f7f1f);
+    color: #111111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 29px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.bingo-detalhes-titulo h2 {
+    margin: 0;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.bingo-detalhes-titulo p {
+    margin: 4px 0 0;
+    color: #a9a9a9;
+    font-size: 14px;
+}
+
+/* ============================================================
+   AÇÕES DO CABEÇALHO
+   ============================================================ */
+
+.bingo-detalhes-acoes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-voltar-bingo,
+.btn-editar-bingo {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border-radius: 9px;
+    padding: 10px 16px;
+    font-weight: 700;
+    transition: 0.25s;
+    cursor: pointer;
+}
+
+.btn-voltar-bingo {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    color: #cccccc;
+}
+
+.btn-voltar-bingo:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: #ffffff;
+}
+
+.btn-editar-bingo {
+    border: 1px solid #d4af37;
+    background: #d4af37;
+    color: #111111;
+}
+
+.btn-editar-bingo:hover {
+    background: #f1cd57;
+    color: #000000;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   STATUS DO BINGO
+   ============================================================ */
+
+.bingo-detalhes-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 13px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.status-planejado {
+    background: rgba(212, 175, 55, 0.16);
+    color: #e4c55a;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.status-aberto {
+    background: rgba(40, 167, 69, 0.15);
+    color: #63d47a;
+    border: 1px solid rgba(40, 167, 69, 0.25);
+}
+
+.status-andamento {
+    background: rgba(23, 162, 184, 0.15);
+    color: #62d6e8;
+    border: 1px solid rgba(23, 162, 184, 0.25);
+}
+
+.status-encerrado {
+    background: rgba(255, 255, 255, 0.08);
+    color: #bdbdbd;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.status-cancelado {
+    background: rgba(220, 53, 69, 0.15);
+    color: #ff7b87;
+    border: 1px solid rgba(220, 53, 69, 0.25);
+}
+
+/* ============================================================
+   INFORMAÇÕES
+   ============================================================ */
+
+.bingo-info {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.bingo-info-card {
+    background: rgba(28, 31, 38, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 15px;
+    padding: 17px 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.bingo-info-label {
+    display: block;
+    color: #8f8f8f;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.bingo-info-valor {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   RESUMO
+   ============================================================ */
+
+.bingo-detalhes-resumo {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+.bingo-detalhes-card {
+    background: rgba(28, 31, 38, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.20);
+    border-radius: 15px;
+    padding: 18px 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: 0.25s;
+}
+
+.bingo-detalhes-card:hover {
+    transform: translateY(-2px);
+    border-color: #d4af37;
+}
+
+.bingo-detalhes-card-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bingo-detalhes-card-label {
+    color: #cfcfcf;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.bingo-detalhes-card-icone {
+    font-size: 22px;
+}
+
+.bingo-detalhes-card-valor {
+    margin-top: 7px;
+    color: #d4af37;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   OPERAÇÕES
+   ============================================================ */
+
+.bingo-operacoes {
+    background: rgba(28, 31, 38, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 20px;
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.30);
+}
+
+.bingo-operacoes h5 {
+    margin: 0;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.bingo-operacoes p {
+    margin: 5px 0 18px;
+    color: #8f8f8f;
+    font-size: 13px;
+}
+
+.bingo-operacoes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.bingo-operacoes-grid form {
+    margin: 0;
+    width: 100%;
+}
+
+.bingo-operacao {
+    min-height: 85px;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    background: rgba(20, 22, 27, 0.75);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.bingo-operacao:hover {
+    border-color: rgba(212, 175, 55, 0.65);
+    background: rgba(212, 175, 55, 0.08);
+    transform: translateY(-2px);
+}
+
+.bingo-operacao-icone {
+    font-size: 25px;
+}
+
+.bingo-operacao-texto {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   CARTELAS
+   ============================================================ */
+
+.bingo-cartelas {
+    background: rgba(28, 31, 38, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.30);
+}
+
+.bingo-cartelas-cabecalho {
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.bingo-cartelas-cabecalho h5 {
+    margin: 0;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.bingo-cartelas-cabecalho span {
+    color: #8f8f8f;
+    font-size: 13px;
+}
+
+/* ============================================================
+   AÇÕES DAS CARTELAS
+   ============================================================ */
+
+.bingo-cartelas-acoes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-imprimir-cartelas {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 9px;
+    padding: 9px 13px;
+    background: rgba(212, 175, 55, 0.10);
+    color: #e4c55a;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.25s;
+}
+
+.btn-imprimir-cartelas:hover {
+    background: #d4af37;
+    color: #111111;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   LISTA DAS CARTELAS
+   ============================================================ */
+
+.bingo-cartelas-lista {
+    padding: 15px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* ============================================================
+   LINHA DA CARTELA
+   ============================================================ */
+
+.bingo-cartela-linha {
+    display: grid;
+    grid-template-columns: 125px minmax(0, 1fr) 105px 85px;
+    align-items: center;
+    gap: 14px;
+    min-height: 58px;
+    padding: 9px 12px;
+    background: #14161b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 11px;
+    transition: 0.20s;
+}
+
+.bingo-cartela-linha:hover {
+    border-color: rgba(212, 175, 55, 0.45);
+    background: rgba(212, 175, 55, 0.035);
+    transform: translateX(2px);
+}
+
+/* ============================================================
+   IDENTIFICAÇÃO
+   ============================================================ */
+
+.bingo-cartela-identificacao {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.bingo-cartela-numero {
+    color: #d4af37;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.bingo-cartela-codigo {
+    color: #777777;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================================
+   NÚMEROS
+   ============================================================ */
+
+.bingo-cartela-numeros {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-width: 0;
+}
+
+.bingo-numero {
+    min-width: 29px;
+    height: 29px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: #20232b;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.bingo-numero.livre {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: rgba(212, 175, 55, 0.30);
+    color: #d4af37;
+}
+
+/* ============================================================
+   STATUS DA CARTELA
+   ============================================================ */
+
+.bingo-cartela-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 9px;
+    border-radius: 15px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* DISPONÍVEL */
+
+.bingo-cartela-status.disponivel {
+    background: rgba(40, 167, 69, 0.12);
+    border: 1px solid rgba(40, 167, 69, 0.25);
+    color: #63d47a;
+}
+
+/* VENDIDA */
+
+.bingo-cartela-status.vendida {
+    background: rgba(23, 162, 184, 0.12);
+    border: 1px solid rgba(23, 162, 184, 0.25);
+    color: #62d6e8;
+}
+
+/* ============================================================
+   BOTÃO INDIVIDUAL
+   ============================================================ */
+
+.btn-imprimir-individual {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 7px;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cccccc;
+    font-size: 10px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btn-imprimir-individual:hover {
+    background: rgba(212, 175, 55, 0.12);
+    border-color: #d4af37;
+    color: #d4af37;
+}
+
+/* ============================================================
+   VAZIO
+   ============================================================ */
+
+.bingo-cartelas-vazio {
+    padding: 55px 20px;
+    text-align: center;
+    color: #8f8f8f;
+}
+
+.bingo-cartelas-vazio-icone {
+    font-size: 45px;
+    margin-bottom: 10px;
+}
+
+.bingo-cartelas-vazio h5 {
+    color: #ffffff;
+    margin-bottom: 7px;
+}
+
+.bingo-cartelas-vazio p {
+    margin: 0;
+}
+
+/* ============================================================
+   MODAIS
+   ============================================================ */
+
+.bingo-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+}
+
+.bingo-modal-overlay.ativo {
+    display: flex;
+}
+
+.bingo-modal {
+    width: 100%;
+    max-width: 760px;
+    max-height: 92vh;
+    overflow-y: auto;
+    background: #1c1f26;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+    animation: bingoModalEntrada 0.22s ease;
+}
+
+.bingo-modal-pequeno {
+    max-width: 520px;
+}
+
+@keyframes bingoModalEntrada {
+    from {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.bingo-modal-cabecalho {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.bingo-modal-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bingo-modal-icone {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #d4af37, #9f7f1f);
+    color: #111111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+}
+
+.bingo-modal-titulo h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.bingo-modal-titulo p {
+    margin: 3px 0 0;
+    color: #999999;
+    font-size: 13px;
+}
+
+.btn-fechar-bingo-modal {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cccccc;
+    font-size: 22px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-fechar-bingo-modal:hover {
+    background: rgba(220, 53, 69, 0.18);
+    color: #ff7b87;
+}
+
+.bingo-modal-corpo {
+    padding: 24px;
+}
+
+.bingo-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.bingo-form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.bingo-form-grupo.full {
+    grid-column: 1 / -1;
+}
+
+.bingo-form-grupo label {
+    color: #dddddd;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.bingo-form-grupo input,
+.bingo-form-grupo select,
+.bingo-form-grupo textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 9px;
+    background: #14161b;
+    color: #ffffff;
+    padding: 11px 12px;
+    outline: none;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.bingo-form-grupo input:focus,
+.bingo-form-grupo select:focus,
+.bingo-form-grupo textarea:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.10);
+}
+
+.bingo-form-grupo textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.bingo-form-grupo select option {
+    background: #1c1f26;
+    color: #ffffff;
+}
+
+.bingo-form-ajuda {
+    color: #777777;
+    font-size: 11px;
+}
+
+/* ============================================================
+   AVISO DO MODAL DE GERAÇÃO
+   ============================================================ */
+
+.bingo-geracao-aviso {
+    display: flex;
+    gap: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+.bingo-geracao-aviso-icone {
+    font-size: 25px;
+    line-height: 1;
+}
+
+.bingo-geracao-aviso-conteudo {
+    flex: 1;
+}
+
+.bingo-geracao-aviso-conteudo strong {
+    display: block;
+    color: #e4c55a;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.bingo-geracao-aviso-conteudo span {
+    color: #aaaaaa;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.bingo-geracao-resumo {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.bingo-geracao-resumo-card {
+    background: #14161b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 13px;
+}
+
+.bingo-geracao-resumo-label {
+    display: block;
+    color: #888888;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.bingo-geracao-resumo-valor {
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* ============================================================
+   MODAL DE VENDA
+   ============================================================ */
+
+.bingo-venda-info {
+    padding: 15px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    background: rgba(40, 167, 69, 0.08);
+    border: 1px solid rgba(40, 167, 69, 0.20);
+}
+
+.bingo-venda-info strong {
+    color: #63d47a;
+    font-size: 13px;
+}
+
+.bingo-venda-info p {
+    margin: 5px 0 0;
+    color: #aaaaaa;
+    font-size: 12px;
+}
+
+/* ============================================================
+   RODAPÉ DOS MODAIS
+   ============================================================ */
+
+.bingo-modal-rodape {
+    padding: 18px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancelar-bingo {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9px;
+    padding: 10px 18px;
+    background: transparent;
+    color: #bbbbbb;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-cancelar-bingo:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+}
+
+.btn-salvar-bingo,
+.btn-gerar-confirmar {
+    border: none;
+    border-radius: 9px;
+    padding: 10px 20px;
+    background: #d4af37;
+    color: #111111;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-salvar-bingo:hover,
+.btn-gerar-confirmar:hover {
+    background: #f1cd57;
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   BOTÃO REGISTRAR VENDA
+   ============================================================ */
+
+.btn-registrar-venda {
+    border: none;
+    border-radius: 9px;
+    padding: 10px 20px;
+    background: #d4af37;
+    color: #111111;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-registrar-venda:hover {
+    background: #f1cd57;
+    color: #000000;
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   MODAL DE VENDA — SELEÇÃO DE CARTELAS
+   ============================================================ */
+
+.bingo-modal-venda {
+    max-width: 820px;
+}
+
+.bingo-selecao-cartelas {
+    background: #14161b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 13px;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.bingo-selecao-topo {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.bingo-selecao-topo > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.bingo-selecao-topo strong {
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.bingo-selecao-topo span {
+    color: #888888;
+    font-size: 11px;
+}
+
+.btn-selecionar-todas {
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 8px;
+    padding: 7px 11px;
+    background: rgba(212, 175, 55, 0.08);
+    color: #d4af37;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-selecionar-todas:hover {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: #d4af37;
+}
+
+.bingo-cartelas-selecao {
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.bingo-cartela-opcao {
+    position: relative;
+    min-height: 62px;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: #1c1f26;
+    cursor: pointer;
+    transition: 0.20s;
+}
+
+.bingo-cartela-opcao:hover {
+    border-color: rgba(212, 175, 55, 0.55);
+    background: rgba(212, 175, 55, 0.06);
+    transform: translateY(-1px);
+}
+
+.bingo-cartela-opcao input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bingo-cartela-opcao:has(input:checked) {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: #d4af37;
+    box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.20);
+}
+
+.bingo-cartela-check {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: transparent;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.bingo-cartela-opcao:has(input:checked) .bingo-cartela-check {
+    background: #d4af37;
+    border-color: #d4af37;
+    color: #111111;
+}
+
+.bingo-cartela-opcao-numero {
+    color: #d4af37;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.bingo-cartela-opcao-codigo {
+    max-width: 100%;
+    color: #666666;
+    font-size: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============================================================
+   RESUMO DA VENDA / PRESTAÇÃO
+   ============================================================ */
+
+.bingo-resumo-venda {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+.bingo-resumo-venda-item {
+    background: #14161b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.bingo-resumo-venda-item span {
+    display: block;
+    color: #888888;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.bingo-resumo-venda-item strong {
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.bingo-resumo-venda-item.destaque {
+    border-color: rgba(40, 167, 69, 0.25);
+    background: rgba(40, 167, 69, 0.07);
+}
+
+.bingo-resumo-venda-item.destaque strong {
+    color: #63d47a;
+}
+
+.bingo-sem-cartelas {
+    grid-column: 1 / -1;
+    padding: 35px 20px;
+    text-align: center;
+}
+
+.bingo-sem-cartelas span {
+    display: block;
+    font-size: 35px;
+    margin-bottom: 8px;
+}
+
+.bingo-sem-cartelas strong {
+    display: block;
+    color: #ffffff;
+    margin-bottom: 5px;
+}
+
+.bingo-sem-cartelas p {
+    margin: 0;
+    color: #777777;
+    font-size: 12px;
+}
+
+.btn-registrar-venda:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ============================================================
+   PRESTAÇÃO DE CONTAS
+   ============================================================ */
+
+.bingo-prestacao-resumo {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.bingo-prestacao-card {
+    background: #14161b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.bingo-prestacao-card-label {
+    display: block;
+    color: #888888;
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+
+.bingo-prestacao-card-valor {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.bingo-prestacao-card.destaque {
+    background: rgba(40, 167, 69, 0.08);
+    border-color: rgba(40, 167, 69, 0.25);
+}
+
+.bingo-prestacao-card.destaque .bingo-prestacao-card-valor {
+    color: #63d47a;
+}
+
+.bingo-prestacao-card.ouro {
+    background: rgba(212, 175, 55, 0.08);
+    border-color: rgba(212, 175, 55, 0.25);
+}
+
+.bingo-prestacao-card.ouro .bingo-prestacao-card-valor {
+    color: #d4af37;
+}
+
+
+/* ============================================================
+   BARRA DE VENDAS
+   ============================================================ */
+
+.bingo-prestacao-progresso {
+    margin-bottom: 20px;
+}
+
+.bingo-prestacao-progresso-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+}
+
+.bingo-prestacao-progresso-topo span {
+    color: #aaaaaa;
+    font-size: 12px;
+}
+
+.bingo-prestacao-progresso-topo strong {
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.bingo-prestacao-barra {
+    width: 100%;
+    height: 10px;
+    background: #14161b;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bingo-prestacao-barra-preenchimento {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #d4af37, #63d47a);
+    border-radius: 20px;
+    transition: width 0.4s ease;
+}
+
+
+/* ============================================================
+   RESUMO FINANCEIRO
+   ============================================================ */
+
+.bingo-prestacao-financeiro {
+    background: #14161b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 13px;
+    padding: 17px;
+}
+
+.bingo-prestacao-financeiro-titulo {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 13px;
+}
+
+.bingo-prestacao-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bingo-prestacao-linha:last-child {
+    border-bottom: none;
+}
+
+.bingo-prestacao-linha span {
+    color: #999999;
+    font-size: 12px;
+}
+
+.bingo-prestacao-linha strong {
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.bingo-prestacao-linha.total {
+    padding-top: 14px;
+    margin-top: 4px;
+}
+
+.bingo-prestacao-linha.total span {
+    color: #dddddd;
+    font-weight: 700;
+}
+
+.bingo-prestacao-linha.total strong {
+    color: #63d47a;
+    font-size: 20px;
+}
+
+
+/* ============================================================
+   STATUS DA PRESTAÇÃO
+   ============================================================ */
+
+.bingo-prestacao-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    padding: 13px 15px;
+    border-radius: 11px;
+    background: rgba(212, 175, 55, 0.07);
+    border: 1px solid rgba(212, 175, 55, 0.16);
+}
+
+.bingo-prestacao-status-icone {
+    font-size: 21px;
+}
+
+.bingo-prestacao-status-texto {
+    flex: 1;
+}
+
+.bingo-prestacao-status-texto strong {
+    display: block;
+    color: #e4c55a;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.bingo-prestacao-status-texto span {
+    color: #999999;
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   RESPONSIVO — PRESTAÇÃO
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .bingo-prestacao-resumo {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .bingo-info {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bingo-detalhes-resumo {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bingo-operacoes-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .bingo-cartela-linha {
+        grid-template-columns: 110px minmax(0, 1fr) 90px 80px;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 850px) {
+
+    .bingo-cartela-linha {
+        grid-template-columns: 1fr auto auto;
+    }
+
+    .bingo-cartela-numeros {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .bingo-cartela-identificacao {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .bingo-cartela-status {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .btn-imprimir-individual {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .bingo-cartelas-selecao {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+
+    .bingo-detalhes-cabecalho {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bingo-detalhes-acoes {
+        width: 100%;
+    }
+
+    .btn-voltar-bingo,
+    .btn-editar-bingo {
+        flex: 1;
+    }
+
+    .bingo-info,
+    .bingo-detalhes-resumo,
+    .bingo-operacoes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bingo-cartelas-cabecalho {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bingo-cartelas-acoes {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .btn-imprimir-cartelas {
+        flex: 1;
+    }
+
+    .bingo-cartelas-lista {
+        padding: 12px;
+    }
+
+    .bingo-cartela-linha {
+        padding: 11px;
+    }
+
+    .bingo-cartela-numeros {
+        gap: 4px;
+    }
+
+    .bingo-numero {
+        min-width: 27px;
+        height: 27px;
+        font-size: 10px;
+    }
+
+    .bingo-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bingo-form-grupo.full {
+        grid-column: auto;
+    }
+
+    .bingo-modal {
+        max-height: 95vh;
+        border-radius: 16px;
+    }
+
+    .bingo-modal-corpo {
+        padding: 18px;
+    }
+
+    .bingo-modal-cabecalho {
+        padding: 16px 18px;
+    }
+
+    .bingo-modal-rodape {
+        padding: 15px 18px;
+    }
+
+    .bingo-geracao-resumo {
+        grid-template-columns: 1fr;
+    }
+
+    .bingo-cartelas-selecao {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .bingo-resumo-venda {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 450px) {
+
+    .bingo-cartelas-selecao {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ============================================================
+   BOTÃO — IMPRIMIR PRESTAÇÃO DE CONTAS
+   ============================================================ */
+
+.btn-imprimir-bingo {
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 42px;
+
+    padding: 0 18px;
+
+    border-radius: 10px;
+
+    background: #1B0001;
+
+    color: #FFFFFF;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    border: 1px solid #1B0001;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+
+}
+
+.btn-imprimir-bingo:hover {
+
+    background: #320004;
+
+    color: #FFFFFF;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 12px rgba(27, 0, 1, 0.20);
+
+}
+
+.btn-imprimir-bingo {
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 42px;
+
+    padding: 0 18px;
+
+    border-radius: 10px;
+
+    background: #2563EB;
+
+    color: #FFFFFF;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    border: 1px solid #2563EB;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.btn-imprimir-bingo:hover {
+
+    background: #1D4ED8;
+
+    color: #FFFFFF;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 12px rgba(37, 99, 235, 0.25);
+
+}
+
+</style>
+
+<div class="bingo-detalhes-container">
+
+<!-- ============================================================
+     CABEÇALHO
+     ============================================================ -->
+
+<div class="bingo-detalhes-cabecalho">
+
+
+<div class="bingo-detalhes-titulo">
+
+    <div class="bingo-detalhes-icone">
+        🎱
+    </div>
+
+    <div>
+
+        <h2>
+            {{ bingo.nome }}
+        </h2>
+
+        {% set classe_status = {
+            'PLANEJADO': 'status-planejado',
+            'ABERTO': 'status-aberto',
+            'EM_ANDAMENTO': 'status-andamento',
+            'ENCERRADO': 'status-encerrado',
+            'CANCELADO': 'status-cancelado'
+        }.get(bingo.status, 'status-encerrado') %}
+
+        <span class="bingo-detalhes-status {{ classe_status }}">
+            {{ (bingo.status or 'ENCERRADO').replace('_', ' ') }}
+        </span>
+
+    </div>
+
+</div>
+
+<div class="bingo-detalhes-acoes">
+
+    <a
+        href="/admin/bingo"
+        class="btn-voltar-bingo">
+        ← Voltar
+    </a>
+
+    <button
+        type="button"
+        class="btn-editar-bingo"
+        onclick="abrirModalEditarBingo()">
+        ✎ Editar
+    </button>
+
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     INFORMAÇÕES
+     ============================================================ -->
+
+<div class="bingo-info">
+
+
+<div class="bingo-info-card">
+    <span class="bingo-info-label">📅 Data</span>
+    <span class="bingo-info-valor">
+        {{ bingo.data.strftime('%d/%m/%Y') if bingo.data else '—' }}
+    </span>
+</div>
+
+<div class="bingo-info-card">
+    <span class="bingo-info-label">🕐 Horário</span>
+    <span class="bingo-info-valor">
+        {{ bingo.horario or '—' }}
+    </span>
+</div>
+
+<div class="bingo-info-card">
+    <span class="bingo-info-label">📍 Local</span>
+    <span class="bingo-info-valor">
+        {{ bingo.local or 'Não informado' }}
+    </span>
+</div>
+
+<div class="bingo-info-card">
+    <span class="bingo-info-label">🗓️ Temporada</span>
+    <span class="bingo-info-valor">
+        {{ bingo.temporada_nome or 'Sem temporada' }}
+    </span>
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     RESUMO
+     ============================================================ -->
+
+<div class="bingo-detalhes-resumo">
+
+
+<div class="bingo-detalhes-card">
+
+    <div class="bingo-detalhes-card-topo">
+
+        <span class="bingo-detalhes-card-label">
+            Cartelas
+        </span>
+
+        <span class="bingo-detalhes-card-icone">
+            🎟️
+        </span>
+
+    </div>
+
+    <div class="bingo-detalhes-card-valor">
+        {{ bingo.total_cartelas or 0 }}
+    </div>
+
+</div>
+
+
+<div class="bingo-detalhes-card">
+
+    <div class="bingo-detalhes-card-topo">
+
+        <span class="bingo-detalhes-card-label">
+            Vendidas
+        </span>
+
+        <span class="bingo-detalhes-card-icone">
+            💰
+        </span>
+
+    </div>
+
+    <div class="bingo-detalhes-card-valor">
+        {{ bingo.cartelas_vendidas or 0 }}
+    </div>
+
+</div>
+
+
+<div class="bingo-detalhes-card">
+
+    <div class="bingo-detalhes-card-topo">
+
+        <span class="bingo-detalhes-card-label">
+            Disponíveis
+        </span>
+
+        <span class="bingo-detalhes-card-icone">
+            🎫
+        </span>
+
+    </div>
+
+    <div class="bingo-detalhes-card-valor">
+        {{ (bingo.total_cartelas or 0) - (bingo.cartelas_vendidas or 0) }}
+    </div>
+
+</div>
+
+
+<!-- ========================================================
+     NOVO: VALOR PRESTADO
+     ======================================================== -->
+
+<div class="bingo-detalhes-card">
+
+    <div class="bingo-detalhes-card-topo">
+
+        <span class="bingo-detalhes-card-label">
+            Valor Prestado
+        </span>
+
+        <span class="bingo-detalhes-card-icone">
+            💵
+        </span>
+
+    </div>
+
+    <div class="bingo-detalhes-card-valor">
+
+        R$
+        {{
+            "{:,.2f}".format(
+                (bingo.cartelas_vendidas or 0)|float
+                *
+                (bingo.valor_cartela or 0)|float
+            ).replace(',', 'X').replace('.', ',').replace('X', '.')
+        }}
+
+    </div>
+
+</div>
+
+</div>
+
+<!-- ============================================================
+     OPERAÇÕES
+     ============================================================ -->
+
+<div class="bingo-operacoes">
+
+
+<h5>
+    Operações do Bingo
+</h5>
+
+<p>
+    Controle as cartelas, registre vendas e acompanhe a prestação de contas.
+</p>
+
+<div class="bingo-operacoes-grid">
+
+    <button
+        type="button"
+        class="bingo-operacao"
+        onclick="abrirModalGerarCartelas()">
+
+        <span class="bingo-operacao-icone">
+            🎟️
+        </span>
+
+        <span class="bingo-operacao-texto">
+            Gerar Cartelas
+        </span>
+
+    </button>
+
+
+    <button
+        type="button"
+        class="bingo-operacao"
+        onclick="abrirModalRegistrarVenda()">
+
+        <span class="bingo-operacao-icone">
+            💰
+        </span>
+
+        <span class="bingo-operacao-texto">
+            Registrar Venda
+        </span>
+
+    </button>
+
+
+    <button
+        type="button"
+        class="bingo-operacao"
+        onclick="abrirModalPrestacaoContas()">
+
+        <span class="bingo-operacao-icone">
+            📊
+        </span>
+
+        <span class="bingo-operacao-texto">
+            Prestação de Contas
+        </span>
+
+    </button>
+
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     CARTELAS
+     ============================================================ -->
+
+<div class="bingo-cartelas">
+
+<div class="bingo-cartelas-cabecalho">
+
+    <div>
+
+        <h5>
+            Cartelas do Bingo
+        </h5>
+
+        <span>
+            Controle das cartelas cadastradas neste Bingo
+        </span>
+
+    </div>
+
+    <div class="bingo-cartelas-acoes">
+
+        {% if cartelas %}
+
+            <a
+                href="/admin/bingo/{{ bingo.id }}/cartelas/imprimir"
+                class="btn-imprimir-cartelas">
+
+                🖨️ Imprimir Todas
+
+            </a>
+
+        {% endif %}
+
+        <span>
+            {{ cartelas|length }} cartela(s)
+        </span>
+
+    </div>
+
+</div>
+
+
+{% if cartelas %}
+
+    <div class="bingo-cartelas-lista">
+
+        {% for cartela in cartelas %}
+
+            <div class="bingo-cartela-linha">
+
+                <div class="bingo-cartela-identificacao">
+
+                    <span class="bingo-cartela-numero">
+                        #{{ cartela.numero }}
+                    </span>
+
+                    {% if cartela.codigo %}
+
+                        <span class="bingo-cartela-codigo">
+                            {{ cartela.codigo }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="bingo-cartela-numeros">
+
+                    {% if cartela.numeros is sequence and cartela.numeros is not string %}
+
+                        {% for linha in cartela.numeros %}
+
+                            {% if linha is sequence and linha is not string %}
+
+                                {% for numero in linha %}
+
+                                    <span
+                                        class="bingo-numero {% if numero in [0, '0', None, 'LIVRE'] %}livre{% endif %}">
+
+                                        {% if numero in [0, '0', None, 'LIVRE'] %}
+                                            LIVRE
+                                        {% else %}
+                                            {{ numero }}
+                                        {% endif %}
+
+                                    </span>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <span class="bingo-numero">
+                                    {{ linha }}
+                                </span>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    {% else %}
+
+                        <span class="bingo-numero">
+                            —
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!--
+                    DISPONÍVEL E VENDIDA:
+                    ambas continuam utilizando o mesmo
+                    visual verde.
+                -->
+
+                {% set status_cartela = (cartela.status or 'DISPONIVEL')|upper %}
+
+                <span class="bingo-cartela-status
+                    {% if status_cartela == 'DISPONIVEL' %}
+                        disponivel
+                    {% elif status_cartela == 'VENDIDA' %}
+                        vendida
+                    {% endif %}
+                ">
+                    {{ status_cartela }}
+                </span>
+
+
+                <a
+                    href="/admin/bingo/{{ bingo.id }}/cartelas/{{ cartela.id }}/imprimir"
+                    class="btn-imprimir-individual">
+
+                    🖨️ Imprimir
+
+                </a>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <div class="bingo-cartelas-vazio">
+
+        <div class="bingo-cartelas-vazio-icone">
+            🎟️
+        </div>
+
+        <h5>
+            Nenhuma cartela gerada
+        </h5>
+
+        <p>
+            Clique em "Gerar Cartelas" para cadastrar as primeiras cartelas deste Bingo.
+        </p>
+
+    </div>
+
+{% endif %}
+
+
+</div>
+
+</div>
+
+<!-- ============================================================
+     MODAL — GERAR CARTELAS
+     ============================================================ -->
+
+<div
+    id="modalGerarCartelas"
+    class="bingo-modal-overlay"
+    onclick="fecharModalGerarFora(event)">
+
+
+<div
+    class="bingo-modal bingo-modal-pequeno"
+    onclick="event.stopPropagation()">
+
+    <div class="bingo-modal-cabecalho">
+
+        <div class="bingo-modal-titulo">
+
+            <div class="bingo-modal-icone">
+                🎟️
+            </div>
+
+            <div>
+
+                <h3>
+                    Gerar Cartelas
+                </h3>
+
+                <p>
+                    Adicione novas cartelas ao Bingo.
+                </p>
+
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-fechar-bingo-modal"
+            onclick="fecharModalGerarCartelas()">
+
+            ×
+
+        </button>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="/admin/bingo/{{ bingo.id }}/cartelas/gerar">
+
+        <div class="bingo-modal-corpo">
+
+            <div class="bingo-geracao-aviso">
+
+                <div class="bingo-geracao-aviso-icone">
+                    ⚠️
+                </div>
+
+                <div class="bingo-geracao-aviso-conteudo">
+
+                    <strong>
+                        As cartelas existentes serão preservadas
+                    </strong>
+
+                    <span>
+                        Esta operação adiciona novas cartelas.
+                        Ela não apaga, não substitui e não altera
+                        cartelas que já foram geradas ou distribuídas.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="bingo-geracao-resumo">
+
+                <div class="bingo-geracao-resumo-card">
+
+                    <span class="bingo-geracao-resumo-label">
+                        Já cadastradas
+                    </span>
+
+                    <span class="bingo-geracao-resumo-valor">
+                        {{ bingo.total_cartelas or cartelas|length or 0 }}
+                    </span>
+
+                </div>
+
+
+                <div class="bingo-geracao-resumo-card">
+
+                    <span class="bingo-geracao-resumo-label">
+                        Vendidas
+                    </span>
+
+                    <span class="bingo-geracao-resumo-valor">
+                        {{ bingo.cartelas_vendidas or 0 }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="bingo-form-grupo">
+
+                <label for="quantidade_gerar_cartelas">
+                    Quantas novas cartelas deseja gerar? *
+                </label>
+
+                <input
+                    type="number"
+                    id="quantidade_gerar_cartelas"
+                    name="quantidade"
+                    min="1"
+                    max="10000"
+                    value="10"
+                    required
+                    inputmode="numeric">
+
+                <span class="bingo-form-ajuda">
+                    Exemplo: se já existem 10 e você gerar mais 5,
+                    o Bingo ficará com 15 cartelas.
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="bingo-modal-rodape">
+
+            <button
+                type="button"
+                class="btn-cancelar-bingo"
+                onclick="fecharModalGerarCartelas()">
+
+                Cancelar
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn-gerar-confirmar">
+
+                ✓ Confirmar e Gerar
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     MODAL — REGISTRAR VENDA
+     ============================================================ -->
+
+<div
+    id="modalRegistrarVenda"
+    class="bingo-modal-overlay"
+    onclick="fecharModalVendaFora(event)">
+
+
+<div
+    class="bingo-modal bingo-modal-venda"
+    onclick="event.stopPropagation()">
+
+    <div class="bingo-modal-cabecalho">
+
+        <div class="bingo-modal-titulo">
+
+            <div class="bingo-modal-icone">
+                💰
+            </div>
+
+            <div>
+
+                <h3>
+                    Registrar Venda
+                </h3>
+
+                <p>
+                    Selecione as cartelas que foram vendidas.
+                </p>
+
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-fechar-bingo-modal"
+            onclick="fecharModalRegistrarVenda()">
+
+            ×
+
+        </button>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="/admin/bingo/{{ bingo.id }}/cartelas/vender"
+        id="formRegistrarVenda">
+
+        <div class="bingo-modal-corpo">
+
+            <div class="bingo-venda-info">
+
+                <strong>
+                    🎟️ Selecione as cartelas vendidas
+                </strong>
+
+                <p>
+                    Marque uma ou várias cartelas disponíveis.
+                    Ao confirmar, somente as cartelas selecionadas
+                    serão marcadas como vendidas e o valor prestado
+                    será calculado automaticamente.
+                </p>
+
+            </div>
+
+
+            <div class="bingo-selecao-cartelas">
+
+                <div class="bingo-selecao-topo">
+
+                    <div>
+
+                        <strong>
+                            Cartelas disponíveis
+                        </strong>
+
+                        <span id="textoCartelasDisponiveis">
+
+                            {{
+                                cartelas
+                                |selectattr('status', 'equalto', 'DISPONIVEL')
+                                |list
+                                |length
+                            }}
+
+                            disponível(is)
+
+                        </span>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-selecionar-todas"
+                        onclick="alternarTodasCartelas()"
+                        id="btnSelecionarTodas">
+
+                        Selecionar todas
+
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="bingo-cartelas-selecao"
+                    id="listaCartelasVenda">
+
+                    {% for cartela in cartelas %}
+
+                        {% if (cartela.status or 'DISPONIVEL') == 'DISPONIVEL' %}
+
+                            <label
+                                class="bingo-cartela-opcao"
+                                for="cartela_venda_{{ cartela.id }}">
+
+                                <input
+                                    type="checkbox"
+                                    id="cartela_venda_{{ cartela.id }}"
+                                    name="cartela_ids"
+                                    value="{{ cartela.id }}"
+                                    onchange="atualizarResumoVenda()">
+
+                                <span class="bingo-cartela-check">
+                                    ✓
+                                </span>
+
+                                <span class="bingo-cartela-opcao-numero">
+                                    #{{ "%03d"|format(cartela.numero) }}
+                                </span>
+
+                                {% if cartela.codigo %}
+
+                                    <span class="bingo-cartela-opcao-codigo">
+                                        {{ cartela.codigo }}
+                                    </span>
+
+                                {% endif %}
+
+                            </label>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+
+                    {% if not cartelas|selectattr('status', 'equalto', 'DISPONIVEL')|list %}
+
+                        <div class="bingo-sem-cartelas">
+
+                            <span>
+                                🎟️
+                            </span>
+
+                            <strong>
+                                Nenhuma cartela disponível
+                            </strong>
+
+                            <p>
+                                Todas as cartelas deste Bingo já foram vendidas.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 RESUMO AUTOMÁTICO DA PRESTAÇÃO
+                 ==================================================== -->
+
+            <div class="bingo-resumo-venda">
+
+                <div class="bingo-resumo-venda-item">
+
+                    <span>
+                        Cartelas selecionadas
+                    </span>
+
+                    <strong id="quantidadeSelecionada">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="bingo-resumo-venda-item">
+
+                    <span>
+                        Valor por cartela
+                    </span>
+
+                    <strong>
+                        R$
+                        {{ "%.2f"|format((bingo.valor_cartela or 0)|float) }}
+                    </strong>
+
+                </div>
+
+
+                <div class="bingo-resumo-venda-item destaque">
+
+                    <span>
+                        Valor Prestado
+                    </span>
+
+                    <strong id="totalVenda">
+                        R$ 0,00
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="bingo-modal-rodape">
+
+            <button
+                type="button"
+                class="btn-cancelar-bingo"
+                onclick="fecharModalRegistrarVenda()">
+
+                Cancelar
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn-registrar-venda"
+                id="btnRegistrarVenda"
+                disabled>
+
+                ✓ Registrar Venda
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     MODAL — PRESTAÇÃO DE CONTAS
+     ============================================================ -->
+
+<div
+    id="modalPrestacaoContas"
+    class="bingo-modal-overlay"
+    onclick="fecharModalPrestacaoFora(event)">
+
+    <div
+        class="bingo-modal bingo-modal-pequeno"
+        onclick="event.stopPropagation()">
+
+        <div class="bingo-modal-cabecalho">
+
+            <div class="bingo-modal-titulo">
+
+                <div class="bingo-modal-icone">
+                    📊
+                </div>
+
+                <div>
+
+                    <h3>
+                        Prestação de Contas
+                    </h3>
+
+                    <p>
+                        Resumo financeiro deste Bingo.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <button
+                type="button"
+                class="btn-fechar-bingo-modal"
+                onclick="fecharModalPrestacaoContas()">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div class="bingo-modal-corpo">
+
+            <!-- ====================================================
+                 RESUMO
+                 ==================================================== -->
+
+            <div class="bingo-prestacao-resumo">
+
+                <div class="bingo-prestacao-card ouro">
+
+                    <span class="bingo-prestacao-card-label">
+                        Valor por cartela
+                    </span>
+
+                    <span class="bingo-prestacao-card-valor">
+
+                        R$
+                        {{
+                            "{:,.2f}".format(
+                                (bingo.valor_cartela or 0)|float
+                            ).replace(',', 'X').replace('.', ',').replace('X', '.')
+                        }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="bingo-prestacao-card">
+
+                    <span class="bingo-prestacao-card-label">
+                        Cartelas geradas
+                    </span>
+
+                    <span class="bingo-prestacao-card-valor">
+                        {{ bingo.total_cartelas or cartelas|length or 0 }}
+                    </span>
+
+                </div>
+
+
+                <div class="bingo-prestacao-card destaque">
+
+                    <span class="bingo-prestacao-card-label">
+                        Cartelas vendidas
+                    </span>
+
+                    <span class="bingo-prestacao-card-valor">
+                        {{ bingo.cartelas_vendidas or 0 }}
+                    </span>
+
+                </div>
+
+
+                <div class="bingo-prestacao-card">
+
+                    <span class="bingo-prestacao-card-label">
+                        Cartelas disponíveis
+                    </span>
+
+                    <span class="bingo-prestacao-card-valor">
+                        {{
+                            (bingo.total_cartelas or 0)
+                            -
+                            (bingo.cartelas_vendidas or 0)
+                        }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 PROGRESSO DAS VENDAS
+                 ==================================================== -->
+
+            {% set total_cartelas = (bingo.total_cartelas or cartelas|length or 0)|float %}
+            {% set cartelas_vendidas = (bingo.cartelas_vendidas or 0)|float %}
+
+            {% if total_cartelas > 0 %}
+
+                {% set percentual_vendas =
+                    ((cartelas_vendidas / total_cartelas) * 100)
+                %}
+
+            {% else %}
+
+                {% set percentual_vendas = 0 %}
+
+            {% endif %}
+
+
+            <div class="bingo-prestacao-progresso">
+
+                <div class="bingo-prestacao-progresso-topo">
+
+                    <span>
+                        Progresso das vendas
+                    </span>
+
+                    <strong>
+                        {{ "%.1f"|format(percentual_vendas) }}%
+                    </strong>
+
+                </div>
+
+                <div class="bingo-prestacao-barra">
+
+                    <div
+                        class="bingo-prestacao-barra-preenchimento"
+                        style="width: {{ [percentual_vendas, 100]|min }}%;">
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 RESUMO FINANCEIRO
+                 ==================================================== -->
+
+            <div class="bingo-prestacao-financeiro">
+
+                <div class="bingo-prestacao-financeiro-titulo">
+                    Resumo financeiro
+                </div>
+
+
+                <div class="bingo-prestacao-linha">
+
+                    <span>
+                        Potencial total das cartelas
+                    </span>
+
+                    <strong>
+
+                        R$
+                        {{
+                            "{:,.2f}".format(
+                                total_cartelas
+                                *
+                                ((bingo.valor_cartela or 0)|float)
+                            ).replace(',', 'X').replace('.', ',').replace('X', '.')
+                        }}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="bingo-prestacao-linha">
+
+                    <span>
+                        Valor ainda disponível
+                    </span>
+
+                    <strong>
+
+                        R$
+                        {{
+                            "{:,.2f}".format(
+                                (
+                                    total_cartelas
+                                    -
+                                    cartelas_vendidas
+                                )
+                                *
+                                ((bingo.valor_cartela or 0)|float)
+                            ).replace(',', 'X').replace('.', ',').replace('X', '.')
+                        }}
+
+                    </strong>
+
+                </div>
+
+
+                <div class="bingo-prestacao-linha total">
+
+                    <span>
+                        Valor Prestado
+                    </span>
+
+                    <strong>
+
+                        R$
+                        {{
+                            "{:,.2f}".format(
+                                cartelas_vendidas
+                                *
+                                ((bingo.valor_cartela or 0)|float)
+                            ).replace(',', 'X').replace('.', ',').replace('X', '.')
+                        }}
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- ====================================================
+                 STATUS
+                 ==================================================== -->
+
+            {% if cartelas_vendidas == 0 %}
+
+                <div class="bingo-prestacao-status">
+
+                    <div class="bingo-prestacao-status-icone">
+                        ℹ️
+                    </div>
+
+                    <div class="bingo-prestacao-status-texto">
+
+                        <strong>
+                            Nenhuma venda registrada
+                        </strong>
+
+                        <span>
+                            O Bingo ainda não possui cartelas vendidas.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% elif percentual_vendas >= 100 %}
+
+                <div class="bingo-prestacao-status">
+
+                    <div class="bingo-prestacao-status-icone">
+                        🎉
+                    </div>
+
+                    <div class="bingo-prestacao-status-texto">
+
+                        <strong>
+                            Todas as cartelas foram vendidas
+                        </strong>
+
+                        <span>
+                            O Bingo atingiu 100% das vendas previstas.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% else %}
+
+                <div class="bingo-prestacao-status">
+
+                    <div class="bingo-prestacao-status-icone">
+                        📈
+                    </div>
+
+                    <div class="bingo-prestacao-status-texto">
+
+                        <strong>
+                            Bingo em andamento
+                        </strong>
+
+                        <span>
+                            Ainda existem cartelas disponíveis para venda.
+                        </span>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="bingo-modal-rodape">
+
+            <button
+                type="button"
+                class="btn-cancelar-bingo"
+                onclick="fecharModalPrestacaoContas()">
+
+                Fechar
+
+            </button>
+
+            <a
+                href="/admin/bingo/{{ bingo.id }}/prestacao-contas/pdf"
+                target="_blank"
+                class="btn-imprimir-bingo">
+
+                🖨️ Imprimir Prestação de Contas
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     MODAL — EDITAR BINGO
+     ============================================================ -->
+
+<div
+    id="modalEditarBingo"
+    class="bingo-modal-overlay"
+    onclick="fecharModalEditarFora(event)">
+
+
+<div
+    class="bingo-modal"
+    onclick="event.stopPropagation()">
+
+    <div class="bingo-modal-cabecalho">
+
+        <div class="bingo-modal-titulo">
+
+            <div class="bingo-modal-icone">
+                🎱
+            </div>
+
+            <div>
+
+                <h3>
+                    Editar Bingo
+                </h3>
+
+                <p>
+                    Altere as informações deste Bingo.
+                </p>
+
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-fechar-bingo-modal"
+            onclick="fecharModalEditarBingo()">
+
+            ×
+
+        </button>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="/admin/bingo/{{ bingo.id }}/editar">
+
+        <div class="bingo-modal-corpo">
+
+            <div class="bingo-form-grid">
+
+                <div class="bingo-form-grupo full">
+
+                    <label for="editar_bingo_nome">
+                        Nome do Bingo *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_bingo_nome"
+                        name="nome"
+                        value="{{ bingo.nome or '' }}"
+                        placeholder="Ex.: Bingo Beneficente Brilho Negro"
+                        required>
+
+                </div>
+
+
+                <div class="bingo-form-grupo">
+
+                    <label for="editar_bingo_temporada">
+                        Temporada
+                    </label>
+
+                    <select
+                        id="editar_bingo_temporada"
+                        name="temporada_id">
+
+                        <option value="">
+                            Sem temporada
+                        </option>
+
+                        {% for temporada in temporadas %}
+
+                            <option
+                                value="{{ temporada.id }}"
+                                {% if bingo.temporada_id == temporada.id %}selected{% endif %}>
+
+                                {{ temporada.nome }}
+
+                                {% if temporada.ano %}
+                                    — {{ temporada.ano }}
+                                {% endif %}
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+
+                <div class="bingo-form-grupo">
+
+                    <label for="editar_bingo_status">
+                        Status
+                    </label>
+
+                    <select
+                        id="editar_bingo_status"
+                        name="status">
+
+                        <option
+                            value="PLANEJADO"
+                            {% if bingo.status == 'PLANEJADO' %}selected{% endif %}>
+                            Planejado
+                        </option>
+
+                        <option
+                            value="ABERTO"
+                            {% if bingo.status == 'ABERTO' %}selected{% endif %}>
+                            Aberto
+                        </option>
+
+                        <option
+                            value="EM_ANDAMENTO"
+                            {% if bingo.status == 'EM_ANDAMENTO' %}selected{% endif %}>
+                            Em andamento
+                        </option>
+
+                        <option
+                            value="ENCERRADO"
+                            {% if bingo.status == 'ENCERRADO' %}selected{% endif %}>
+                            Encerrado
+                        </option>
+
+                        <option
+                            value="CANCELADO"
+                            {% if bingo.status == 'CANCELADO' %}selected{% endif %}>
+                            Cancelado
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="bingo-form-grupo">
+
+                    <label for="editar_bingo_data">
+                        Data *
+                    </label>
+
+                    <input
+                        type="date"
+                        id="editar_bingo_data"
+                        name="data"
+                        value="{{ bingo.data.strftime('%Y-%m-%d') if bingo.data else '' }}"
+                        required>
+
+                </div>
+
+
+                <div class="bingo-form-grupo">
+
+                    <label for="editar_bingo_horario">
+                        Horário
+                    </label>
+
+                    <input
+                        type="time"
+                        id="editar_bingo_horario"
+                        name="horario"
+                        value="{{ bingo.horario.strftime('%H:%M') if bingo.horario and bingo.horario.strftime is defined else (bingo.horario or '') }}">
+
+                </div>
+
+
+                <div class="bingo-form-grupo full">
+
+                    <label for="editar_bingo_local">
+                        Local
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_bingo_local"
+                        name="local"
+                        value="{{ bingo.local or '' }}"
+                        placeholder="Ex.: Feira Livre de João Câmara">
+
+                </div>
+
+
+                <div class="bingo-form-grupo">
+
+                    <label for="editar_bingo_valor">
+                        Valor da Cartela *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_bingo_valor"
+                        name="valor_cartela"
+                        value="{{ '%.2f'|format((bingo.valor_cartela or 0)|float) }}"
+                        placeholder="Ex.: 5,00"
+                        inputmode="decimal"
+                        required>
+
+                    <span class="bingo-form-ajuda">
+                        Informe o valor em reais.
+                    </span>
+
+                </div>
+
+
+                <div class="bingo-form-grupo">
+
+                    <label for="editar_bingo_quantidade">
+                        Quantidade Inicial de Cartelas *
+                    </label>
+
+                    <input
+                        type="number"
+                        id="editar_bingo_quantidade"
+                        name="quantidade_cartelas"
+                        min="1"
+                        value="{{ bingo.quantidade_cartelas or 1 }}"
+                        required>
+
+                    <span class="bingo-form-ajuda">
+                        Essa quantidade serve como configuração inicial.
+                        Novas cartelas devem ser geradas pela operação
+                        "Gerar Cartelas".
+                    </span>
+
+                </div>
+
+
+                <div class="bingo-form-grupo full">
+
+                    <label for="editar_bingo_descricao">
+                        Descrição
+                    </label>
+
+                    <textarea
+                        id="editar_bingo_descricao"
+                        name="descricao"
+                        placeholder="Informações sobre o Bingo...">{{ bingo.descricao or '' }}</textarea>
+
+                </div>
+
+
+                <div class="bingo-form-grupo full">
+
+                    <label for="editar_bingo_observacoes">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="editar_bingo_observacoes"
+                        name="observacoes"
+                        placeholder="Observações internas...">{{ bingo.observacoes or '' }}</textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="bingo-modal-rodape">
+
+            <button
+                type="button"
+                class="btn-cancelar-bingo"
+                onclick="fecharModalEditarBingo()">
+
+                Cancelar
+
+            </button>
+
+            <button
+                type="submit"
+                class="btn-salvar-bingo">
+
+                ✓ Salvar Alterações
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+
+<script>
+
+/* ============================================================
+   CONTROLE GERAL DO BODY
+   ============================================================ */
+
+function atualizarScrollModal() {
+
+    const algumModalAberto =
+        document.querySelector(".bingo-modal-overlay.ativo");
+
+    document.body.style.overflow =
+        algumModalAberto ? "hidden" : "";
+}
+
+
+/* ============================================================
+   MODAL — EDITAR BINGO
+   ============================================================ */
+
+function abrirModalEditarBingo() {
+
+    const modal =
+        document.getElementById("modalEditarBingo");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("ativo");
+
+    atualizarScrollModal();
+
+    setTimeout(function () {
+
+        const campoNome =
+            document.getElementById("editar_bingo_nome");
+
+        if (campoNome) {
+
+            campoNome.focus();
+            campoNome.select();
+
+        }
+
+    }, 100);
+}
+
+
+function fecharModalEditarBingo() {
+
+    const modal =
+        document.getElementById("modalEditarBingo");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("ativo");
+
+    atualizarScrollModal();
+}
+
+
+function fecharModalEditarFora(event) {
+
+    if (event.target.id === "modalEditarBingo") {
+        fecharModalEditarBingo();
+    }
+
+}
+
+
+/* ============================================================
+   MODAL — GERAR CARTELAS
+   ============================================================ */
+
+function abrirModalGerarCartelas() {
+
+    const modal =
+        document.getElementById("modalGerarCartelas");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("ativo");
+
+    atualizarScrollModal();
+
+    setTimeout(function () {
+
+        const campoQuantidade =
+            document.getElementById("quantidade_gerar_cartelas");
+
+        if (campoQuantidade) {
+
+            campoQuantidade.focus();
+            campoQuantidade.select();
+
+        }
+
+    }, 100);
+}
+
+
+function fecharModalGerarCartelas() {
+
+    const modal =
+        document.getElementById("modalGerarCartelas");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("ativo");
+
+    atualizarScrollModal();
+}
+
+
+function fecharModalGerarFora(event) {
+
+    if (event.target.id === "modalGerarCartelas") {
+        fecharModalGerarCartelas();
+    }
+
+}
+
+
+/* ============================================================
+   MODAL — REGISTRAR VENDA
+   ============================================================ */
+
+function abrirModalRegistrarVenda() {
+
+    const modal =
+        document.getElementById("modalRegistrarVenda");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("ativo");
+
+    atualizarScrollModal();
+
+    /*
+     * Sempre que o modal abrir, começamos com a seleção limpa.
+     */
+
+    const checkboxes =
+        document.querySelectorAll(
+            '#listaCartelasVenda input[name="cartela_ids"]'
+        );
+
+    checkboxes.forEach(function (checkbox) {
+
+        checkbox.checked = false;
+
+    });
+
+    atualizarResumoVenda();
+
+    atualizarBotaoSelecionarTodas();
+
+}
+
+
+function fecharModalRegistrarVenda() {
+
+    const modal =
+        document.getElementById("modalRegistrarVenda");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("ativo");
+
+    atualizarScrollModal();
+}
+
+
+function fecharModalVendaFora(event) {
+
+    if (event.target.id === "modalRegistrarVenda") {
+        fecharModalRegistrarVenda();
+    }
+
+}
+
+
+/* ============================================================
+   SELEÇÃO DE CARTELAS
+   ============================================================ */
+
+function obterCheckboxesCartelasVenda() {
+
+    return Array.from(
+        document.querySelectorAll(
+            '#listaCartelasVenda input[name="cartela_ids"]'
+        )
+    );
+
+}
+
+
+function alternarTodasCartelas() {
+
+    const checkboxes =
+        obterCheckboxesCartelasVenda();
+
+    if (!checkboxes.length) {
+        return;
+    }
+
+    const todasSelecionadas =
+        checkboxes.every(function (checkbox) {
+
+            return checkbox.checked;
+
+        });
+
+
+    checkboxes.forEach(function (checkbox) {
+
+        checkbox.checked =
+            !todasSelecionadas;
+
+    });
+
+
+    atualizarResumoVenda();
+
+    atualizarBotaoSelecionarTodas();
+
+}
+
+
+function atualizarBotaoSelecionarTodas() {
+
+    const botao =
+        document.getElementById("btnSelecionarTodas");
+
+    if (!botao) {
+        return;
+    }
+
+    const checkboxes =
+        obterCheckboxesCartelasVenda();
+
+    if (!checkboxes.length) {
+
+        botao.disabled = true;
+        botao.textContent = "Nenhuma disponível";
+
+        return;
+    }
+
+    botao.disabled = false;
+
+    const todasSelecionadas =
+        checkboxes.every(function (checkbox) {
+
+            return checkbox.checked;
+
+        });
+
+    botao.textContent =
+        todasSelecionadas
+            ? "Desmarcar todas"
+            : "Selecionar todas";
+
+}
+
+
+/* ============================================================
+   RESUMO DA VENDA / VALOR PRESTADO
+   ============================================================ */
+
+function atualizarResumoVenda() {
+
+    const checkboxes =
+        obterCheckboxesCartelasVenda();
+
+    const selecionadas =
+        checkboxes.filter(function (checkbox) {
+
+            return checkbox.checked;
+
+        });
+
+
+    const quantidade =
+        selecionadas.length;
+
+
+    const elementoQuantidade =
+        document.getElementById("quantidadeSelecionada");
+
+
+    const elementoTotal =
+        document.getElementById("totalVenda");
+
+
+    if (elementoQuantidade) {
+
+        elementoQuantidade.textContent =
+            quantidade;
+
+    }
+
+
+    /*
+     * O valor da cartela vem diretamente do Bingo.
+     */
+
+    const valorCartela =
+        Number(
+            "{{ (bingo.valor_cartela or 0)|float }}"
+        );
+
+
+    /*
+     * A prestação é calculada automaticamente:
+     *
+     * quantidade de cartelas × valor da cartela
+     */
+
+    const valorPrestado =
+        quantidade * valorCartela;
+
+
+    if (elementoTotal) {
+
+        elementoTotal.textContent =
+            "R$ " +
+            valorPrestado.toLocaleString(
+                "pt-BR",
+                {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }
+            );
+
+    }
+
+
+    const botaoRegistrar =
+        document.getElementById("btnRegistrarVenda");
+
+
+    if (botaoRegistrar) {
+
+        botaoRegistrar.disabled =
+            quantidade === 0;
+
+    }
+
+
+    atualizarBotaoSelecionarTodas();
+
+}
+
+
+/* ============================================================
+   VALIDAÇÃO DA VENDA
+   ============================================================ */
+
+const formRegistrarVenda =
+    document.getElementById("formRegistrarVenda");
+
+
+if (formRegistrarVenda) {
+
+    formRegistrarVenda.addEventListener(
+        "submit",
+        function(event) {
+
+            const selecionadas =
+                obterCheckboxesCartelasVenda()
+                    .filter(function (checkbox) {
+
+                        return checkbox.checked;
+
+                    });
+
+
+            if (!selecionadas.length) {
+
+                event.preventDefault();
+
+                alert(
+                    "Selecione pelo menos uma cartela para registrar a venda."
+                );
+
+                return;
+
+            }
+
+
+            /*
+             * O valor prestado é mostrado antes da confirmação.
+             */
+
+            const valorCartela =
+                Number(
+                    "{{ (bingo.valor_cartela or 0)|float }}"
+                );
+
+
+            const valorPrestado =
+                selecionadas.length * valorCartela;
+
+
+            const valorFormatado =
+                valorPrestado.toLocaleString(
+                    "pt-BR",
+                    {
+                        style: "currency",
+                        currency: "BRL"
+                    }
+                );
+
+
+            const confirmar =
+                confirm(
+                    "Registrar a venda de " +
+                    selecionadas.length +
+                    " cartela(s)?\n\n" +
+                    "Valor prestado: " +
+                    valorFormatado
+                );
+
+
+            if (!confirmar) {
+
+                event.preventDefault();
+
+            }
+
+        }
+    );
+
+}
+
+/* ============================================================
+   MODAL — PRESTAÇÃO DE CONTAS
+   ============================================================ */
+
+function abrirModalPrestacaoContas() {
+
+    const modal =
+        document.getElementById("modalPrestacaoContas");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("ativo");
+
+    atualizarScrollModal();
+
+}
+
+
+function fecharModalPrestacaoContas() {
+
+    const modal =
+        document.getElementById("modalPrestacaoContas");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("ativo");
+
+    atualizarScrollModal();
+
+}
+
+
+function fecharModalPrestacaoFora(event) {
+
+    if (event.target.id === "modalPrestacaoContas") {
+
+        fecharModalPrestacaoContas();
+
+    }
+
+}
+
+/* ============================================================
+   ESC FECHA QUALQUER MODAL
+   ============================================================ */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key !== "Escape") {
+            return;
+        }
+
+
+        const modalEditar =
+            document.getElementById("modalEditarBingo");
+
+        const modalGerar =
+            document.getElementById("modalGerarCartelas");
+
+        const modalVenda =
+            document.getElementById("modalRegistrarVenda");
+
+        const modalPrestacao =
+            document.getElementById("modalPrestacaoContas");    
+
+
+        if (
+            modalEditar &&
+            modalEditar.classList.contains("ativo")
+        ) {
+
+            fecharModalEditarBingo();
+
+            return;
+
+        }
+
+
+        if (
+            modalGerar &&
+            modalGerar.classList.contains("ativo")
+        ) {
+
+            fecharModalGerarCartelas();
+
+            return;
+
+        }
+
+
+        if (
+            modalVenda &&
+            modalVenda.classList.contains("ativo")
+        ) {
+
+            fecharModalRegistrarVenda();
+
+        }
+
+        if (
+            modalPrestacao &&
+            modalPrestacao.classList.contains("ativo")
+        ) {
+
+            fecharModalPrestacaoContas();
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   VALIDAÇÃO DA GERAÇÃO
+   ============================================================ */
+
+const formGerarCartelas =
+    document.querySelector(
+        "#modalGerarCartelas form"
+    );
+
+
+if (formGerarCartelas) {
+
+    formGerarCartelas.addEventListener(
+        "submit",
+        function(event) {
+
+            const campo =
+                document.getElementById(
+                    "quantidade_gerar_cartelas"
+                );
+
+
+            const quantidade =
+                parseInt(
+                    campo.value || "0",
+                    10
+                );
+
+
+            if (
+                !quantidade ||
+                quantidade < 1
+            ) {
+
+                event.preventDefault();
+
+                alert(
+                    "Informe uma quantidade válida de cartelas."
+                );
+
+                campo.focus();
+
+                return;
+
+            }
+
+
+            if (quantidade > 10000) {
+
+                event.preventDefault();
+
+                alert(
+                    "A quantidade máxima para esta operação é de 10.000 cartelas."
+                );
+
+                campo.focus();
+
+                return;
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ============================================================
+   ATUALIZAÇÃO INICIAL
+   ============================================================ */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        atualizarResumoVenda();
+
+    }
+);
+
+</script>
+
+{% endblock %}
