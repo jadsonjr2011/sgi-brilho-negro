@@ -92,7 +92,11 @@ def adicionar_rodape(canvas, doc):
 # CABEÇALHO PADRÃO
 # =====================================
 
-def adicionar_cabecalho(elementos, estilos, titulo_documento):
+def adicionar_cabecalho(
+    elementos,
+    estilos,
+    titulo_documento
+):
 
     # =====================================
     # LOGO
@@ -139,12 +143,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
         )
 
         print(
-            os.path.join(
-                BASE_DIR,
-                "static",
-                "img",
-                "logo_relatorio.PNG"
-            )
+            logo_path
         )
 
     # =====================================
@@ -155,6 +154,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
         "Cabecalho",
         parent=estilos["Normal"],
         alignment=TA_CENTER,
+        fontName="Helvetica",
         fontSize=11,
         leading=13,
         spaceAfter=0
@@ -223,7 +223,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
     )
 
     elementos.append(
-        Spacer(1, 8)
+        Spacer(1, 30)
     )
 
     # =====================================
@@ -243,8 +243,7 @@ def adicionar_cabecalho(elementos, estilos, titulo_documento):
     )
 
     # =====================================
-    # ESPAÇO MAIOR ENTRE O TÍTULO
-    # E O INÍCIO DO TEXTO
+    # ESPAÇO ENTRE TÍTULO E CONTEÚDO
     # =====================================
 
     elementos.append(
@@ -288,6 +287,7 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     estilo = ParagraphStyle(
+
         "NormalDocumento",
 
         parent=estilos["Normal"],
@@ -300,7 +300,9 @@ def gerar_pdf_apresentacao_banda():
 
         alignment=TA_JUSTIFY,
 
-        spaceAfter=5
+        spaceAfter=8,
+
+        firstLineIndent=0
     )
 
     # =====================================
@@ -308,6 +310,7 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     estilo_destaque = ParagraphStyle(
+
         "Destaque",
 
         parent=estilo,
@@ -320,7 +323,7 @@ def gerar_pdf_apresentacao_banda():
 
         leading=14,
 
-        spaceAfter=1
+        spaceAfter=2
     )
 
     # =====================================
@@ -328,6 +331,7 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     estilo_secao = ParagraphStyle(
+
         "Secao",
 
         parent=estilo,
@@ -340,9 +344,9 @@ def gerar_pdf_apresentacao_banda():
 
         leading=14,
 
-        spaceBefore=3,
+        spaceBefore=5,
 
-        spaceAfter=3
+        spaceAfter=5
     )
 
     # =====================================
@@ -350,6 +354,7 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     estilo_final = ParagraphStyle(
+
         "Final",
 
         parent=estilo,
@@ -360,7 +365,7 @@ def gerar_pdf_apresentacao_banda():
 
         fontSize=11.5,
 
-        leading=14,
+        leading=15,
 
         spaceBefore=0,
 
@@ -374,50 +379,73 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     adicionar_cabecalho(
+
         elementos,
+
         estilos,
+
         "APRESENTAÇÃO DA CORPORAÇÃO"
+
     )
 
     # =====================================
-    # TEXTO INSTITUCIONAL
+    # 1º PARÁGRAFO
     # =====================================
 
     elementos.append(
+
         Paragraph(
+
             """
             Consolidada no ano de <b>2019</b>, a corporação que se apresenta é a
             <b>Associação Cultural de Percussão Rudimentar Brilho Negro</b>.
             """,
+
             estilo
+
         )
+
     )
 
+    # =====================================
+    # 2º PARÁGRAFO
+    # =====================================
+
     elementos.append(
+
         Paragraph(
+
             """
             Na categoria de <b>Percussão</b>, é uma banda genuinamente
             potiguar, contando atualmente com <b>48 componentes</b> e trazendo
             para suas apresentações um estilo único.
             """,
+
             estilo
+
         )
+
     )
 
+    # =====================================
+    # 3º PARÁGRAFO
+    # =====================================
+
     elementos.append(
+
         Paragraph(
+
             """
             Em seu repertório, apresenta as peças musicais
             <b>“Cold”</b> e <b>“Condor-Andino”</b>, representando,
             através da música e da expressão, os dois lados da vida:
             <b>o bem e o mal</b>.
             """,
-            estilo
-        )
-    )
 
-    elementos.append(
-        Spacer(1, 3)
+            estilo
+
+        )
+
     )
 
     # =====================================
@@ -425,35 +453,55 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     elementos.append(
+
         Paragraph(
+
             "<b>À FRENTE DA CORPORAÇÃO</b>",
+
             estilo_secao
+
         )
+
     )
 
     elementos.append(
+
         Paragraph(
+
             "<b>Capitã-Mor:</b> Inajara Manuelly",
+
             estilo_destaque
+
         )
+
     )
 
     elementos.append(
+
         Paragraph(
+
             "<b>Coreógrafo:</b> Maciel Nascimento",
+
             estilo_destaque
+
         )
+
     )
 
     elementos.append(
+
         Paragraph(
+
             "<b>Regente:</b> Fábio Alves",
+
             estilo_destaque
+
         )
+
     )
 
     elementos.append(
-        Spacer(1, 5)
+        Spacer(1, 7)
     )
 
     # =====================================
@@ -461,18 +509,19 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     elementos.append(
+
         Paragraph(
+
             """
             A corporação tem sua sede no <b>Colégio Fonte</b>, na cidade de
-            <b>João Câmara</b>, e conta também com uma filial no município de
+            <b>João Câmara</b>, e conta também com uma filial em nossa cidade
             <b>Poço Branco</b>.
             """,
-            estilo
-        )
-    )
 
-    elementos.append(
-        Spacer(1, 2)
+            estilo
+
+        )
+
     )
 
     # =====================================
@@ -480,32 +529,59 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     elementos.append(
+
         Paragraph(
+
             "<b>NA GESTÃO</b>",
+
             estilo_secao
+
         )
+
     )
 
     elementos.append(
+
         Paragraph(
-            "<b>Mantenedora:</b> Carla Geane",
+
+            "<b>Mantenedora:</b> Carla candido",
+
             estilo_destaque
+
         )
+
     )
 
     elementos.append(
+
         Paragraph(
-            "<b>Direção:</b> Renata Carvalho",
+
+            "<b>Diretora:</b> Maria Conceição",
+
             estilo_destaque
+
         )
+
+    )
+
+    elementos.append(
+
+        Paragraph(
+
+            "<b>Coordenadora:</b> Renata Carvalho",
+
+            estilo_destaque
+
+        )
+
     )
 
     # =====================================
-    # ESPAÇO ANTES DA SAUDAÇÃO FINAL
+    # ESPAÇO MAIOR ANTES DA SAUDAÇÃO
     # =====================================
 
     elementos.append(
-        Spacer(1, 25)
+        Spacer(1, 32)
     )
 
     # =====================================
@@ -513,13 +589,18 @@ def gerar_pdf_apresentacao_banda():
     # =====================================
 
     elementos.append(
-     Paragraph(
+
+        Paragraph(
+
             """
-            <b>Senhoras e senhores,</b> recebam com vocês a
-            <b>Associação Cultural de Percussão Rudimentar Brilho Negro!</b>
+            <b>Senhoras e senhores, recebam com vocês a
+            Associação Cultural de Percussão Rudimentar Brilho Negro!</b>
             """,
+
             estilo_final
+
         )
+
     )
 
     # =====================================
@@ -556,27 +637,44 @@ if __name__ == "__main__":
     nome_arquivo = "Apresentacao_Brilho_Negro_2019.pdf"
 
     caminho_saida = os.path.join(
+
         BASE_DIR,
+
         nome_arquivo
+
     )
 
     with open(
+
         caminho_saida,
+
         "wb"
+
     ) as arquivo:
 
         arquivo.write(
+
             pdf.getvalue()
+
         )
 
     print()
+
     print("=" * 60)
+
     print("PDF GERADO COM SUCESSO")
+
     print("=" * 60)
+
     print()
+
     print(f"Arquivo: {nome_arquivo}")
+
     print()
+
     print("Localização:")
+
     print(caminho_saida)
+
     print()
 
