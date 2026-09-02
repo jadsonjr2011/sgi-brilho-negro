@@ -1647,7 +1647,6 @@ def excluir_grupo_entrega(id):
         ).mappings().first()
 
         if not grupo:
-
             return jsonify({
                 "sucesso": False,
                 "mensagem": "Grupo não encontrado."
@@ -1655,7 +1654,7 @@ def excluir_grupo_entrega(id):
 
 
         # =====================================================
-        # VERIFICAR TERMOS VINCULADOS
+        # VERIFICAR SE POSSUI ENTREGAS
         # =====================================================
 
         quantidade_termos = db.execute(
@@ -1667,7 +1666,7 @@ def excluir_grupo_entrega(id):
             {
                 "grupo_id": id
             }
-        ).scalar() or 0
+        ).scalar_one()
 
 
         if quantidade_termos > 0:
@@ -1698,10 +1697,10 @@ def excluir_grupo_entrega(id):
 
 
         # =====================================================
-        # GARANTIR QUE REALMENTE FOI EXCLUÍDO
+        # VERIFICAR EXCLUSÃO
         # =====================================================
 
-        if resultado.rowcount == 0:
+        if resultado.rowcount != 1:
 
             db.rollback()
 
@@ -1718,7 +1717,7 @@ def excluir_grupo_entrega(id):
             "sucesso": True,
             "mensagem": (
                 f'Grupo "{grupo["nome"]}" '
-                'excluído com sucesso.'
+                "excluído com sucesso."
             )
         })
 
@@ -1728,28 +1727,14 @@ def excluir_grupo_entrega(id):
         db.rollback()
 
         print(
-            "=================================================="
-        )
-        print(
-            "ERRO AO EXCLUIR GRUPO DE ENTREGA"
-        )
-        print(
-            "GRUPO ID:",
-            id
-        )
-        print(
-            "ERRO:",
+            "ERRO AO EXCLUIR GRUPO DE ENTREGA:",
             repr(e)
-        )
-        print(
-            "=================================================="
         )
 
         return jsonify({
             "sucesso": False,
             "mensagem": (
-                "Não foi possível excluir o grupo. "
-                "Verifique se existem registros vinculados a ele."
+                "Não foi possível excluir o grupo."
             ),
             "erro": str(e)
         }), 500

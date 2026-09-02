@@ -12,705 +12,475 @@ Grupos de Entrega
 
 <style>
 
-/* ========================================================= */
-/* CABEÇALHO                                                 */
-/* ========================================================= */
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
 
 .grupos-header {
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     gap: 15px;
-
     margin-bottom: 20px;
-
 }
 
 .grupos-header h2 {
-
     margin-bottom: 4px;
-
 }
 
 
-/* ========================================================= */
-/* CARD PRINCIPAL                                            */
-/* ========================================================= */
+/* =========================================================
+   CARD PRINCIPAL
+   ========================================================= */
 
 .grupos-card {
-
-    background: rgba(255,255,255,0.04);
-
-    border: 1px solid rgba(255,255,255,0.08);
-
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
-
     overflow: hidden;
-
 }
 
 
-/* ========================================================= */
-/* CABEÇALHO DO CARD                                         */
-/* ========================================================= */
+/* =========================================================
+   CABEÇALHO DO CARD
+   ========================================================= */
 
 .grupos-card-header {
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     gap: 15px;
-
     padding: 18px 20px;
-
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .grupos-card-header h5 {
-
     margin: 0;
-
     font-size: 16px;
-
     font-weight: 600;
-
 }
 
 
-/* ========================================================= */
-/* TABELA                                                    */
-/* ========================================================= */
+/* =========================================================
+   TABELA
+   ========================================================= */
 
 .grupos-card .table-responsive {
-
     margin: 0;
-
 }
 
 .grupos-card table {
-
     margin: 0;
-
     border: 0;
-
 }
 
 .grupos-card .table {
-
     --bs-table-bg: transparent;
-
     --bs-table-color: inherit;
-
-    --bs-table-border-color: rgba(255,255,255,0.07);
-
+    --bs-table-border-color: rgba(255, 255, 255, 0.07);
 }
 
 .grupos-card .table thead th {
-
-    background: rgba(255,255,255,0.025);
-
+    background: rgba(255, 255, 255, 0.025);
     color: #9ca3af;
-
     font-size: 0.72rem;
-
     font-weight: 600;
-
     text-transform: uppercase;
-
     letter-spacing: 0.03em;
-
     white-space: nowrap;
-
     padding: 13px 16px;
-
     border-top: 0;
-
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .grupos-card .table tbody td {
-
     padding: 14px 16px;
-
     vertical-align: middle;
-
-    border-color: rgba(255,255,255,0.06);
-
+    border-color: rgba(255, 255, 255, 0.06);
 }
 
 .grupos-card .table tbody tr {
-
-    transition:
-        background 0.15s ease;
-
+    transition: background 0.15s ease;
 }
 
 .grupos-card .table tbody tr:hover {
-
-    background: rgba(255,255,255,0.025);
-
+    background: rgba(255, 255, 255, 0.025);
 }
 
 
-/* ========================================================= */
-/* NOME DO GRUPO                                             */
-/* ========================================================= */
+/* =========================================================
+   NOME DO GRUPO
+   ========================================================= */
 
 .grupo-nome {
-
     font-weight: 600;
-
     color: #f1f3f5;
-
 }
 
 .grupo-descricao {
-
     display: block;
-
     margin-top: 3px;
-
     color: #7f8791;
-
     font-size: 0.78rem;
-
     max-width: 360px;
-
 }
 
 
-/* ========================================================= */
-/* TEMPORADA                                                 */
-/* ========================================================= */
+/* =========================================================
+   TEMPORADA
+   ========================================================= */
 
 .grupo-temporada {
-
     font-weight: 500;
-
     color: #f1f3f5 !important;
 }
 
 .grupo-ano {
-
     color: #7f8791 !important;
-
     font-size: 0.8rem;
 }
 
 
-/* ========================================================= */
-/* GARANTE COR NORMAL AO PASSAR O MOUSE NA LINHA             */
-/* ========================================================= */
+/* =========================================================
+   GARANTE COR NORMAL AO PASSAR O MOUSE
+   ========================================================= */
 
 .grupos-card .table tbody tr:hover .grupo-temporada {
-
     color: #f1f3f5 !important;
 }
 
 .grupos-card .table tbody tr:hover .grupo-ano {
-
     color: #7f8791 !important;
 }
 
 
-/* ========================================================= */
-/* BADGE DE ENTREGAS                                         */
-/* ========================================================= */
+/* =========================================================
+   BADGE DE ENTREGAS
+   ========================================================= */
 
 .badge-entregas {
-
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
-
     min-width: 34px;
-
     padding: 5px 9px;
-
     border-radius: 8px;
-
-    background: rgba(13,110,253,0.15);
-
-    border: 1px solid rgba(13,110,253,0.20);
-
+    background: rgba(13, 110, 253, 0.15);
+    border: 1px solid rgba(13, 110, 253, 0.20);
     color: #6ea8fe;
-
     font-size: 0.78rem;
-
     font-weight: 600;
-
 }
 
 
-/* ========================================================= */
-/* STATUS                                                    */
-/* ========================================================= */
+/* =========================================================
+   STATUS
+   ========================================================= */
 
 .status-grupo {
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 5px;
-
     padding: 5px 10px;
-
     border-radius: 20px;
-
     font-size: 0.72rem;
-
     font-weight: 600;
-
 }
 
 .status-ativo {
-
-    background: rgba(25,135,84,0.15);
-
-    border: 1px solid rgba(25,135,84,0.20);
-
+    background: rgba(25, 135, 84, 0.15);
+    border: 1px solid rgba(25, 135, 84, 0.20);
     color: #4ade80;
-
 }
 
 .status-outro {
-
-    background: rgba(108,117,125,0.15);
-
-    border: 1px solid rgba(108,117,125,0.20);
-
+    background: rgba(108, 117, 125, 0.15);
+    border: 1px solid rgba(108, 117, 125, 0.20);
     color: #aaa;
-
 }
 
 
-/* ========================================================= */
-/* DATA                                                      */
-/* ========================================================= */
+/* =========================================================
+   DATA
+   ========================================================= */
 
 .grupo-data {
-
     color: #c5c9ce;
-
     font-size: 0.85rem;
-
 }
 
 
-/* ========================================================= */
-/* AÇÕES                                                     */
-/* ========================================================= */
+/* =========================================================
+   AÇÕES
+   ========================================================= */
 
 .grupo-acoes {
-
     display: flex;
-
     justify-content: center;
-
     align-items: center;
-
     gap: 5px;
-
 }
 
 .grupo-acoes .btn {
-
     border-radius: 8px;
-
 }
 
 
-/* ========================================================= */
-/* ESTADO VAZIO                                              */
-/* ========================================================= */
+/* =========================================================
+   ESTADO VAZIO
+   ========================================================= */
 
 .grupos-vazio {
-
     text-align: center;
-
     padding: 55px 20px;
-
     color: #888;
-
 }
 
 .grupos-vazio-icone {
-
     font-size: 42px;
-
     opacity: 0.75;
-
 }
 
 .grupos-vazio h5 {
-
     margin-top: 14px;
-
     margin-bottom: 6px;
-
     color: #d1d5db;
-
 }
 
 .grupos-vazio p {
-
     margin-bottom: 18px;
-
     font-size: 0.9rem;
-
 }
 
 
-/* ========================================================= */
-/* MODAL                                                     */
-/* ========================================================= */
+/* =========================================================
+   MODAL
+   ========================================================= */
 
 .bn-modal {
-
     border: 1px solid rgba(255, 255, 255, 0.08);
-
     border-radius: 16px;
-
     overflow: hidden;
-
     background: #1f2227;
-
     color: #fff;
-
-    box-shadow:
-        0 18px 50px rgba(0, 0, 0, 0.45);
-
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
 }
 
 
-/* ========================================================= */
-/* CABEÇALHO DO MODAL                                        */
-/* ========================================================= */
+/* =========================================================
+   CABEÇALHO DO MODAL
+   ========================================================= */
 
 .bn-modal-header {
-
     background: #17191d;
-
     color: #fff;
-
     padding: 20px 22px;
-
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-
 }
 
 .bn-modal-header > div:first-child {
-
     display: flex;
-
     align-items: center;
-
     gap: 13px;
-
 }
 
 .bn-modal-icon {
-
     width: 42px;
-
     height: 42px;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     background: rgba(255, 255, 255, 0.07);
-
     border: 1px solid rgba(255, 255, 255, 0.08);
-
     border-radius: 10px;
-
     font-size: 21px;
-
 }
 
 .bn-modal-header .modal-title {
-
     margin: 0;
-
     font-size: 18px;
-
     font-weight: 600;
-
     color: #fff;
-
 }
 
 .bn-modal-header small {
-
     display: block;
-
     margin-top: 2px;
-
     color: #9ca3af;
-
     font-size: 12px;
-
 }
 
 
-/* ========================================================= */
-/* CORPO DO MODAL                                            */
-/* ========================================================= */
+/* =========================================================
+   CORPO DO MODAL
+   ========================================================= */
 
 .bn-modal-body {
-
     padding: 25px 24px 20px;
-
     background: #1f2227;
-
 }
 
 
-/* ========================================================= */
-/* LABELS                                                    */
-/* ========================================================= */
+/* =========================================================
+   LABELS
+   ========================================================= */
 
 .bn-label {
-
     font-weight: 600;
-
     font-size: 13px;
-
     color: #e5e7eb;
-
     margin-bottom: 8px;
-
 }
 
 
-/* ========================================================= */
-/* CAMPOS                                                    */
-/* ========================================================= */
+/* =========================================================
+   CAMPOS
+   ========================================================= */
 
 .bn-input {
-
     background: #292d33;
-
     border: 1px solid #3b4048;
-
     color: #f1f3f5;
-
     border-radius: 9px;
-
     padding: 10px 12px;
-
     font-size: 14px;
-
     transition:
         border-color 0.15s ease,
         box-shadow 0.15s ease,
         background 0.15s ease;
-
 }
 
 .bn-input::placeholder {
-
     color: #7f8791;
-
 }
 
 .bn-input:focus {
-
     background: #2d3239;
-
     color: #fff;
-
     border-color: #6c757d;
-
-    box-shadow:
-        0 0 0 3px rgba(108, 117, 125, 0.15);
-
+    box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.15);
 }
 
 select.bn-input {
-
     color: #f1f3f5;
-
 }
 
 select.bn-input option {
-
     background: #292d33;
-
     color: #fff;
-
 }
 
 textarea.bn-input {
-
     resize: vertical;
-
 }
 
 
-/* ========================================================= */
-/* TEXTO DE AJUDA                                            */
-/* ========================================================= */
+/* =========================================================
+   TEXTO DE AJUDA
+   ========================================================= */
 
 .bn-modal .form-text {
-
     font-size: 11px;
-
     color: #7f8791;
-
     margin-top: 6px;
-
 }
 
 
-/* ========================================================= */
-/* RODAPÉ DO MODAL                                           */
-/* ========================================================= */
+/* =========================================================
+   RODAPÉ DO MODAL
+   ========================================================= */
 
 .bn-modal-footer {
-
     background: #191b1f;
-
     border-top: 1px solid rgba(255, 255, 255, 0.07);
-
     padding: 14px 20px;
-
     display: flex;
-
     justify-content: flex-end;
-
     gap: 8px;
-
 }
 
 
-/* ========================================================= */
-/* BOTÃO CANCELAR                                            */
-/* ========================================================= */
+/* =========================================================
+   BOTÃO CANCELAR
+   ========================================================= */
 
 .bn-btn-cancelar {
-
     background: #292d33;
-
     color: #d1d5db;
-
     border: 1px solid #3b4048;
-
     border-radius: 8px;
-
     padding: 8px 16px;
-
     font-size: 13px;
-
     font-weight: 500;
-
 }
 
 .bn-btn-cancelar:hover {
-
     background: #343941;
-
     color: #fff;
-
 }
 
 
-/* ========================================================= */
-/* BOTÃO SALVAR                                              */
-/* ========================================================= */
+/* =========================================================
+   BOTÃO SALVAR
+   ========================================================= */
 
 .bn-btn-salvar {
-
     border-radius: 8px;
-
     padding: 8px 17px;
-
     font-size: 13px;
-
     font-weight: 600;
-
 }
 
 
-/* ========================================================= */
-/* ANIMAÇÃO MODAL                                            */
-/* ========================================================= */
+/* =========================================================
+   ANIMAÇÃO MODAL
+   ========================================================= */
 
 #modalGrupo .modal-dialog {
-
     transform: translateY(-8px);
-
     transition: transform 0.2s ease;
-
 }
 
 #modalGrupo.show .modal-dialog {
-
     transform: translateY(0);
-
 }
 
 
-/* ========================================================= */
-/* FUNDO DO MODAL                                            */
-/* ========================================================= */
+/* =========================================================
+   FUNDO DO MODAL
+   ========================================================= */
 
 .modal-backdrop.show {
-
     opacity: 0.75;
-
 }
 
 
-/* ========================================================= */
-/* RESPONSIVO                                                 */
-/* ========================================================= */
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
 
 @media (max-width: 768px) {
 
     .grupos-header {
-
         align-items: flex-start;
-
         flex-direction: column;
-
     }
 
     .grupos-header .btn {
-
         width: 100%;
-
     }
 
     .grupos-card .table {
-
         min-width: 850px;
-
     }
-
 }
 
 </style>
 
 
-<!-- ===================================================== -->
-<!-- CABEÇALHO                                             -->
-<!-- ===================================================== -->
+<!-- =====================================================
+     CABEÇALHO
+     ===================================================== -->
 
 <div class="grupos-header">
 
@@ -725,7 +495,6 @@ textarea.bn-input {
         </div>
 
     </div>
-
 
     <div>
 
@@ -743,13 +512,11 @@ textarea.bn-input {
 </div>
 
 
-<!-- ===================================================== -->
-<!-- GRUPOS                                                 -->
-<!-- ===================================================== -->
+<!-- =====================================================
+     GRUPOS
+     ===================================================== -->
 
 <div class="grupos-card">
-
-    <!-- CABEÇALHO DO CARD -->
 
     <div class="grupos-card-header">
 
@@ -760,6 +527,7 @@ textarea.bn-input {
         <span class="badge bg-secondary">
 
             {{ grupos|length }}
+
             grupo{% if grupos|length != 1 %}s{% endif %}
 
         </span>
@@ -769,9 +537,9 @@ textarea.bn-input {
 
     {% if grupos %}
 
-    <!-- ================================================= -->
-    <!-- TABELA                                             -->
-    <!-- ================================================= -->
+    <!-- =================================================
+         TABELA
+         ================================================= -->
 
     <div class="table-responsive">
 
@@ -820,9 +588,7 @@ textarea.bn-input {
 
                 <tr>
 
-                    <!-- ================================= -->
-                    <!-- GRUPO                             -->
-                    <!-- ================================= -->
+                    <!-- GRUPO -->
 
                     <td>
 
@@ -831,7 +597,6 @@ textarea.bn-input {
                             📦 {{ grupo.nome }}
 
                         </div>
-
 
                         {% if grupo.descricao %}
 
@@ -846,9 +611,7 @@ textarea.bn-input {
                     </td>
 
 
-                    <!-- ================================= -->
-                    <!-- TEMPORADA                         -->
-                    <!-- ================================= -->
+                    <!-- TEMPORADA -->
 
                     <td>
 
@@ -873,7 +636,9 @@ textarea.bn-input {
                         {% else %}
 
                             <span class="text-secondary">
+
                                 Não informada
+
                             </span>
 
                         {% endif %}
@@ -881,9 +646,7 @@ textarea.bn-input {
                     </td>
 
 
-                    <!-- ================================= -->
-                    <!-- ENTREGAS                          -->
-                    <!-- ================================= -->
+                    <!-- ENTREGAS -->
 
                     <td class="text-center">
 
@@ -896,9 +659,7 @@ textarea.bn-input {
                     </td>
 
 
-                    <!-- ================================= -->
-                    <!-- STATUS                            -->
-                    <!-- ================================= -->
+                    <!-- STATUS -->
 
                     <td>
 
@@ -923,9 +684,7 @@ textarea.bn-input {
                     </td>
 
 
-                    <!-- ================================= -->
-                    <!-- DATA                              -->
-                    <!-- ================================= -->
+                    <!-- DATA -->
 
                     <td>
 
@@ -948,13 +707,13 @@ textarea.bn-input {
                     </td>
 
 
-                    <!-- ================================= -->
-                    <!-- AÇÕES                             -->
-                    <!-- ================================= -->
+                    <!-- AÇÕES -->
 
                     <td class="text-center">
 
                         <div class="grupo-acoes">
+
+                            <!-- VISUALIZAR -->
 
                             <a
                                 href="/admin/fardamento/grupos/{{ grupo.id }}"
@@ -965,6 +724,8 @@ textarea.bn-input {
 
                             </a>
 
+
+                            <!-- EDITAR -->
 
                             <button
                                 type="button"
@@ -977,11 +738,13 @@ textarea.bn-input {
                             </button>
 
 
+                            <!-- EXCLUIR -->
+
                             <button
                                 type="button"
                                 class="btn btn-sm btn-outline-danger"
                                 title="Excluir grupo"
-                                onclick="excluirGrupo({{ grupo.id }}, {{ grupo.nome|tojson }})">
+                                onclick='excluirGrupo({{ grupo.id }}, {{ grupo.nome|tojson }})'>
 
                                 🗑️
 
@@ -1004,9 +767,9 @@ textarea.bn-input {
 
     {% else %}
 
-    <!-- ================================================= -->
-    <!-- SEM GRUPOS                                        -->
-    <!-- ================================================= -->
+    <!-- =================================================
+         SEM GRUPOS
+         ================================================= -->
 
     <div class="grupos-vazio">
 
@@ -1039,9 +802,9 @@ textarea.bn-input {
 </div>
 
 
-<!-- ========================================================= -->
-<!-- MODAL NOVO / EDITAR GRUPO                                 -->
-<!-- ========================================================= -->
+<!-- =========================================================
+     MODAL NOVO / EDITAR GRUPO
+     ========================================================= -->
 
 <div
     class="modal fade"
@@ -1052,6 +815,7 @@ textarea.bn-input {
     <div class="modal-dialog modal-dialog-centered">
 
         <div class="modal-content bn-modal">
+
 
             <!-- CABEÇALHO -->
 
@@ -1110,9 +874,11 @@ textarea.bn-input {
                         class="form-label bn-label">
 
                         📦 Nome do grupo
+
                         <span class="text-danger">*</span>
 
                     </label>
+
 
                     <input
                         type="text"
@@ -1121,8 +887,11 @@ textarea.bn-input {
                         placeholder="Ex.: Fardamento Agosto 2026"
                         autocomplete="off">
 
+
                     <div class="form-text">
+
                         Informe um nome para identificar este grupo de entregas.
+
                     </div>
 
                 </div>
@@ -1140,14 +909,18 @@ textarea.bn-input {
 
                     </label>
 
+
                     <textarea
                         class="form-control bn-input"
                         id="grupo_descricao"
                         rows="3"
                         placeholder="Descrição opcional do grupo"></textarea>
 
+
                     <div class="form-text">
+
                         Você pode adicionar uma observação para facilitar a identificação.
+
                     </div>
 
                 </div>
@@ -1162,9 +935,11 @@ textarea.bn-input {
                         class="form-label bn-label">
 
                         📅 Temporada
+
                         <span class="text-danger">*</span>
 
                     </label>
+
 
                     <select
                         class="form-select bn-input"
@@ -1173,6 +948,7 @@ textarea.bn-input {
                         <option value="">
                             Selecione uma temporada
                         </option>
+
 
                         {% for temporada in temporadas %}
 
@@ -1190,8 +966,11 @@ textarea.bn-input {
 
                     </select>
 
+
                     <div class="form-text">
+
                         Selecione a temporada correspondente ao grupo.
+
                     </div>
 
                 </div>
@@ -1235,101 +1014,140 @@ textarea.bn-input {
 </div>
 
 
-<!-- ========================================================= -->
-<!-- JAVASCRIPT                                                -->
-<!-- ========================================================= -->
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
 
 <script>
+
+/* =========================================================
+   NOVO GRUPO
+   ========================================================= */
 
 function abrirModalGrupo() {
 
     document.getElementById("grupo_id").value = "";
-
     document.getElementById("grupo_nome").value = "";
-
     document.getElementById("grupo_descricao").value = "";
-
     document.getElementById("grupo_temporada").value = "";
 
     document.getElementById("modalGrupoTitulo").innerText =
         "📦 Novo Grupo";
 
+    const elementoModal =
+        document.getElementById("modalGrupo");
 
-    const modal = new bootstrap.Modal(
-        document.getElementById("modalGrupo")
-    );
+    const modal =
+        bootstrap.Modal.getOrCreateInstance(
+            elementoModal
+        );
 
     modal.show();
-
 }
 
+
+/* =========================================================
+   EDITAR GRUPO
+   ========================================================= */
 
 function editarGrupo(id) {
 
-    fetch(`/admin/fardamento/grupos/${id}/dados`)
-
-        .then(response => response.json())
-
-        .then(data => {
-
-            if (!data.sucesso) {
-
-                alert(
-                    data.mensagem ||
-                    "Não foi possível carregar o grupo."
-                );
-
-                return;
-
+    fetch(
+        "/admin/fardamento/grupos/" +
+        id +
+        "/dados",
+        {
+            method: "GET",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "application/json"
             }
+        }
+    )
 
+    .then(function(response) {
 
-            const grupo = data.grupo;
+        if (!response.ok) {
 
-
-            document.getElementById("grupo_id").value =
-                grupo.id;
-
-
-            document.getElementById("grupo_nome").value =
-                grupo.nome || "";
-
-
-            document.getElementById("grupo_descricao").value =
-                grupo.descricao || "";
-
-
-            document.getElementById("grupo_temporada").value =
-                grupo.temporada_id || "";
-
-
-            document.getElementById("modalGrupoTitulo").innerText =
-                "✏️ Editar Grupo";
-
-
-            const modal = new bootstrap.Modal(
-                document.getElementById("modalGrupo")
+            throw new Error(
+                "Erro HTTP " +
+                response.status
             );
 
-            modal.show();
+        }
 
-        })
+        return response.json();
 
-        .catch(error => {
+    })
 
-            console.error(
-                "ERRO AO CARREGAR GRUPO:",
-                error
-            );
+    .then(function(data) {
+
+        if (!data.sucesso) {
 
             alert(
-                "Ocorreu um erro ao carregar o grupo."
+                data.mensagem ||
+                "Não foi possível carregar o grupo."
             );
 
-        });
+            return;
+        }
 
+        const grupo = data.grupo;
+
+
+        document.getElementById("grupo_id").value =
+            grupo.id || "";
+
+
+        document.getElementById("grupo_nome").value =
+            grupo.nome || "";
+
+
+        document.getElementById("grupo_descricao").value =
+            grupo.descricao || "";
+
+
+        document.getElementById("grupo_temporada").value =
+            grupo.temporada_id || "";
+
+
+        document.getElementById("modalGrupoTitulo").innerText =
+            "✏️ Editar Grupo";
+
+
+        const elementoModal =
+            document.getElementById("modalGrupo");
+
+
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(
+                elementoModal
+            );
+
+
+        modal.show();
+
+    })
+
+    .catch(function(error) {
+
+        console.error(
+            "ERRO AO CARREGAR GRUPO:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Ocorreu um erro ao carregar o grupo."
+        );
+
+    });
 }
 
+
+/* =========================================================
+   SALVAR GRUPO
+   ========================================================= */
 
 function salvarGrupo() {
 
@@ -1358,7 +1176,6 @@ function salvarGrupo() {
         document.getElementById("grupo_nome").focus();
 
         return;
-
     }
 
 
@@ -1371,18 +1188,18 @@ function salvarGrupo() {
         document.getElementById("grupo_temporada").focus();
 
         return;
-
     }
 
 
     fetch(
         "/admin/fardamento/grupos/salvar",
         {
-
             method: "POST",
 
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "application/json"
             },
 
             body: JSON.stringify({
@@ -1393,52 +1210,116 @@ function salvarGrupo() {
 
                 descricao: descricao,
 
-                temporada_id:
-                    temporadaId || null
+                temporada_id: temporadaId || null
 
             })
 
         }
     )
 
-    .then(response => response.json())
+    .then(function(response) {
 
-    .then(data => {
+        return response.text().then(function(texto) {
 
-        if (data.sucesso) {
+            let data = null;
 
-            alert(data.mensagem);
+            try {
 
-            window.location.reload();
+                data = JSON.parse(texto);
 
-        } else {
+            }
 
-            alert(
-                data.mensagem ||
-                "Não foi possível salvar o grupo."
+            catch (e) {
+
+                data = null;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    data && data.mensagem
+
+                        ? data.mensagem
+
+                        : "Erro HTTP " +
+                          response.status
+
+                );
+
+            }
+
+
+            return data;
+
+        });
+
+    })
+
+    .then(function(data) {
+
+        if (!data || !data.sucesso) {
+
+            throw new Error(
+
+                data && data.mensagem
+
+                    ? data.mensagem
+
+                    : "Não foi possível salvar o grupo."
+
             );
 
         }
 
+
+        alert(
+
+            data.mensagem ||
+
+            "Grupo salvo com sucesso."
+
+        );
+
+
+        window.location.reload();
+
     })
 
-    .catch(error => {
+    .catch(function(error) {
 
         console.error(
             "ERRO AO SALVAR GRUPO:",
             error
         );
 
+
         alert(
+
+            error.message ||
+
             "Ocorreu um erro ao salvar o grupo."
+
         );
 
     });
-
 }
 
 
+/* =========================================================
+   EXCLUIR GRUPO
+   ========================================================= */
+
 function excluirGrupo(id, nome) {
+
+    console.log("========================================");
+    console.log("EXCLUIR GRUPO");
+    console.log("ID:", id);
+    console.log("NOME:", nome);
+    console.log("========================================");
+
 
     const confirmar = confirm(
 
@@ -1450,94 +1331,127 @@ function excluirGrupo(id, nome) {
 
         "\n\n" +
 
-        "O grupo só poderá ser excluído se não possuir " +
+        "Essa ação não poderá ser desfeita.\n\n" +
 
-        "entregas vinculadas.\n\n" +
-
-        "Deseja realmente continuar?"
+        "Deseja realmente excluir este grupo?"
 
     );
 
 
     if (!confirmar) {
 
+        console.log("Exclusão cancelada.");
+
         return;
 
     }
 
 
-    fetch(
-        `/admin/fardamento/grupos/${id}/excluir`,
-        {
+    console.log(
+        "Enviando solicitação para o servidor..."
+    );
 
+
+    const url =
+        "/admin/fardamento/grupos/" +
+        encodeURIComponent(id) +
+        "/excluir";
+
+
+    console.log("URL:", url);
+
+
+    fetch(
+        url,
+        {
             method: "POST",
 
             headers: {
-
-                "Content-Type": "application/json",
-
-                "X-Requested-With": "XMLHttpRequest"
-
+                "X-Requested-With": "XMLHttpRequest",
+                "Accept": "application/json"
             }
-
         }
     )
 
-    .then(async response => {
+    .then(function(response) {
 
-        const texto = await response.text();
+        console.log(
+            "STATUS HTTP:",
+            response.status
+        );
 
-        let data;
 
+        return response.text().then(function(texto) {
 
-        try {
-
-            data = JSON.parse(texto);
-
-        }
-
-        catch (e) {
-
-            console.error(
-                "RESPOSTA NÃO JSON:",
+            console.log(
+                "RESPOSTA DO SERVIDOR:",
                 texto
             );
 
-            throw new Error(
-                "O servidor não retornou uma resposta válida."
-            );
 
-        }
+            let data = null;
 
 
-        if (!response.ok) {
+            try {
 
-            throw new Error(
+                data = JSON.parse(texto);
 
-                data.mensagem ||
+            }
 
-                data.erro ||
+            catch (e) {
 
-                "Erro ao excluir o grupo."
+                console.error(
+                    "Resposta do servidor não é JSON.",
+                    e
+                );
 
-            );
+                data = null;
 
-        }
+            }
 
 
-        return data;
+            if (!response.ok) {
+
+                throw new Error(
+
+                    data && data.mensagem
+
+                        ? data.mensagem
+
+                        : "Erro HTTP " +
+                          response.status
+
+                );
+
+            }
+
+
+            return data;
+
+        });
 
     })
 
-    .then(data => {
 
-        if (data.sucesso) {
+    .then(function(data) {
 
-            alert(data.mensagem);
+        console.log(
+            "DADOS RECEBIDOS:",
+            data
+        );
 
-            window.location.reload();
 
-            return;
+        if (!data || !data.sucesso) {
+
+            throw new Error(
+
+                data && data.mensagem
+
+                    ? data.mensagem
+
+                    : "Não foi possível excluir o grupo."
+
+            );
 
         }
 
@@ -1546,18 +1460,23 @@ function excluirGrupo(id, nome) {
 
             data.mensagem ||
 
-            "Não foi possível excluir o grupo."
+            "Grupo excluído com sucesso."
 
         );
 
+
+        window.location.reload();
+
     })
 
-    .catch(error => {
+
+    .catch(function(error) {
 
         console.error(
             "ERRO AO EXCLUIR GRUPO:",
             error
         );
+
 
         alert(
 
