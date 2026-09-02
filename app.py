@@ -9,6 +9,7 @@ from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
 from utils.pdf_financeiro_periodo import gerar_pdf_financeiro_periodo
 from utils.pdf_financeiro_receitas_despesas import gerar_pdf_receitas_despesas
 from utils.pdf_relatorio_viagens import gerar_pdf_relatorio_viagens
+from utils.pdf_lista_embarque import gerar_pdf_lista_embarque
 from utils.pdf_prestacao_bingo import gerar_pdf_prestacao_bingo
 from io import BytesIO
 from utils.pdf_fardamento import (
@@ -7976,6 +7977,103 @@ def detalhe_viagem(id):
         viagem=viagem,
         participantes=participantes
     )
+
+# ============================================================
+# PDF — CONTROLE DE EMBARQUE DA VIAGEM
+# ============================================================
+
+@app.route("/admin/viagem/<int:id>/lista-embarque")
+def lista_embarque_viagem(id):
+
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # BUSCAR VIAGEM
+        # ==========================================
+
+        viagem = db.execute(
+            text("""
+                SELECT
+                    id,
+                    evento,
+                    destino,
+                    data_saida,
+                    data_retorno,
+                    responsavel,
+                    observacoes
+
+                FROM viagens
+
+                WHERE id = :id
+            """),
+            {
+                "id": id
+            }
+        ).mappings().first()
+
+        if not viagem:
+            return redirect("/admin/viagens")
+
+
+        # ==========================================
+        # BUSCAR PARTICIPANTES
+        # ==========================================
+
+        participantes = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.codigo_integrante,
+                    i.nome,
+                    i.cpf,
+                    i.cidade
+
+                FROM viagem_integrantes vi
+
+                INNER JOIN integrantes i
+                    ON i.id = vi.integrante_id
+
+                WHERE vi.viagem_id = :id
+
+                ORDER BY i.nome
+            """),
+            {
+                "id": id
+            }
+        ).mappings().all()
+
+
+        # ==========================================
+        # GERAR PDF
+        # ==========================================
+
+        pdf = gerar_pdf_lista_embarque(
+            viagem,
+            participantes
+        )
+
+
+        # ==========================================
+        # ABRIR PDF NO NAVEGADOR
+        # ==========================================
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=(
+                f"lista_embarque_viagem_{id}.pdf"
+            )
+        )
+
+    finally:
+
+        db.close()
 
 @app.route("/admin/viagem/<int:id>/documentos")
 def documentos_viagem(id):
