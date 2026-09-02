@@ -134,7 +134,7 @@ def adicionar_cabecalho(
     )
 
     elementos.append(
-        Spacer(1, 8)
+        Spacer(1, 12)
     )
 
     elementos.append(
@@ -142,6 +142,11 @@ def adicionar_cabecalho(
             "Sistema de Gestão de Integrantes",
             estilo
         )
+    )
+
+    # Espaço entre o nome do sistema e a linha
+    elementos.append(
+        Spacer(1, 8)
     )
 
     elementos.append(
@@ -170,22 +175,32 @@ def adicionar_cabecalho(
         Spacer(1, 20)
     )
 
+
 # =====================================
 # CAIXA DE CONFERÊNCIA
 # =====================================
 
 class CaixaConferencia(Flowable):
 
-    def __init__(self, tamanho=10):
+    def __init__(self, tamanho=11):
         Flowable.__init__(self)
+
         self.tamanho = tamanho
+
         self.width = tamanho
         self.height = tamanho
 
     def draw(self):
 
-        self.canv.setStrokeColor(colors.black)
-        self.canv.setLineWidth(1)
+        self.canv.saveState()
+
+        self.canv.setStrokeColor(
+            colors.black
+        )
+
+        self.canv.setLineWidth(
+            1
+        )
 
         self.canv.rect(
             0,
@@ -195,6 +210,9 @@ class CaixaConferencia(Flowable):
             stroke=1,
             fill=0
         )
+
+        self.canv.restoreState()
+
 
 # =====================================
 # GERA PDF — LISTA DE EMBARQUE
@@ -218,6 +236,10 @@ def gerar_pdf_lista_embarque(
 
     estilos = getSampleStyleSheet()
 
+    # =====================================
+    # ESTILOS
+    # =====================================
+
     estilo = ParagraphStyle(
         "normal_embarque",
         parent=estilos["Normal"],
@@ -229,6 +251,13 @@ def gerar_pdf_lista_embarque(
         "TabelaEmbarque",
         parent=estilos["Normal"],
         fontSize=9,
+        leading=11
+    )
+
+    estilo_tabela_nome = ParagraphStyle(
+        "TabelaEmbarqueNome",
+        parent=estilos["Normal"],
+        fontSize=9.5,
         leading=11
     )
 
@@ -246,15 +275,16 @@ def gerar_pdf_lista_embarque(
         alignment=TA_CENTER
     )
 
-    # =====================================
-    # ESTILO PARA AS CAIXAS DE CONFERÊNCIA
-    # =====================================
-
-    estilo_check = ParagraphStyle(
-        "TabelaCheck",
+    estilo_resumo = ParagraphStyle(
+        "ResumoEmbarque",
         parent=estilos["Normal"],
-        fontSize=13,
-        leading=14,
+        fontSize=9,
+        leading=13
+    )
+
+    estilo_resumo_centro = ParagraphStyle(
+        "ResumoEmbarqueCentro",
+        parent=estilo_resumo,
         alignment=TA_CENTER
     )
 
@@ -568,7 +598,7 @@ def gerar_pdf_lista_embarque(
 
                 Paragraph(
                     nome,
-                    estilo_tabela
+                    estilo_tabela_nome
                 ),
 
                 Paragraph(
@@ -576,9 +606,9 @@ def gerar_pdf_lista_embarque(
                     estilo_tabela_centro
                 ),
 
-                CaixaConferencia(10),
+                CaixaConferencia(11),
 
-                CaixaConferencia(10)
+                CaixaConferencia(11)
 
             ]
 
@@ -609,15 +639,9 @@ def gerar_pdf_lista_embarque(
                     estilo_tabela_centro
                 ),
 
-                Paragraph(
-                    "☐",
-                    estilo_check
-                ),
+                CaixaConferencia(11),
 
-                Paragraph(
-                    "☐",
-                    estilo_check
-                )
+                CaixaConferencia(11)
 
             ]
 
@@ -636,8 +660,8 @@ def gerar_pdf_lista_embarque(
         colWidths=[
 
             30,     # Nº
-            230,    # Nome
-            110,    # CPF
+            240,    # Nome
+            105,    # CPF
             55,     # Ida
             55      # Volta
 
@@ -676,6 +700,24 @@ def gerar_pdf_lista_embarque(
                 "FONT",
                 (0, 0),
                 (-1, 0),
+                "Helvetica-Bold"
+            ),
+
+            # =====================================
+            # DESTAQUE IDA / VOLTA
+            # =====================================
+
+            (
+                "BACKGROUND",
+                (3, 0),
+                (4, 0),
+                colors.lightgrey
+            ),
+
+            (
+                "FONT",
+                (3, 0),
+                (4, 0),
                 "Helvetica-Bold"
             ),
 
@@ -756,14 +798,14 @@ def gerar_pdf_lista_embarque(
                 "TOPPADDING",
                 (0, 0),
                 (-1, -1),
-                6
+                7
             ),
 
             (
                 "BOTTOMPADDING",
                 (0, 0),
                 (-1, -1),
-                6
+                7
             )
 
         ])
@@ -775,7 +817,157 @@ def gerar_pdf_lista_embarque(
     )
 
     elementos.append(
-        Spacer(1, 20)
+        Spacer(1, 15)
+    )
+
+    # =====================================
+    # RESUMO DA CONFERÊNCIA
+    # =====================================
+
+    total_passageiros = len(participantes)
+
+    dados_resumo = [
+
+        [
+
+            Paragraph(
+                "<b>RESUMO DA CONFERÊNCIA</b>",
+                estilo_resumo
+            ),
+
+            Paragraph(
+                "<b>QUANTIDADE</b>",
+                estilo_resumo_centro
+            )
+
+        ],
+
+        [
+
+            Paragraph(
+                "Total de passageiros",
+                estilo_resumo
+            ),
+
+            Paragraph(
+                str(total_passageiros),
+                estilo_resumo_centro
+            )
+
+        ],
+
+        [
+
+            Paragraph(
+                "Conferidos na ida",
+                estilo_resumo
+            ),
+
+            Paragraph(
+                "____________",
+                estilo_resumo_centro
+            )
+
+        ],
+
+        [
+
+            Paragraph(
+                "Conferidos na volta",
+                estilo_resumo
+            ),
+
+            Paragraph(
+                "____________",
+                estilo_resumo_centro
+            )
+
+        ]
+
+    ]
+
+    tabela_resumo = Table(
+
+        dados_resumo,
+
+        colWidths=[
+            320,
+            160
+        ]
+
+    )
+
+    tabela_resumo.setStyle(
+
+        TableStyle([
+
+            (
+                "GRID",
+                (0, 0),
+                (-1, -1),
+                0.5,
+                colors.grey
+            ),
+
+            (
+                "BACKGROUND",
+                (0, 0),
+                (-1, 0),
+                colors.lightgrey
+            ),
+
+            (
+                "FONT",
+                (0, 0),
+                (-1, 0),
+                "Helvetica-Bold"
+            ),
+
+            (
+                "VALIGN",
+                (0, 0),
+                (-1, -1),
+                "MIDDLE"
+            ),
+
+            (
+                "LEFTPADDING",
+                (0, 0),
+                (-1, -1),
+                6
+            ),
+
+            (
+                "RIGHTPADDING",
+                (0, 0),
+                (-1, -1),
+                6
+            ),
+
+            (
+                "TOPPADDING",
+                (0, 0),
+                (-1, -1),
+                5
+            ),
+
+            (
+                "BOTTOMPADDING",
+                (0, 0),
+                (-1, -1),
+                5
+            )
+
+        ])
+
+    )
+
+    elementos.append(
+        tabela_resumo
+    )
+
+    elementos.append(
+        Spacer(1, 15)
     )
 
     # =====================================
@@ -786,9 +978,9 @@ def gerar_pdf_lista_embarque(
 
         Paragraph(
             (
-                "Marque a coluna <b>IDA</b> após a conferência "
-                "do embarque na saída e a coluna <b>VOLTA</b> "
-                "após a conferência do retorno."
+                "Marque <b>IDA</b> após a conferência do "
+                "embarque na saída e <b>VOLTA</b> após a "
+                "conferência do retorno."
             ),
             estilo
         )
@@ -796,7 +988,7 @@ def gerar_pdf_lista_embarque(
     )
 
     elementos.append(
-        Spacer(1, 8)
+        Spacer(1, 6)
     )
 
     elementos.append(
@@ -829,3 +1021,4 @@ def gerar_pdf_lista_embarque(
     buffer.seek(0)
 
     return buffer
+
