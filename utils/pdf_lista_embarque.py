@@ -1,5 +1,6 @@
 from io import BytesIO
 from datetime import datetime
+from reportlab.platypus import Flowable
 import os
 
 from reportlab.platypus import (
@@ -169,6 +170,31 @@ def adicionar_cabecalho(
         Spacer(1, 20)
     )
 
+# =====================================
+# CAIXA DE CONFERÊNCIA
+# =====================================
+
+class CaixaConferencia(Flowable):
+
+    def __init__(self, tamanho=10):
+        Flowable.__init__(self)
+        self.tamanho = tamanho
+        self.width = tamanho
+        self.height = tamanho
+
+    def draw(self):
+
+        self.canv.setStrokeColor(colors.black)
+        self.canv.setLineWidth(1)
+
+        self.canv.rect(
+            0,
+            0,
+            self.tamanho,
+            self.tamanho,
+            stroke=1,
+            fill=0
+        )
 
 # =====================================
 # GERA PDF — LISTA DE EMBARQUE
@@ -217,6 +243,18 @@ def gerar_pdf_lista_embarque(
         parent=estilos["Normal"],
         fontSize=8,
         leading=10,
+        alignment=TA_CENTER
+    )
+
+    # =====================================
+    # ESTILO PARA AS CAIXAS DE CONFERÊNCIA
+    # =====================================
+
+    estilo_check = ParagraphStyle(
+        "TabelaCheck",
+        parent=estilos["Normal"],
+        fontSize=13,
+        leading=14,
         alignment=TA_CENTER
     )
 
@@ -336,22 +374,18 @@ def gerar_pdf_lista_embarque(
     tabela_viagem = Table(
         dados_viagem,
         colWidths=[
-            110,    # Evento
-            90,     # Destino
-            60,     # Saída
-            60,     # Retorno
-            105,    # Responsável
-            55      # Passageiros
+            110,
+            90,
+            60,
+            60,
+            105,
+            55
         ],
         repeatRows=1
     )
 
     tabela_viagem.setStyle(
         TableStyle([
-
-            # =====================================
-            # GRADE
-            # =====================================
 
             (
                 "GRID",
@@ -360,10 +394,6 @@ def gerar_pdf_lista_embarque(
                 0.5,
                 colors.grey
             ),
-
-            # =====================================
-            # CABEÇALHO
-            # =====================================
 
             (
                 "BACKGROUND",
@@ -379,10 +409,6 @@ def gerar_pdf_lista_embarque(
                 "Helvetica-Bold"
             ),
 
-            # =====================================
-            # ALINHAMENTO
-            # =====================================
-
             (
                 "VALIGN",
                 (0, 0),
@@ -396,10 +422,6 @@ def gerar_pdf_lista_embarque(
                 (-1, -1),
                 "CENTER"
             ),
-
-            # =====================================
-            # ESPAÇAMENTO
-            # =====================================
 
             (
                 "LEFTPADDING",
@@ -455,6 +477,10 @@ def gerar_pdf_lista_embarque(
         Spacer(1, 10)
     )
 
+    # =====================================
+    # CABEÇALHO DA TABELA
+    # =====================================
+
     dados = [
 
         [
@@ -471,6 +497,16 @@ def gerar_pdf_lista_embarque(
 
             Paragraph(
                 "<b>CPF</b>",
+                estilo_tabela_centro
+            ),
+
+            Paragraph(
+                "<b>IDA</b>",
+                estilo_tabela_centro
+            ),
+
+            Paragraph(
+                "<b>VOLTA</b>",
                 estilo_tabela_centro
             )
 
@@ -538,7 +574,11 @@ def gerar_pdf_lista_embarque(
                 Paragraph(
                     cpf,
                     estilo_tabela_centro
-                )
+                ),
+
+                CaixaConferencia(10),
+
+                CaixaConferencia(10)
 
             ]
 
@@ -567,6 +607,16 @@ def gerar_pdf_lista_embarque(
                 Paragraph(
                     "-",
                     estilo_tabela_centro
+                ),
+
+                Paragraph(
+                    "☐",
+                    estilo_check
+                ),
+
+                Paragraph(
+                    "☐",
+                    estilo_check
                 )
 
             ]
@@ -585,9 +635,11 @@ def gerar_pdf_lista_embarque(
 
         colWidths=[
 
-            35,     # Nº
-            245,    # Nome
-            120     # CPF
+            30,     # Nº
+            230,    # Nome
+            110,    # CPF
+            55,     # Ida
+            55      # Volta
 
         ]
 
@@ -661,6 +713,28 @@ def gerar_pdf_lista_embarque(
             ),
 
             # =====================================
+            # IDA
+            # =====================================
+
+            (
+                "ALIGN",
+                (3, 1),
+                (3, -1),
+                "CENTER"
+            ),
+
+            # =====================================
+            # VOLTA
+            # =====================================
+
+            (
+                "ALIGN",
+                (4, 1),
+                (4, -1),
+                "CENTER"
+            ),
+
+            # =====================================
             # ESPAÇAMENTO
             # =====================================
 
@@ -707,6 +781,23 @@ def gerar_pdf_lista_embarque(
     # =====================================
     # OBSERVAÇÃO
     # =====================================
+
+    elementos.append(
+
+        Paragraph(
+            (
+                "Marque a coluna <b>IDA</b> após a conferência "
+                "do embarque na saída e a coluna <b>VOLTA</b> "
+                "após a conferência do retorno."
+            ),
+            estilo
+        )
+
+    )
+
+    elementos.append(
+        Spacer(1, 8)
+    )
 
     elementos.append(
 
