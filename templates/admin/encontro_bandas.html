@@ -1,0 +1,1226 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Encontro de Bandas
+{% endblock %}
+
+{% block titulo_pagina %}
+🎺 Encontro de Bandas
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ============================================================
+   ENCONTRO DE BANDAS
+   ============================================================ */
+
+.encontro-bandas-container {
+    padding-bottom: 30px;
+}
+
+/* ============================================================
+   CABEÇALHO
+   ============================================================ */
+
+.encontro-bandas-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.encontro-bandas-topo h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   BOTÃO NOVO
+   ============================================================ */
+
+.btn-novo-encontro {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 11px 18px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #d4af37;
+    color: #1b0001;
+
+    font-weight: 700;
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.btn-novo-encontro:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+/* ============================================================
+   GRID
+   ============================================================ */
+
+.encontros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
+
+.encontro-card {
+    background: #121215;
+
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 14px;
+
+    padding: 22px;
+
+    transition: 0.2s;
+}
+
+.encontro-card:hover {
+    border-color: rgba(212, 175, 55, 0.55);
+    transform: translateY(-2px);
+}
+
+/* ============================================================
+   CARD CABEÇALHO
+   ============================================================ */
+
+.encontro-card-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+.encontro-card h3 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.encontro-status {
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+.status-planejamento {
+    background: rgba(212, 175, 55, 0.15);
+    color: #d4af37;
+}
+
+.status-confirmado {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+.status-encerrado {
+    background: rgba(149, 165, 166, 0.15);
+    color: #95a5a6;
+}
+
+/* ============================================================
+   INFORMAÇÕES
+   ============================================================ */
+
+.encontro-info {
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+
+    margin-bottom: 20px;
+
+    color: #d0d0d0;
+
+    font-size: 14px;
+}
+
+.encontro-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ============================================================
+   RESUMO
+   ============================================================ */
+
+.encontro-resumo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin-bottom: 20px;
+}
+
+.encontro-resumo-item {
+    background: rgba(255, 255, 255, 0.035);
+
+    border-radius: 10px;
+
+    padding: 14px;
+
+    text-align: center;
+}
+
+.encontro-resumo-numero {
+    display: block;
+
+    color: #d4af37;
+
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.encontro-resumo-label {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #a0a0a0;
+
+    font-size: 12px;
+}
+
+/* ============================================================
+   AÇÕES
+   ============================================================ */
+
+.encontro-acoes {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-abrir-encontro {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px 15px;
+
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 8px;
+
+    background: transparent;
+    color: #d4af37;
+
+    text-decoration: none;
+
+    font-weight: 600;
+
+    transition: 0.2s;
+}
+
+.btn-abrir-encontro:hover {
+    background: rgba(212, 175, 55, 0.10);
+}
+
+/* ============================================================
+   VAZIO
+   ============================================================ */
+
+.encontros-vazio {
+    padding: 55px 20px;
+
+    text-align: center;
+
+    border: 1px dashed rgba(212, 175, 55, 0.25);
+    border-radius: 14px;
+
+    color: #999;
+}
+
+.encontros-vazio-icon {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.encontros-vazio h3 {
+    margin: 0 0 8px;
+    color: #ddd;
+}
+
+.encontros-vazio p {
+    margin: 0;
+}
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    .encontro-bandas-topo {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-novo-encontro {
+        justify-content: center;
+    }
+
+    .encontros-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+
+<div class="encontro-bandas-container">
+
+    <!-- ======================================================
+         CABEÇALHO
+         ====================================================== -->
+
+    <div class="encontro-bandas-topo">
+
+        <div>
+            <h2>🎺 Encontros de Bandas</h2>
+        </div>
+
+        <button
+            type="button"
+            class="btn-novo-encontro"
+            onclick="abrirModalNovoEncontro()"
+        >
+            ➕ Novo Encontro
+        </button>
+
+    </div>
+
+
+    <!-- ======================================================
+         LISTAGEM
+         ====================================================== -->
+
+    {% if encontros %}
+
+        <div class="encontros-grid">
+
+            {% for encontro in encontros %}
+
+                <div class="encontro-card">
+
+                    <div class="encontro-card-cabecalho">
+
+                        <h3>
+                            {{ encontro.nome }}
+                        </h3>
+
+                        {% set status = encontro.status|default('PLANEJAMENTO')|upper %}
+
+                        <span
+                            class="encontro-status
+                            {% if status == 'CONFIRMADO' %}
+                                status-confirmado
+                            {% elif status == 'ENCERRADO' %}
+                                status-encerrado
+                            {% else %}
+                                status-planejamento
+                            {% endif %}
+                            "
+                        >
+                            {{ status }}
+                        </span>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         INFORMAÇÕES
+                         ================================================== -->
+
+                    <div class="encontro-info">
+
+                        {% if encontro.data %}
+                            <div class="encontro-info-item">
+                                📅
+                                <span>
+                                    {{ encontro.data.strftime('%d/%m/%Y') }}
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        {% if encontro.local %}
+                            <div class="encontro-info-item">
+                                📍
+                                <span>
+                                    {{ encontro.local }}
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        {% if encontro.horario %}
+                            <div class="encontro-info-item">
+                                🕐
+                                <span>
+                                    {{ encontro.horario.strftime('%H:%M') }}
+                                </span>
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         RESUMO
+                         ================================================== -->
+
+                    <div class="encontro-resumo">
+
+                        <div class="encontro-resumo-item">
+
+                            <span class="encontro-resumo-numero">
+                                {{ encontro.total_bandas }}
+                            </span>
+
+                            <span class="encontro-resumo-label">
+                                Bandas
+                            </span>
+
+                        </div>
+
+
+                        <div class="encontro-resumo-item">
+
+                            <span class="encontro-resumo-numero">
+                                {{ encontro.total_pessoas }}
+                            </span>
+
+                            <span class="encontro-resumo-label">
+                                Pessoas
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         AÇÃO
+                         ================================================== -->
+
+                    <div class="encontro-acoes">
+
+                        <a
+                            href="{{ url_for('detalhes_encontro_bandas', encontro_id=encontro.id) }}"
+                            class="btn-abrir-encontro"
+                        >
+                            👁️ Abrir Encontro
+                        </a>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="encontros-vazio">
+
+            <div class="encontros-vazio-icon">
+                🎺
+            </div>
+
+            <h3>
+                Nenhum encontro cadastrado
+            </h3>
+
+            <p>
+                Cadastre o primeiro encontro de bandas para começar.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+<!-- ============================================================
+     MODAL — NOVO ENCONTRO
+     ============================================================ -->
+
+<div
+    id="modalNovoEncontro"
+    class="modal-overlay"
+    onclick="fecharModalAoClicarFora(event)"
+>
+
+    <div
+        class="modal-novo-encontro"
+        onclick="event.stopPropagation()"
+    >
+
+        <!-- CABEÇALHO -->
+
+        <div class="modal-novo-cabecalho">
+
+            <div>
+
+                <h2>
+                    🎺 Novo Encontro
+                </h2>
+
+                <p>
+                    Cadastre as informações do encontro de bandas.
+                </p>
+
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModalNovoEncontro()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- ERRO -->
+
+        {% if erro %}
+
+            <div class="modal-erro">
+                ⚠️ {{ erro }}
+            </div>
+
+        {% endif %}
+
+
+        <!-- FORMULÁRIO -->
+
+        <form
+            method="POST"
+            action="{{ url_for('encontro_bandas') }}"
+        >
+
+            <div class="modal-form-grid">
+
+                <!-- NOME -->
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="nome">
+                        Nome do Encontro *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nome"
+                        name="nome"
+                        placeholder="Ex.: Encontro de Bandas 2026"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- DATA -->
+
+                <div class="modal-campo">
+
+                    <label for="data">
+                        Data *
+                    </label>
+
+                    <input
+                        type="date"
+                        id="data"
+                        name="data"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- HORÁRIO -->
+
+                <div class="modal-campo">
+
+                    <label for="horario">
+                        Horário
+                    </label>
+
+                    <input
+                        type="time"
+                        id="horario"
+                        name="horario"
+                    >
+
+                </div>
+
+
+                <!-- LOCAL -->
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="local">
+                        Local
+                    </label>
+
+                    <input
+                        type="text"
+                        id="local"
+                        name="local"
+                        placeholder="Ex.: Praça Central de João Câmara"
+                    >
+
+                </div>
+
+
+                <!-- STATUS -->
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="status">
+                        Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                    >
+
+                        <option value="PLANEJAMENTO">
+                            Planejamento
+                        </option>
+
+                        <option value="CONFIRMADO">
+                            Confirmado
+                        </option>
+
+                        <option value="REALIZADO">
+                            Realizado
+                        </option>
+
+                        <option value="CANCELADO">
+                            Cancelado
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- OBSERVAÇÕES -->
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="observacoes">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="observacoes"
+                        name="observacoes"
+                        rows="4"
+                        placeholder="Informações adicionais sobre o encontro..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <!-- RODAPÉ -->
+
+            <div class="modal-novo-acoes">
+
+                <button
+                    type="button"
+                    class="btn-modal-cancelar"
+                    onclick="fecharModalNovoEncontro()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-modal-salvar"
+                >
+                    💾 Salvar Encontro
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+
+/* ============================================================
+   MODAL — OVERLAY
+   ============================================================ */
+
+.modal-overlay {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    background: rgba(0, 0, 0, 0.78);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    overflow-y: auto;
+}
+
+
+/* ============================================================
+   MODAL — CONTAINER
+   ============================================================ */
+
+.modal-novo-encontro {
+
+    width: 100%;
+
+    max-width: 650px;
+
+    background: #121215;
+
+    border: 1px solid rgba(212, 175, 55, 0.45);
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.65);
+
+    overflow: hidden;
+
+    animation: abrirModalEncontro 0.18s ease-out;
+}
+
+
+@keyframes abrirModalEncontro {
+
+    from {
+
+        opacity: 0;
+
+        transform: translateY(-15px) scale(0.98);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform: translateY(0) scale(1);
+
+    }
+
+}
+
+
+/* ============================================================
+   CABEÇALHO
+   ============================================================ */
+
+.modal-novo-cabecalho {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+
+    background: #1b0001;
+}
+
+
+.modal-novo-cabecalho h2 {
+
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+}
+
+
+.modal-novo-cabecalho p {
+
+    margin: 6px 0 0;
+
+    color: #a8a8a8;
+
+    font-size: 13px;
+
+}
+
+
+/* ============================================================
+   BOTÃO FECHAR
+   ============================================================ */
+
+.modal-fechar {
+
+    width: 34px;
+
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 1px solid rgba(255,255,255,0.10);
+
+    border-radius: 8px;
+
+    background: rgba(255,255,255,0.05);
+
+    color: #ffffff;
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+}
+
+
+.modal-fechar:hover {
+
+    background: rgba(212,175,55,0.15);
+
+    color: #d4af37;
+
+    border-color: rgba(212,175,55,0.35);
+
+}
+
+
+/* ============================================================
+   ERRO
+   ============================================================ */
+
+.modal-erro {
+
+    margin: 20px 24px 0;
+
+    padding: 12px 14px;
+
+    border-radius: 8px;
+
+    background: rgba(231, 76, 60, 0.12);
+
+    border: 1px solid rgba(231, 76, 60, 0.30);
+
+    color: #ff8f85;
+
+    font-size: 13px;
+
+}
+
+
+/* ============================================================
+   FORMULÁRIO
+   ============================================================ */
+
+.modal-novo-encontro form {
+
+    padding: 24px;
+
+}
+
+
+.modal-form-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px;
+
+}
+
+
+.modal-campo {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+}
+
+
+.modal-campo-full {
+
+    grid-column: 1 / -1;
+
+}
+
+
+.modal-campo label {
+
+    color: #dddddd;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+.modal-campo input,
+.modal-campo select,
+.modal-campo textarea {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 11px 13px;
+
+    border: 1px solid rgba(255,255,255,0.10);
+
+    border-radius: 8px;
+
+    background: #1b1b1f;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition: 0.2s;
+
+}
+
+
+.modal-campo input::placeholder,
+.modal-campo textarea::placeholder {
+
+    color: #777777;
+
+}
+
+
+.modal-campo input:focus,
+.modal-campo select:focus,
+.modal-campo textarea:focus {
+
+    border-color: #d4af37;
+
+    box-shadow: 0 0 0 2px rgba(212,175,55,0.08);
+
+}
+
+
+.modal-campo textarea {
+
+    resize: vertical;
+
+    min-height: 100px;
+
+}
+
+
+.modal-campo select {
+
+    cursor: pointer;
+
+}
+
+
+/* ============================================================
+   RODAPÉ
+   ============================================================ */
+
+.modal-novo-acoes {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 25px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255,255,255,0.08);
+
+}
+
+
+/* ============================================================
+   CANCELAR
+   ============================================================ */
+
+.btn-modal-cancelar {
+
+    padding: 10px 17px;
+
+    border: 1px solid rgba(255,255,255,0.12);
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #cccccc;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+}
+
+
+.btn-modal-cancelar:hover {
+
+    background: rgba(255,255,255,0.06);
+
+    color: #ffffff;
+
+}
+
+
+/* ============================================================
+   SALVAR
+   ============================================================ */
+
+.btn-modal-salvar {
+
+    padding: 10px 18px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #d4af37;
+
+    color: #1b0001;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+}
+
+
+.btn-modal-salvar:hover {
+
+    transform: translateY(-1px);
+
+    opacity: 0.92;
+
+}
+
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+    .modal-overlay {
+
+        padding: 10px;
+
+    }
+
+    .modal-form-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .modal-campo-full {
+
+        grid-column: auto;
+
+    }
+
+    .modal-novo-acoes {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+    }
+
+    .btn-modal-cancelar,
+    .btn-modal-salvar {
+
+        width: 100%;
+
+    }
+
+}
+
+</style>
+
+
+<script>
+
+/* ============================================================
+   ABRIR MODAL
+   ============================================================ */
+
+function abrirModalNovoEncontro() {
+
+    const modal = document.getElementById("modalNovoEncontro");
+
+    if (!modal) return;
+
+    modal.style.display = "flex";
+
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function() {
+
+        const campoNome = document.getElementById("nome");
+
+        if (campoNome) {
+
+            campoNome.focus();
+
+        }
+
+    }, 100);
+
+}
+
+
+/* ============================================================
+   FECHAR MODAL
+   ============================================================ */
+
+function fecharModalNovoEncontro() {
+
+    const modal = document.getElementById("modalNovoEncontro");
+
+    if (!modal) return;
+
+    modal.style.display = "none";
+
+    document.body.style.overflow = "";
+
+}
+
+
+/* ============================================================
+   CLICAR FORA
+   ============================================================ */
+
+function fecharModalAoClicarFora(event) {
+
+    if (event.target.id === "modalNovoEncontro") {
+
+        fecharModalNovoEncontro();
+
+    }
+
+}
+
+
+/* ============================================================
+   ESC FECHA O MODAL
+   ============================================================ */
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.key === "Escape") {
+
+        fecharModalNovoEncontro();
+
+    }
+
+});
+
+
+/* ============================================================
+   SE HOUVE ERRO, REABRIR AUTOMATICAMENTE
+   ============================================================ */
+
+{% if erro %}
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    abrirModalNovoEncontro();
+
+});
+
+{% endif %}
+
+</script>
+
+{% endblock %}

@@ -221,6 +221,20 @@
                 {% if usuario_tem_permissao("bingo") %}
 
                 <a
+                    href="#"
+                    class="menu-admin-item"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalDeclaracao">
+
+                    <span>📄</span>
+
+                    <span class="texto-menu">
+                        Declarações
+                    </span>
+
+                </a>
+
+                <a
                     href="/admin/bingo"
                     class="menu-admin-item">
 
@@ -436,6 +450,465 @@
 
     </main>
 
+<style>
+/* ============================================================
+   MODAL — DECLARAÇÃO ESCOLAR | BRILHO NEGRO
+   ============================================================ */
+
+#modalDeclaracao .modal-content {
+    background: #161616;
+    color: #f5f5f5;
+    border: 1px solid #3a3a3a;
+    border-radius: 14px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+}
+
+#modalDeclaracao .modal-header {
+    background: linear-gradient(
+        135deg,
+        #111111,
+        #1d1d1d
+    );
+
+    border-bottom: 1px solid #d4af37;
+    padding: 18px 22px;
+}
+
+#modalDeclaracao .modal-title {
+    color: #d4af37;
+    font-weight: 700;
+    font-size: 20px;
+}
+
+#modalDeclaracao .modal-header small {
+    color: #aaa !important;
+}
+
+#modalDeclaracao .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+#modalDeclaracao .btn-close:hover {
+    opacity: 1;
+}
+
+#modalDeclaracao .modal-body {
+    background: #181818;
+    padding: 24px;
+}
+
+#modalDeclaracao .form-label {
+    color: #d4af37;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+#modalDeclaracao .form-control,
+#modalDeclaracao .form-select {
+    background-color: #242424;
+    color: #f5f5f5;
+    border: 1px solid #444;
+    border-radius: 8px;
+    min-height: 44px;
+}
+
+#modalDeclaracao .form-control:focus,
+#modalDeclaracao .form-select:focus {
+    background-color: #292929;
+    color: #fff;
+    border-color: #d4af37;
+    box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.15);
+}
+
+#modalDeclaracao .form-control::placeholder {
+    color: #888;
+}
+
+#modalDeclaracao .form-select option {
+    background: #242424;
+    color: #fff;
+}
+
+#modalDeclaracao .text-muted {
+    color: #999 !important;
+}
+
+#modalDeclaracao .alert-info {
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    color: #ddd;
+    border-radius: 9px;
+}
+
+#modalDeclaracao .alert-info strong {
+    color: #d4af37;
+}
+
+#modalDeclaracao .modal-footer {
+    background: #111111;
+    border-top: 1px solid #333;
+    padding: 15px 22px;
+}
+
+#modalDeclaracao .btn-secondary {
+    background: #333;
+    border-color: #444;
+    color: #fff;
+}
+
+#modalDeclaracao .btn-secondary:hover {
+    background: #444;
+}
+
+#modalDeclaracao .btn-warning {
+    background: #d4af37;
+    border-color: #d4af37;
+    color: #111;
+    font-weight: 700;
+}
+
+#modalDeclaracao .btn-warning:hover {
+    background: #e2c35b;
+    border-color: #e2c35b;
+    color: #111;
+}
+
+#modalDeclaracao .text-danger {
+    color: #e0a800 !important;
+}
+</style>
+
+<!-- ================================================= -->
+<!-- MODAL — DECLARAÇÃO ESCOLAR                       -->
+<!-- ================================================= -->
+
+<div class="modal fade"
+     id="modalDeclaracao"
+     tabindex="-1"
+     aria-labelledby="modalDeclaracaoLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <div>
+                    <h5 class="modal-title" id="modalDeclaracaoLabel">
+                        📄 Declaração Escolar
+                    </h5>
+
+                    <small class="text-muted">
+                        Emissão de declaração de participação em atividade da banda
+                    </small>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Fechar">
+                </button>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="/admin/declaracao-escolar"
+                target="_blank">
+
+
+                <div class="modal-body">
+
+                    <div class="alert alert-info">
+
+                        <strong>ℹ️ Declaração</strong>
+
+                        <br>
+
+                        Preencha os dados da atividade. A declaração será
+                        gerada em PDF e aberta em uma nova aba.
+
+                        <br>
+
+                        <small>
+                            Nenhum dado da declaração será salvo no sistema.
+                        </small>
+
+                    </div>
+
+
+                    <div class="row g-3">
+
+
+                        <!-- ========================================= -->
+                        <!-- INTEGRANTE                                -->
+                        <!-- ========================================= -->
+
+                        <div class="col-12">
+
+                            <label
+                                for="declaracao_integrante"
+                                class="form-label">
+
+                                Integrante
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+
+                            <select
+                                class="form-select"
+                                id="declaracao_integrante"
+                                name="integrante_id"
+                                required>
+
+                                <option value="">
+                                    Selecione o integrante
+                                </option>
+
+                                {% for integrante in integrantes_declaracoes %}
+
+                                    <option
+                                        value="{{ integrante.id }}"
+                                        data-escola="{{ integrante.local_estudo or '' }}">
+
+                                        {{ integrante.nome }}
+
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- ========================================= -->
+                        <!-- ESCOLA                                    -->
+                        <!-- ========================================= -->
+
+                        <div class="col-12">
+
+                            <label
+                                for="declaracao_escola"
+                                class="form-label">
+
+                                Instituição de Ensino
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="declaracao_escola"
+                                name="escola"
+                                placeholder="Nome da escola ou instituição"
+                                required>
+
+
+                            <small class="text-muted">
+
+                                O sistema preencherá automaticamente
+                                com o local de estudo cadastrado.
+
+                            </small>
+
+                        </div>
+
+
+                        <!-- ========================================= -->
+                        <!-- DATA                                      -->
+                        <!-- ========================================= -->
+
+                        <div class="col-md-4">
+
+                            <label
+                                for="declaracao_data"
+                                class="form-label">
+
+                                Data da atividade
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="declaracao_data"
+                                name="data_atividade"
+                                required>
+
+                        </div>
+
+
+                        <!-- ========================================= -->
+                        <!-- LOCAL                                     -->
+                        <!-- ========================================= -->
+
+                        <div class="col-md-8">
+
+                            <label
+                                for="declaracao_local"
+                                class="form-label">
+
+                                Local da atividade
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="declaracao_local"
+                                name="local_atividade"
+                                placeholder="Ex.: João Câmara/RN"
+                                required>
+
+                        </div>
+
+
+                        <!-- ========================================= -->
+                        <!-- HORÁRIO                                  -->
+                        <!-- ========================================= -->
+
+                        <div class="col-md-6">
+
+                            <label
+                                for="declaracao_horario"
+                                class="form-label">
+
+                                Horário / Período
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="declaracao_horario"
+                                name="horario"
+                                placeholder="Ex.: 07:00 às 12:00"
+                                required>
+
+                        </div>
+
+
+                        <!-- ========================================= -->
+                        <!-- OBSERVAÇÃO                                -->
+                        <!-- ========================================= -->
+
+                        <div class="col-md-6">
+
+                            <label
+                                for="declaracao_observacao"
+                                class="form-label">
+
+                                Observação
+
+                            </label>
+
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="declaracao_observacao"
+                                name="observacao"
+                                placeholder="Opcional">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ============================================= -->
+                <!-- RODAPÉ                                        -->
+                <!-- ============================================= -->
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
+
+                        📄 Gerar Declaração
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================================================= -->
+<!-- SCRIPT — DECLARAÇÃO                              -->
+<!-- ================================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const integranteSelect =
+        document.getElementById("declaracao_integrante");
+
+    const escolaInput =
+        document.getElementById("declaracao_escola");
+
+
+    if (!integranteSelect || !escolaInput) {
+        return;
+    }
+
+
+    integranteSelect.addEventListener("change", function () {
+
+        const option =
+            this.options[this.selectedIndex];
+
+
+        if (!option) {
+
+            escolaInput.value = "";
+
+            return;
+        }
+
+
+        escolaInput.value =
+            option.dataset.escola || "";
+
+    });
+
+});
+
+</script>
 
     <!-- ================================================= -->
     <!-- BOOTSTRAP                                         -->

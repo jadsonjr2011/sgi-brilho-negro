@@ -1,0 +1,2177 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+{{ encontro.nome }}
+{% endblock %}
+
+{% block titulo_pagina %}
+🎺 Encontro de Bandas
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+/* ============================================================
+   ENCONTRO DE BANDAS — DETALHES
+   ============================================================ */
+
+.encontro-detalhes-container {
+    padding-bottom: 30px;
+}
+
+.encontro-detalhes-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.encontro-detalhes-topo-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-voltar-encontro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(212, 175, 55, 0.30);
+    border-radius: 8px;
+    background: transparent;
+    color: #d4af37;
+    text-decoration: none;
+    font-size: 18px;
+    transition: 0.2s;
+}
+
+.btn-voltar-encontro:hover {
+    background: rgba(212, 175, 55, 0.10);
+    border-color: rgba(212, 175, 55, 0.55);
+}
+
+.encontro-detalhes-topo h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.encontro-detalhes-acoes {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.btn-editar-encontro {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 15px;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 8px;
+    background: transparent;
+    color: #d4af37;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-editar-encontro:hover {
+    background: rgba(212, 175, 55, 0.10);
+    border-color: rgba(212, 175, 55, 0.60);
+}
+
+.btn-excluir-encontro {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 15px;
+    border: 1px solid rgba(231, 76, 60, 0.30);
+    border-radius: 8px;
+    background: transparent;
+    color: #e74c3c;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-excluir-encontro:hover {
+    background: rgba(231, 76, 60, 0.10);
+    border-color: rgba(231, 76, 60, 0.55);
+}
+
+/* ============================================================
+   INFORMAÇÕES
+   ============================================================ */
+
+.encontro-info-card {
+    background: #121215;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.encontro-info-card-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 22px;
+}
+
+.encontro-info-card h3 {
+    margin: 0 0 6px;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.encontro-info-subtitulo {
+    margin: 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.encontro-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 11px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-planejamento {
+    background: rgba(212, 175, 55, 0.15);
+    color: #d4af37;
+}
+
+.status-confirmado {
+    background: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+.status-realizado {
+    background: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+}
+
+.status-cancelado {
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+.encontro-dados-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.encontro-dado {
+    background: rgba(255, 255, 255, 0.035);
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.encontro-dado-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #8f8f8f;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.encontro-dado-valor {
+    display: block;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.encontro-dado-vazio {
+    color: #777;
+    font-weight: 400;
+}
+
+.encontro-observacoes {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    border-left: 3px solid #d4af37;
+}
+
+.encontro-observacoes-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #d4af37;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.encontro-observacoes-texto {
+    margin: 0;
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+/* ============================================================
+   RESUMO
+   ============================================================ */
+
+.encontro-resumo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.encontro-resumo-card {
+    background: #121215;
+    border: 1px solid rgba(212, 175, 55, 0.20);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.encontro-resumo-icone {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: rgba(212, 175, 55, 0.10);
+    font-size: 23px;
+}
+
+.encontro-resumo-numero {
+    display: block;
+    color: #d4af37;
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.encontro-resumo-label {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+    font-size: 12px;
+}
+
+/* ============================================================
+   BANDAS
+   ============================================================ */
+
+.bandas-card {
+    background: #121215;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.bandas-card-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.bandas-card-cabecalho h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 18px;
+}
+
+.btn-adicionar-banda {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #d4af37;
+    color: #1b0001;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-adicionar-banda:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+.bandas-vazio {
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.bandas-vazio-icone {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.bandas-vazio h4 {
+    margin: 0 0 7px;
+    color: #ddd;
+    font-size: 17px;
+}
+
+.bandas-vazio p {
+    margin: 0;
+    color: #888;
+    font-size: 13px;
+}
+
+.bandas-tabela-container {
+    overflow-x: auto;
+}
+
+.bandas-tabela {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bandas-tabela th {
+    padding: 13px 15px;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.025);
+    color: #999;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+}
+
+.bandas-tabela td {
+    padding: 14px 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: #ddd;
+    font-size: 13px;
+}
+
+.bandas-tabela tbody tr {
+    transition: 0.15s;
+}
+
+.bandas-tabela tbody tr:hover {
+    background: rgba(212, 175, 55, 0.035);
+}
+
+.banda-nome {
+    color: #fff;
+    font-weight: 600;
+}
+
+.banda-local {
+    color: #999;
+    font-size: 12px;
+}
+
+.banda-quantidade {
+    color: #d4af37;
+    font-weight: 700;
+}
+
+.btn-editar-banda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border: 1px solid rgba(212, 175, 55, 0.30);
+    border-radius: 7px;
+    background: transparent;
+    color: #d4af37;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-editar-banda:hover {
+    background: rgba(212, 175, 55, 0.10);
+    border-color: rgba(212, 175, 55, 0.60);
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   MODAIS
+   ============================================================ */
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.80);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-editar-encontro {
+    width: 100%;
+    max-width: 650px;
+    background: #121215;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+    animation: abrirModalEditar 0.18s ease-out;
+}
+
+@keyframes abrirModalEditar {
+    from {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-editar-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 22px 24px;
+    background: #1b0001;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+.modal-editar-cabecalho h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 21px;
+}
+
+.modal-editar-cabecalho p {
+    margin: 6px 0 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.modal-fechar {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 25px;
+    line-height: 1;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.modal-fechar:hover {
+    background: rgba(212, 175, 55, 0.15);
+    color: #d4af37;
+}
+
+.modal-editar-encontro form {
+    padding: 24px;
+}
+
+.modal-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.modal-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.modal-campo-full {
+    grid-column: 1 / -1;
+}
+
+.modal-campo label {
+    color: #ddd;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.modal-campo input,
+.modal-campo select,
+.modal-campo textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+    background: #1b1b1f;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.modal-campo input::placeholder,
+.modal-campo textarea::placeholder {
+    color: #777;
+}
+
+.modal-campo input:focus,
+.modal-campo select:focus,
+.modal-campo textarea:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.08);
+}
+
+.modal-campo textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.modal-campo select {
+    cursor: pointer;
+}
+
+.modal-editar-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-modal-cancelar {
+    padding: 10px 17px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: transparent;
+    color: #ccc;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-modal-cancelar:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.btn-modal-salvar {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #d4af37;
+    color: #1b0001;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-modal-salvar:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+/* ============================================================
+   MODAL ADICIONAR BANDA
+   ============================================================ */
+
+.modal-adicionar-banda {
+    width: 100%;
+    max-width: 720px;
+    background: #121215;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+    animation: abrirModalAdicionarBanda 0.18s ease-out;
+}
+
+@keyframes abrirModalAdicionarBanda {
+    from {
+        opacity: 0;
+        transform: translateY(-15px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-adicionar-banda-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 22px 24px;
+    background: #1b0001;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
+}
+
+.modal-adicionar-banda-cabecalho h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 21px;
+}
+
+.modal-adicionar-banda-cabecalho p {
+    margin: 6px 0 0;
+    color: #999;
+    font-size: 13px;
+}
+
+.modal-adicionar-banda form {
+    padding: 24px;
+}
+
+.adicionar-banda-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.adicionar-banda-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.adicionar-banda-campo-full {
+    grid-column: 1 / -1;
+}
+
+.adicionar-banda-campo label {
+    color: #ddd;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.adicionar-banda-campo input,
+.adicionar-banda-campo select,
+.adicionar-banda-campo textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 13px;
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 8px;
+    background: #1b1b1f;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.adicionar-banda-campo input::placeholder,
+.adicionar-banda-campo textarea::placeholder {
+    color: #777;
+}
+
+.adicionar-banda-campo input:focus,
+.adicionar-banda-campo select:focus,
+.adicionar-banda-campo textarea:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.08);
+}
+
+.adicionar-banda-campo textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.adicionar-banda-campo select {
+    cursor: pointer;
+}
+
+.adicionar-banda-ajuda {
+    margin-top: 5px;
+    color: #777;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.modal-adicionar-banda-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.btn-adicionar-banda-cancelar {
+    padding: 10px 17px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: transparent;
+    color: #ccc;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-adicionar-banda-cancelar:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.btn-adicionar-banda-salvar {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    background: #d4af37;
+    color: #1b0001;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-adicionar-banda-salvar:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+.responsavel-bn-destaque {
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 9px;
+    padding: 12px;
+    background: rgba(212, 175, 55, 0.035);
+}
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+
+@media (max-width: 800px) {
+    .encontro-dados-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .encontro-detalhes-topo {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .encontro-detalhes-acoes {
+        width: 100%;
+    }
+
+    .btn-editar-encontro,
+    .btn-excluir-encontro {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .encontro-info-card-cabecalho {
+        flex-direction: column;
+    }
+
+    .encontro-dados-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .encontro-resumo-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bandas-card-cabecalho {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-adicionar-banda {
+        justify-content: center;
+    }
+
+    .modal-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-campo-full {
+        grid-column: auto;
+    }
+
+    .modal-editar-acoes {
+        flex-direction: column-reverse;
+    }
+
+    .btn-modal-cancelar,
+    .btn-modal-salvar {
+        width: 100%;
+    }
+
+    .adicionar-banda-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .adicionar-banda-campo-full {
+        grid-column: auto;
+    }
+
+    .modal-adicionar-banda-acoes {
+        flex-direction: column-reverse;
+    }
+
+    .btn-adicionar-banda-cancelar,
+    .btn-adicionar-banda-salvar {
+        width: 100%;
+    }
+}
+</style>
+
+<div class="encontro-detalhes-container">
+
+    <!-- ========================================================
+         TOPO
+         ======================================================== -->
+
+    <div class="encontro-detalhes-topo">
+
+        <div class="encontro-detalhes-topo-esquerda">
+
+            <a
+                href="{{ url_for('encontro_bandas') }}"
+                class="btn-voltar-encontro"
+                title="Voltar"
+            >
+                ←
+            </a>
+
+            <div>
+                <h2>🎺 {{ encontro.nome }}</h2>
+            </div>
+
+        </div>
+
+        <div class="encontro-detalhes-acoes">
+
+            <button
+                type="button"
+                class="btn-editar-encontro"
+                onclick="abrirModalEditarEncontro()"
+            >
+                ✏️ Editar
+            </button>
+
+            <button
+                type="button"
+                class="btn-excluir-encontro"
+                onclick="confirmarExclusaoEncontro()"
+            >
+                🗑️ Excluir
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================================
+         INFORMAÇÕES DO ENCONTRO
+         ======================================================== -->
+
+    {% set status = encontro.status|default('PLANEJAMENTO')|upper %}
+
+    <div class="encontro-info-card">
+
+        <div class="encontro-info-card-cabecalho">
+
+            <div>
+                <h3>{{ encontro.nome }}</h3>
+
+                <p class="encontro-info-subtitulo">
+                    Informações gerais do encontro de bandas
+                </p>
+            </div>
+
+            <span class="encontro-status
+                {% if status == 'PLANEJAMENTO' %}
+                    status-planejamento
+                {% elif status == 'CONFIRMADO' %}
+                    status-confirmado
+                {% elif status == 'REALIZADO' %}
+                    status-realizado
+                {% elif status == 'CANCELADO' %}
+                    status-cancelado
+                {% endif %}
+            ">
+                {% if status == 'PLANEJAMENTO' %}
+                    📋 Planejamento
+                {% elif status == 'CONFIRMADO' %}
+                    ✅ Confirmado
+                {% elif status == 'REALIZADO' %}
+                    🏁 Realizado
+                {% elif status == 'CANCELADO' %}
+                    ❌ Cancelado
+                {% else %}
+                    {{ status }}
+                {% endif %}
+            </span>
+
+        </div>
+
+        <div class="encontro-dados-grid">
+
+            <div class="encontro-dado">
+                <span class="encontro-dado-label">📅 Data</span>
+
+                <span class="encontro-dado-valor">
+                    {% if encontro.data %}
+                        {{ encontro.data.strftime('%d/%m/%Y') }}
+                    {% else %}
+                        <span class="encontro-dado-vazio">
+                            Não informado
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="encontro-dado">
+                <span class="encontro-dado-label">🕐 Horário</span>
+
+                <span class="encontro-dado-valor">
+                    {% if encontro.horario %}
+                        {{ encontro.horario.strftime('%H:%M') }}
+                    {% else %}
+                        <span class="encontro-dado-vazio">
+                            Não informado
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="encontro-dado">
+                <span class="encontro-dado-label">📍 Local</span>
+
+                <span class="encontro-dado-valor">
+                    {% if encontro.local %}
+                        {{ encontro.local }}
+                    {% else %}
+                        <span class="encontro-dado-vazio">
+                            Não informado
+                        </span>
+                    {% endif %}
+                </span>
+            </div>
+
+        </div>
+
+        {% if encontro.observacoes %}
+
+        <div class="encontro-observacoes">
+
+            <span class="encontro-observacoes-label">
+                📝 Observações
+            </span>
+
+            <p class="encontro-observacoes-texto">
+                {{ encontro.observacoes }}
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- ========================================================
+         RESUMO
+         ======================================================== -->
+
+    <div class="encontro-resumo-grid">
+
+        <div class="encontro-resumo-card">
+
+            <div class="encontro-resumo-icone">
+                🎺
+            </div>
+
+            <div>
+                <span class="encontro-resumo-numero">
+                    {{ total_bandas }}
+                </span>
+
+                <span class="encontro-resumo-label">
+                    Bandas participantes
+                </span>
+            </div>
+
+        </div>
+
+        <div class="encontro-resumo-card">
+
+            <div class="encontro-resumo-icone">
+                👥
+            </div>
+
+            <div>
+                <span class="encontro-resumo-numero">
+                    {{ total_pessoas }}
+                </span>
+
+                <span class="encontro-resumo-label">
+                    Pessoas previstas
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ========================================================
+         BANDAS PARTICIPANTES
+         ======================================================== -->
+
+    <div class="bandas-card">
+
+        <div class="bandas-card-cabecalho">
+
+            <h3>🎺 Bandas Participantes</h3>
+
+            <button
+                type="button"
+                class="btn-adicionar-banda"
+                onclick="abrirModalAdicionarBanda()"
+            >
+                ➕ Adicionar Banda
+            </button>
+
+        </div>
+
+        {% if bandas %}
+
+        <div class="bandas-tabela-container">
+
+            <table class="bandas-tabela">
+
+                <thead>
+                    <tr>
+                        <th>Banda</th>
+                        <th>Cidade</th>
+                        <th>Responsável</th>
+                        <th>Capitão</th>
+                        <th>Maestro</th>
+                        <th>Pessoas</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for banda in bandas %}
+
+                    <tr>
+
+                        <td>
+                            <div class="banda-nome">
+                                {{ banda.banda_nome or '—' }}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="banda-local">
+                                {% if banda.cidade %}
+                                    {{ banda.cidade }}
+                                    {% if banda.uf %}
+                                        / {{ banda.uf }}
+                                    {% endif %}
+                                {% elif banda.uf %}
+                                    {{ banda.uf }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <td>
+                            {{ banda.responsavel_nome or '—' }}
+                        </td>
+
+                        <td>
+                            {{ banda.capitao_nome or '—' }}
+                        </td>
+
+                        <td>
+                            {{ banda.maestro_nome or '—' }}
+                        </td>
+
+                        <td>
+                            <span class="banda-quantidade">
+                                {{ banda.quantidade_componentes or 0 }}
+                            </span>
+                        </td>
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="btn-editar-banda"
+                                onclick='abrirModalEditarBanda(
+                                    {{ banda.id }},
+                                    {{ banda.banda_nome|default('', true)|tojson }},
+                                    {{ banda.cidade|default('', true)|tojson }},
+                                    {{ banda.uf|default('', true)|tojson }},
+                                    {{ banda.responsavel_nome|default('', true)|tojson }},
+                                    {{ banda.responsavel_telefone|default('', true)|tojson }},
+                                    {{ banda.capitao_nome|default('', true)|tojson }},
+                                    {{ banda.maestro_nome|default('', true)|tojson }},
+                                    {{ banda.quantidade_componentes|default(0, true) }},
+                                    {{ banda.responsavel_bn_integrante_id|default('', true)|tojson }},
+                                    {{ banda.observacoes|default('', true)|tojson }}
+                                )'
+                            >
+                                ✏️ Editar
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="bandas-vazio">
+
+            <div class="bandas-vazio-icone">
+                🎺
+            </div>
+
+            <h4>Nenhuma banda cadastrada</h4>
+
+            <p>
+                Adicione as bandas que participarão deste encontro.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     MODAL EDITAR ENCONTRO
+     ============================================================ -->
+
+<div
+    id="modalEditarEncontro"
+    class="modal-overlay"
+    onclick="fecharModalEditarFora(event)"
+>
+
+    <div class="modal-editar-encontro">
+
+        <div class="modal-editar-cabecalho">
+
+            <div>
+                <h2>✏️ Editar Encontro</h2>
+
+                <p>
+                    Atualize as informações do encontro.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModalEditarEncontro()"
+                title="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for('editar_encontro_bandas', encontro_id=encontro.id) }}"
+        >
+
+            <div class="modal-form-grid">
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="editar_nome">
+                        Nome do encontro
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_nome"
+                        name="nome"
+                        value="{{ encontro.nome or '' }}"
+                        required
+                    >
+
+                </div>
+
+                <div class="modal-campo">
+
+                    <label for="editar_data">
+                        Data
+                    </label>
+
+                    <input
+                        type="date"
+                        id="editar_data"
+                        name="data"
+                        value="{% if encontro.data %}{{ encontro.data.strftime('%Y-%m-%d') }}{% endif %}"
+                    >
+
+                </div>
+
+                <div class="modal-campo">
+
+                    <label for="editar_horario">
+                        Horário
+                    </label>
+
+                    <input
+                        type="time"
+                        id="editar_horario"
+                        name="horario"
+                        value="{% if encontro.horario %}{{ encontro.horario.strftime('%H:%M') }}{% endif %}"
+                    >
+
+                </div>
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="editar_local">
+                        Local
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_local"
+                        name="local"
+                        value="{{ encontro.local or '' }}"
+                        placeholder="Informe o local do encontro"
+                    >
+
+                </div>
+
+                <div class="modal-campo">
+
+                    <label for="editar_status">
+                        Status
+                    </label>
+
+                    <select
+                        id="editar_status"
+                        name="status"
+                    >
+
+                        <option
+                            value="PLANEJAMENTO"
+                            {% if status == 'PLANEJAMENTO' %}selected{% endif %}
+                        >
+                            📋 Planejamento
+                        </option>
+
+                        <option
+                            value="CONFIRMADO"
+                            {% if status == 'CONFIRMADO' %}selected{% endif %}
+                        >
+                            ✅ Confirmado
+                        </option>
+
+                        <option
+                            value="REALIZADO"
+                            {% if status == 'REALIZADO' %}selected{% endif %}
+                        >
+                            🏁 Realizado
+                        </option>
+
+                        <option
+                            value="CANCELADO"
+                            {% if status == 'CANCELADO' %}selected{% endif %}
+                        >
+                            ❌ Cancelado
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="modal-campo modal-campo-full">
+
+                    <label for="editar_observacoes">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="editar_observacoes"
+                        name="observacoes"
+                        placeholder="Observações sobre o encontro..."
+                    >{{ encontro.observacoes or '' }}</textarea>
+
+                </div>
+
+            </div>
+
+            <div class="modal-editar-acoes">
+
+                <button
+                    type="button"
+                    class="btn-modal-cancelar"
+                    onclick="fecharModalEditarEncontro()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-modal-salvar"
+                >
+                    💾 Salvar alterações
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     FORMULÁRIO EXCLUSÃO
+     ============================================================ -->
+
+<form
+    id="formExcluirEncontro"
+    method="POST"
+    action="{{ url_for('excluir_encontro_bandas', encontro_id=encontro.id) }}"
+    style="display: none;"
+>
+</form>
+
+<!-- ============================================================
+     MODAL ADICIONAR BANDA
+     ============================================================ -->
+
+<div
+    id="modalAdicionarBanda"
+    class="modal-overlay"
+    onclick="fecharModalAdicionarBandaFora(event)"
+>
+
+    <div class="modal-adicionar-banda">
+
+        <div class="modal-adicionar-banda-cabecalho">
+
+            <div>
+                <h2>➕ Adicionar Banda</h2>
+
+                <p>
+                    Cadastre uma banda participante do encontro.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModalAdicionarBanda()"
+                title="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <form
+            method="POST"
+            action="{{ url_for('adicionar_banda_encontro', encontro_id=encontro.id) }}"
+        >
+
+            <div class="adicionar-banda-form-grid">
+
+                <div class="adicionar-banda-campo adicionar-banda-campo-full">
+
+                    <label for="nome_banda">
+                        Nome da banda *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="nome_banda"
+                        name="nome_banda"
+                        placeholder="Ex.: Banda Marcial Municipal"
+                        required
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="cidade">
+                        Cidade
+                    </label>
+
+                    <input
+                        type="text"
+                        id="cidade"
+                        name="cidade"
+                        placeholder="Cidade"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="uf">
+                        UF
+                    </label>
+
+                    <select
+                        id="uf"
+                        name="uf"
+                    >
+                        <option value="">Selecione</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="responsavel_nome">
+                        Responsável
+                    </label>
+
+                    <input
+                        type="text"
+                        id="responsavel_nome"
+                        name="responsavel_nome"
+                        placeholder="Nome do responsável"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="responsavel_telefone">
+                        Telefone
+                    </label>
+
+                    <input
+                        type="text"
+                        id="responsavel_telefone"
+                        name="responsavel_telefone"
+                        placeholder="(84) 99999-9999"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="capitao_nome">
+                        Capitão
+                    </label>
+
+                    <input
+                        type="text"
+                        id="capitao_nome"
+                        name="capitao_nome"
+                        placeholder="Nome do capitão"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="maestro_nome">
+                        Maestro
+                    </label>
+
+                    <input
+                        type="text"
+                        id="maestro_nome"
+                        name="maestro_nome"
+                        placeholder="Nome do maestro"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="quantidade_componentes">
+                        Quantidade de componentes
+                    </label>
+
+                    <input
+                        type="number"
+                        id="quantidade_componentes"
+                        name="quantidade_componentes"
+                        min="0"
+                        value="0"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo responsavel-bn-destaque">
+
+                    <label for="responsavel_bn_integrante_id">
+                        Responsável pela Brilho Negro
+                    </label>
+
+                    <select
+                        id="responsavel_bn_integrante_id"
+                        name="responsavel_bn_integrante_id"
+                    >
+
+                        <option value="">
+                            Nenhum selecionado
+                        </option>
+
+                        {% for integrante in integrantes_responsaveis %}
+
+                        <option value="{{ integrante.id }}">
+                            {{ integrante.nome }}
+                            {% if integrante.funcao %}
+                                — {{ integrante.funcao }}
+                            {% endif %}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                    <div class="adicionar-banda-ajuda">
+                        Selecione, caso exista, o integrante da Brilho Negro responsável pelo contato com esta banda.
+                    </div>
+
+                </div>
+
+                <div class="adicionar-banda-campo adicionar-banda-campo-full">
+
+                    <label for="observacoes">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="observacoes"
+                        name="observacoes"
+                        placeholder="Observações sobre a banda..."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+            <div class="modal-adicionar-banda-acoes">
+
+                <button
+                    type="button"
+                    class="btn-adicionar-banda-cancelar"
+                    onclick="fecharModalAdicionarBanda()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-adicionar-banda-salvar"
+                >
+                    💾 Adicionar banda
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ============================================================
+     MODAL EDITAR BANDA
+     ============================================================ -->
+
+<div
+    id="modalEditarBanda"
+    class="modal-overlay"
+    onclick="fecharModalEditarBandaFora(event)"
+>
+
+    <div class="modal-adicionar-banda">
+
+        <div class="modal-adicionar-banda-cabecalho">
+
+            <div>
+                <h2>✏️ Editar Banda</h2>
+
+                <p>
+                    Atualize os dados da banda participante.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-fechar"
+                onclick="fecharModalEditarBanda()"
+                title="Fechar"
+            >
+                ×
+            </button>
+
+        </div>
+
+        <form
+            id="formEditarBanda"
+            method="POST"
+        >
+
+            <div class="adicionar-banda-form-grid">
+
+                <div class="adicionar-banda-campo adicionar-banda-campo-full">
+
+                    <label for="editar_nome_banda">
+                        Nome da banda *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_nome_banda"
+                        name="nome_banda"
+                        required
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_cidade_banda">
+                        Cidade
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_cidade_banda"
+                        name="cidade"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_uf_banda">
+                        UF
+                    </label>
+
+                    <select
+                        id="editar_uf_banda"
+                        name="uf"
+                    >
+                        <option value="">Selecione</option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_responsavel_nome">
+                        Responsável
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_responsavel_nome"
+                        name="responsavel_nome"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_responsavel_telefone">
+                        Telefone
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_responsavel_telefone"
+                        name="responsavel_telefone"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_capitao_nome">
+                        Capitão
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_capitao_nome"
+                        name="capitao_nome"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_maestro_nome">
+                        Maestro
+                    </label>
+
+                    <input
+                        type="text"
+                        id="editar_maestro_nome"
+                        name="maestro_nome"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo">
+
+                    <label for="editar_quantidade_componentes">
+                        Quantidade de componentes
+                    </label>
+
+                    <input
+                        type="number"
+                        id="editar_quantidade_componentes"
+                        name="quantidade_componentes"
+                        min="0"
+                        value="0"
+                    >
+
+                </div>
+
+                <div class="adicionar-banda-campo responsavel-bn-destaque">
+
+                    <label for="editar_responsavel_bn_integrante_id">
+                        Responsável pela Brilho Negro
+                    </label>
+
+                    <select
+                        id="editar_responsavel_bn_integrante_id"
+                        name="responsavel_bn_integrante_id"
+                    >
+
+                        <option value="">
+                            Nenhum selecionado
+                        </option>
+
+                        {% for integrante in integrantes_responsaveis %}
+
+                        <option value="{{ integrante.id }}">
+                            {{ integrante.nome }}
+                            {% if integrante.funcao %}
+                                — {{ integrante.funcao }}
+                            {% endif %}
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div class="adicionar-banda-campo adicionar-banda-campo-full">
+
+                    <label for="editar_observacoes_banda">
+                        Observações
+                    </label>
+
+                    <textarea
+                        id="editar_observacoes_banda"
+                        name="observacoes"
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+            <div class="modal-adicionar-banda-acoes">
+
+                <button
+                    type="button"
+                    class="btn-adicionar-banda-cancelar"
+                    onclick="fecharModalEditarBanda()"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn-adicionar-banda-salvar"
+                >
+                    💾 Salvar alterações
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+const URL_EDITAR_BANDA_BASE = {{ url_for(
+    'editar_banda_encontro',
+    encontro_id=encontro.id,
+    encontro_banda_id=0
+)|tojson }};
+
+function abrirModalEditarEncontro() {
+    const modal = document.getElementById("modalEditarEncontro");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function() {
+        const campoNome = document.getElementById("editar_nome");
+
+        if (campoNome) {
+            campoNome.focus();
+            campoNome.select();
+        }
+    }, 100);
+}
+
+function fecharModalEditarEncontro() {
+    const modal = document.getElementById("modalEditarEncontro");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+}
+
+function fecharModalEditarFora(event) {
+    if (event.target.id === "modalEditarEncontro") {
+        fecharModalEditarEncontro();
+    }
+}
+
+function abrirModalAdicionarBanda() {
+    const modal = document.getElementById("modalAdicionarBanda");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function() {
+        const campoBanda = document.getElementById("nome_banda");
+
+        if (campoBanda) {
+            campoBanda.focus();
+        }
+    }, 100);
+}
+
+function fecharModalAdicionarBanda() {
+    const modal = document.getElementById("modalAdicionarBanda");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+}
+
+function fecharModalAdicionarBandaFora(event) {
+    if (event.target.id === "modalAdicionarBanda") {
+        fecharModalAdicionarBanda();
+    }
+}
+
+function confirmarExclusaoEncontro() {
+    const confirmado = confirm(
+        "Tem certeza que deseja excluir este encontro?\n\n" +
+        "Essa ação também removerá as bandas participantes " +
+        "associadas a este encontro.\n\n" +
+        "Essa ação não poderá ser desfeita."
+    );
+
+    if (!confirmado) {
+        return;
+    }
+
+    const formulario = document.getElementById("formExcluirEncontro");
+
+    if (formulario) {
+        formulario.submit();
+    }
+}
+
+function abrirModalEditarBanda(
+    bandaId,
+    nomeBanda,
+    cidade,
+    uf,
+    responsavelNome,
+    responsavelTelefone,
+    capitaoNome,
+    maestroNome,
+    quantidadeComponentes,
+    responsavelBnId,
+    observacoes
+) {
+    const modal = document.getElementById("modalEditarBanda");
+    const formulario = document.getElementById("formEditarBanda");
+
+    if (!modal || !formulario) {
+        return;
+    }
+
+    if (!URL_EDITAR_BANDA_BASE) {
+        console.error(
+            "URL base para edição da banda não foi encontrada."
+        );
+        return;
+    }
+
+    formulario.action = URL_EDITAR_BANDA_BASE.replace(
+        "/banda/0/editar",
+        "/banda/" + encodeURIComponent(bandaId) + "/editar"
+    );
+
+    const campoNome =
+        document.getElementById("editar_nome_banda");
+
+    const campoCidade =
+        document.getElementById("editar_cidade_banda");
+
+    const campoUf =
+        document.getElementById("editar_uf_banda");
+
+    const campoResponsavel =
+        document.getElementById("editar_responsavel_nome");
+
+    const campoTelefone =
+        document.getElementById("editar_responsavel_telefone");
+
+    const campoCapitao =
+        document.getElementById("editar_capitao_nome");
+
+    const campoMaestro =
+        document.getElementById("editar_maestro_nome");
+
+    const campoQuantidade =
+        document.getElementById("editar_quantidade_componentes");
+
+    const campoResponsavelBn =
+        document.getElementById(
+            "editar_responsavel_bn_integrante_id"
+        );
+
+    const campoObservacoes =
+        document.getElementById("editar_observacoes_banda");
+
+    if (campoNome) {
+        campoNome.value = nomeBanda || "";
+    }
+
+    if (campoCidade) {
+        campoCidade.value = cidade || "";
+    }
+
+    if (campoUf) {
+        campoUf.value = uf || "";
+    }
+
+    if (campoResponsavel) {
+        campoResponsavel.value = responsavelNome || "";
+    }
+
+    if (campoTelefone) {
+        campoTelefone.value = responsavelTelefone || "";
+    }
+
+    if (campoCapitao) {
+        campoCapitao.value = capitaoNome || "";
+    }
+
+    if (campoMaestro) {
+        campoMaestro.value = maestroNome || "";
+    }
+
+    if (campoQuantidade) {
+        campoQuantidade.value =
+            quantidadeComponentes !== null &&
+            quantidadeComponentes !== undefined &&
+            quantidadeComponentes !== ""
+                ? quantidadeComponentes
+                : 0;
+    }
+
+    if (campoResponsavelBn) {
+        campoResponsavelBn.value =
+            responsavelBnId !== null &&
+            responsavelBnId !== undefined
+                ? String(responsavelBnId)
+                : "";
+    }
+
+    if (campoObservacoes) {
+        campoObservacoes.value = observacoes || "";
+    }
+
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    setTimeout(function() {
+        if (campoNome) {
+            campoNome.focus();
+            campoNome.select();
+        }
+    }, 100);
+}
+
+function fecharModalEditarBanda() {
+    const modal = document.getElementById("modalEditarBanda");
+
+    if (!modal) {
+        return;
+    }
+
+    modal.style.display = "none";
+    document.body.style.overflow = "";
+}
+
+function fecharModalEditarBandaFora(event) {
+    if (event.target.id === "modalEditarBanda") {
+        fecharModalEditarBanda();
+    }
+}
+
+document.addEventListener("keydown", function(event) {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    fecharModalEditarEncontro();
+    fecharModalAdicionarBanda();
+    fecharModalEditarBanda();
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const modalEditarEncontro =
+        document.getElementById("modalEditarEncontro");
+
+    const modalAdicionarBanda =
+        document.getElementById("modalAdicionarBanda");
+
+    const modalEditarBanda =
+        document.getElementById("modalEditarBanda");
+
+    if (modalEditarEncontro) {
+        modalEditarEncontro.style.display = "none";
+    }
+
+    if (modalAdicionarBanda) {
+        modalAdicionarBanda.style.display = "none";
+    }
+
+    if (modalEditarBanda) {
+        modalEditarBanda.style.display = "none";
+    }
+});
+</script>
+
+{% endblock %}

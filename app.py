@@ -9,6 +9,7 @@ from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
 from utils.pdf_financeiro_periodo import gerar_pdf_financeiro_periodo
 from utils.pdf_financeiro_receitas_despesas import gerar_pdf_receitas_despesas
 from utils.pdf_relatorio_viagens import gerar_pdf_relatorio_viagens
+from utils.pdf_declaracao_escolar import gerar_pdf_declaracao_escolar
 from utils.pdf_lista_embarque import gerar_pdf_lista_embarque
 from utils.pdf_prestacao_bingo import gerar_pdf_prestacao_bingo
 from io import BytesIO
@@ -89,6 +90,7 @@ PERMISSOES_PERFIS = {
         "relatorios",
         "usuarios",
         "configuracoes",
+        "encontro_bandas",
     },
 
     "GESTAO": {
@@ -106,6 +108,7 @@ PERMISSOES_PERFIS = {
         "bingo",
         "temporadas",
         "relatorios",
+        "encontro_bandas",
     },
 
     "OPERADOR": {
@@ -442,6 +445,114 @@ def login():
     return render_template(
         "admin/login.html"
     )
+
+@app.route("/admin/declaracao-escolar", methods=["POST"])
+def declaracao_escolar():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    if not session.get("usuario_id"):
+        session.clear()
+        return redirect("/login")
+
+    integrante_id = request.form.get("integrante_id")
+    escola = request.form.get("escola", "").strip()
+    data_atividade = request.form.get("data_atividade", "").strip()
+    local_atividade = request.form.get("local_atividade", "").strip()
+    horario = request.form.get("horario", "").strip()
+    observacao = request.form.get("observacao", "").strip()
+
+    if not integrante_id:
+        return "Integrante não informado.", 400
+
+    if not data_atividade:
+        return "Data da atividade não informada.", 400
+
+    if not local_atividade:
+        return "Local da atividade não informado.", 400
+
+    if not horario:
+        return "Horário/período não informado.", 400
+
+    db = SessionLocal()
+
+    try:
+
+        integrante = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    cpf,
+                    local_estudo
+                FROM integrantes
+                WHERE id = :id
+                AND status = 'APROVADO'
+                AND situacao = 'ATIVO'
+            """),
+            {
+                "id": integrante_id
+            }
+        ).mappings().first()
+
+        if not integrante:
+            return "Integrante não encontrado ou não está ativo.", 404
+
+        nome_integrante = integrante["nome"]
+        cpf_integrante = integrante["cpf"] or ""
+
+        if not escola:
+            escola = integrante["local_estudo"] or ""
+
+        pdf = gerar_pdf_declaracao_escolar(
+            nome_integrante=nome_integrante,
+            cpf_integrante=cpf_integrante,
+            escola=escola,
+            data_atividade=data_atividade,
+            local_atividade=local_atividade,
+            horario=horario,
+            observacao=observacao,
+        )
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name="Declaracao_Escolar.pdf"
+        )
+
+    finally:
+        db.close()
+
+@app.context_processor
+def dados_declaracao_escolar():
+
+    if "admin" not in session:
+        return {}
+
+    db = SessionLocal()
+
+    try:
+
+        integrantes_declaracoes = db.execute(text("""
+            SELECT
+                id,
+                codigo_integrante,
+                nome,
+                local_estudo
+            FROM integrantes
+            WHERE status = 'APROVADO'
+            AND situacao = 'ATIVO'
+            ORDER BY LOWER(nome)
+        """)).mappings().all()
+
+        return {
+            "integrantes_declaracoes": integrantes_declaracoes
+        }
+
+    finally:
+        db.close()
 
 @app.route("/admin/usuarios")
 def usuarios_admin():
@@ -16694,6 +16805,860 @@ def apresentacao_corporacao():
             "filename=Apresentacao_Brilho_Negro_2019.pdf"
         }
     )
+
+# ============================================================
+# ENCONTRO DE BANDAS — LISTAGEM DOS ENCONTROS
+# ============================================================
+
+@app.route("/admin/encontro-bandas", methods=["GET", "POST"])
+def encontro_bandas():
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ========================================================
+        # CADASTRAR NOVO ENCONTRO
+        # ========================================================
+
+        if request.method == "POST":
+
+            nome = request.form.get("nome", "").strip()
+            data = request.form.get("data")
+            local = request.form.get("local", "").strip()
+            horario = request.form.get("horario") or None
+            observacoes = request.form.get("observacoes", "").strip()
+            status = request.form.get(
+                "status",
+                "PLANEJAMENTO"
+            ).strip().upper()
+
+            # ----------------------------------------------------
+            # VALIDAÇÃO
+            # ----------------------------------------------------
+
+            if not nome or not data:
+
+                encontros = db.execute(
+                    text("""
+                        SELECT
+                            e.id,
+                            e.nome,
+                            e.data,
+                            e.local,
+                            e.horario,
+                            e.status,
+
+                            COUNT(eb.id) AS total_bandas,
+
+                            COALESCE(
+                                SUM(eb.quantidade_componentes),
+                                0
+                            ) AS total_pessoas
+
+                        FROM encontros_bandas e
+
+                        LEFT JOIN encontro_bandas eb
+                            ON eb.encontro_id = e.id
+
+                        GROUP BY
+                            e.id,
+                            e.nome,
+                            e.data,
+                            e.local,
+                            e.horario,
+                            e.status
+
+                        ORDER BY e.data DESC
+                    """)
+                ).mappings().all()
+
+                return render_template(
+                    "admin/encontro_bandas.html",
+                    encontros=encontros,
+                    erro="Informe o nome e a data do encontro."
+                )
+
+            # ----------------------------------------------------
+            # INSERT
+            # ----------------------------------------------------
+
+            db.execute(
+                text("""
+                    INSERT INTO encontros_bandas (
+                        nome,
+                        data,
+                        local,
+                        horario,
+                        observacoes,
+                        status
+                    )
+                    VALUES (
+                        :nome,
+                        :data,
+                        :local,
+                        :horario,
+                        :observacoes,
+                        :status
+                    )
+                """),
+                {
+                    "nome": nome,
+                    "data": data,
+                    "local": local or None,
+                    "horario": horario,
+                    "observacoes": observacoes or None,
+                    "status": status
+                }
+            )
+
+            db.commit()
+
+            return redirect("/admin/encontro-bandas")
+
+        # ========================================================
+        # LISTAGEM
+        # ========================================================
+
+        encontros = db.execute(
+            text("""
+                SELECT
+                    e.id,
+                    e.nome,
+                    e.data,
+                    e.local,
+                    e.horario,
+                    e.status,
+
+                    COUNT(eb.id) AS total_bandas,
+
+                    COALESCE(
+                        SUM(eb.quantidade_componentes),
+                        0
+                    ) AS total_pessoas
+
+                FROM encontros_bandas e
+
+                LEFT JOIN encontro_bandas eb
+                    ON eb.encontro_id = e.id
+
+                GROUP BY
+                    e.id,
+                    e.nome,
+                    e.data,
+                    e.local,
+                    e.horario,
+                    e.status
+
+                ORDER BY e.data DESC
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/encontro_bandas.html",
+            encontros=encontros
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+# ============================================================
+# ENCONTRO DE BANDAS — DETALHES
+# ============================================================
+
+@app.route("/admin/encontro-bandas/<int:encontro_id>")
+def detalhes_encontro_bandas(encontro_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ----------------------------------------------------
+        # DADOS DO ENCONTRO
+        # ----------------------------------------------------
+
+        encontro = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    data,
+                    local,
+                    horario,
+                    observacoes,
+                    status
+                FROM encontros_bandas
+                WHERE id = :id
+            """),
+            {
+                "id": encontro_id
+            }
+        ).mappings().first()
+
+        if not encontro:
+            return redirect("/admin/encontro-bandas")
+
+        # ----------------------------------------------------
+        # BANDAS PARTICIPANTES DESTE ENCONTRO
+        # ----------------------------------------------------
+
+        bandas = db.execute(
+            text("""
+                SELECT
+                    eb.id,
+                    eb.banda_id,
+                    b.nome AS banda_nome,
+                    b.cidade,
+                    b.uf,
+                    eb.responsavel_nome,
+                    eb.responsavel_telefone,
+                    eb.capitao_nome,
+                    eb.maestro_nome,
+                    eb.quantidade_componentes,
+                    eb.responsavel_bn_integrante_id,
+                    eb.observacoes,
+                    i.nome AS responsavel_bn_nome
+                FROM encontro_bandas eb
+                INNER JOIN bandas b
+                    ON b.id = eb.banda_id
+                LEFT JOIN integrantes i
+                    ON i.id = eb.responsavel_bn_integrante_id
+                WHERE eb.encontro_id = :encontro_id
+                ORDER BY b.nome
+            """),
+            {
+                "encontro_id": encontro_id
+            }
+        ).mappings().all()
+
+        # ----------------------------------------------------
+        # TODAS AS BANDAS CADASTRADAS
+        # ----------------------------------------------------
+
+        bandas_disponiveis = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    cidade,
+                    uf,
+                    instituicao
+                FROM bandas
+                ORDER BY nome
+            """)
+        ).mappings().all()
+
+        # ----------------------------------------------------
+        # INTEGRANTES ATIVOS DA BRILHO NEGRO
+        # ----------------------------------------------------
+
+        integrantes_responsaveis = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    codigo_integrante,
+                    funcao
+                FROM integrantes
+                WHERE UPPER(COALESCE(situacao, 'ATIVO')) = 'ATIVO'
+                ORDER BY nome
+            """)
+        ).mappings().all()
+
+        # ----------------------------------------------------
+        # RESUMOS
+        # ----------------------------------------------------
+
+        total_bandas = len(bandas)
+
+        total_pessoas = sum(
+            int(banda["quantidade_componentes"] or 0)
+            for banda in bandas
+        )
+
+        return render_template(
+            "admin/encontro_bandas_detalhes.html",
+            encontro=encontro,
+            bandas=bandas,
+            bandas_disponiveis=bandas_disponiveis,
+            integrantes_responsaveis=integrantes_responsaveis,
+            total_bandas=total_bandas,
+            total_pessoas=total_pessoas
+        )
+
+    finally:
+        db.close()
+
+# ============================================================
+# ENCONTRO DE BANDAS — EDITAR
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/editar",
+    methods=["POST"]
+)
+def editar_encontro_bandas(encontro_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    nome = request.form.get("nome", "").strip()
+    data = request.form.get("data")
+    local = request.form.get("local", "").strip()
+    horario = request.form.get("horario") or None
+    observacoes = request.form.get("observacoes", "").strip()
+    status = request.form.get(
+        "status",
+        "PLANEJAMENTO"
+    ).strip().upper()
+
+    if not nome or not data:
+
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    db = SessionLocal()
+
+    try:
+
+        resultado = db.execute(
+            text("""
+                UPDATE encontros_bandas
+
+                SET
+                    nome = :nome,
+                    data = :data,
+                    local = :local,
+                    horario = :horario,
+                    observacoes = :observacoes,
+                    status = :status,
+                    updated_at = CURRENT_TIMESTAMP
+
+                WHERE id = :id
+            """),
+            {
+                "id": encontro_id,
+                "nome": nome,
+                "data": data,
+                "local": local or None,
+                "horario": horario,
+                "observacoes": observacoes or None,
+                "status": status
+            }
+        )
+
+        db.commit()
+
+        if resultado.rowcount == 0:
+            return redirect("/admin/encontro-bandas")
+
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+# ============================================================
+# ENCONTRO DE BANDAS — EDITAR PARTICIPAÇÃO DA BANDA
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/banda/<int:encontro_banda_id>/editar",
+    methods=["POST"]
+)
+def editar_banda_encontro(encontro_id, encontro_banda_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    nome_banda = request.form.get(
+        "nome_banda",
+        ""
+    ).strip()
+
+    responsavel_nome = request.form.get(
+        "responsavel_nome",
+        ""
+    ).strip()
+
+    responsavel_telefone = request.form.get(
+        "responsavel_telefone",
+        ""
+    ).strip()
+
+    capitao_nome = request.form.get(
+        "capitao_nome",
+        ""
+    ).strip()
+
+    maestro_nome = request.form.get(
+        "maestro_nome",
+        ""
+    ).strip()
+
+    quantidade_componentes = request.form.get(
+        "quantidade_componentes",
+        "0"
+    )
+
+    responsavel_bn_integrante_id = request.form.get(
+        "responsavel_bn_integrante_id"
+    )
+
+    observacoes = request.form.get(
+        "observacoes",
+        ""
+    ).strip()
+
+    if not nome_banda:
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    try:
+        quantidade_componentes = int(
+            quantidade_componentes
+        )
+    except (TypeError, ValueError):
+        quantidade_componentes = 0
+
+    if quantidade_componentes < 0:
+        quantidade_componentes = 0
+
+    if not responsavel_bn_integrante_id:
+        responsavel_bn_integrante_id = None
+    else:
+        try:
+            responsavel_bn_integrante_id = int(
+                responsavel_bn_integrante_id
+            )
+        except (TypeError, ValueError):
+            responsavel_bn_integrante_id = None
+
+    db = SessionLocal()
+
+    try:
+
+        # ----------------------------------------------------
+        # VERIFICA A PARTICIPAÇÃO
+        # ----------------------------------------------------
+
+        participacao = db.execute(
+            text("""
+                SELECT
+                    eb.id,
+                    eb.banda_id
+                FROM encontro_bandas eb
+                WHERE eb.id = :encontro_banda_id
+                  AND eb.encontro_id = :encontro_id
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id,
+                "encontro_id": encontro_id
+            }
+        ).first()
+
+        if not participacao:
+            return redirect(
+                f"/admin/encontro-bandas/{encontro_id}"
+            )
+
+        banda_id = participacao[1]
+
+        # ----------------------------------------------------
+        # ATUALIZA O NOME DA BANDA
+        # ----------------------------------------------------
+
+        db.execute(
+            text("""
+                UPDATE bandas
+                SET
+                    nome = :nome,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :banda_id
+            """),
+            {
+                "nome": nome_banda,
+                "banda_id": banda_id
+            }
+        )
+
+        # ----------------------------------------------------
+        # ATUALIZA OS DADOS DA PARTICIPAÇÃO
+        # ----------------------------------------------------
+
+        db.execute(
+            text("""
+                UPDATE encontro_bandas
+                SET
+                    responsavel_nome = :responsavel_nome,
+                    responsavel_telefone = :responsavel_telefone,
+                    capitao_nome = :capitao_nome,
+                    maestro_nome = :maestro_nome,
+                    quantidade_componentes = :quantidade_componentes,
+                    responsavel_bn_integrante_id = :responsavel_bn_integrante_id,
+                    observacoes = :observacoes,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :encontro_banda_id
+                  AND encontro_id = :encontro_id
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id,
+                "encontro_id": encontro_id,
+                "responsavel_nome": (
+                    responsavel_nome or None
+                ),
+                "responsavel_telefone": (
+                    responsavel_telefone or None
+                ),
+                "capitao_nome": (
+                    capitao_nome or None
+                ),
+                "maestro_nome": (
+                    maestro_nome or None
+                ),
+                "quantidade_componentes": (
+                    quantidade_componentes
+                ),
+                "responsavel_bn_integrante_id": (
+                    responsavel_bn_integrante_id
+                ),
+                "observacoes": (
+                    observacoes or None
+                )
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+# ============================================================
+# ENCONTRO DE BANDAS — EXCLUIR
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/excluir",
+    methods=["POST"]
+)
+def excluir_encontro_bandas(encontro_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        db.execute(
+            text("""
+                DELETE FROM encontros_bandas
+                WHERE id = :id
+            """),
+            {
+                "id": encontro_id
+            }
+        )
+
+        db.commit()
+
+        return redirect("/admin/encontro-bandas")
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+# ============================================================
+# ENCONTRO DE BANDAS — ADICIONAR BANDA
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/adicionar-banda",
+    methods=["POST"]
+)
+def adicionar_banda_encontro(encontro_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    nome_banda = request.form.get(
+        "nome_banda",
+        ""
+    ).strip()
+
+    responsavel_nome = request.form.get(
+        "responsavel_nome",
+        ""
+    ).strip()
+
+    responsavel_telefone = request.form.get(
+        "responsavel_telefone",
+        ""
+    ).strip()
+
+    capitao_nome = request.form.get(
+        "capitao_nome",
+        ""
+    ).strip()
+
+    maestro_nome = request.form.get(
+        "maestro_nome",
+        ""
+    ).strip()
+
+    quantidade_componentes = request.form.get(
+        "quantidade_componentes",
+        "0"
+    )
+
+    responsavel_bn_integrante_id = request.form.get(
+        "responsavel_bn_integrante_id"
+    )
+
+    observacoes = request.form.get(
+        "observacoes",
+        ""
+    ).strip()
+
+    # --------------------------------------------------------
+    # VALIDAÇÕES
+    # --------------------------------------------------------
+
+    if not nome_banda:
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    try:
+
+        quantidade_componentes = int(
+            quantidade_componentes
+        )
+
+    except (TypeError, ValueError):
+
+        quantidade_componentes = 0
+
+    if quantidade_componentes < 0:
+        quantidade_componentes = 0
+
+    if not responsavel_bn_integrante_id:
+
+        responsavel_bn_integrante_id = None
+
+    else:
+
+        try:
+
+            responsavel_bn_integrante_id = int(
+                responsavel_bn_integrante_id
+            )
+
+        except (TypeError, ValueError):
+
+            responsavel_bn_integrante_id = None
+
+    db = SessionLocal()
+
+    try:
+
+        # ----------------------------------------------------
+        # VERIFICA O ENCONTRO
+        # ----------------------------------------------------
+
+        encontro = db.execute(
+            text("""
+                SELECT id
+                FROM encontros_bandas
+                WHERE id = :id
+            """),
+            {
+                "id": encontro_id
+            }
+        ).first()
+
+        if not encontro:
+
+            return redirect(
+                "/admin/encontro-bandas"
+            )
+
+        # ----------------------------------------------------
+        # PROCURA A BANDA PELO NOME
+        # ----------------------------------------------------
+
+        banda = db.execute(
+            text("""
+                SELECT
+                    id
+                FROM bandas
+                WHERE LOWER(TRIM(nome))
+                    = LOWER(TRIM(:nome))
+                ORDER BY id
+                LIMIT 1
+            """),
+            {
+                "nome": nome_banda
+            }
+        ).first()
+
+        # ----------------------------------------------------
+        # SE NÃO EXISTIR, CRIA A BANDA
+        # ----------------------------------------------------
+
+        if not banda:
+
+            banda = db.execute(
+                text("""
+                    INSERT INTO bandas (
+                        nome
+                    )
+                    VALUES (
+                        :nome
+                    )
+                    RETURNING id
+                """),
+                {
+                    "nome": nome_banda
+                }
+            ).first()
+
+            banda_id = banda[0]
+
+        else:
+
+            banda_id = banda[0]
+
+        # ----------------------------------------------------
+        # VERIFICA SE JÁ ESTÁ NO ENCONTRO
+        # ----------------------------------------------------
+
+        banda_existente = db.execute(
+            text("""
+                SELECT id
+                FROM encontro_bandas
+                WHERE encontro_id = :encontro_id
+                  AND banda_id = :banda_id
+            """),
+            {
+                "encontro_id": encontro_id,
+                "banda_id": banda_id
+            }
+        ).first()
+
+        if banda_existente:
+
+            db.rollback()
+
+            return redirect(
+                f"/admin/encontro-bandas/{encontro_id}"
+            )
+
+        # ----------------------------------------------------
+        # ADICIONA A PARTICIPAÇÃO
+        # ----------------------------------------------------
+
+        db.execute(
+            text("""
+                INSERT INTO encontro_bandas (
+                    encontro_id,
+                    banda_id,
+                    responsavel_nome,
+                    responsavel_telefone,
+                    capitao_nome,
+                    maestro_nome,
+                    quantidade_componentes,
+                    responsavel_bn_integrante_id,
+                    observacoes
+                )
+                VALUES (
+                    :encontro_id,
+                    :banda_id,
+                    :responsavel_nome,
+                    :responsavel_telefone,
+                    :capitao_nome,
+                    :maestro_nome,
+                    :quantidade_componentes,
+                    :responsavel_bn_integrante_id,
+                    :observacoes
+                )
+            """),
+            {
+                "encontro_id": encontro_id,
+                "banda_id": banda_id,
+                "responsavel_nome": (
+                    responsavel_nome or None
+                ),
+                "responsavel_telefone": (
+                    responsavel_telefone or None
+                ),
+                "capitao_nome": (
+                    capitao_nome or None
+                ),
+                "maestro_nome": (
+                    maestro_nome or None
+                ),
+                "quantidade_componentes": (
+                    quantidade_componentes
+                ),
+                "responsavel_bn_integrante_id": (
+                    responsavel_bn_integrante_id
+                ),
+                "observacoes": (
+                    observacoes or None
+                )
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    except Exception:
+
+        db.rollback()
+
+        raise
+
+    finally:
+
+        db.close()
 
 # ============================================================
 # EXECUÇÃO
