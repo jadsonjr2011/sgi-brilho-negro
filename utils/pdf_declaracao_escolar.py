@@ -214,14 +214,12 @@ def formatar_cpf(cpf):
 
     cpf = str(cpf).strip()
 
-    # Remove tudo que não for número
     numeros = re.sub(
         r"\D",
         "",
         cpf
     )
 
-    # CPF com 11 dígitos
     if len(numeros) == 11:
 
         return (
@@ -231,7 +229,6 @@ def formatar_cpf(cpf):
             f"{numeros[9:]}"
         )
 
-    # Caso já venha em outro formato
     return cpf
 
 
@@ -349,28 +346,6 @@ def gerar_pdf_declaracao_escolar(
     )
 
 
-    estilo_identificacao = ParagraphStyle(
-        "Identificacao",
-        parent=estilos["Normal"],
-        fontName="Helvetica-Bold",
-        fontSize=11,
-        leading=16,
-        alignment=TA_CENTER,
-        textColor=PRETO
-    )
-
-
-    estilo_cpf = ParagraphStyle(
-        "CPF",
-        parent=estilos["Normal"],
-        fontName="Helvetica",
-        fontSize=9,
-        leading=13,
-        alignment=TA_CENTER,
-        textColor=CINZA
-    )
-
-
     estilo_corpo = ParagraphStyle(
         "Corpo",
         parent=estilos["Normal"],
@@ -415,7 +390,6 @@ def gerar_pdf_declaracao_escolar(
 
     if os.path.exists(logo_path):
 
-        # Logo reduzida
         logo = Image(
             logo_path,
             width=280,
@@ -491,42 +465,7 @@ def gerar_pdf_declaracao_escolar(
 
 
     elementos.append(
-        Spacer(1, 20)
-    )
-
-
-    # ========================================================
-    # IDENTIFICAÇÃO DO INTEGRANTE
-    # ========================================================
-
-    elementos.append(
-
-        Paragraph(
-            nome_integrante.upper(),
-            estilo_identificacao
-        )
-
-    )
-
-
-    if cpf_formatado:
-
-        elementos.append(
-            Spacer(1, 3)
-        )
-
-        elementos.append(
-
-            Paragraph(
-                f"CPF: {cpf_formatado}",
-                estilo_cpf
-            )
-
-        )
-
-
-    elementos.append(
-        Spacer(1, 28)
+        Spacer(1, 38)
     )
 
 
@@ -538,7 +477,15 @@ def gerar_pdf_declaracao_escolar(
 
         "Declaramos, para os devidos fins, que <b>"
         f"{nome_integrante}"
-        "</b>, integrante da "
+        "</b>"
+
+        + (
+            f", CPF <b>{cpf_formatado}</b>"
+            if cpf_formatado
+            else ""
+        )
+
+        + ", integrante da "
         "<b>Associação Cultural de Percussão Rudimentar Brilho Negro</b>, "
         "participou de atividade oficial da Banda Brilho Negro, "
         "realizada no dia <b>"
