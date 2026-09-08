@@ -17191,10 +17191,28 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
     if not usuario_tem_permissao("encontro_bandas"):
         return redirect("/admin")
 
+    # --------------------------------------------------------
+    # DADOS DA BANDA
+    # --------------------------------------------------------
+
     nome_banda = request.form.get(
         "nome_banda",
         ""
     ).strip()
+
+    cidade = request.form.get(
+        "cidade",
+        ""
+    ).strip()
+
+    uf = request.form.get(
+        "uf",
+        ""
+    ).strip().upper()
+
+    # --------------------------------------------------------
+    # DADOS DA PARTICIPAÇÃO
+    # --------------------------------------------------------
 
     responsavel_nome = request.form.get(
         "responsavel_nome",
@@ -17230,6 +17248,10 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
         ""
     ).strip()
 
+    # --------------------------------------------------------
+    # VALIDAÇÕES
+    # --------------------------------------------------------
+
     if not nome_banda:
         return redirect(
             f"/admin/encontro-bandas/{encontro_id}"
@@ -17245,9 +17267,16 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
     if quantidade_componentes < 0:
         quantidade_componentes = 0
 
+    # --------------------------------------------------------
+    # RESPONSÁVEL BRILHO NEGRO
+    # --------------------------------------------------------
+
     if not responsavel_bn_integrante_id:
+
         responsavel_bn_integrante_id = None
+
     else:
+
         try:
             responsavel_bn_integrante_id = int(
                 responsavel_bn_integrante_id
@@ -17279,6 +17308,7 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
         ).first()
 
         if not participacao:
+
             return redirect(
                 f"/admin/encontro-bandas/{encontro_id}"
             )
@@ -17286,7 +17316,7 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
         banda_id = participacao[1]
 
         # ----------------------------------------------------
-        # ATUALIZA O NOME DA BANDA
+        # ATUALIZA OS DADOS DA BANDA
         # ----------------------------------------------------
 
         db.execute(
@@ -17294,11 +17324,15 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
                 UPDATE bandas
                 SET
                     nome = :nome,
+                    cidade = :cidade,
+                    uf = :uf,
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = :banda_id
             """),
             {
                 "nome": nome_banda,
+                "cidade": cidade or None,
+                "uf": uf or None,
                 "banda_id": banda_id
             }
         )
@@ -17349,6 +17383,10 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
             }
         )
 
+        # ----------------------------------------------------
+        # SALVA
+        # ----------------------------------------------------
+
         db.commit()
 
         return redirect(
@@ -17356,10 +17394,12 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
         )
 
     except Exception:
+
         db.rollback()
         raise
 
     finally:
+
         db.close()
 
 # ============================================================

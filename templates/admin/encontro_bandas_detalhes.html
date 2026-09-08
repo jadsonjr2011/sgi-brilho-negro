@@ -766,6 +766,164 @@
 }
 
 /* ============================================================
+   MODAIS — ADICIONAR / EDITAR BANDA
+   ============================================================ */
+
+#modalAdicionarBanda,
+#modalEditarBanda {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100vh;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    overflow-y: auto;
+
+    z-index: 9999;
+}
+
+
+/* ============================================================
+   CAIXA DO MODAL
+   ============================================================ */
+
+#modalAdicionarBanda .modal-adicionar-banda,
+#modalEditarBanda .modal-adicionar-banda {
+    width: 100%;
+    max-width: 900px;
+
+    max-height: calc(100vh - 40px);
+
+    margin: auto;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    box-sizing: border-box;
+}
+
+
+/* ============================================================
+   CABEÇALHO
+   O X FICA SEMPRE VISÍVEL
+   ============================================================ */
+
+#modalAdicionarBanda .modal-adicionar-banda-cabecalho,
+#modalEditarBanda .modal-adicionar-banda-cabecalho {
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   FORMULÁRIO
+   ============================================================ */
+
+#modalAdicionarBanda .modal-adicionar-banda > form,
+#modalEditarBanda .modal-adicionar-banda > form {
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   CAMPOS — SOMENTE ESTA ÁREA ROLA
+   ============================================================ */
+
+#modalAdicionarBanda .adicionar-banda-form-grid,
+#modalEditarBanda .adicionar-banda-form-grid {
+    min-height: 0;
+
+    overflow-y: auto;
+
+    padding-right: 8px;
+}
+
+
+/* ============================================================
+   BOTÕES
+   FICAM SEMPRE VISÍVEIS
+   ============================================================ */
+
+#modalAdicionarBanda .modal-adicionar-banda-acoes,
+#modalEditarBanda .modal-adicionar-banda-acoes {
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   BARRA DE ROLAGEM
+   ============================================================ */
+
+#modalAdicionarBanda .adicionar-banda-form-grid::-webkit-scrollbar,
+#modalEditarBanda .adicionar-banda-form-grid::-webkit-scrollbar {
+    width: 7px;
+}
+
+#modalAdicionarBanda .adicionar-banda-form-grid::-webkit-scrollbar-track,
+#modalEditarBanda .adicionar-banda-form-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#modalAdicionarBanda .adicionar-banda-form-grid::-webkit-scrollbar-thumb,
+#modalEditarBanda .adicionar-banda-form-grid::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.45);
+    border-radius: 10px;
+}
+
+
+/* ============================================================
+   TELAS COM POUCA ALTURA
+   ============================================================ */
+
+@media (max-height: 700px) {
+
+    #modalAdicionarBanda,
+    #modalEditarBanda {
+        align-items: flex-start;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    #modalAdicionarBanda .modal-adicionar-banda,
+    #modalEditarBanda .modal-adicionar-banda {
+        max-height: calc(100vh - 20px);
+    }
+}
+
+
+/* ============================================================
+   CELULAR / TELAS ESTREITAS
+   ============================================================ */
+
+@media (max-width: 700px) {
+
+    #modalAdicionarBanda,
+    #modalEditarBanda {
+        padding: 10px;
+    }
+
+    #modalAdicionarBanda .modal-adicionar-banda,
+    #modalEditarBanda .modal-adicionar-banda {
+        max-height: calc(100vh - 20px);
+    }
+}
+
+/* ============================================================
    RESPONSIVO
    ============================================================ */
 
