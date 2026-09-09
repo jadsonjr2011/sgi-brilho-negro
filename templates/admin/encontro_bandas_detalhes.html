@@ -476,6 +476,97 @@
     transform: translateY(-1px);
 }
 
+.btn-remover-banda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 11px;
+    border: 1px solid rgba(231, 76, 60, 0.30);
+    border-radius: 7px;
+    background: transparent;
+    color: #e74c3c;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-remover-banda:hover {
+    background: rgba(231, 76, 60, 0.10);
+    border-color: rgba(231, 76, 60, 0.60);
+    transform: translateY(-1px);
+}
+
+.acoes-banda-linha {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.btn-remover-banda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 11px;
+
+    border: 1px solid rgba(231, 76, 60, 0.30);
+    border-radius: 7px;
+
+    background: transparent;
+    color: #e74c3c;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.btn-remover-banda:hover {
+    background: rgba(231, 76, 60, 0.10);
+    border-color: rgba(231, 76, 60, 0.60);
+    transform: translateY(-1px);
+}
+
+.acoes-banda-linha {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+
+.btn-remover-banda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding: 7px 11px;
+
+    border: 1px solid rgba(231, 76, 60, 0.30);
+    border-radius: 7px;
+
+    background: transparent;
+    color: #e74c3c;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.btn-remover-banda:hover {
+    background: rgba(231, 76, 60, 0.10);
+    border-color: rgba(231, 76, 60, 0.60);
+    transform: translateY(-1px);
+}
+
 /* ============================================================
    MODAIS
    ============================================================ */
@@ -1396,6 +1487,25 @@
                                 ✏️ Editar
                             </button>
 
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'remover_banda_encontro',
+                                    encontro_id=encontro.id,
+                                    encontro_banda_id=banda.id
+                                ) }}"
+                                onsubmit="return confirmarRemocaoBanda();"
+                                style="display: inline;"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="btn-remover-banda"
+                                    title="Remover banda deste encontro"
+                                >
+                                    🗑️ Remover
+                                </button>
+
                         </td>
 
                     </tr>
@@ -2244,6 +2354,15 @@ function confirmarExclusaoEncontro() {
     }
 }
 
+function confirmarRemocaoBanda() {
+
+    return confirm(
+        "Tem certeza que deseja remover esta banda do encontro?\n\n" +
+        "A banda será removida somente deste encontro.\n\n" +
+        "O cadastro da banda continuará no sistema."
+    );
+}
+
 function abrirModalEditarBanda(
     bandaId,
     nomeBanda,
@@ -2394,6 +2513,19 @@ document.addEventListener("keydown", function(event) {
     fecharModalAdicionarBanda();
     fecharModalEditarBanda();
 });
+
+function confirmarRemocaoBanda(nomeBanda) {
+
+    const nome = nomeBanda || "esta banda";
+
+    return confirm(
+        "Deseja realmente remover a banda:\n\n" +
+        nome +
+        "\n\n" +
+        "A banda será removida apenas deste encontro.\n" +
+        "Essa ação não poderá ser desfeita."
+    );
+}
 
 document.addEventListener("DOMContentLoaded", function() {
     const modalEditarEncontro =

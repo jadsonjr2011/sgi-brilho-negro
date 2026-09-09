@@ -17403,6 +17403,82 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
         db.close()
 
 # ============================================================
+# ENCONTRO DE BANDAS — REMOVER BANDA PARTICIPANTE
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/banda/<int:encontro_banda_id>/remover",
+    methods=["POST"]
+)
+def remover_banda_encontro(encontro_id, encontro_banda_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ----------------------------------------------------
+        # VERIFICA SE A PARTICIPAÇÃO EXISTE NESTE ENCONTRO
+        # ----------------------------------------------------
+
+        participacao = db.execute(
+            text("""
+                SELECT
+                    eb.id,
+                    eb.banda_id,
+                    b.nome AS banda_nome
+                FROM encontro_bandas eb
+                INNER JOIN bandas b
+                    ON b.id = eb.banda_id
+                WHERE eb.id = :encontro_banda_id
+                  AND eb.encontro_id = :encontro_id
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id,
+                "encontro_id": encontro_id
+            }
+        ).mappings().first()
+
+        if not participacao:
+
+            return redirect(
+                f"/admin/encontro-bandas/{encontro_id}"
+            )
+
+        # ----------------------------------------------------
+        # REMOVE SOMENTE A PARTICIPAÇÃO DO ENCONTRO
+        # ----------------------------------------------------
+
+        db.execute(
+            text("""
+                DELETE FROM encontro_bandas
+                WHERE id = :encontro_banda_id
+                  AND encontro_id = :encontro_id
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id,
+                "encontro_id": encontro_id
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}"
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+# ============================================================
 # ENCONTRO DE BANDAS — EXCLUIR
 # ============================================================
 
