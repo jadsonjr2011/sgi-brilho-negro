@@ -11,6 +11,70 @@
 {% block conteudo %}
 
 <style>
+
+/* ============================================================
+   AÇÕES — BANDAS PARTICIPANTES
+   ============================================================ */
+
+.acoes-bandas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+
+/* ============================================================
+   BOTÃO RELATÓRIO
+   ============================================================ */
+
+.btn-relatorio-bandas {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 42px;
+    padding: 10px 16px;
+
+    border-radius: 8px;
+
+    background: #f1f1f1;
+    color: #222;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    border: 1px solid #d0d0d0;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-relatorio-bandas:hover {
+    background: #e2e2e2;
+    color: #111;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+
+/* ============================================================
+   BOTÃO ADICIONAR
+   ============================================================ */
+
+.acoes-bandas .btn-adicionar-banda {
+    min-height: 42px;
+}
+
 /* ============================================================
    ENCONTRO DE BANDAS — DETALHES
    ============================================================ */
@@ -765,6 +829,21 @@
     background: rgba(212, 175, 55, 0.035);
 }
 
+.btn-relatorio-banda {
+    text-decoration: none !important;
+}
+
+.bandas-card-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start !important;
+    gap: 8px;
+}
+
+.bandas-card-cabecalho h3 {
+    margin-right: auto;
+}
+
 /* ============================================================
    MODAIS — ADICIONAR / EDITAR BANDA
    ============================================================ */
@@ -1214,6 +1293,14 @@
 
             <h3>🎺 Bandas Participantes</h3>
 
+            <a
+                href="{{ url_for('relatorio_bandas_participantes', encontro_id=encontro.id) }}"
+                target="_blank"
+                class="btn-adicionar-banda btn-relatorio-banda"
+            >
+                📄 Relatório
+            </a>
+            
             <button
                 type="button"
                 class="btn-adicionar-banda"

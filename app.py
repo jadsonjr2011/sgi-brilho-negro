@@ -17701,6 +17701,55 @@ def adicionar_banda_encontro(encontro_id):
         db.close()
 
 # ============================================================
+# RELATÓRIO DE BANDAS PARTICIPANTES
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/relatorio",
+    methods=["GET"]
+)
+def relatorio_bandas_participantes(encontro_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return "Acesso negado", 403
+
+    try:
+
+        from utils.pdf_relatorio_bandas_participantes import (
+            gerar_pdf_relatorio_bandas_participantes
+        )
+
+        pdf = gerar_pdf_relatorio_bandas_participantes(
+            encontro_id
+        )
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=(
+                f"relatorio_bandas_participantes_"
+                f"{encontro_id}.pdf"
+            )
+        )
+
+    except ValueError as e:
+
+        return str(e), 404
+
+    except Exception as e:
+
+        print(
+            "ERRO AO GERAR RELATÓRIO DE BANDAS:",
+            e
+        )
+
+        return (
+            "Erro ao gerar o relatório de bandas.",
+            500
+        )
+
+# ============================================================
 # EXECUÇÃO
 # ============================================================
 
