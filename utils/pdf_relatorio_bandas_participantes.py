@@ -150,6 +150,10 @@ def adicionar_cabecalho(
     )
 
     elementos.append(
+        Spacer(1, 8)
+    )
+
+    elementos.append(
         HRFlowable(
             width="100%",
             thickness=1
@@ -246,12 +250,16 @@ def gerar_pdf_relatorio_bandas_participantes(
                     eb.responsavel_nome,
                     eb.capitao_nome,
                     eb.maestro_nome,
-                    eb.quantidade_componentes
+                    eb.quantidade_componentes,
+                    i.nome AS coordenador_nome
 
                 FROM encontro_bandas eb
 
                 INNER JOIN bandas b
                     ON b.id = eb.banda_id
+
+                LEFT JOIN integrantes i
+                    ON i.id = eb.responsavel_bn_integrante_id    
 
                 WHERE eb.encontro_id = :encontro_id
 
@@ -320,7 +328,18 @@ def gerar_pdf_relatorio_bandas_participantes(
         estilo_tabela_centro = ParagraphStyle(
             "TabelaCentro",
             parent=estilo_tabela,
-            alignment=TA_CENTER
+            alignment=TA_CENTER,
+            fontSize=7.2,
+            leading=8
+        )
+
+        estilo_tabela_centro_negrito = ParagraphStyle(
+            "TabelaCentroNegrito",
+            parent=estilo_tabela,
+            alignment=TA_CENTER,
+            fontName="Helvetica-Bold",
+            fontSize=7.2,
+            leading=8
         )
 
 
@@ -439,7 +458,7 @@ def gerar_pdf_relatorio_bandas_participantes(
             dados_encontro,
             colWidths=[
                 120,
-                420
+                200
             ]
         )
 
@@ -699,6 +718,11 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
 
                 Paragraph(
+                    "<b>Coordenador</b>",
+                    estilo_tabela_centro
+                ),
+
+                Paragraph(
                     "<b>Capitão</b>",
                     estilo_tabela_centro
                 ),
@@ -769,12 +793,12 @@ def gerar_pdf_relatorio_bandas_participantes(
                             banda["banda_nome"]
                             or "-"
                         ),
-                        estilo_tabela_negrito
+                        estilo_tabela_centro_negrito
                     ),
 
                     Paragraph(
                         cidade_uf,
-                        estilo_tabela
+                        estilo_tabela_centro
                     ),
 
                     Paragraph(
@@ -782,7 +806,15 @@ def gerar_pdf_relatorio_bandas_participantes(
                             banda["responsavel_nome"]
                             or "-"
                         ),
-                        estilo_tabela
+                        estilo_tabela_centro
+                    ),
+
+                    Paragraph(
+                        str(
+                            banda["coordenador_nome"]
+                            or "-"
+                        ),
+                        estilo_tabela_centro
                     ),
 
                     Paragraph(
@@ -790,7 +822,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                             banda["capitao_nome"]
                             or "-"
                         ),
-                        estilo_tabela
+                        estilo_tabela_centro
                     ),
 
                     Paragraph(
@@ -798,7 +830,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                             banda["maestro_nome"]
                             or "-"
                         ),
-                        estilo_tabela
+                        estilo_tabela_centro
                     ),
 
                     Paragraph(
@@ -834,6 +866,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                     "",
                     "",
                     "",
+                    "",
                     ""
 
                 ]
@@ -853,13 +886,14 @@ def gerar_pdf_relatorio_bandas_participantes(
 
             colWidths=[
 
-                25,     # Nº
-                105,    # Banda
-                80,     # Cidade/UF
-                125,    # Responsável
-                80,     # Capitão
-                85,     # Maestro
-                40      # Pessoas
+                22,     # Nº
+                88,    # Banda
+                72,     # Cidade/UF
+                92,    # Responsável
+                105,    # Coordenador
+                82,     # Capitão
+                72,     # Maestro
+                45      # Pessoas
 
             ]
 
@@ -894,28 +928,20 @@ def gerar_pdf_relatorio_bandas_participantes(
                     "Helvetica-Bold"
                 ),
 
+                # Alinhamento horizontal — TODA A TABELA
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "CENTER"
+                ),
+
                 # Alinhamento vertical
                 (
                     "VALIGN",
                     (0, 0),
                     (-1, -1),
                     "MIDDLE"
-                ),
-
-                # Nº
-                (
-                    "ALIGN",
-                    (0, 1),
-                    (0, -1),
-                    "CENTER"
-                ),
-
-                # Pessoas
-                (
-                    "ALIGN",
-                    (6, 1),
-                    (6, -1),
-                    "CENTER"
                 ),
 
                 # Espaçamento

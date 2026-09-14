@@ -1,0 +1,1113 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Equipe — {{ banda.banda_nome }}
+{% endblock %}
+
+{% block titulo_pagina %}
+🎺 Equipe da Banda
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+/* ============================================================
+   EQUIPE DA BANDA
+   ============================================================ */
+
+.equipe-container {
+    width: 100%;
+}
+
+/* ------------------------------------------------------------
+   CABEÇALHO
+   ------------------------------------------------------------ */
+
+.equipe-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+}
+
+.equipe-titulo-area {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.equipe-titulo {
+    margin: 0;
+    color: #ffffff;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.equipe-subtitulo {
+    margin: 0;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.btn-voltar-equipe {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 17px;
+    border-radius: 8px;
+    border: 1px solid #3b3b40;
+    background: #17171b;
+    color: #ddd;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-voltar-equipe:hover {
+    background: #222227;
+    color: #ffffff;
+    border-color: #d4af37;
+}
+
+/* ------------------------------------------------------------
+   CARD PRINCIPAL DA BANDA
+   ------------------------------------------------------------ */
+
+.banda-equipe-card {
+    background: linear-gradient(
+        145deg,
+        #17171b,
+        #111114
+    );
+
+    border: 1px solid #2c2c31;
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 20px;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.22);
+}
+
+.banda-equipe-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #29292e;
+}
+
+.banda-identificacao {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.banda-icone {
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 12px;
+
+    background: rgba(212, 175, 55, 0.10);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+
+    font-size: 25px;
+}
+
+.banda-nome {
+    margin: 0;
+    color: #ffffff;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.banda-local {
+    margin-top: 4px;
+    color: #999;
+    font-size: 13px;
+}
+
+.banda-total {
+    min-width: 120px;
+    text-align: center;
+
+    padding: 10px 16px;
+
+    border-radius: 10px;
+
+    background: #1c1c20;
+    border: 1px solid #303035;
+}
+
+.banda-total-numero {
+    display: block;
+    color: #d4af37;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.banda-total-label {
+    display: block;
+    color: #999;
+    font-size: 12px;
+}
+
+/* ------------------------------------------------------------
+   COORDENADOR
+   ------------------------------------------------------------ */
+
+.coordenador-box {
+    margin-top: 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 15px 17px;
+
+    background: #121216;
+    border: 1px solid #29292e;
+    border-radius: 10px;
+}
+
+.coordenador-icone {
+    width: 42px;
+    height: 42px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(212, 175, 55, 0.10);
+    border: 1px solid rgba(212, 175, 55, 0.30);
+
+    font-size: 19px;
+}
+
+.coordenador-conteudo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.coordenador-label {
+    color: #888;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.coordenador-nome {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.coordenador-vazio {
+    color: #777;
+    font-size: 14px;
+}
+
+/* ------------------------------------------------------------
+   ÁREA DA EQUIPE
+   ------------------------------------------------------------ */
+
+.equipe-secao {
+    margin-top: 22px;
+}
+
+.equipe-secao-topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.equipe-secao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.equipe-secao-titulo h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.equipe-secao-titulo span {
+    color: #888;
+    font-size: 13px;
+}
+
+/* ------------------------------------------------------------
+   BOTÃO ADICIONAR
+   ------------------------------------------------------------ */
+
+.btn-adicionar-equipe {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 9px 15px;
+
+    border: 1px solid #b99627;
+    border-radius: 8px;
+
+    background: linear-gradient(
+        135deg,
+        #d4af37,
+        #b99627
+    );
+
+    color: #111;
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-adicionar-equipe:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+/* ------------------------------------------------------------
+   LISTA
+   ------------------------------------------------------------ */
+
+.equipe-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.equipe-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 13px 15px;
+
+    background: #151519;
+    border: 1px solid #29292e;
+    border-radius: 9px;
+
+    transition: 0.2s;
+}
+
+.equipe-item:hover {
+    border-color: #3b3b40;
+    background: #19191e;
+}
+
+.equipe-pessoa {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.equipe-avatar {
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #202024;
+    border: 1px solid #34343a;
+
+    font-size: 17px;
+}
+
+.equipe-dados {
+    min-width: 0;
+}
+
+.equipe-nome {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.equipe-info {
+    margin-top: 3px;
+
+    color: #888;
+    font-size: 12px;
+}
+
+.equipe-info strong {
+    color: #aaa;
+    font-weight: 500;
+}
+
+.btn-remover-equipe {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #4a2929;
+    border-radius: 7px;
+
+    background: #241719;
+    color: #d98282;
+
+    cursor: pointer;
+    font-size: 15px;
+
+    transition: 0.2s;
+}
+
+.btn-remover-equipe:hover {
+    background: #3a1c1f;
+    border-color: #8e3d3d;
+    color: #ff9d9d;
+}
+
+/* ------------------------------------------------------------
+   ESTADO VAZIO
+   ------------------------------------------------------------ */
+
+.equipe-vazia {
+    padding: 35px 20px;
+
+    text-align: center;
+
+    background: #141417;
+    border: 1px dashed #36363b;
+    border-radius: 10px;
+}
+
+.equipe-vazia-icone {
+    font-size: 30px;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.equipe-vazia-titulo {
+    color: #ddd;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.equipe-vazia-texto {
+    margin-top: 5px;
+    color: #777;
+    font-size: 13px;
+}
+
+/* ------------------------------------------------------------
+   MODAL
+   ------------------------------------------------------------ */
+
+.modal-equipe {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    z-index: 9999;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(3px);
+}
+
+.modal-equipe.ativo {
+    display: flex;
+}
+
+.modal-equipe-conteudo {
+    width: 100%;
+    max-width: 520px;
+
+    background: #17171b;
+
+    border: 1px solid #35353b;
+    border-radius: 14px;
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+    overflow: hidden;
+}
+
+.modal-equipe-cabecalho {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px 20px;
+
+    border-bottom: 1px solid #2d2d32;
+}
+
+.modal-equipe-cabecalho h3 {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.modal-fechar {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #242428;
+    color: #aaa;
+
+    cursor: pointer;
+
+    font-size: 20px;
+}
+
+.modal-fechar:hover {
+    background: #303036;
+    color: #fff;
+}
+
+.modal-equipe-corpo {
+    padding: 20px;
+}
+
+.modal-equipe-corpo label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #bbb;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.modal-equipe-corpo select {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid #3a3a40;
+    border-radius: 8px;
+
+    background: #111114;
+    color: #ffffff;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+.modal-equipe-corpo select:focus {
+    border-color: #d4af37;
+}
+
+.modal-equipe-rodape {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    padding: 15px 20px;
+
+    border-top: 1px solid #2d2d32;
+}
+
+.btn-modal-cancelar {
+    padding: 9px 15px;
+
+    border: 1px solid #3a3a40;
+    border-radius: 8px;
+
+    background: #222226;
+    color: #bbb;
+
+    cursor: pointer;
+}
+
+.btn-modal-salvar {
+    padding: 9px 16px;
+
+    border: 1px solid #b99627;
+    border-radius: 8px;
+
+    background: #d4af37;
+    color: #111;
+
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-modal-salvar:hover {
+    filter: brightness(1.08);
+}
+
+/* ------------------------------------------------------------
+   RESPONSIVO
+   ------------------------------------------------------------ */
+
+@media (max-width: 700px) {
+
+    .equipe-topo {
+        align-items: flex-start;
+    }
+
+    .banda-equipe-card {
+        padding: 16px;
+    }
+
+    .banda-equipe-cabecalho {
+        align-items: flex-start;
+    }
+
+    .banda-total {
+        width: 100%;
+    }
+
+    .equipe-item {
+        align-items: flex-start;
+    }
+
+    .equipe-pessoa {
+        min-width: 0;
+    }
+
+    .equipe-nome {
+        white-space: normal;
+    }
+
+}
+
+</style>
+
+<div class="equipe-container">
+
+```
+<!-- ========================================================
+     CABEÇALHO
+     ======================================================== -->
+
+<div class="equipe-topo">
+
+    <div class="equipe-titulo-area">
+
+        <h2 class="equipe-titulo">
+            👥 Equipe da Banda
+        </h2>
+
+        <p class="equipe-subtitulo">
+            Equipe responsável pela banda
+            <strong>{{ banda.banda_nome }}</strong>
+        </p>
+
+    </div>
+
+    <a
+        href="{{ url_for(
+            'detalhes_encontro_bandas',
+            encontro_id=encontro.id
+        ) }}"
+        class="btn-voltar-equipe"
+    >
+        ← Voltar para o encontro
+    </a>
+
+</div>
+
+
+<!-- ========================================================
+     CARD DA BANDA
+     ======================================================== -->
+
+<div class="banda-equipe-card">
+
+    <div class="banda-equipe-cabecalho">
+
+        <div class="banda-identificacao">
+
+            <div class="banda-icone">
+                🎺
+            </div>
+
+            <div>
+
+                <h2 class="banda-nome">
+                    {{ banda.banda_nome }}
+                </h2>
+
+                <div class="banda-local">
+
+                    {% if banda.cidade or banda.uf %}
+
+                        📍
+                        {{ banda.cidade or '' }}
+
+                        {% if banda.cidade and banda.uf %}
+                            /
+                        {% endif %}
+
+                        {{ banda.uf or '' }}
+
+                    {% else %}
+
+                        📍 Localidade não informada
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="banda-total">
+
+            <span class="banda-total-numero">
+                {{ equipe_membros|length }}
+            </span>
+
+            <span class="banda-total-label">
+                integrante{% if equipe_membros|length != 1 %}s{% endif %}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================================
+         COORDENADOR RESPONSÁVEL
+         ==================================================== -->
+
+    <div class="coordenador-box">
+
+        <div class="coordenador-icone">
+            👤
+        </div>
+
+        <div class="coordenador-conteudo">
+
+            <span class="coordenador-label">
+                Coordenador responsável
+            </span>
+
+            {% if banda.responsavel_bn_nome %}
+
+                <span class="coordenador-nome">
+                    {{ banda.responsavel_bn_nome }}
+                </span>
+
+            {% else %}
+
+                <span class="coordenador-vazio">
+                    Nenhum coordenador responsável definido
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================================================
+         INTEGRANTES DA EQUIPE
+         ==================================================== -->
+
+    <div class="equipe-secao">
+
+        <div class="equipe-secao-topo">
+
+            <div class="equipe-secao-titulo">
+
+                <h3>
+                    Integrantes da equipe
+                </h3>
+
+                <span>
+                    {{ equipe_membros|length }}
+                    integrante{% if equipe_membros|length != 1 %}s{% endif %}
+                </span>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="btn-adicionar-equipe"
+                onclick="abrirModalEquipe()"
+            >
+                ＋ Adicionar integrante
+            </button>
+
+        </div>
+
+
+        {% if equipe_membros %}
+
+            <div class="equipe-lista">
+
+                {% for membro in equipe_membros %}
+
+                    <div
+                        class="equipe-item"
+                        id="membro-{{ membro.equipe_id }}"
+                    >
+
+                        <div class="equipe-pessoa">
+
+                            <div class="equipe-avatar">
+                                👤
+                            </div>
+
+                            <div class="equipe-dados">
+
+                                <div class="equipe-nome">
+                                    {{ membro.nome }}
+                                </div>
+
+                                <div class="equipe-info">
+
+                                    {% if membro.codigo_integrante %}
+
+                                        <strong>
+                                            {{ membro.codigo_integrante }}
+                                        </strong>
+
+                                    {% endif %}
+
+                                    {% if membro.codigo_integrante and membro.funcao %}
+                                        •
+                                    {% endif %}
+
+                                    {% if membro.funcao %}
+
+                                        {{ membro.funcao }}
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'remover_integrante_equipe_banda',
+                                encontro_id=encontro.id,
+                                encontro_banda_id=banda.id,
+                                equipe_id=membro.equipe_id
+                            ) }}"
+                            onsubmit="return confirmarRemocao('{{ membro.nome|e }}');"
+                        >
+
+                            <button
+                                type="submit"
+                                class="btn-remover-equipe"
+                                title="Remover integrante"
+                            >
+                                ×
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="equipe-vazia">
+
+                <div class="equipe-vazia-icone">
+                    👥
+                </div>
+
+                <div class="equipe-vazia-titulo">
+                    Nenhum integrante na equipe
+                </div>
+
+                <div class="equipe-vazia-texto">
+                    Adicione os integrantes responsáveis pelo apoio à banda.
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<!-- ============================================================
+     MODAL — ADICIONAR INTEGRANTE
+     ============================================================ -->
+
+<div
+    id="modalEquipe"
+    class="modal-equipe"
+    onclick="fecharModalFora(event)"
+>
+
+```
+<div
+    class="modal-equipe-conteudo"
+    onclick="event.stopPropagation()"
+>
+
+    <div class="modal-equipe-cabecalho">
+
+        <h3>
+            👥 Adicionar integrante à equipe
+        </h3>
+
+        <button
+            type="button"
+            class="modal-fechar"
+            onclick="fecharModalEquipe()"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{{ url_for(
+            'adicionar_integrante_equipe_banda',
+            encontro_id=encontro.id,
+            encontro_banda_id=banda.id
+        ) }}"
+    >
+
+        <div class="modal-equipe-corpo">
+
+            <label for="integrante_id">
+                Integrante
+            </label>
+
+            <select
+                name="integrante_id"
+                id="integrante_id"
+                required
+            >
+
+                <option value="">
+                    Selecione um integrante...
+                </option>
+
+                {% for integrante in integrantes_responsaveis %}
+
+                    <option value="{{ integrante.id }}">
+
+                        {{ integrante.nome }}
+
+                        {% if integrante.codigo_integrante %}
+                            — {{ integrante.codigo_integrante }}
+                        {% endif %}
+
+                        {% if integrante.funcao %}
+                            — {{ integrante.funcao }}
+                        {% endif %}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            {% if not integrantes_responsaveis %}
+
+                <div
+                    style="
+                        margin-top: 10px;
+                        color: #999;
+                        font-size: 13px;
+                    "
+                >
+                    Não há integrantes ativos disponíveis para adicionar.
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        <div class="modal-equipe-rodape">
+
+            <button
+                type="button"
+                class="btn-modal-cancelar"
+                onclick="fecharModalEquipe()"
+            >
+                Cancelar
+            </button>
+
+            <button
+                type="submit"
+                class="btn-modal-salvar"
+                {% if not integrantes_responsaveis %}disabled{% endif %}
+            >
+                Adicionar integrante
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+```
+
+</div>
+
+<script>
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+function abrirModalEquipe() {
+
+    const modal = document.getElementById(
+        "modalEquipe"
+    );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.add("ativo");
+
+    const select = document.getElementById(
+        "integrante_id"
+    );
+
+    if (select) {
+
+        setTimeout(function () {
+
+            select.focus();
+
+        }, 100);
+
+    }
+
+}
+
+
+function fecharModalEquipe() {
+
+    const modal = document.getElementById(
+        "modalEquipe"
+    );
+
+    if (!modal) {
+        return;
+    }
+
+    modal.classList.remove("ativo");
+
+}
+
+
+function fecharModalFora(event) {
+
+    if (
+        event.target &&
+        event.target.id === "modalEquipe"
+    ) {
+
+        fecharModalEquipe();
+
+    }
+
+}
+
+
+/* ============================================================
+   CONFIRMAR REMOÇÃO
+   ============================================================ */
+
+function confirmarRemocao(nome) {
+
+    return confirm(
+        "Deseja realmente remover " +
+        nome +
+        " da equipe desta banda?"
+    );
+
+}
+
+
+/* ============================================================
+   ESC
+   ============================================================ */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+
+            fecharModalEquipe();
+
+        }
+
+    }
+);
+
+</script>
+
+{% endblock %}

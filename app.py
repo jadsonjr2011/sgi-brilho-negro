@@ -17028,6 +17028,7 @@ def detalhes_encontro_bandas(encontro_id):
                     eb.maestro_nome,
                     eb.quantidade_componentes,
                     eb.responsavel_bn_integrante_id,
+                    eb.equipe_apoio,
                     eb.observacoes,
                     i.nome AS responsavel_bn_nome
                 FROM encontro_bandas eb
@@ -17042,6 +17043,62 @@ def detalhes_encontro_bandas(encontro_id):
                 "encontro_id": encontro_id
             }
         ).mappings().all()
+
+        # ----------------------------------------------------
+        # NORMALIZA A EQUIPE DE APOIO
+        # ----------------------------------------------------
+
+        bandas = [dict(banda) for banda in bandas]
+
+        # ------------------------------------------------------------
+        # EQUIPE DE APOIO DE CADA BANDA
+        # ------------------------------------------------------------
+
+        equipe_resultado = db.execute(text("""
+            SELECT
+                ebe.id AS equipe_id,
+                ebe.encontro_banda_id,
+                i.id AS integrante_id,
+                i.nome,
+                i.codigo_integrante,
+                i.funcao
+            FROM encontro_banda_equipe ebe
+            INNER JOIN integrantes i
+                ON i.id = ebe.integrante_id
+            INNER JOIN encontro_bandas eb
+                ON eb.id = ebe.encontro_banda_id
+            WHERE eb.encontro_id = :encontro_id
+            ORDER BY i.nome
+        """), {
+            "encontro_id": encontro_id
+        }).mappings().all()
+
+        equipe_por_banda = {}
+
+        for membro in equipe_resultado:
+            encontro_banda_id = membro["encontro_banda_id"]
+
+            if encontro_banda_id not in equipe_por_banda:
+                equipe_por_banda[encontro_banda_id] = []
+
+            equipe_por_banda[encontro_banda_id].append({
+                "equipe_id": membro["equipe_id"],
+                "integrante_id": membro["integrante_id"],
+                "nome": membro["nome"],
+                "codigo_integrante": membro["codigo_integrante"],
+                "funcao": membro["funcao"]
+            })
+
+        for banda in bandas:
+            banda["equipe_membros"] = equipe_por_banda.get(banda["id"], [])
+            banda["total_equipe"] = len(banda["equipe_membros"])
+
+            equipe = banda.get("equipe_apoio")
+            if not isinstance(equipe, list):
+                equipe = []
+
+            banda["equipe_apoio"] = equipe
+            banda["total_equipe_apoio"] = len(equipe)
 
         # ----------------------------------------------------
         # TODAS AS BANDAS CADASTRADAS
@@ -17088,6 +17145,16 @@ def detalhes_encontro_bandas(encontro_id):
             for banda in bandas
         )
 
+        total_equipe_apoio = sum(
+            int(banda["total_equipe_apoio"] or 0)
+            for banda in bandas
+        )
+
+        total_geral_pessoas = (
+            total_pessoas +
+            total_equipe_apoio
+        )
+
         return render_template(
             "admin/encontro_bandas_detalhes.html",
             encontro=encontro,
@@ -17095,7 +17162,9 @@ def detalhes_encontro_bandas(encontro_id):
             bandas_disponiveis=bandas_disponiveis,
             integrantes_responsaveis=integrantes_responsaveis,
             total_bandas=total_bandas,
-            total_pessoas=total_pessoas
+            total_pessoas=total_pessoas,
+            total_equipe_apoio=total_equipe_apoio,
+            total_geral_pessoas=total_geral_pessoas
         )
 
     finally:
@@ -17176,6 +17245,154 @@ def editar_encontro_bandas(encontro_id):
 
     finally:
 
+        db.close()
+
+# ============================================================
+# ENCONTRO DE BANDAS — GERENCIAR EQUIPE COMPLETA
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/banda/<int:encontro_banda_id>/equipe"
+)
+def equipe_banda(encontro_id, encontro_banda_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ----------------------------------------------------
+        # ENCONTRO
+        # ----------------------------------------------------
+
+        encontro = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    data,
+                    horario,
+                    local,
+                    status
+                FROM encontros_bandas
+                WHERE id = :id
+            """),
+            {
+                "id": encontro_id
+            }
+        ).mappings().first()
+
+        if not encontro:
+            return redirect(
+                url_for(
+                    "encontro_bandas"
+                )
+            )
+
+        # ----------------------------------------------------
+        # BANDA
+        # ----------------------------------------------------
+
+        banda = db.execute(
+            text("""
+                SELECT
+                    eb.id,
+                    eb.encontro_id,
+
+                    b.id AS cadastro_banda_id,
+                    b.nome AS banda_nome,
+                    b.cidade,
+                    b.uf,
+                    b.instituicao,
+
+                    eb.responsavel_nome,
+                    eb.responsavel_telefone,
+                    eb.capitao_nome,
+                    eb.maestro_nome,
+                    eb.quantidade_componentes,
+                    eb.responsavel_bn_integrante_id,
+
+                    i.nome AS responsavel_bn_nome,
+
+                    eb.observacoes
+
+                FROM encontro_bandas eb
+
+                INNER JOIN bandas b
+                    ON b.id = eb.banda_id
+
+                LEFT JOIN integrantes i
+                    ON i.id = eb.responsavel_bn_integrante_id
+
+                WHERE eb.id = :banda_id
+                AND eb.encontro_id = :encontro_id
+            """),
+            {
+                "banda_id": encontro_banda_id,
+                "encontro_id": encontro_id
+            }
+        ).mappings().first()
+
+        if not banda:
+            return redirect(
+                url_for(
+                    "detalhes_encontro_bandas",
+                    encontro_id=encontro_id
+                )
+            )
+
+        # ----------------------------------------------------
+        # EQUIPE DA BANDA
+        # ----------------------------------------------------
+
+        equipe_membros = db.execute(
+            text("""
+                SELECT
+                    ebe.id AS equipe_id,
+                    i.id AS integrante_id,
+                    i.nome,
+                    i.codigo_integrante,
+                    i.funcao
+                FROM encontro_banda_equipe ebe
+                INNER JOIN integrantes i
+                    ON i.id = ebe.integrante_id
+                WHERE ebe.encontro_banda_id = :banda_id
+                ORDER BY i.nome
+            """),
+            {
+                "banda_id": encontro_banda_id
+            }
+        ).mappings().all()
+
+        # ----------------------------------------------------
+        # INTEGRANTES DISPONÍVEIS
+        # ----------------------------------------------------
+
+        integrantes_responsaveis = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    codigo_integrante,
+                    funcao
+                FROM integrantes
+                WHERE status = 'APROVADO'
+                  AND situacao = 'ATIVO'
+                ORDER BY nome
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/encontro_bandas_detalhes_equipe.html",
+            encontro=encontro,
+            banda=banda,
+            equipe_membros=equipe_membros,
+            integrantes_responsaveis=integrantes_responsaveis
+        )
+
+    finally:
         db.close()
 
 # ============================================================
@@ -17403,6 +17620,329 @@ def editar_banda_encontro(encontro_id, encontro_banda_id):
         db.close()
 
 # ============================================================
+# ENCONTRO DE BANDAS — EQUIPE DO COORDENADOR
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/banda/<int:encontro_banda_id>/equipe",
+    methods=["GET"]
+)
+def equipe_banda_encontro(encontro_id, encontro_banda_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        # ----------------------------------------------------
+        # VERIFICA A PARTICIPAÇÃO DA BANDA
+        # ----------------------------------------------------
+
+        banda = db.execute(
+            text("""
+                SELECT
+                    eb.id,
+                    eb.encontro_id,
+                    eb.banda_id,
+                    b.nome AS banda_nome,
+                    eb.responsavel_bn_integrante_id,
+                    i.nome AS coordenador_nome
+                FROM encontro_bandas eb
+
+                INNER JOIN bandas b
+                    ON b.id = eb.banda_id
+
+                LEFT JOIN integrantes i
+                    ON i.id = eb.responsavel_bn_integrante_id
+
+                WHERE eb.id = :encontro_banda_id
+                  AND eb.encontro_id = :encontro_id
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id,
+                "encontro_id": encontro_id
+            }
+        ).mappings().first()
+
+        if not banda:
+
+            return redirect(
+                f"/admin/encontro-bandas/{encontro_id}"
+            )
+
+        # ----------------------------------------------------
+        # INTEGRANTES DA EQUIPE
+        # ----------------------------------------------------
+
+        equipe = db.execute(
+            text("""
+                SELECT
+                    ebe.id,
+                    ebe.integrante_id,
+                    i.nome,
+                    i.codigo_integrante,
+                    i.funcao
+                FROM encontro_banda_equipe ebe
+
+                INNER JOIN integrantes i
+                    ON i.id = ebe.integrante_id
+
+                WHERE ebe.encontro_banda_id = :encontro_banda_id
+
+                ORDER BY i.nome
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id
+            }
+        ).mappings().all()
+
+        # ----------------------------------------------------
+        # INTEGRANTES DISPONÍVEIS
+        # ----------------------------------------------------
+
+        integrantes_disponiveis = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.nome,
+                    i.codigo_integrante,
+                    i.funcao
+                FROM integrantes i
+
+                WHERE UPPER(
+                    COALESCE(i.situacao, 'ATIVO')
+                ) = 'ATIVO'
+
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM encontro_banda_equipe ebe
+                    WHERE ebe.encontro_banda_id = :encontro_banda_id
+                      AND ebe.integrante_id = i.id
+                )
+
+                ORDER BY i.nome
+            """),
+            {
+                "encontro_banda_id": encontro_banda_id
+            }
+        ).mappings().all()
+
+        return render_template(
+            "admin/encontro_bandas_equipe.html",
+            encontro_id=encontro_id,
+            encontro_banda_id=encontro_banda_id,
+            banda=banda,
+            equipe=equipe,
+            integrantes_disponiveis=integrantes_disponiveis
+        )
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# ENCONTRO DE BANDAS — ADICIONAR INTEGRANTE À EQUIPE
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/banda/<int:encontro_banda_id>/equipe/adicionar",
+    methods=["POST"]
+)
+def adicionar_integrante_equipe_banda(
+    encontro_id,
+    encontro_banda_id
+):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        integrante_id = request.form.get("integrante_id")
+
+        if not integrante_id:
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Selecione um integrante."
+            }), 400
+
+        integrante_id = int(integrante_id)
+
+        # ----------------------------------------------------
+        # VERIFICA SE A BANDA PERTENCE AO ENCONTRO
+        # ----------------------------------------------------
+
+        banda = db.execute(text("""
+            SELECT
+                eb.id,
+                eb.banda_id,
+                b.nome AS banda_nome
+            FROM encontro_bandas eb
+            INNER JOIN bandas b
+                ON b.id = eb.banda_id
+            WHERE eb.id = :encontro_banda_id
+              AND eb.encontro_id = :encontro_id
+        """), {
+            "encontro_banda_id": encontro_banda_id,
+            "encontro_id": encontro_id
+        }).mappings().first()
+
+        if not banda:
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Banda não encontrada neste encontro."
+            }), 404
+
+        # ----------------------------------------------------
+        # VERIFICA SE O INTEGRANTE ESTÁ ATIVO
+        # ----------------------------------------------------
+
+        integrante = db.execute(text("""
+            SELECT
+                id,
+                nome,
+                codigo_integrante,
+                funcao
+            FROM integrantes
+            WHERE id = :integrante_id
+              AND UPPER(COALESCE(situacao, 'ATIVO')) = 'ATIVO'
+        """), {
+            "integrante_id": integrante_id
+        }).mappings().first()
+
+        if not integrante:
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Integrante não encontrado ou não está ativo."
+            }), 404
+
+        # ----------------------------------------------------
+        # VERIFICA SE JÁ ESTÁ NA EQUIPE
+        # ----------------------------------------------------
+
+        existente = db.execute(text("""
+            SELECT id
+            FROM encontro_banda_equipe
+            WHERE encontro_banda_id = :encontro_banda_id
+              AND integrante_id = :integrante_id
+        """), {
+            "encontro_banda_id": encontro_banda_id,
+            "integrante_id": integrante_id
+        }).mappings().first()
+
+        if existente:
+            return jsonify({
+                "sucesso": False,
+                "mensagem": "Este integrante já está na equipe."
+            }), 400
+
+        # ----------------------------------------------------
+        # ADICIONA
+        # ----------------------------------------------------
+
+        novo = db.execute(text("""
+            INSERT INTO encontro_banda_equipe (
+                encontro_banda_id,
+                integrante_id
+            )
+            VALUES (
+                :encontro_banda_id,
+                :integrante_id
+            )
+            RETURNING id
+        """), {
+            "encontro_banda_id": encontro_banda_id,
+            "integrante_id": integrante_id
+        }).mappings().first()
+
+        db.commit()
+
+        return jsonify({
+            "sucesso": True,
+            "mensagem": "Integrante adicionado à equipe.",
+            "membro": {
+                "equipeId": novo["id"],
+                "integranteId": integrante["id"],
+                "nome": integrante["nome"] or "",
+                "codigo": integrante["codigo_integrante"] or "",
+                "funcao": integrante["funcao"] or ""
+            }
+        })
+
+    except Exception as e:
+
+        db.rollback()
+
+        return jsonify({
+            "sucesso": False,
+            "mensagem": str(e)
+        }), 500
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# ENCONTRO DE BANDAS — REMOVER INTEGRANTE DA EQUIPE
+# ============================================================
+
+@app.route(
+    "/admin/encontro-bandas/<int:encontro_id>/banda/<int:encontro_banda_id>/equipe/<int:equipe_id>/remover",
+    methods=["POST"]
+)
+def remover_integrante_equipe_banda(
+    encontro_id,
+    encontro_banda_id,
+    equipe_id
+):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        db.execute(
+            text("""
+                DELETE FROM encontro_banda_equipe ebe
+                USING encontro_bandas eb
+
+                WHERE ebe.id = :equipe_id
+                  AND ebe.encontro_banda_id = eb.id
+                  AND ebe.encontro_banda_id = :encontro_banda_id
+                  AND eb.encontro_id = :encontro_id
+            """),
+            {
+                "equipe_id": equipe_id,
+                "encontro_banda_id": encontro_banda_id,
+                "encontro_id": encontro_id
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/encontro-bandas/{encontro_id}/"
+            f"banda/{encontro_banda_id}/equipe"
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+# ============================================================
 # ENCONTRO DE BANDAS — REMOVER BANDA PARTICIPANTE
 # ============================================================
 
@@ -17531,34 +18071,34 @@ def adicionar_banda_encontro(encontro_id):
     if not usuario_tem_permissao("encontro_bandas"):
         return redirect("/admin")
 
-    nome_banda = request.form.get(
-        "nome_banda",
-        ""
-    ).strip()
+    # --------------------------------------------------------
+    # DADOS DA BANDA
+    # --------------------------------------------------------
+
+    banda_id_form = request.form.get("banda_id")
+
+    nome_banda = request.form.get("nome_banda", "").strip()
+    cidade = request.form.get("cidade", "").strip()
+    uf = request.form.get("uf", "").strip().upper()
 
     responsavel_nome = request.form.get(
-        "responsavel_nome",
-        ""
+        "responsavel_nome", ""
     ).strip()
 
     responsavel_telefone = request.form.get(
-        "responsavel_telefone",
-        ""
+        "responsavel_telefone", ""
     ).strip()
 
     capitao_nome = request.form.get(
-        "capitao_nome",
-        ""
+        "capitao_nome", ""
     ).strip()
 
     maestro_nome = request.form.get(
-        "maestro_nome",
-        ""
+        "maestro_nome", ""
     ).strip()
 
     quantidade_componentes = request.form.get(
-        "quantidade_componentes",
-        "0"
+        "quantidade_componentes", "0"
     )
 
     responsavel_bn_integrante_id = request.form.get(
@@ -17566,32 +18106,76 @@ def adicionar_banda_encontro(encontro_id):
     )
 
     observacoes = request.form.get(
-        "observacoes",
-        ""
+        "observacoes", ""
     ).strip()
+
+    # --------------------------------------------------------
+    # EQUIPE DE APOIO
+    # --------------------------------------------------------
+
+    equipe_apoio_json = request.form.get(
+        "equipe_apoio", "[]"
+    ).strip()
+
+    try:
+        equipe_apoio = json.loads(equipe_apoio_json)
+
+        if not isinstance(equipe_apoio, list):
+            equipe_apoio = []
+
+    except (TypeError, ValueError):
+        equipe_apoio = []
+
+    equipe_limpa = []
+
+    for membro in equipe_apoio:
+
+        if not isinstance(membro, dict):
+            continue
+
+        nome = str(
+            membro.get("nome", "")
+        ).strip()
+
+        if not nome:
+            continue
+
+        telefone = str(
+            membro.get("telefone", "")
+        ).strip()
+
+        funcao = str(
+            membro.get("funcao", "")
+        ).strip()
+
+        equipe_limpa.append({
+            "nome": nome,
+            "telefone": telefone,
+            "funcao": funcao
+        })
+
+    equipe_apoio = equipe_limpa
 
     # --------------------------------------------------------
     # VALIDAÇÕES
     # --------------------------------------------------------
 
-    if not nome_banda:
+    if not nome_banda and not banda_id_form:
         return redirect(
             f"/admin/encontro-bandas/{encontro_id}"
         )
 
     try:
-
         quantidade_componentes = int(
             quantidade_componentes
         )
-
     except (TypeError, ValueError):
-
         quantidade_componentes = 0
 
     if quantidade_componentes < 0:
         quantidade_componentes = 0
 
+    # Responsável Brilho Negro
     if not responsavel_bn_integrante_id:
 
         responsavel_bn_integrante_id = None
@@ -17599,14 +18183,22 @@ def adicionar_banda_encontro(encontro_id):
     else:
 
         try:
-
             responsavel_bn_integrante_id = int(
                 responsavel_bn_integrante_id
             )
-
         except (TypeError, ValueError):
 
             responsavel_bn_integrante_id = None
+
+    # Banda existente, se informada
+    if banda_id_form:
+
+        try:
+            banda_id_form = int(banda_id_form)
+
+        except (TypeError, ValueError):
+
+            banda_id_form = None
 
     db = SessionLocal()
 
@@ -17634,53 +18226,120 @@ def adicionar_banda_encontro(encontro_id):
             )
 
         # ----------------------------------------------------
-        # PROCURA A BANDA PELO NOME
+        # LOCALIZA OU CRIA A BANDA
         # ----------------------------------------------------
 
-        banda = db.execute(
-            text("""
-                SELECT
-                    id
-                FROM bandas
-                WHERE LOWER(TRIM(nome))
-                    = LOWER(TRIM(:nome))
-                ORDER BY id
-                LIMIT 1
-            """),
-            {
-                "nome": nome_banda
-            }
-        ).first()
+        banda_id = None
 
-        # ----------------------------------------------------
-        # SE NÃO EXISTIR, CRIA A BANDA
-        # ----------------------------------------------------
-
-        if not banda:
+        # Primeiro tenta usar banda existente pelo ID
+        if banda_id_form:
 
             banda = db.execute(
                 text("""
-                    INSERT INTO bandas (
-                        nome
+                    SELECT id, nome, cidade, uf
+                    FROM bandas
+                    WHERE id = :banda_id
+                """),
+                {
+                    "banda_id": banda_id_form
+                }
+            ).mappings().first()
+
+            if banda:
+
+                banda_id = banda["id"]
+
+                # Atualiza cidade/UF apenas se foram
+                # informadas no formulário
+                if cidade or uf:
+
+                    db.execute(
+                        text("""
+                            UPDATE bandas
+                            SET cidade = :cidade,
+                                uf = :uf,
+                                updated_at = CURRENT_TIMESTAMP
+                            WHERE id = :banda_id
+                        """),
+                        {
+                            "cidade": cidade or banda["cidade"],
+                            "uf": uf or banda["uf"],
+                            "banda_id": banda_id
+                        }
                     )
-                    VALUES (
-                        :nome
-                    )
-                    RETURNING id
+
+        # ----------------------------------------------------
+        # SE NÃO VEIO ID, PROCURA PELO NOME
+        # ----------------------------------------------------
+
+        if banda_id is None:
+
+            banda = db.execute(
+                text("""
+                    SELECT id
+                    FROM bandas
+                    WHERE LOWER(TRIM(nome))
+                        = LOWER(TRIM(:nome))
+                    ORDER BY id
+                    LIMIT 1
                 """),
                 {
                     "nome": nome_banda
                 }
             ).first()
 
-            banda_id = banda[0]
+            if banda:
 
-        else:
+                banda_id = banda[0]
 
-            banda_id = banda[0]
+                # Atualiza cidade e UF caso tenham sido
+                # preenchidas no cadastro
+                db.execute(
+                    text("""
+                        UPDATE bandas
+                        SET cidade = :cidade,
+                            uf = :uf,
+                            updated_at = CURRENT_TIMESTAMP
+                        WHERE id = :banda_id
+                    """),
+                    {
+                        "cidade": cidade,
+                        "uf": uf,
+                        "banda_id": banda_id
+                    }
+                )
+
+            else:
+
+                # ------------------------------------------------
+                # CRIA NOVA BANDA
+                # ------------------------------------------------
+
+                resultado = db.execute(
+                    text("""
+                        INSERT INTO bandas (
+                            nome,
+                            cidade,
+                            uf
+                        )
+                        VALUES (
+                            :nome,
+                            :cidade,
+                            :uf
+                        )
+                        RETURNING id
+                    """),
+                    {
+                        "nome": nome_banda,
+                        "cidade": cidade,
+                        "uf": uf
+                    }
+                ).first()
+
+                banda_id = resultado[0]
 
         # ----------------------------------------------------
-        # VERIFICA SE JÁ ESTÁ NO ENCONTRO
+        # VERIFICA SE A BANDA JÁ ESTÁ NO ENCONTRO
         # ----------------------------------------------------
 
         banda_existente = db.execute(
@@ -17705,7 +18364,7 @@ def adicionar_banda_encontro(encontro_id):
             )
 
         # ----------------------------------------------------
-        # ADICIONA A PARTICIPAÇÃO
+        # ADICIONA A BANDA AO ENCONTRO
         # ----------------------------------------------------
 
         db.execute(
@@ -17719,6 +18378,7 @@ def adicionar_banda_encontro(encontro_id):
                     maestro_nome,
                     quantidade_componentes,
                     responsavel_bn_integrante_id,
+                    equipe_apoio,
                     observacoes
                 )
                 VALUES (
@@ -17730,33 +18390,25 @@ def adicionar_banda_encontro(encontro_id):
                     :maestro_nome,
                     :quantidade_componentes,
                     :responsavel_bn_integrante_id,
+                    CAST(:equipe_apoio AS jsonb),
                     :observacoes
                 )
             """),
             {
                 "encontro_id": encontro_id,
                 "banda_id": banda_id,
-                "responsavel_nome": (
-                    responsavel_nome or None
+                "responsavel_nome": responsavel_nome,
+                "responsavel_telefone": responsavel_telefone,
+                "capitao_nome": capitao_nome,
+                "maestro_nome": maestro_nome,
+                "quantidade_componentes": quantidade_componentes,
+                "responsavel_bn_integrante_id":
+                    responsavel_bn_integrante_id,
+                "equipe_apoio": json.dumps(
+                    equipe_apoio,
+                    ensure_ascii=False
                 ),
-                "responsavel_telefone": (
-                    responsavel_telefone or None
-                ),
-                "capitao_nome": (
-                    capitao_nome or None
-                ),
-                "maestro_nome": (
-                    maestro_nome or None
-                ),
-                "quantidade_componentes": (
-                    quantidade_componentes
-                ),
-                "responsavel_bn_integrante_id": (
-                    responsavel_bn_integrante_id
-                ),
-                "observacoes": (
-                    observacoes or None
-                )
+                "observacoes": observacoes
             }
         )
 
@@ -17769,7 +18421,6 @@ def adicionar_banda_encontro(encontro_id):
     except Exception:
 
         db.rollback()
-
         raise
 
     finally:

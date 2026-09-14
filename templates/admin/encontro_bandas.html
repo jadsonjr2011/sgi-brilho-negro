@@ -12,6 +12,60 @@ Encontro de Bandas
 
 <style>
 
+.encontro-card-cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.encontro-card h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.encontro-card-lateral {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 58px;
+    flex-shrink: 0;
+}
+
+.encontro-status {
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.btn-abrir-encontro {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 6px 10px;
+
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 8px;
+
+    background: transparent;
+    color: #d4af37;
+
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition: 0.2s;
+}
+
 /* ============================================================
    ENCONTRO DE BANDAS
    ============================================================ */
@@ -75,7 +129,7 @@ Encontro de Bandas
 .encontros-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
+    gap: 12px;
 }
 
 /* ============================================================
@@ -84,13 +138,13 @@ Encontro de Bandas
 
 .encontro-card {
     background: #121215;
-
     border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 14px;
-
-    padding: 22px;
-
+    padding: 14px 16px;
     transition: 0.2s;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .encontro-card:hover {
@@ -102,21 +156,14 @@ Encontro de Bandas
    CARD CABEÇALHO
    ============================================================ */
 
-.encontro-card-cabecalho {
+.encontro-card-cabecalho > div {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-
-    gap: 15px;
-
-    margin-bottom: 18px;
+    flex-direction: column;
 }
 
 .encontro-card h3 {
     margin: 0;
-
     color: #ffffff;
-
     font-size: 20px;
     font-weight: 700;
 }
@@ -157,14 +204,11 @@ Encontro de Bandas
 
 .encontro-info {
     display: flex;
-    flex-direction: column;
-
-    gap: 9px;
-
-    margin-bottom: 20px;
-
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-bottom: 12px;
     color: #d0d0d0;
-
     font-size: 14px;
 }
 
@@ -175,44 +219,38 @@ Encontro de Bandas
 }
 
 /* ============================================================
-   RESUMO
+   RESUMO — COMPACTO
    ============================================================ */
 
 .encontro-resumo {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    align-items: center;
+    gap: 18px;
 
-    gap: 12px;
-
-    margin-bottom: 20px;
+    margin: 0;
 }
 
 .encontro-resumo-item {
-    background: rgba(255, 255, 255, 0.035);
-
-    border-radius: 10px;
-
-    padding: 14px;
-
-    text-align: center;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    text-align: left;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
 }
 
 .encontro-resumo-numero {
-    display: block;
-
+    display: inline;
     color: #d4af37;
-
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
 }
 
 .encontro-resumo-label {
-    display: block;
-
-    margin-top: 3px;
-
+    display: inline;
+    margin-top: 0;
     color: #a0a0a0;
-
     font-size: 12px;
 }
 
@@ -223,25 +261,20 @@ Encontro de Bandas
 .encontro-acoes {
     display: flex;
     justify-content: flex-end;
+    margin-top: 8px;
 }
 
 .btn-abrir-encontro {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-
-    padding: 9px 15px;
-
+    padding: 7px 12px;
     border: 1px solid rgba(212, 175, 55, 0.35);
     border-radius: 8px;
-
     background: transparent;
     color: #d4af37;
-
     text-decoration: none;
-
     font-weight: 600;
-
     transition: 0.2s;
 }
 
