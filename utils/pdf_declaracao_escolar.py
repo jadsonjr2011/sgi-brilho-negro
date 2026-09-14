@@ -1,7 +1,11 @@
 from io import BytesIO
+
 from datetime import datetime
+
 import os
+
 import re
+
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -11,13 +15,17 @@ from reportlab.platypus import (
     HRFlowable,
 )
 
+
 from reportlab.lib.styles import (
     getSampleStyleSheet,
     ParagraphStyle
 )
 
+
 from reportlab.lib.pagesizes import A4
+
 from reportlab.lib import colors
+
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 
@@ -26,8 +34,11 @@ from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 # ============================================================
 
 DOURADO = colors.HexColor("#D4AF37")
+
 CINZA = colors.HexColor("#666666")
+
 CINZA_CLARO = colors.HexColor("#E5E5E5")
+
 PRETO = colors.HexColor("#222222")
 
 
@@ -243,7 +254,8 @@ def gerar_pdf_declaracao_escolar(
     data_atividade,
     local_atividade,
     horario,
-    observacao=""
+    observacao="",
+    local_emissao="João Câmara/RN"
 ):
 
     # ========================================================
@@ -272,6 +284,10 @@ def gerar_pdf_declaracao_escolar(
 
     local_atividade = str(
         local_atividade or ""
+    ).strip()
+
+    local_emissao = str(
+        local_emissao or "João Câmara/RN"
     ).strip()
 
     observacao = str(
@@ -411,6 +427,7 @@ def gerar_pdf_declaracao_escolar(
 
         Paragraph(
             "ASSOCIAÇÃO CULTURAL DE PERCUSSÃO RUDIMENTAR",
+
             ParagraphStyle(
                 "Associacao",
                 parent=estilo_subtitulo,
@@ -476,25 +493,41 @@ def gerar_pdf_declaracao_escolar(
     texto_principal = (
 
         "Declaramos, para os devidos fins, que <b>"
+
         f"{nome_integrante}"
+
         "</b>"
 
         + (
-            f", CPF <b>{cpf_formatado}</b>"
+
+            f", inscrito no CPF sob o nº <b>{cpf_formatado}</b>"
+
             if cpf_formatado
+
             else ""
+
         )
 
-        + ", integrante da "
-        "<b>Associação Cultural de Percussão Rudimentar Brilho Negro</b>, "
-        "participou de atividade oficial da Banda Brilho Negro, "
-        "realizada no dia <b>"
+        + ", integrante da Banda Brilho Negro "
+
+        "(Associação Cultural de Percussão Rudimentar Brilho Negro), "
+
+        "participará de atividade oficial da referida banda, "
+
+        "a ser realizada no dia <b>"
+
         f"{data_formatada}"
-        "</b>, no período de <b>"
+
+        "</b>, no período das <b>"
+
         f"{horario_formatado}"
+
         "</b>, no município de <b>"
+
         f"{local_atividade}"
+
         "</b>."
+
     )
 
 
@@ -516,21 +549,26 @@ def gerar_pdf_declaracao_escolar(
 
         texto_final = (
 
-            "A presente declaração é emitida para fins de "
-            "comprovação de participação em atividade oficial "
-            "da Banda Brilho Negro, junto à instituição de ensino "
-            f"<b>{escola}</b>, justificando sua ausência no período "
-            "acima informado."
+            "A presente declaração é emitida antecipadamente "
+
+            "para fins de comprovação junto à instituição de ensino "
+
+            f"<b>{escola}</b>, a fim de justificar sua ausência "
+
+            "no período acima informado."
+
         )
 
     else:
 
         texto_final = (
 
-            "A presente declaração é emitida para fins de "
-            "comprovação de participação em atividade oficial "
-            "da Banda Brilho Negro, justificando sua ausência "
-            "no período acima informado."
+            "A presente declaração é emitida antecipadamente "
+
+            "para fins de comprovação, a fim de justificar sua "
+
+            "ausência no período acima informado."
+
         )
 
 
@@ -551,9 +589,11 @@ def gerar_pdf_declaracao_escolar(
     elementos.append(
 
         Paragraph(
-            "Por ser expressão da verdade, firmamos a presente "
-            "declaração para os fins que se fizerem necessários.",
+
+            "Por ser expressão da verdade, firmamos a presente.",
+
             estilo_corpo
+
         )
 
     )
@@ -568,10 +608,12 @@ def gerar_pdf_declaracao_escolar(
         elementos.append(
 
             Paragraph(
+
                 (
                     "<b>Observação:</b> "
                     f"{observacao}"
                 ),
+
                 ParagraphStyle(
                     "Observacao",
                     parent=estilo_base,
@@ -581,13 +623,14 @@ def gerar_pdf_declaracao_escolar(
                     spaceBefore=5,
                     spaceAfter=20
                 )
+
             )
 
         )
 
 
     # ========================================================
-    # LOCAL E DATA
+    # LOCAL E DATA DE EMISSÃO
     # ========================================================
 
     elementos.append(
@@ -596,6 +639,7 @@ def gerar_pdf_declaracao_escolar(
 
 
     meses = {
+
         1: "janeiro",
         2: "fevereiro",
         3: "março",
@@ -608,6 +652,7 @@ def gerar_pdf_declaracao_escolar(
         10: "outubro",
         11: "novembro",
         12: "dezembro"
+
     }
 
 
@@ -615,20 +660,25 @@ def gerar_pdf_declaracao_escolar(
 
 
     data_emissao = (
+
         f"{hoje.day} de "
         f"{meses[hoje.month]} de "
         f"{hoje.year}"
+
     )
 
 
     elementos.append(
 
         Paragraph(
+
             (
-                f"{local_atividade}, "
+                f"{local_emissao}, "
                 f"{data_emissao}."
             ),
+
             estilo_centro
+
         )
 
     )
