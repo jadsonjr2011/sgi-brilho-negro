@@ -1,5 +1,6 @@
 from io import BytesIO
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 
 from reportlab.platypus import (
@@ -69,7 +70,7 @@ def adicionar_rodape(canvas, doc):
     canvas.drawCentredString(
         largura / 2,
         11,
-        f"Emitido em {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        f"Emitido em {datetime.now(ZoneInfo('America/Sao_Paulo')).strftime('%d/%m/%Y %H:%M')}"
     )
 
     canvas.restoreState()
