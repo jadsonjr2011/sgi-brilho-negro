@@ -84,7 +84,8 @@ Encontros de Bandas
 
                                 <div>
 
-                                    <h4 class="mb-1"
+                                    <h4
+                                        class="mb-1"
                                         style="color: #d4af37;">
 
                                         {{ encontro.nome }}
@@ -330,15 +331,282 @@ Encontros de Bandas
 
                                 </a>
 
-                                <a
-                                    href="/admin/encontros-bandas/{{ encontro.id }}/editar"
-                                    class="btn btn-outline-light">
+
+                                <!-- EDITAR -->
+
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-light"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalEditarEncontro{{ encontro.id }}">
 
                                     ✏️ Editar
 
-                                </a>
+                                </button>
 
                             </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ====================================================== -->
+                <!-- MODAL — EDITAR ENCONTRO -->
+                <!-- ====================================================== -->
+
+                <div
+                    class="modal fade"
+                    id="modalEditarEncontro{{ encontro.id }}"
+                    tabindex="-1"
+                    aria-labelledby="modalEditarEncontroLabel{{ encontro.id }}"
+                    aria-hidden="true">
+
+                    <div
+                        class="modal-dialog modal-lg modal-dialog-centered">
+
+                        <div
+                            class="modal-content modal-editar-encontro">
+
+
+                            <!-- CABEÇALHO -->
+
+                            <div class="modal-header">
+
+                                <div>
+
+                                    <h5
+                                        class="modal-title"
+                                        id="modalEditarEncontroLabel{{ encontro.id }}">
+
+                                        ✏️ Editar Encontro
+
+                                    </h5>
+
+                                    <small>
+
+                                        Atualize as informações do encontro
+
+                                    </small>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Fechar">
+
+                                </button>
+
+                            </div>
+
+
+                            <!-- FORMULÁRIO -->
+
+                            <form
+                                method="POST"
+                                action="/admin/encontros-bandas/{{ encontro.id }}/editar">
+
+                                <div class="modal-body">
+
+
+                                    <!-- NOME -->
+
+                                    <div class="mb-3">
+
+                                        <label class="form-label">
+
+                                            Nome do encontro
+
+                                        </label>
+
+                                        <input
+                                            type="text"
+                                            name="nome"
+                                            class="form-control"
+                                            value="{{ encontro.nome }}"
+                                            required>
+
+                                    </div>
+
+
+                                    <!-- DATA / HORÁRIO / STATUS -->
+
+                                    <div class="row g-3">
+
+
+                                        <!-- DATA -->
+
+                                        <div class="col-12 col-md-4">
+
+                                            <label class="form-label">
+
+                                                Data
+
+                                            </label>
+
+                                            <input
+                                                type="date"
+                                                name="data"
+                                                class="form-control"
+                                                value="{{ encontro.data }}"
+                                                required>
+
+                                        </div>
+
+
+                                        <!-- HORÁRIO -->
+
+                                        <div class="col-12 col-md-4">
+
+                                            <label class="form-label">
+
+                                                Horário
+
+                                            </label>
+
+                                            <input
+                                                type="time"
+                                                name="horario"
+                                                class="form-control"
+                                                value="{{ encontro.horario or '' }}">
+
+                                        </div>
+
+
+                                        <!-- STATUS -->
+
+                                        <div class="col-12 col-md-4">
+
+                                            <label class="form-label">
+
+                                                Status
+
+                                            </label>
+
+                                            <select
+                                                name="status"
+                                                class="form-select">
+
+
+                                                <option
+                                                    value="PLANEJAMENTO"
+                                                    {% if encontro.status == "PLANEJAMENTO" %}
+                                                    selected
+                                                    {% endif %}>
+
+                                                    PLANEJAMENTO
+
+                                                </option>
+
+
+                                                <option
+                                                    value="CONFIRMADO"
+                                                    {% if encontro.status == "CONFIRMADO" %}
+                                                    selected
+                                                    {% endif %}>
+
+                                                    CONFIRMADO
+
+                                                </option>
+
+
+                                                <option
+                                                    value="REALIZADO"
+                                                    {% if encontro.status == "REALIZADO" %}
+                                                    selected
+                                                    {% endif %}>
+
+                                                    REALIZADO
+
+                                                </option>
+
+
+                                                <option
+                                                    value="CANCELADO"
+                                                    {% if encontro.status == "CANCELADO" %}
+                                                    selected
+                                                    {% endif %}>
+
+                                                    CANCELADO
+
+                                                </option>
+
+                                            </select>
+
+                                        </div>
+
+
+                                        <!-- LOCAL -->
+
+                                        <div class="col-12">
+
+                                            <label class="form-label">
+
+                                                Local
+
+                                            </label>
+
+                                            <input
+                                                type="text"
+                                                name="local"
+                                                class="form-control"
+                                                value="{{ encontro.local or '' }}">
+
+                                        </div>
+
+
+                                        <!-- OBSERVAÇÕES -->
+
+                                        <div class="col-12">
+
+                                            <label class="form-label">
+
+                                                Observações
+
+                                            </label>
+
+                                            <textarea
+                                                name="observacoes"
+                                                class="form-control"
+                                                rows="4">{{ encontro.observacoes or '' }}</textarea>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- RODAPÉ -->
+
+                                <div class="modal-footer">
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+
+                                        Cancelar
+
+                                    </button>
+
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-warning">
+
+                                        💾 Salvar alterações
+
+                                    </button>
+
+                                </div>
+
+                            </form>
 
                         </div>
 
@@ -412,20 +680,22 @@ Encontros de Bandas
 
     <div class="modal-dialog modal-lg modal-dialog-centered">
 
-        <div class="modal-content"
-             style="
+        <div
+            class="modal-content"
+            style="
                 background: #121215;
                 border: 1px solid rgba(212,175,55,.30);
                 border-radius: 14px;
-             ">
+            ">
 
 
             <!-- CABEÇALHO -->
 
-            <div class="modal-header"
-                 style="
+            <div
+                class="modal-header"
+                style="
                     border-bottom: 1px solid #333;
-                 ">
+                ">
 
                 <h5
                     class="modal-title"
@@ -445,6 +715,7 @@ Encontros de Bandas
                     class="btn-close btn-close-white"
                     data-bs-dismiss="modal"
                     aria-label="Fechar">
+
                 </button>
 
             </div>
@@ -452,8 +723,9 @@ Encontros de Bandas
 
             <!-- FORMULÁRIO -->
 
-            <form method="POST"
-                  action="/admin/encontros-bandas">
+            <form
+                method="POST"
+                action="/admin/encontros-bandas">
 
                 <div class="modal-body">
 
@@ -649,6 +921,213 @@ Encontros de Bandas
 
 
 <!-- ====================================================== -->
+<!-- CSS — MODAL EDITAR ENCONTRO -->
+<!-- ====================================================== -->
+
+<style>
+
+/* ============================================================
+   MODAL — EDITAR ENCONTRO | BRILHO NEGRO
+   ============================================================ */
+
+.modal-editar-encontro {
+
+    background: #161616;
+
+    color: #f5f5f5;
+
+    border: 1px solid #3a3a3a;
+
+    border-radius: 14px;
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.65);
+
+    overflow: hidden;
+}
+
+
+/* CABEÇALHO */
+
+.modal-editar-encontro .modal-header {
+
+    background: linear-gradient(
+        135deg,
+        #111111,
+        #1d1d1d
+    );
+
+    border-bottom: 1px solid #d4af37;
+
+    padding: 18px 22px;
+}
+
+
+.modal-editar-encontro .modal-title {
+
+    color: #d4af37;
+
+    font-weight: 700;
+
+    font-size: 20px;
+}
+
+
+.modal-editar-encontro .modal-header small {
+
+    color: #999;
+}
+
+
+.modal-editar-encontro .btn-close {
+
+    filter: invert(1);
+
+    opacity: 0.8;
+}
+
+
+.modal-editar-encontro .btn-close:hover {
+
+    opacity: 1;
+}
+
+
+/* CORPO */
+
+.modal-editar-encontro .modal-body {
+
+    background: #181818;
+
+    padding: 24px;
+}
+
+
+/* LABELS */
+
+.modal-editar-encontro .form-label {
+
+    color: #d4af37;
+
+    font-weight: 600;
+
+    margin-bottom: 7px;
+}
+
+
+/* CAMPOS */
+
+.modal-editar-encontro .form-control,
+.modal-editar-encontro .form-select {
+
+    background-color: #242424;
+
+    color: #f5f5f5;
+
+    border: 1px solid #444;
+
+    border-radius: 8px;
+
+    min-height: 44px;
+}
+
+
+.modal-editar-encontro textarea.form-control {
+
+    min-height: 110px;
+}
+
+
+.modal-editar-encontro .form-control:focus,
+.modal-editar-encontro .form-select:focus {
+
+    background-color: #292929;
+
+    color: #fff;
+
+    border-color: #d4af37;
+
+    box-shadow:
+        0 0 0 0.2rem rgba(
+            212,
+            175,
+            55,
+            0.15
+        );
+}
+
+
+.modal-editar-encontro .form-control::placeholder {
+
+    color: #888;
+}
+
+
+.modal-editar-encontro .form-select option {
+
+    background: #242424;
+
+    color: #fff;
+}
+
+
+/* RODAPÉ */
+
+.modal-editar-encontro .modal-footer {
+
+    background: #111111;
+
+    border-top: 1px solid #333;
+
+    padding: 15px 22px;
+}
+
+
+/* BOTÃO CANCELAR */
+
+.modal-editar-encontro .btn-secondary {
+
+    background: #333;
+
+    border-color: #444;
+
+    color: #fff;
+}
+
+
+.modal-editar-encontro .btn-secondary:hover {
+
+    background: #444;
+}
+
+
+/* BOTÃO SALVAR */
+
+.modal-editar-encontro .btn-warning {
+
+    background: #d4af37;
+
+    border-color: #d4af37;
+
+    color: #111;
+
+    font-weight: 700;
+}
+
+
+.modal-editar-encontro .btn-warning:hover {
+
+    background: #e2c35b;
+
+    border-color: #e2c35b;
+
+    color: #111;
+}
+
+</style>
+
+
+<!-- ====================================================== -->
 <!-- ABRIR MODAL AUTOMATICAMENTE EM CASO DE ERRO -->
 <!-- ====================================================== -->
 
@@ -660,6 +1139,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const modalElement =
         document.getElementById("modalNovoEncontro");
+
+    if (!modalElement) {
+        return;
+    }
 
     const modal =
         new bootstrap.Modal(modalElement);

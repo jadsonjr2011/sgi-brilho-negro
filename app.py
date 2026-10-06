@@ -17633,6 +17633,105 @@ def excluir_inscricao_encontro_bandas(encontro_id, inscricao_id):
     )    
 
 @app.route(
+    "/admin/encontros-bandas/<int:encontro_id>/editar",
+    methods=["GET", "POST"]
+)
+def editar_encontro_bandas(encontro_id):
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    encontro = db.execute(
+        text("""
+            SELECT
+                id,
+                nome,
+                data,
+                local,
+                horario,
+                observacoes,
+                status
+            FROM encontros_bandas
+            WHERE id = :encontro_id
+        """),
+        {
+            "encontro_id": encontro_id
+        }
+    ).mappings().first()
+
+    if not encontro:
+        db.close()
+        return redirect("/admin/encontros-bandas")
+
+    if request.method == "POST":
+
+        nome = request.form.get("nome", "").strip()
+        data = request.form.get("data", "").strip()
+        local = request.form.get("local", "").strip()
+        horario = request.form.get("horario", "").strip()
+        observacoes = request.form.get("observacoes", "").strip()
+        status = request.form.get("status", "PLANEJAMENTO").strip()
+
+        if not nome or not data:
+            db.close()
+
+            return render_template(
+                "admin/encontro_bandas_editar_encontro.html",
+                encontro=encontro,
+                erro="Informe o nome e a data do encontro."
+            )
+
+        try:
+
+            db.execute(
+                text("""
+                    UPDATE encontros_bandas
+                    SET
+                        nome = :nome,
+                        data = :data,
+                        local = :local,
+                        horario = :horario,
+                        observacoes = :observacoes,
+                        status = :status,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = :encontro_id
+                """),
+                {
+                    "nome": nome,
+                    "data": data,
+                    "local": local or None,
+                    "horario": horario or None,
+                    "observacoes": observacoes or None,
+                    "status": status,
+                    "encontro_id": encontro_id
+                }
+            )
+
+            db.commit()
+
+        except Exception:
+
+            db.rollback()
+            db.close()
+            raise
+
+        db.close()
+
+        return redirect(
+            f"/admin/encontros-bandas/{encontro_id}"
+        )
+
+    db.close()
+
+    return render_template(
+        "admin/encontro_bandas_editar_encontro.html",
+        encontro=encontro,
+        erro=None
+    )
+
+@app.route(
     "/admin/encontros-bandas/<int:encontro_id>/relatorio",
     methods=["GET"]
 )
@@ -18028,82 +18127,6 @@ def detalhes_encontro_bandas(encontro_id):
     finally:
         db.close()
 
-# ============================================================
-# ENCONTRO DE BANDAS — EDITAR
-# ============================================================
-
-@app.route(
-    "/admin/encontro-bandas/<int:encontro_id>/editar",
-    methods=["POST"]
-)
-def editar_encontro_bandas(encontro_id):
-
-    if not usuario_tem_permissao("encontro_bandas"):
-        return redirect("/admin")
-
-    nome = request.form.get("nome", "").strip()
-    data = request.form.get("data")
-    local = request.form.get("local", "").strip()
-    horario = request.form.get("horario") or None
-    observacoes = request.form.get("observacoes", "").strip()
-    status = request.form.get(
-        "status",
-        "PLANEJAMENTO"
-    ).strip().upper()
-
-    if not nome or not data:
-
-        return redirect(
-            f"/admin/encontro-bandas/{encontro_id}"
-        )
-
-    db = SessionLocal()
-
-    try:
-
-        resultado = db.execute(
-            text("""
-                UPDATE encontros_bandas
-
-                SET
-                    nome = :nome,
-                    data = :data,
-                    local = :local,
-                    horario = :horario,
-                    observacoes = :observacoes,
-                    status = :status,
-                    updated_at = CURRENT_TIMESTAMP
-
-                WHERE id = :id
-            """),
-            {
-                "id": encontro_id,
-                "nome": nome,
-                "data": data,
-                "local": local or None,
-                "horario": horario,
-                "observacoes": observacoes or None,
-                "status": status
-            }
-        )
-
-        db.commit()
-
-        if resultado.rowcount == 0:
-            return redirect("/admin/encontro-bandas")
-
-        return redirect(
-            f"/admin/encontro-bandas/{encontro_id}"
-        )
-
-    except Exception:
-
-        db.rollback()
-        raise
-
-    finally:
-
-        db.close()
 
 # ============================================================
 # ENCONTRO DE BANDAS — GERENCIAR EQUIPE COMPLETA

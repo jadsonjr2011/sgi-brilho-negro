@@ -10,7 +10,10 @@ Portal Brilho Negro
 
     <div class="fundo-brilho"></div>
 
-    <!-- ACESSO ADMINISTRATIVO -->
+    <!-- =========================================================
+         ACESSO ADMINISTRATIVO
+         ========================================================= -->
+
     <a
         href="/login"
         class="btn btn-dark"
@@ -34,6 +37,7 @@ Portal Brilho Negro
         ⚙️
     </a>
 
+
     <div class="conteudo-inicial">
 
         <h2 class="nome-banda mb-1">
@@ -54,7 +58,19 @@ Portal Brilho Negro
             Escolha uma das opções abaixo para continuar.
         </p>
 
+
         <div class="area-botoes-inicial">
+
+
+            <!-- =====================================================
+                 INSCRIÇÃO DE BANDAS
+
+                 ATUALMENTE É A ÚNICA OPÇÃO PÚBLICA EXIBIDA.
+
+                 Após o encerramento do período de inscrições do
+                 Encontro de Bandas, avaliar se este botão deve
+                 permanecer disponível.
+                 ===================================================== -->
 
             <a
                 href="/encontro-bandas/inscricao"
@@ -62,6 +78,38 @@ Portal Brilho Negro
             >
                 🎺 Inscrição de Bandas
             </a>
+
+
+            <!-- =====================================================
+                 CADASTRO DE INTEGRANTES — TEMPORARIAMENTE OCULTO
+
+                 IMPORTANTE:
+
+                 O cadastro de integrantes NÃO foi excluído.
+
+                 A rota /cadastro continua funcionando normalmente.
+
+                 O botão está apenas oculto temporariamente durante
+                 o período de inscrições do Encontro de Bandas.
+
+                 >>> APÓS O ENCERRAMENTO DAS INSCRIÇÕES <<<
+                 REATIVAR ESTE BOTÃO.
+
+                 Para reativar:
+                 1. Remover os comentários {# e #}
+                 2. Manter o link apontando para /cadastro
+
+                 ===================================================== -->
+
+            {#
+            <a
+                href="/cadastro"
+                class="btn btn-brilho btn-inicial"
+            >
+                👤 Cadastro de Integrantes
+            </a>
+            #}
+
 
         </div>
 
