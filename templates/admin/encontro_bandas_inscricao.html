@@ -1,0 +1,473 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Inscrição — Encontro de Bandas
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-12 col-lg-8">
+
+            <div class="card card-bn shadow-lg">
+
+                <div class="card-body p-4 p-md-5">
+
+                    <!-- ========================================== -->
+                    <!-- CABEÇALHO -->
+                    <!-- ========================================== -->
+
+                    <div class="text-center mb-4">
+
+                        <div style="font-size: 42px;">
+                            🎺
+                        </div>
+
+                        <h2
+                            class="mt-2 mb-1"
+                            style="
+                                color: #d4af37;
+                                font-weight: 700;
+                            ">
+
+                            VI ENCONTRO DE BANDAS E FANFARRAS
+
+                        </h2>
+
+                        <h5
+                            class="mb-3"
+                            style="
+                                color: #f5f5f5;
+                            ">
+
+                            BRILHO NEGRO 2026
+
+                        </h5>
+
+                        <p class="text-secondary mb-0">
+
+                            Inscrição de corporações participantes
+
+                        </p>
+
+                    </div>
+
+
+                    <hr style="border-color: #444;">
+
+
+                    <!-- ========================================== -->
+                    <!-- ERRO -->
+                    <!-- ========================================== -->
+
+                    {% if erro %}
+
+                        <div class="alert alert-danger">
+
+                            {{ erro }}
+
+                        </div>
+
+                    {% endif %}
+
+
+                    <!-- ========================================== -->
+                    <!-- INFORMAÇÕES -->
+                    <!-- ========================================== -->
+
+                    <div class="mb-4">
+
+                        <h5 style="color: #d4af37;">
+
+                            Informações necessárias
+
+                        </h5>
+
+                        <p class="text-secondary mb-0">
+
+                            Preencha os dados abaixo para solicitar
+                            a participação da sua corporação no
+                            encontro selecionado.
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- ========================================== -->
+                    <!-- FORMULÁRIO -->
+                    <!-- ========================================== -->
+
+                    <form
+                        method="POST"
+                        action="/encontro-bandas/inscricao">
+
+
+                        <!-- ====================================== -->
+                        <!-- ENCONTRO -->
+                        <!-- ====================================== -->
+
+                        {% if encontros|length == 1 %}
+
+                            <input
+                                type="hidden"
+                                name="encontro_id"
+                                value="{{ encontros[0].id }}">
+
+
+                            <div
+                                class="p-3 mb-4"
+                                style="
+                                    background: rgba(212, 175, 55, 0.08);
+                                    border: 1px solid rgba(212, 175, 55, 0.30);
+                                    border-radius: 10px;
+                                ">
+
+                                <div
+                                    class="small text-secondary mb-1">
+
+                                    Encontro selecionado
+
+                                </div>
+
+                                <strong
+                                    style="
+                                        color: #d4af37;
+                                    ">
+
+                                    {{ encontros[0].nome }}
+
+                                </strong>
+
+                                <div class="text-secondary mt-1">
+
+                                    {% if encontros[0].data %}
+
+                                        📅
+                                        {{ encontros[0].data.strftime('%d/%m/%Y') }}
+
+                                    {% endif %}
+
+                                    {% if encontros[0].horario %}
+
+                                        • 🕓
+                                        {{ encontros[0].horario.strftime('%H:%M') }}
+
+                                    {% endif %}
+
+                                    {% if encontros[0].local %}
+
+                                        • 📍
+                                        {{ encontros[0].local }}
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                        {% elif encontros|length > 1 %}
+
+
+                            <div class="mb-4">
+
+                                <label
+                                    for="encontro_id"
+                                    class="form-label">
+
+                                    Escolha o encontro
+                                    <span class="text-danger">*</span>
+
+                                </label>
+
+                                <select
+                                    class="form-select"
+                                    id="encontro_id"
+                                    name="encontro_id"
+                                    required>
+
+                                    <option value="">
+                                        Selecione o encontro
+                                    </option>
+
+                                    {% for encontro in encontros %}
+
+                                        <option
+                                            value="{{ encontro.id }}">
+
+                                            {{ encontro.nome }}
+
+                                            {% if encontro.data %}
+                                                —
+                                                {{ encontro.data.strftime('%d/%m/%Y') }}
+                                            {% endif %}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+
+                            </div>
+
+
+                        {% else %}
+
+
+                            <div
+                                class="alert alert-warning">
+
+                                No momento não há encontros
+                                disponíveis para inscrição.
+
+                            </div>
+
+
+                        {% endif %}
+
+
+                        <!-- ====================================== -->
+                        <!-- CORPORAÇÃO -->
+                        <!-- ====================================== -->
+
+                        <div class="mb-3">
+
+                            <label
+                                for="nome_corporacao"
+                                class="form-label">
+
+                                Nome da corporação
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="nome_corporacao"
+                                name="nome_corporacao"
+                                placeholder="Ex.: Banda Marcial Municipal"
+                                required>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- REGENTE -->
+                        <!-- ====================================== -->
+
+                        <div class="mb-3">
+
+                            <label
+                                for="nome_regente"
+                                class="form-label">
+
+                                Nome do Regente
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="nome_regente"
+                                name="nome_regente"
+                                placeholder="Nome completo do regente"
+                                required>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- RESPONSÁVEL -->
+                        <!-- ====================================== -->
+
+                        <div class="mb-3">
+
+                            <label
+                                for="responsavel"
+                                class="form-label">
+
+                                Responsável
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="responsavel"
+                                name="responsavel"
+                                placeholder="Nome completo do responsável"
+                                required>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- INSTITUIÇÃO -->
+                        <!-- ====================================== -->
+
+                        <div class="mb-3">
+
+                            <label
+                                for="instituicao"
+                                class="form-label">
+
+                                Instituição
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="instituicao"
+                                name="instituicao"
+                                placeholder="Nome da instituição"
+                                required>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- CIDADE -->
+                        <!-- ====================================== -->
+
+                        <div class="mb-3">
+
+                            <label
+                                for="cidade"
+                                class="form-label">
+
+                                Cidade
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="cidade"
+                                name="cidade"
+                                placeholder="Ex.: João Câmara"
+                                required>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- COMPONENTES -->
+                        <!-- ====================================== -->
+
+                        <div class="mb-4">
+
+                            <label
+                                for="numero_componentes"
+                                class="form-label">
+
+                                Número de componentes
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="numero_componentes"
+                                name="numero_componentes"
+                                min="1"
+                                placeholder="Quantidade de componentes"
+                                required>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- HORÁRIO DE CHEGADA -->
+                        <!-- ====================================== -->
+
+                        <div
+                            class="p-3 mb-4"
+                            style="
+                                background: rgba(212, 175, 55, 0.08);
+                                border: 1px solid rgba(212, 175, 55, 0.30);
+                                border-radius: 10px;
+                            ">
+
+                            <h6
+                                style="
+                                    color: #d4af37;
+                                    font-weight: 700;
+                                ">
+
+                                🕓 HORÁRIO DE CHEGADA
+
+                            </h6>
+
+                            <p class="mb-0 text-secondary">
+
+                                Pedimos que todas as bandas estejam
+                                em João Câmara, no local do evento,
+                                até às
+                                <strong style="color: #fff;">
+                                    16h40
+                                </strong>,
+                                para organização, concentração e
+                                alinhamento da programação.
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- ====================================== -->
+                        <!-- BOTÕES -->
+                        <!-- ====================================== -->
+
+                        <div
+                            class="d-flex flex-column
+                                   flex-md-row
+                                   justify-content-center
+                                   gap-2">
+
+                            <a
+                                href="/"
+                                class="btn btn-secondary">
+
+                                Voltar
+
+                            </a>
+
+
+                            {% if encontros %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-brilho">
+
+                                    🎺 Enviar inscrição
+
+                                </button>
+
+                            {% endif %}
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Editar Inscrição
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="container-fluid py-4">
+
+<!-- CABEÇALHO -->
+
+<div class="d-flex flex-column flex-md-row
+            justify-content-between
+            align-items-md-center
+            gap-3 mb-4">
+
+    <div>
+
+        <h2 style="color: #d4af37; font-weight: 700;">
+            ✏️ Editar Inscrição
+        </h2>
+
+        <p class="text-secondary mb-0">
+            Atualize os dados da corporação inscrita.
+        </p>
+
+    </div>
+
+    <a
+        href="/admin/encontros-bandas/{{ inscricao.encontro_id }}"
+        class="btn btn-secondary">
+
+        ← Voltar
+
+    </a>
+
+</div>
+
+
+<!-- FORMULÁRIO -->
+
+<div class="card card-bn shadow-lg">
+
+    <div class="card-body p-4">
+
+        {% if erro %}
+
+            <div class="alert alert-danger">
+                {{ erro }}
+            </div>
+
+        {% endif %}
+
+
+        <form
+            method="POST"
+            action="/admin/encontros-bandas/{{ inscricao.encontro_id }}/inscricao/{{ inscricao.id }}/editar"
+        >
+
+            <div class="row g-3">
+
+                <!-- CORPORAÇÃO -->
+
+                <div class="col-12">
+
+                    <label class="form-label">
+                        Nome da corporação
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nome_corporacao"
+                        class="form-control"
+                        value="{{ inscricao.nome_corporacao or '' }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- REGENTE -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Nome do Regente
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nome_regente"
+                        class="form-control"
+                        value="{{ inscricao.maestro_nome or '' }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- RESPONSÁVEL -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Responsável
+                    </label>
+
+                    <input
+                        type="text"
+                        name="responsavel"
+                        class="form-control"
+                        value="{{ inscricao.responsavel_nome or '' }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- INSTITUIÇÃO -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Instituição
+                    </label>
+
+                    <input
+                        type="text"
+                        name="instituicao"
+                        class="form-control"
+                        value="{{ inscricao.instituicao or '' }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- CIDADE -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Cidade
+                    </label>
+
+                    <input
+                        type="text"
+                        name="cidade"
+                        class="form-control"
+                        value="{{ inscricao.cidade or '' }}"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- COMPONENTES -->
+
+                <div class="col-md-6">
+
+                    <label class="form-label">
+                        Número de componentes
+                    </label>
+
+                    <input
+                        type="number"
+                        name="numero_componentes"
+                        class="form-control"
+                        value="{{ inscricao.quantidade_componentes or '' }}"
+                        min="1"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTÕES -->
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+
+                <a
+                    href="/admin/encontros-bandas/{{ inscricao.encontro_id }}"
+                    class="btn btn-secondary">
+
+                    Cancelar
+
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-brilho">
+
+                    💾 Salvar alterações
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

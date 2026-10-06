@@ -1,0 +1,115 @@
+{% extends 'layout/base.html' %}
+
+{% block titulo %}
+Inscrição Enviada
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="container py-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-12 col-md-8 col-lg-6">
+
+            <div class="card card-bn shadow-lg">
+
+                <div class="card-body text-center p-5">
+
+                    <div style="font-size: 60px;">
+                        ✅
+                    </div>
+
+
+                    <h2
+                        class="mt-3"
+                        style="
+                            color: #d4af37;
+                            font-weight: 700;
+                        ">
+
+                        Inscrição enviada!
+
+                    </h2>
+
+
+                    <p class="text-light mt-3">
+
+                        A inscrição da corporação
+
+                        <strong style="color: #d4af37;">
+                            {{ nome_corporacao }}
+                        </strong>
+
+                        foi recebida com sucesso.
+
+                    </p>
+
+
+                    <p class="text-secondary">
+
+                        Os dados serão analisados pela organização
+                        do encontro:
+
+                    </p>
+
+
+                    <p style="color: #d4af37; font-weight: 700;">
+
+                        {{ nome_encontro }}
+
+                    </p>
+
+
+                    <div
+                        class="p-3 mt-4 mb-4"
+                        style="
+                            background: rgba(212, 175, 55, 0.08);
+                            border: 1px solid rgba(212, 175, 55, 0.30);
+                            border-radius: 10px;
+                        ">
+
+                        <strong style="color: #d4af37;">
+
+                            Status da inscrição
+
+                        </strong>
+
+                        <div class="mt-2">
+
+                            <span
+                                class="badge"
+                                style="
+                                    background: #d4af37;
+                                    color: #111;
+                                    font-size: 14px;
+                                ">
+
+                                PENDENTE
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <a
+                        href="/"
+                        class="btn btn-brilho">
+
+                        Voltar para o início
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

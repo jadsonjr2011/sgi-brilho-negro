@@ -196,6 +196,21 @@ def formatar_data(data):
 
 
 # =====================================
+# FORMATAÇÃO DE HORÁRIO
+# =====================================
+
+def formatar_horario(horario):
+
+    if not horario:
+        return "-"
+
+    if hasattr(horario, "strftime"):
+        return horario.strftime("%H:%M")
+
+    return str(horario)
+
+
+# =====================================
 # GERA PDF
 # =====================================
 
@@ -228,7 +243,6 @@ def gerar_pdf_relatorio_bandas_participantes(
             }
         ).mappings().first()
 
-
         if not encontro:
 
             raise ValueError(
@@ -237,31 +251,28 @@ def gerar_pdf_relatorio_bandas_participantes(
 
 
         # =====================================
-        # BUSCAR BANDAS PARTICIPANTES
+        # BUSCAR SOMENTE BANDAS APROVADAS
         # =====================================
 
         bandas = db.execute(
             text("""
                 SELECT
                     eb.id,
-                    b.nome AS banda_nome,
+                    b.nome AS nome_corporacao,
                     b.cidade,
                     b.uf,
-                    eb.responsavel_nome,
-                    eb.capitao_nome,
-                    eb.maestro_nome,
-                    eb.quantidade_componentes,
-                    i.nome AS coordenador_nome
+                    b.instituicao,
+                    eb.maestro_nome AS nome_regente,
+                    eb.responsavel_nome AS responsavel,
+                    eb.quantidade_componentes
 
                 FROM encontro_bandas eb
 
                 INNER JOIN bandas b
                     ON b.id = eb.banda_id
 
-                LEFT JOIN integrantes i
-                    ON i.id = eb.responsavel_bn_integrante_id    
-
                 WHERE eb.encontro_id = :encontro_id
+                AND eb.status = 'APROVADA'
 
                 ORDER BY
                     b.nome ASC,
@@ -274,17 +285,14 @@ def gerar_pdf_relatorio_bandas_participantes(
 
 
         # =====================================
-        # RESUMOS
+        # RESUMO
         # =====================================
 
-        total_bandas = len(
-            bandas
-        )
+        total_bandas = len(bandas)
 
-        total_pessoas = sum(
+        total_componentes = sum(
             int(
-                banda["quantidade_componentes"]
-                or 0
+                banda["quantidade_componentes"] or 0
             )
             for banda in bandas
         )
@@ -305,9 +313,12 @@ def gerar_pdf_relatorio_bandas_participantes(
             bottomMargin=60
         )
 
-
         estilos = getSampleStyleSheet()
 
+
+        # =====================================
+        # ESTILOS
+        # =====================================
 
         estilo = ParagraphStyle(
             "NormalRelatorio",
@@ -316,21 +327,19 @@ def gerar_pdf_relatorio_bandas_participantes(
             leading=16
         )
 
-
         estilo_tabela = ParagraphStyle(
             "Tabela",
             parent=estilos["Normal"],
-            fontSize=7.5,
-            leading=9
+            fontSize=8,
+            leading=10
         )
-
 
         estilo_tabela_centro = ParagraphStyle(
             "TabelaCentro",
             parent=estilo_tabela,
             alignment=TA_CENTER,
-            fontSize=7.2,
-            leading=8
+            fontSize=8,
+            leading=9
         )
 
         estilo_tabela_centro_negrito = ParagraphStyle(
@@ -338,15 +347,8 @@ def gerar_pdf_relatorio_bandas_participantes(
             parent=estilo_tabela,
             alignment=TA_CENTER,
             fontName="Helvetica-Bold",
-            fontSize=7.2,
-            leading=8
-        )
-
-
-        estilo_tabela_negrito = ParagraphStyle(
-            "TabelaNegrito",
-            parent=estilo_tabela,
-            fontName="Helvetica-Bold"
+            fontSize=8,
+            leading=9
         )
 
 
@@ -389,8 +391,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
                 Paragraph(
                     str(
-                        encontro["nome"]
-                        or "-"
+                        encontro["nome"] or "-"
                     ),
                     estilo_tabela
                 )
@@ -416,8 +417,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
                 Paragraph(
                     str(
-                        encontro["local"]
-                        or "-"
+                        encontro["local"] or "-"
                     ),
                     estilo_tabela
                 )
@@ -429,9 +429,8 @@ def gerar_pdf_relatorio_bandas_participantes(
                     estilo_tabela
                 ),
                 Paragraph(
-                    str(
+                    formatar_horario(
                         encontro["horario"]
-                        or "-"
                     ),
                     estilo_tabela
                 )
@@ -444,8 +443,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
                 Paragraph(
                     str(
-                        encontro["status"]
-                        or "-"
+                        encontro["status"] or "-"
                     ),
                     estilo_tabela
                 )
@@ -458,7 +456,7 @@ def gerar_pdf_relatorio_bandas_participantes(
             dados_encontro,
             colWidths=[
                 120,
-                200
+                400
             ]
         )
 
@@ -524,7 +522,6 @@ def gerar_pdf_relatorio_bandas_participantes(
             tabela_encontro
         )
 
-
         elementos.append(
             Spacer(1, 20)
         )
@@ -579,7 +576,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
 
                 Paragraph(
-                    str(total_pessoas),
+                    str(total_componentes),
                     estilo_tabela_centro
                 )
             ]
@@ -591,7 +588,7 @@ def gerar_pdf_relatorio_bandas_participantes(
             resumo,
             colWidths=[
                 400,
-                140
+                120
             ]
         )
 
@@ -671,7 +668,6 @@ def gerar_pdf_relatorio_bandas_participantes(
             tabela_resumo
         )
 
-
         elementos.append(
             Spacer(1, 25)
         )
@@ -703,12 +699,12 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
 
                 Paragraph(
-                    "<b>Banda</b>",
+                    "<b>Corporação</b>",
                     estilo_tabela_centro
                 ),
 
                 Paragraph(
-                    "<b>Cidade/UF</b>",
+                    "<b>Regente</b>",
                     estilo_tabela_centro
                 ),
 
@@ -718,22 +714,17 @@ def gerar_pdf_relatorio_bandas_participantes(
                 ),
 
                 Paragraph(
-                    "<b>Coordenador</b>",
+                    "<b>Instituição</b>",
                     estilo_tabela_centro
                 ),
 
                 Paragraph(
-                    "<b>Capitão</b>",
+                    "<b>Cidade</b>",
                     estilo_tabela_centro
                 ),
 
                 Paragraph(
-                    "<b>Maestro</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Pessoas</b>",
+                    "<b>Componentes</b>",
                     estilo_tabela_centro
                 )
 
@@ -751,32 +742,16 @@ def gerar_pdf_relatorio_bandas_participantes(
             start=1
         ):
 
-            cidade = (
-                str(
-                    banda["cidade"]
-                    or ""
-                ).strip()
-            )
+            cidade = str(
+                banda["cidade"] or "-"
+            ).strip()
 
-            uf = (
-                str(
-                    banda["uf"]
-                    or ""
-                ).strip().upper()
-            )
+            uf = str(
+                banda["uf"] or ""
+            ).strip().upper()
 
-
-            if cidade and uf:
-                cidade_uf = f"{cidade} / {uf}"
-
-            elif cidade:
-                cidade_uf = cidade
-
-            elif uf:
-                cidade_uf = uf
-
-            else:
-                cidade_uf = "-"
+            if cidade != "-" and uf:
+                cidade = f"{cidade}/{uf}"
 
 
             dados.append(
@@ -790,20 +765,15 @@ def gerar_pdf_relatorio_bandas_participantes(
 
                     Paragraph(
                         str(
-                            banda["banda_nome"]
+                            banda["nome_corporacao"]
                             or "-"
                         ),
                         estilo_tabela_centro_negrito
                     ),
 
                     Paragraph(
-                        cidade_uf,
-                        estilo_tabela_centro
-                    ),
-
-                    Paragraph(
                         str(
-                            banda["responsavel_nome"]
+                            banda["nome_regente"]
                             or "-"
                         ),
                         estilo_tabela_centro
@@ -811,7 +781,7 @@ def gerar_pdf_relatorio_bandas_participantes(
 
                     Paragraph(
                         str(
-                            banda["coordenador_nome"]
+                            banda["responsavel"]
                             or "-"
                         ),
                         estilo_tabela_centro
@@ -819,17 +789,14 @@ def gerar_pdf_relatorio_bandas_participantes(
 
                     Paragraph(
                         str(
-                            banda["capitao_nome"]
+                            banda["instituicao"]
                             or "-"
                         ),
                         estilo_tabela_centro
                     ),
 
                     Paragraph(
-                        str(
-                            banda["maestro_nome"]
-                            or "-"
-                        ),
+                        cidade,
                         estilo_tabela_centro
                     ),
 
@@ -846,33 +813,6 @@ def gerar_pdf_relatorio_bandas_participantes(
             )
 
 
-        # =====================================
-        # NENHUMA BANDA
-        # =====================================
-
-        if not bandas:
-
-            dados.append(
-
-                [
-
-                    Paragraph(
-                        "Nenhuma banda participante cadastrada.",
-                        estilo_tabela
-                    ),
-
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    "",
-                    ""
-
-                ]
-
-            )
-
 
         # =====================================
         # TABELA
@@ -886,14 +826,13 @@ def gerar_pdf_relatorio_bandas_participantes(
 
             colWidths=[
 
-                22,     # Nº
-                88,    # Banda
-                72,     # Cidade/UF
-                92,    # Responsável
-                105,    # Coordenador
-                82,     # Capitão
-                72,     # Maestro
-                45      # Pessoas
+                25,     # Nº
+                85,     # Corporação
+                80,     # Regente
+                80,     # Responsável
+                105,    # Instituição
+                65,     # Cidade
+                70      # Componentes
 
             ]
 
@@ -904,7 +843,6 @@ def gerar_pdf_relatorio_bandas_participantes(
 
             TableStyle([
 
-                # Grade
                 (
                     "GRID",
                     (0, 0),
@@ -913,7 +851,6 @@ def gerar_pdf_relatorio_bandas_participantes(
                     colors.grey
                 ),
 
-                # Cabeçalho
                 (
                     "BACKGROUND",
                     (0, 0),
@@ -928,7 +865,6 @@ def gerar_pdf_relatorio_bandas_participantes(
                     "Helvetica-Bold"
                 ),
 
-                # Alinhamento horizontal — TODA A TABELA
                 (
                     "ALIGN",
                     (0, 0),
@@ -936,7 +872,6 @@ def gerar_pdf_relatorio_bandas_participantes(
                     "CENTER"
                 ),
 
-                # Alinhamento vertical
                 (
                     "VALIGN",
                     (0, 0),
@@ -944,7 +879,6 @@ def gerar_pdf_relatorio_bandas_participantes(
                     "MIDDLE"
                 ),
 
-                # Espaçamento
                 (
                     "LEFTPADDING",
                     (0, 0),
@@ -991,14 +925,12 @@ def gerar_pdf_relatorio_bandas_participantes(
             Spacer(1, 20)
         )
 
-
         elementos.append(
             Paragraph(
                 (
-                    "Este relatório apresenta as bandas "
-                    "participantes cadastradas para o encontro, "
-                    "incluindo seus responsáveis, representantes, "
-                    "cidade de origem e quantidade de componentes."
+                    "Este relatório apresenta exclusivamente "
+                    "as corporações com inscrição aprovada para "
+                    "participação no encontro."
                 ),
                 estilo
             )
@@ -1006,7 +938,7 @@ def gerar_pdf_relatorio_bandas_participantes(
 
 
         # =====================================
-        # GERAR
+        # GERAR PDF
         # =====================================
 
         doc.build(

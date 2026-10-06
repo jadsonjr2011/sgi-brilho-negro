@@ -4,3614 +4,608 @@
 {{ encontro.nome }}
 {% endblock %}
 
-{% block titulo_pagina %}
-🎺 Encontro de Bandas
-{% endblock %}
-
 {% block conteudo %}
 
-<style>
+<div class="container-fluid py-4">
 
-/* ============================================================
-   BOTÃO — GERENCIAR EQUIPE COMPLETA
-   ============================================================ */
+<!-- CABEÇALHO -->
 
-.equipe-gerenciamento-completo {
-    margin-top: 18px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-    text-align: center;
-}
+<div class="d-flex flex-column flex-md-row
+            justify-content-between
+            align-items-md-center
+            gap-3 mb-4">
 
-.btn-gerenciar-equipe {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    <div>
 
-    padding: 9px 15px;
+        <h2 style="color: #d4af37; font-weight: 700;">
+            🎺 {{ encontro.nome }}
+        </h2>
 
-    border: 1px solid rgba(212, 175, 55, 0.35);
-    border-radius: 8px;
+        <p class="text-secondary mb-0">
 
-    background: rgba(212, 175, 55, 0.06);
-
-    color: #d4af37 !important;
-
-    text-decoration: none !important;
-
-    font-size: 12px;
-    font-weight: 600;
-
-    transition: all 0.2s ease;
-}
-
-.btn-gerenciar-equipe:hover {
-    background: rgba(212, 175, 55, 0.12);
-    border-color: rgba(212, 175, 55, 0.65);
-    color: #e4c45a !important;
-
-    transform: translateY(-1px);
-}
-
-.modal-equipe-cabecalho-acoes {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.btn-gerenciar-equipe {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-
-    padding: 7px 11px;
-
-    border: 1px solid rgba(212, 175, 55, 0.30);
-    border-radius: 7px;
-
-    background: rgba(212, 175, 55, 0.06);
-
-    color: #d4af37 !important;
-    text-decoration: none !important;
-
-    font-size: 11px;
-    font-weight: 600;
-
-    white-space: nowrap;
-    transition: 0.2s;
-}
-
-.btn-gerenciar-equipe:hover {
-    background: rgba(212, 175, 55, 0.13);
-    border-color: rgba(212, 175, 55, 0.60);
-    color: #e4c45a !important;
-}
-
-/* ============================================================
-   ENCONTRO DE BANDAS — DETALHES
-   ============================================================ */
-
-.encontro-detalhes-container {
-    padding-bottom: 30px;
-}
-
-/* ============================================================
-   TOPO
-   ============================================================ */
-
-.encontro-detalhes-topo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.encontro-detalhes-topo-esquerda {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.btn-voltar-encontro {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border: 1px solid rgba(212, 175, 55, 0.30);
-    border-radius: 8px;
-    background: transparent;
-    color: #d4af37;
-    text-decoration: none;
-    font-size: 18px;
-    transition: 0.2s;
-}
-
-.btn-voltar-encontro:hover {
-    background: rgba(212, 175, 55, 0.10);
-    border-color: rgba(212, 175, 55, 0.55);
-}
-
-.encontro-detalhes-topo h2 {
-    margin: 0;
-    color: #fff;
-    font-size: 24px;
-    font-weight: 700;
-}
-
-.encontro-detalhes-acoes {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-}
-
-.btn-editar-encontro,
-.btn-excluir-encontro {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-editar-encontro {
-    border: 1px solid rgba(212, 175, 55, 0.35);
-    background: transparent;
-    color: #d4af37;
-}
-
-.btn-editar-encontro:hover {
-    background: rgba(212, 175, 55, 0.10);
-    border-color: rgba(212, 175, 55, 0.60);
-}
-
-.btn-excluir-encontro {
-    border: 1px solid rgba(231, 76, 60, 0.30);
-    background: transparent;
-    color: #e74c3c;
-}
-
-.btn-excluir-encontro:hover {
-    background: rgba(231, 76, 60, 0.10);
-    border-color: rgba(231, 76, 60, 0.55);
-}
-
-/* ============================================================
-   INFORMAÇÕES
-   ============================================================ */
-
-.encontro-info-card {
-    background: #121215;
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    border-radius: 14px;
-    padding: 24px;
-    margin-bottom: 20px;
-}
-
-.encontro-info-card-cabecalho {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    margin-bottom: 22px;
-}
-
-.encontro-info-card h3 {
-    margin: 0 0 6px;
-    color: #fff;
-    font-size: 22px;
-    font-weight: 700;
-}
-
-.encontro-info-subtitulo {
-    margin: 0;
-    color: #999;
-    font-size: 13px;
-}
-
-.encontro-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 11px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.status-planejamento {
-    background: rgba(212, 175, 55, 0.15);
-    color: #d4af37;
-}
-
-.status-confirmado {
-    background: rgba(46, 204, 113, 0.15);
-    color: #2ecc71;
-}
-
-.status-realizado {
-    background: rgba(52, 152, 219, 0.15);
-    color: #3498db;
-}
-
-.status-cancelado {
-    background: rgba(231, 76, 60, 0.15);
-    color: #e74c3c;
-}
-
-.encontro-dados-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-}
-
-.encontro-dado {
-    background: rgba(255, 255, 255, 0.035);
-    border-radius: 10px;
-    padding: 15px;
-}
-
-.encontro-dado-label {
-    display: block;
-    margin-bottom: 6px;
-    color: #8f8f8f;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.encontro-dado-valor {
-    display: block;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.encontro-dado-vazio {
-    color: #777;
-    font-weight: 400;
-}
-
-.encontro-observacoes {
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.025);
-    border-left: 3px solid #d4af37;
-}
-
-.encontro-observacoes-label {
-    display: block;
-    margin-bottom: 6px;
-    color: #d4af37;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.encontro-observacoes-texto {
-    margin: 0;
-    color: #ccc;
-    font-size: 14px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-}
-
-/* ============================================================
-   RESUMO
-   ============================================================ */
-
-.encontro-resumo-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.encontro-resumo-card {
-    background: #121215;
-    border: 1px solid rgba(212, 175, 55, 0.20);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.encontro-resumo-icone {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    background: rgba(212, 175, 55, 0.10);
-    font-size: 23px;
-}
-
-.encontro-resumo-numero {
-    display: block;
-    color: #d4af37;
-    font-size: 25px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.encontro-resumo-label {
-    display: block;
-    margin-top: 5px;
-    color: #999;
-    font-size: 12px;
-}
-
-/* ============================================================
-   BANDAS
-   ============================================================ */
-
-.bandas-card {
-    background: #121215;
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    border-radius: 14px;
-    overflow: hidden;
-}
-
-.bandas-card-cabecalho {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 20px 22px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.bandas-card-cabecalho h3 {
-    margin: 0 auto 0 0;
-    color: #fff;
-    font-size: 18px;
-}
-
-.btn-adicionar-banda {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 42px;
-    padding: 9px 14px;
-    border: none;
-    border-radius: 8px;
-    background: #d4af37;
-    color: #1b0001;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.btn-adicionar-banda:hover {
-    transform: translateY(-1px);
-    opacity: 0.92;
-}
-
-.btn-relatorio-banda {
-    text-decoration: none !important;
-}
-
-.bandas-vazio {
-    padding: 50px 20px;
-    text-align: center;
-}
-
-.bandas-vazio-icone {
-    font-size: 42px;
-    margin-bottom: 10px;
-}
-
-.bandas-vazio h4 {
-    margin: 0 0 7px;
-    color: #ddd;
-    font-size: 17px;
-}
-
-.bandas-vazio p {
-    margin: 0;
-    color: #888;
-    font-size: 13px;
-}
-
-.bandas-tabela-container {
-    overflow-x: auto;
-}
-
-.bandas-tabela {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.bandas-tabela th {
-    padding: 13px 15px;
-    text-align: left;
-    background: rgba(255, 255, 255, 0.025);
-    color: #999;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    white-space: nowrap;
-}
-
-.bandas-tabela td {
-    padding: 14px 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    color: #ddd;
-    font-size: 13px;
-    vertical-align: middle;
-}
-
-.bandas-tabela tbody tr {
-    transition: 0.15s;
-}
-
-.bandas-tabela tbody tr:hover {
-    background: rgba(212, 175, 55, 0.035);
-}
-
-.banda-nome {
-    color: #fff;
-    font-weight: 600;
-}
-
-.banda-local {
-    color: #999;
-    font-size: 12px;
-}
-
-.banda-quantidade {
-    color: #d4af37;
-    font-weight: 700;
-}
-
-.acoes-banda-linha {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    white-space: nowrap;
-}
-
-.btn-editar-banda,
-.btn-remover-banda {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 7px 11px;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-editar-banda {
-    border: 1px solid rgba(212, 175, 55, 0.30);
-    background: transparent;
-    color: #d4af37;
-}
-
-.btn-editar-banda:hover {
-    background: rgba(212, 175, 55, 0.10);
-    border-color: rgba(212, 175, 55, 0.60);
-    transform: translateY(-1px);
-}
-
-.btn-remover-banda {
-    border: 1px solid rgba(231, 76, 60, 0.30);
-    background: transparent;
-    color: #e74c3c;
-}
-
-.btn-remover-banda:hover {
-    background: rgba(231, 76, 60, 0.10);
-    border-color: rgba(231, 76, 60, 0.60);
-    transform: translateY(-1px);
-}
-
-/* ============================================================
-   MODAIS
-   ============================================================ */
-
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.80);
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.modal-editar-encontro,
-.modal-adicionar-banda {
-    width: 100%;
-    max-width: 900px;
-    max-height: calc(100vh - 40px);
-    background: #121215;
-    border: 1px solid rgba(212, 175, 55, 0.45);
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
-    overflow: hidden;
-    animation: abrirModal 0.18s ease-out;
-    display: flex;
-    flex-direction: column;
-}
-
-@keyframes abrirModal {
-    from {
-        opacity: 0;
-        transform: translateY(-15px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* ============================================================
-   CABEÇALHO MODAL
-   ============================================================ */
-
-.modal-editar-cabecalho,
-.modal-adicionar-banda-cabecalho {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 22px 24px;
-    background: #1b0001;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
-    flex-shrink: 0;
-}
-
-.modal-editar-cabecalho h2,
-.modal-adicionar-banda-cabecalho h2 {
-    margin: 0;
-    color: #fff;
-    font-size: 21px;
-}
-
-.modal-editar-cabecalho p,
-.modal-adicionar-banda-cabecalho p {
-    margin: 6px 0 0;
-    color: #999;
-    font-size: 13px;
-}
-
-.modal-fechar {
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-    font-size: 25px;
-    line-height: 1;
-    cursor: pointer;
-    transition: 0.2s;
-    flex-shrink: 0;
-}
-
-.modal-fechar:hover {
-    background: rgba(212, 175, 55, 0.15);
-    color: #d4af37;
-}
-
-/* ============================================================
-   FORMULÁRIOS
-   ============================================================ */
-
-.modal-editar-encontro form,
-.modal-adicionar-banda form {
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 24px;
-    overflow: hidden;
-}
-
-.modal-form-grid,
-.adicionar-banda-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    min-height: 0;
-    overflow-y: auto;
-    padding-right: 8px;
-}
-
-.modal-campo,
-.adicionar-banda-campo {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.modal-campo-full,
-.adicionar-banda-campo-full {
-    grid-column: 1 / -1;
-}
-
-.modal-campo label,
-.adicionar-banda-campo label {
-    color: #ddd;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.modal-campo input,
-.modal-campo select,
-.modal-campo textarea,
-.adicionar-banda-campo input,
-.adicionar-banda-campo select,
-.adicionar-banda-campo textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 11px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 8px;
-    background: #1b1b1f;
-    color: #fff;
-    font-family: inherit;
-    font-size: 14px;
-    outline: none;
-    transition: 0.2s;
-}
-
-.modal-campo input::placeholder,
-.modal-campo textarea::placeholder,
-.adicionar-banda-campo input::placeholder,
-.adicionar-banda-campo textarea::placeholder {
-    color: #777;
-}
-
-.modal-campo input:focus,
-.modal-campo select:focus,
-.modal-campo textarea:focus,
-.adicionar-banda-campo input:focus,
-.adicionar-banda-campo select:focus,
-.adicionar-banda-campo textarea:focus {
-    border-color: #d4af37;
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.08);
-}
-
-.modal-campo textarea,
-.adicionar-banda-campo textarea {
-    min-height: 90px;
-    resize: vertical;
-}
-
-.modal-campo select,
-.adicionar-banda-campo select {
-    cursor: pointer;
-}
-
-.adicionar-banda-ajuda {
-    margin-top: 5px;
-    color: #777;
-    font-size: 11px;
-    line-height: 1.4;
-}
-
-.responsavel-bn-destaque {
-    border: 1px solid rgba(212, 175, 55, 0.18);
-    border-radius: 9px;
-    padding: 12px;
-    background: rgba(212, 175, 55, 0.035);
-}
-
-/* ============================================================
-   AÇÕES DOS MODAIS
-   ============================================================ */
-
-.modal-editar-acoes,
-.modal-adicionar-banda-acoes {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 25px;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
-}
-
-.btn-modal-cancelar,
-.btn-modal-salvar,
-.btn-adicionar-banda-cancelar,
-.btn-adicionar-banda-salvar {
-    padding: 10px 17px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-modal-cancelar,
-.btn-adicionar-banda-cancelar {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: transparent;
-    color: #ccc;
-}
-
-.btn-modal-cancelar:hover,
-.btn-adicionar-banda-cancelar:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
-}
-
-.btn-modal-salvar,
-.btn-adicionar-banda-salvar {
-    border: none;
-    background: #d4af37;
-    color: #1b0001;
-}
-
-.btn-modal-salvar:hover,
-.btn-adicionar-banda-salvar:hover {
-    transform: translateY(-1px);
-    opacity: 0.92;
-}
-
-/* ============================================================
-   ROLAGEM DOS MODAIS
-   ============================================================ */
-
-.modal-form-grid::-webkit-scrollbar,
-.adicionar-banda-form-grid::-webkit-scrollbar {
-    width: 7px;
-}
-
-.modal-form-grid::-webkit-scrollbar-track,
-.adicionar-banda-form-grid::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.modal-form-grid::-webkit-scrollbar-thumb,
-.adicionar-banda-form-grid::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.45);
-    border-radius: 10px;
-}
-
-/* ============================================================
-   BOTÃO EQUIPE
-   ============================================================ */
-
-.btn-equipe-banda {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 7px 11px;
-    border-radius: 7px;
-    border: 1px solid rgba(52, 152, 219, 0.30);
-    background: transparent;
-    color: #3498db;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-    text-decoration: none;
-}
-
-.btn-equipe-banda:hover {
-    background: rgba(52, 152, 219, 0.10);
-    border-color: rgba(52, 152, 219, 0.60);
-    transform: translateY(-1px);
-}
-
-/* ============================================================
-   MODAL EQUIPE
-   ============================================================ */
-
-.modal-equipe {
-    width: 100%;
-    max-width: 700px;
-    max-height: calc(100vh - 40px);
-    background: #121215;
-    border: 1px solid rgba(212, 175, 55, 0.45);
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
-    overflow: hidden;
-    animation: abrirModal 0.18s ease-out;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-equipe-cabecalho {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 22px 24px;
-    background: #1b0001;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.20);
-    flex-shrink: 0;
-}
-
-.modal-equipe-cabecalho h2 {
-    margin: 0;
-    color: #fff;
-    font-size: 21px;
-}
-
-.modal-equipe-cabecalho p {
-    margin: 6px 0 0;
-    color: #999;
-    font-size: 13px;
-}
-
-.modal-equipe-conteudo {
-    padding: 22px 24px;
-    overflow-y: auto;
-}
-
-.equipe-coordenador {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    margin-bottom: 20px;
-    border-radius: 10px;
-    background: rgba(212, 175, 55, 0.045);
-    border: 1px solid rgba(212, 175, 55, 0.18);
-}
-
-.equipe-coordenador-icone {
-    width: 42px;
-    height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9px;
-    background: rgba(212, 175, 55, 0.10);
-    font-size: 20px;
-}
-
-.equipe-coordenador-label {
-    display: block;
-    color: #888;
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 3px;
-}
-
-.equipe-coordenador-nome {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.equipe-adicionar {
-    padding: 16px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.025);
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    margin-bottom: 20px;
-}
-
-.equipe-adicionar-titulo {
-    margin: 0 0 10px;
-    color: #ddd;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.equipe-adicionar-form {
-    display: flex;
-    gap: 10px;
-}
-
-.equipe-adicionar-form select {
-    flex: 1;
-    min-width: 0;
-    padding: 10px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    border-radius: 8px;
-    background: #1b1b1f;
-    color: #fff;
-    font-family: inherit;
-    font-size: 13px;
-    outline: none;
-}
-
-.equipe-adicionar-form select:focus {
-    border-color: #d4af37;
-}
-
-.btn-equipe-adicionar {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    background: #d4af37;
-    color: #1b0001;
-    font-weight: 700;
-    cursor: pointer;
-    white-space: nowrap;
-}
-
-.btn-equipe-adicionar:hover {
-    opacity: 0.92;
-}
-
-.equipe-lista-titulo {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.equipe-lista-titulo h3 {
-    margin: 0;
-    color: #fff;
-    font-size: 15px;
-}
-
-.equipe-contador {
-    color: #d4af37;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.equipe-lista {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.equipe-membro {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.equipe-membro-info {
-    min-width: 0;
-}
-
-.equipe-membro-nome {
-    display: block;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-.equipe-membro-detalhe {
-    display: block;
-    margin-top: 3px;
-    color: #888;
-    font-size: 11px;
-}
-
-.btn-equipe-remover {
-    flex-shrink: 0;
-    padding: 6px 9px;
-    border: 1px solid rgba(231, 76, 60, 0.30);
-    border-radius: 7px;
-    background: transparent;
-    color: #e74c3c;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-equipe-remover:hover {
-    background: rgba(231, 76, 60, 0.10);
-    border-color: rgba(231, 76, 60, 0.60);
-}
-
-.equipe-vazia {
-    padding: 30px 15px;
-    text-align: center;
-    color: #777;
-    font-size: 13px;
-    border: 1px dashed rgba(255, 255, 255, 0.08);
-    border-radius: 9px;
-}
-
-.modal-equipe-acoes {
-    display: flex;
-    justify-content: flex-end;
-    padding: 18px 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
-}
-
-.btn-equipe-fechar {
-    padding: 9px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 8px;
-    background: transparent;
-    color: #ccc;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-equipe-fechar:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: #fff;
-}
-
-@media (max-width: 650px) {
-    .equipe-adicionar-form {
-        flex-direction: column;
-    }
-
-    .btn-equipe-adicionar {
-        width: 100%;
-    }
-
-    .modal-equipe {
-        max-height: calc(100vh - 20px);
-    }
-}
-
-/* ============================================================
-   RESPONSIVO
-   ============================================================ */
-
-@media (max-width: 800px) {
-    .encontro-dados-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 650px) {
-    .encontro-detalhes-topo {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .encontro-detalhes-acoes {
-        width: 100%;
-    }
-
-    .btn-editar-encontro,
-    .btn-excluir-encontro {
-        flex: 1;
-        justify-content: center;
-    }
-
-    .encontro-info-card-cabecalho {
-        flex-direction: column;
-    }
-
-    .encontro-dados-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .encontro-resumo-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .bandas-card-cabecalho {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .bandas-card-cabecalho h3 {
-        margin-right: 0;
-    }
-
-    .btn-adicionar-banda {
-        width: 100%;
-    }
-
-    .modal-form-grid,
-    .adicionar-banda-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .modal-campo-full,
-    .adicionar-banda-campo-full {
-        grid-column: auto;
-    }
-
-    .modal-editar-acoes,
-    .modal-adicionar-banda-acoes {
-        flex-direction: column-reverse;
-    }
-
-    .btn-modal-cancelar,
-    .btn-modal-salvar,
-    .btn-adicionar-banda-cancelar,
-    .btn-adicionar-banda-salvar {
-        width: 100%;
-    }
-}
-
-@media (max-height: 700px) {
-    #modalAdicionarBanda,
-    #modalEditarBanda,
-    #modalEditarEncontro {
-        align-items: flex-start;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-
-    .modal-editar-encontro,
-    .modal-adicionar-banda {
-        max-height: calc(100vh - 20px);
-    }
-}
-</style>
-
-<div class="encontro-detalhes-container">
-
-
-<!-- ========================================================
-     TOPO
-     ======================================================== -->
-
-<div class="encontro-detalhes-topo">
-
-    <div class="encontro-detalhes-topo-esquerda">
-
-        <a
-            href="{{ url_for('encontro_bandas') }}"
-            class="btn-voltar-encontro"
-            title="Voltar"
-        >
-            ←
-        </a>
-
-        <div>
-            <h2>🎺 {{ encontro.nome }}</h2>
-        </div>
-
-    </div>
-
-    <div class="encontro-detalhes-acoes">
-
-        <button
-            type="button"
-            class="btn-editar-encontro"
-            onclick="abrirModalEditarEncontro()"
-        >
-            ✏️ Editar
-        </button>
-
-        <button
-            type="button"
-            class="btn-excluir-encontro"
-            onclick="confirmarExclusaoEncontro()"
-        >
-            🗑️ Excluir
-        </button>
-
-    </div>
-
-</div>
-
-<!-- ========================================================
-     INFORMAÇÕES DO ENCONTRO
-     ======================================================== -->
-
-{% set status = encontro.status|default('PLANEJAMENTO', true)|upper %}
-
-<div class="encontro-info-card">
-
-    <div class="encontro-info-card-cabecalho">
-
-        <div>
-
-            <h3>{{ encontro.nome }}</h3>
-
-            <p class="encontro-info-subtitulo">
-                Informações gerais do encontro de bandas
-            </p>
-
-        </div>
-
-        <span class="encontro-status
-            {% if status == 'PLANEJAMENTO' %}
-                status-planejamento
-            {% elif status == 'CONFIRMADO' %}
-                status-confirmado
-            {% elif status == 'REALIZADO' %}
-                status-realizado
-            {% elif status == 'CANCELADO' %}
-                status-cancelado
-            {% endif %}
-        ">
-
-            {% if status == 'PLANEJAMENTO' %}
-                📋 Planejamento
-            {% elif status == 'CONFIRMADO' %}
-                ✅ Confirmado
-            {% elif status == 'REALIZADO' %}
-                🏁 Realizado
-            {% elif status == 'CANCELADO' %}
-                ❌ Cancelado
-            {% else %}
-                {{ status }}
+            📅
+            {% if encontro.data %}
+                {{ encontro.data.strftime('%d/%m/%Y') }}
             {% endif %}
 
-        </span>
+            {% if encontro.horario %}
+                • 🕓 {{ encontro.horario.strftime('%H:%M') }}
+            {% endif %}
 
-    </div>
+            {% if encontro.local %}
+                • 📍 {{ encontro.local }}
+            {% endif %}
 
-    <div class="encontro-dados-grid">
-
-        <div class="encontro-dado">
-
-            <span class="encontro-dado-label">
-                📅 Data
-            </span>
-
-            <span class="encontro-dado-valor">
-
-                {% if encontro.data %}
-
-                    {{ encontro.data.strftime('%d/%m/%Y') }}
-
-                {% else %}
-
-                    <span class="encontro-dado-vazio">
-                        Não informado
-                    </span>
-
-                {% endif %}
-
-            </span>
-
-        </div>
-
-        <div class="encontro-dado">
-
-            <span class="encontro-dado-label">
-                🕐 Horário
-            </span>
-
-            <span class="encontro-dado-valor">
-
-                {% if encontro.horario %}
-
-                    {{ encontro.horario.strftime('%H:%M') }}
-
-                {% else %}
-
-                    <span class="encontro-dado-vazio">
-                        Não informado
-                    </span>
-
-                {% endif %}
-
-            </span>
-
-        </div>
-
-        <div class="encontro-dado">
-
-            <span class="encontro-dado-label">
-                📍 Local
-            </span>
-
-            <span class="encontro-dado-valor">
-
-                {% if encontro.local %}
-
-                    {{ encontro.local }}
-
-                {% else %}
-
-                    <span class="encontro-dado-vazio">
-                        Não informado
-                    </span>
-
-                {% endif %}
-
-            </span>
-
-        </div>
-
-    </div>
-
-    {% if encontro.observacoes %}
-
-    <div class="encontro-observacoes">
-
-        <span class="encontro-observacoes-label">
-            📝 Observações
-        </span>
-
-        <p class="encontro-observacoes-texto">
-            {{ encontro.observacoes }}
         </p>
 
     </div>
 
-    {% endif %}
+
+    <div class="d-flex gap-2 flex-wrap">
+
+    <a
+        href="/admin/encontros-bandas/{{ encontro.id }}/relatorio"
+        target="_blank"
+        class="btn btn-warning">
+
+        📄 Relatório de Bandas
+
+    </a>
+
+    <a
+        href="/admin/encontros-bandas"
+        class="btn btn-secondary">
+
+        ← Voltar
+
+    </a>
 
 </div>
-
-<!-- ========================================================
-     RESUMO
-     ======================================================== -->
-
-<div class="encontro-resumo-grid">
-
-    <div class="encontro-resumo-card">
-
-        <div class="encontro-resumo-icone">
-            🎺
-        </div>
-
-        <div>
-
-            <span class="encontro-resumo-numero">
-                {{ total_bandas }}
-            </span>
-
-            <span class="encontro-resumo-label">
-                Bandas participantes
-            </span>
-
-        </div>
-
-    </div>
-
-    <div class="encontro-resumo-card">
-
-        <div class="encontro-resumo-icone">
-            👥
-        </div>
-
-        <div>
-
-            <span class="encontro-resumo-numero">
-                {{ total_pessoas }}
-            </span>
-
-            <span class="encontro-resumo-label">
-                Pessoas previstas
-            </span>
-
-        </div>
-
-    </div>
-
-</div>
-
-<!-- ========================================================
-     BANDAS PARTICIPANTES
-     ======================================================== -->
-
-<div class="bandas-card">
-
-    <div class="bandas-card-cabecalho">
-
-        <h3>
-            🎺 Bandas Participantes
-        </h3>
-
-        <a
-            href="{{ url_for(
-                'relatorio_bandas_participantes',
-                encontro_id=encontro.id
-            ) }}"
-            target="_blank"
-            class="btn-adicionar-banda btn-relatorio-banda"
-        >
-            📄 Relatório
-        </a>
-
-        <button
-            type="button"
-            class="btn-adicionar-banda"
-            onclick="abrirModalAdicionarBanda()"
-        >
-            ➕ Adicionar Banda
-        </button>
-
-    </div>
-
-    {% if bandas %}
-
-    <div class="bandas-tabela-container">
-
-        <table class="bandas-tabela">
-
-            <thead>
-
-                <tr>
-                    <th>Banda</th>
-                    <th>Cidade</th>
-                    <th>Responsável</th>
-                    <th>Capitão</th>
-                    <th>Maestro</th>
-                    <th>Pessoas</th>
-                    <th>Ações</th>
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                {% for banda in bandas %}
-
-                <tr>
-
-                    <td>
-                        <div class="banda-nome">
-                            {{ banda.banda_nome or '—' }}
-                        </div>
-                    </td>
-
-                    <td>
-
-                        <div class="banda-local">
-
-                            {% if banda.cidade %}
-
-                                {{ banda.cidade }}
-
-                                {% if banda.uf %}
-                                    / {{ banda.uf }}
-                                {% endif %}
-
-                            {% elif banda.uf %}
-
-                                {{ banda.uf }}
-
-                            {% else %}
-
-                                —
-
-                            {% endif %}
-
-                        </div>
-
-                    </td>
-
-                    <td>
-                        {{ banda.responsavel_nome or '—' }}
-                    </td>
-
-                    <td>
-                        {{ banda.capitao_nome or '—' }}
-                    </td>
-
-                    <td>
-                        {{ banda.maestro_nome or '—' }}
-                    </td>
-
-                    <td>
-
-                        <span class="banda-quantidade">
-                            {{ banda.quantidade_componentes or 0 }}
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <div class="acoes-banda-linha">
-
-                            <!-- EQUIPE -->
-
-                            <button
-                                type="button"
-                                class="btn-equipe-banda"
-                                onclick='abrirModalEquipe(
-                                    {{ banda.id|tojson }},
-                                    {{ (banda.banda_nome or "Banda")|tojson }},
-                                    {{ (banda.responsavel_bn_nome or "Não definido")|tojson }}
-                                )'
-                                title="Gerenciar equipe desta banda"
-                            >
-                                👥 Equipe
-                            </button>
-
-                            <!-- EDITAR -->
-
-                            <button
-                                type="button"
-                                class="btn-editar-banda"
-                                onclick='abrirModalEditarBanda(
-                                    {{ banda.id|tojson }},
-                                    {{ (banda.banda_nome or "")|tojson }},
-                                    {{ (banda.cidade or "")|tojson }},
-                                    {{ (banda.uf or "")|tojson }},
-                                    {{ (banda.responsavel_nome or "")|tojson }},
-                                    {{ (banda.responsavel_telefone or "")|tojson }},
-                                    {{ (banda.capitao_nome or "")|tojson }},
-                                    {{ (banda.maestro_nome or "")|tojson }},
-                                    {{ banda.quantidade_componentes or 0 }},
-                                    {{ (banda.responsavel_bn_integrante_id or "")|tojson }},
-                                    {{ (banda.observacoes or "")|tojson }}
-                                )'
-                            >
-                                ✏️ Editar
-                            </button>
-
-                            <!-- REMOVER -->
-
-                            <form
-                                method="POST"
-                                action="{{ url_for(
-                                    'remover_banda_encontro',
-                                    encontro_id=encontro.id,
-                                    encontro_banda_id=banda.id
-                                ) }}"
-                                onsubmit="return confirmarRemocaoBanda(
-                                    {{ (banda.banda_nome or 'esta banda')|tojson }}
-                                );"
-                                style="display: inline;"
-                            >
-
-                                <button
-                                    type="submit"
-                                    class="btn-remover-banda"
-                                    title="Remover banda deste encontro"
-                                >
-                                    🗑️ Remover
-                                </button>
-
-                            </form>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                {% endfor %}
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-    {% else %}
-
-    <div class="bandas-vazio">
-
-        <div class="bandas-vazio-icone">
-            🎺
-        </div>
-
-        <h4>
-            Nenhuma banda cadastrada
-        </h4>
-
-        <p>
-            Adicione as bandas que participarão deste encontro.
-        </p>
-
-    </div>
-
-    {% endif %}
 
 </div>
 
 
-</div>
+<!-- ========================================== -->
+<!-- RESUMO -->
+<!-- ========================================== -->
 
-<!-- ============================================================
-     MODAL EDITAR ENCONTRO
-     ============================================================ -->
+<div class="row g-3 mb-4">
 
-<div
-    id="modalEditarEncontro"
-    class="modal-overlay"
-    onclick="fecharModalEditarFora(event)"
->
+    <!-- PENDENTES -->
 
-<div class="modal-editar-encontro">
+    <div class="col-6 col-lg-3">
 
-    <div class="modal-editar-cabecalho">
+        <div class="card card-bn h-100">
 
-        <div>
+            <div class="card-body text-center">
 
-            <h2>✏️ Editar Encontro</h2>
+                <div style="font-size: 30px;">
+                    ⏳
+                </div>
 
-            <p>
-                Atualize as informações do encontro.
-            </p>
+                <div
+                    style="
+                        color: #d4af37;
+                        font-size: 28px;
+                        font-weight: 700;
+                    ">
 
-        </div>
+                    {{ total_pendentes }}
 
-        <button
-            type="button"
-            class="modal-fechar"
-            onclick="fecharModalEditarEncontro()"
-            title="Fechar"
-        >
-            ×
-        </button>
+                </div>
 
-    </div>
-
-    <form
-        method="POST"
-        action="{{ url_for(
-            'editar_encontro_bandas',
-            encontro_id=encontro.id
-        ) }}"
-    >
-
-        <div class="modal-form-grid">
-
-            <div class="modal-campo modal-campo-full">
-
-                <label for="editar_nome">
-                    Nome do encontro
-                </label>
-
-                <input
-                    type="text"
-                    id="editar_nome"
-                    name="nome"
-                    value="{{ encontro.nome or '' }}"
-                    required
-                >
-
-            </div>
-
-            <div class="modal-campo">
-
-                <label for="editar_data">
-                    Data
-                </label>
-
-                <input
-                    type="date"
-                    id="editar_data"
-                    name="data"
-                    value="{% if encontro.data %}{{ encontro.data.strftime('%Y-%m-%d') }}{% endif %}"
-                >
-
-            </div>
-
-            <div class="modal-campo">
-
-                <label for="editar_horario">
-                    Horário
-                </label>
-
-                <input
-                    type="time"
-                    id="editar_horario"
-                    name="horario"
-                    value="{% if encontro.horario %}{{ encontro.horario.strftime('%H:%M') }}{% endif %}"
-                >
-
-            </div>
-
-            <div class="modal-campo modal-campo-full">
-
-                <label for="editar_local">
-                    Local
-                </label>
-
-                <input
-                    type="text"
-                    id="editar_local"
-                    name="local"
-                    value="{{ encontro.local or '' }}"
-                    placeholder="Informe o local do encontro"
-                >
-
-            </div>
-
-            <div class="modal-campo">
-
-                <label for="editar_status">
-                    Status
-                </label>
-
-                <select
-                    id="editar_status"
-                    name="status"
-                >
-
-                    <option
-                        value="PLANEJAMENTO"
-                        {% if status == 'PLANEJAMENTO' %}selected{% endif %}
-                    >
-                        📋 Planejamento
-                    </option>
-
-                    <option
-                        value="CONFIRMADO"
-                        {% if status == 'CONFIRMADO' %}selected{% endif %}
-                    >
-                        ✅ Confirmado
-                    </option>
-
-                    <option
-                        value="REALIZADO"
-                        {% if status == 'REALIZADO' %}selected{% endif %}
-                    >
-                        🏁 Realizado
-                    </option>
-
-                    <option
-                        value="CANCELADO"
-                        {% if status == 'CANCELADO' %}selected{% endif %}
-                    >
-                        ❌ Cancelado
-                    </option>
-
-                </select>
-
-            </div>
-
-            <div class="modal-campo modal-campo-full">
-
-                <label for="editar_observacoes">
-                    Observações
-                </label>
-
-                <textarea
-                    id="editar_observacoes"
-                    name="observacoes"
-                    placeholder="Observações sobre o encontro..."
-                >{{ encontro.observacoes or '' }}</textarea>
-
-            </div>
-
-        </div>
-
-        <div class="modal-editar-acoes">
-
-            <button
-                type="button"
-                class="btn-modal-cancelar"
-                onclick="fecharModalEditarEncontro()"
-            >
-                Cancelar
-            </button>
-
-            <button
-                type="submit"
-                class="btn-modal-salvar"
-            >
-                💾 Salvar alterações
-            </button>
-
-        </div>
-
-    </form>
-
-</div>
-
-
-</div>
-
-<!-- ============================================================
-     FORMULÁRIO EXCLUSÃO DO ENCONTRO
-     ============================================================ -->
-
-<form
-    id="formExcluirEncontro"
-    method="POST"
-    action="{{ url_for(
-        'excluir_encontro_bandas',
-        encontro_id=encontro.id
-    ) }}"
-    style="display: none;"
->
-</form>
-
-<!-- ============================================================
-     MODAL ADICIONAR BANDA
-     ============================================================ -->
-
-<div
-    id="modalAdicionarBanda"
-    class="modal-overlay"
-    onclick="fecharModalAdicionarBandaFora(event)"
->
-
-
-<div class="modal-adicionar-banda">
-
-    <div class="modal-adicionar-banda-cabecalho">
-
-        <div>
-
-            <h2>➕ Adicionar Banda</h2>
-
-            <p>
-                Cadastre uma banda participante do encontro.
-            </p>
-
-        </div>
-
-        <button
-            type="button"
-            class="modal-fechar"
-            onclick="fecharModalAdicionarBanda()"
-            title="Fechar"
-        >
-            ×
-        </button>
-
-    </div>
-
-    <form
-        method="POST"
-        action="{{ url_for(
-            'adicionar_banda_encontro',
-            encontro_id=encontro.id
-        ) }}"
-    >
-
-        <div class="adicionar-banda-form-grid">
-
-            <div class="adicionar-banda-campo adicionar-banda-campo-full">
-
-                <label for="nome_banda">
-                    Nome da banda *
-                </label>
-
-                <input
-                    type="text"
-                    id="nome_banda"
-                    name="nome_banda"
-                    placeholder="Ex.: Banda Marcial Municipal"
-                    required
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="cidade">
-                    Cidade
-                </label>
-
-                <input
-                    type="text"
-                    id="cidade"
-                    name="cidade"
-                    placeholder="Cidade"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="uf">
-                    UF
-                </label>
-
-                <select id="uf" name="uf">
-
-                    <option value="">
-                        Selecione
-                    </option>
-
-                    {% for sigla in [
-                        'AC','AL','AP','AM','BA','CE','DF','ES',
-                        'GO','MA','MT','MS','MG','PA','PB','PR',
-                        'PE','PI','RJ','RN','RS','RO','RR','SC',
-                        'SP','SE','TO'
-                    ] %}
-
-                    <option value="{{ sigla }}">
-                        {{ sigla }}
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="responsavel_nome">
-                    Responsável
-                </label>
-
-                <input
-                    type="text"
-                    id="responsavel_nome"
-                    name="responsavel_nome"
-                    placeholder="Nome do responsável"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="responsavel_telefone">
-                    Telefone
-                </label>
-
-                <input
-                    type="text"
-                    id="responsavel_telefone"
-                    name="responsavel_telefone"
-                    placeholder="(84) 99999-9999"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="capitao_nome">
-                    Capitão
-                </label>
-
-                <input
-                    type="text"
-                    id="capitao_nome"
-                    name="capitao_nome"
-                    placeholder="Nome do capitão"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="maestro_nome">
-                    Maestro
-                </label>
-
-                <input
-                    type="text"
-                    id="maestro_nome"
-                    name="maestro_nome"
-                    placeholder="Nome do maestro"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="quantidade_componentes">
-                    Quantidade de componentes
-                </label>
-
-                <input
-                    type="number"
-                    id="quantidade_componentes"
-                    name="quantidade_componentes"
-                    min="0"
-                    value="0"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo responsavel-bn-destaque">
-
-                <label for="responsavel_bn_integrante_id">
-                    Coordenador responsável
-                </label>
-
-                <select
-                    id="responsavel_bn_integrante_id"
-                    name="responsavel_bn_integrante_id"
-                >
-
-                    <option value="">
-                        Nenhum selecionado
-                    </option>
-
-                    {% for integrante in integrantes_responsaveis %}
-
-                    <option value="{{ integrante.id }}">
-
-                        {{ integrante.nome }}
-
-                        {% if integrante.funcao %}
-                            — {{ integrante.funcao }}
-                        {% endif %}
-
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-                <div class="adicionar-banda-ajuda">
-                    Selecione o integrante da Brilho Negro que será o coordenador responsável por esta banda neste encontro.
+                <div class="text-secondary">
+                    Pendentes
                 </div>
 
             </div>
 
-            <div class="adicionar-banda-campo adicionar-banda-campo-full">
-
-                <label for="observacoes">
-                    Observações
-                </label>
-
-                <textarea
-                    id="observacoes"
-                    name="observacoes"
-                    placeholder="Observações sobre a banda..."
-                ></textarea>
-
-            </div>
-
         </div>
-
-        <div class="modal-adicionar-banda-acoes">
-
-            <button
-                type="button"
-                class="btn-adicionar-banda-cancelar"
-                onclick="fecharModalAdicionarBanda()"
-            >
-                Cancelar
-            </button>
-
-            <button
-                type="submit"
-                class="btn-adicionar-banda-salvar"
-            >
-                💾 Adicionar banda
-            </button>
-
-        </div>
-
-    </form>
-
-</div>
-
-
-</div>
-
-<!-- ============================================================
-     MODAL EDITAR BANDA
-     ============================================================ -->
-
-<div
-    id="modalEditarBanda"
-    class="modal-overlay"
-    onclick="fecharModalEditarBandaFora(event)"
->
-
-
-<div class="modal-adicionar-banda">
-
-    <div class="modal-adicionar-banda-cabecalho">
-
-        <div>
-
-            <h2>✏️ Editar Banda</h2>
-
-            <p>
-                Atualize os dados da banda participante.
-            </p>
-
-        </div>
-
-        <button
-            type="button"
-            class="modal-fechar"
-            onclick="fecharModalEditarBanda()"
-            title="Fechar"
-        >
-            ×
-        </button>
 
     </div>
 
-    <form
-        id="formEditarBanda"
-        method="POST"
-    >
 
-        <div class="adicionar-banda-form-grid">
+    <!-- APROVADAS -->
 
-            <div class="adicionar-banda-campo adicionar-banda-campo-full">
+    <div class="col-6 col-lg-3">
 
-                <label for="editar_nome_banda">
-                    Nome da banda *
-                </label>
+        <div class="card card-bn h-100">
 
-                <input
-                    type="text"
-                    id="editar_nome_banda"
-                    name="nome_banda"
-                    required
-                >
+            <div class="card-body text-center">
 
-            </div>
+                <div style="font-size: 30px;">
+                    ✅
+                </div>
 
-            <div class="adicionar-banda-campo">
+                <div
+                    style="
+                        color: #d4af37;
+                        font-size: 28px;
+                        font-weight: 700;
+                    ">
 
-                <label for="editar_cidade_banda">
-                    Cidade
-                </label>
+                    {{ total_aprovadas }}
 
-                <input
-                    type="text"
-                    id="editar_cidade_banda"
-                    name="cidade"
-                >
+                </div>
+
+                <div class="text-secondary">
+                    Aprovadas
+                </div>
 
             </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="editar_uf_banda">
-                    UF
-                </label>
-
-                <select
-                    id="editar_uf_banda"
-                    name="uf"
-                >
-
-                    <option value="">
-                        Selecione
-                    </option>
-
-                    {% for sigla in [
-                        'AC','AL','AP','AM','BA','CE','DF','ES',
-                        'GO','MA','MT','MS','MG','PA','PB','PR',
-                        'PE','PI','RJ','RN','RS','RO','RR','SC',
-                        'SP','SE','TO'
-                    ] %}
-
-                    <option value="{{ sigla }}">
-                        {{ sigla }}
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="editar_responsavel_nome">
-                    Responsável
-                </label>
-
-                <input
-                    type="text"
-                    id="editar_responsavel_nome"
-                    name="responsavel_nome"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="editar_responsavel_telefone">
-                    Telefone
-                </label>
-
-                <input
-                    type="text"
-                    id="editar_responsavel_telefone"
-                    name="responsavel_telefone"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="editar_capitao_nome">
-                    Capitão
-                </label>
-
-                <input
-                    type="text"
-                    id="editar_capitao_nome"
-                    name="capitao_nome"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="editar_maestro_nome">
-                    Maestro
-                </label>
-
-                <input
-                    type="text"
-                    id="editar_maestro_nome"
-                    name="maestro_nome"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo">
-
-                <label for="editar_quantidade_componentes">
-                    Quantidade de componentes
-                </label>
-
-                <input
-                    type="number"
-                    id="editar_quantidade_componentes"
-                    name="quantidade_componentes"
-                    min="0"
-                    value="0"
-                >
-
-            </div>
-
-            <div class="adicionar-banda-campo responsavel-bn-destaque">
-
-                <label for="editar_responsavel_bn_integrante_id">
-                    Coordenador responsável
-                </label>
-
-                <select
-                    id="editar_responsavel_bn_integrante_id"
-                    name="responsavel_bn_integrante_id"
-                >
-
-                    <option value="">
-                        Nenhum selecionado
-                    </option>
-
-                    {% for integrante in integrantes_responsaveis %}
-
-                    <option value="{{ integrante.id }}">
-
-                        {{ integrante.nome }}
-
-                        {% if integrante.funcao %}
-                            — {{ integrante.funcao }}
-                        {% endif %}
-
-                    </option>
-
-                    {% endfor %}
-
-                </select>
-
-            </div>
-
-            <div class="adicionar-banda-campo adicionar-banda-campo-full">
-
-                <label for="editar_observacoes_banda">
-                    Observações
-                </label>
-
-                <textarea
-                    id="editar_observacoes_banda"
-                    name="observacoes"
-                ></textarea>
-
-            </div>
-
-        </div>
-
-        <div class="modal-adicionar-banda-acoes">
-
-            <button
-                type="button"
-                class="btn-adicionar-banda-cancelar"
-                onclick="fecharModalEditarBanda()"
-            >
-                Cancelar
-            </button>
-
-            <button
-                type="submit"
-                class="btn-adicionar-banda-salvar"
-            >
-                💾 Salvar alterações
-            </button>
-
-        </div>
-
-    </form>
-
-</div>
-
-
-</div>
-
-<!-- ============================================================
-     MODAL EQUIPE DA BANDA
-     ============================================================ -->
-
-<div
-    id="modalEquipe"
-    class="modal-overlay"
-    onclick="fecharModalEquipeFora(event)"
->
-
-
-<div class="modal-equipe">
-
-    <div class="modal-equipe-cabecalho">
-
-        <div>
-            <h2>👥 Equipe da Banda</h2>
-
-            <p id="modalEquipeSubtitulo">
-                Equipe responsável pela banda
-            </p>
-        </div>
-
-        <div class="modal-equipe-cabecalho-acoes">
-
-            <a
-                id="btnGerenciarEquipeCompleta"
-                href="#"
-                class="btn-gerenciar-equipe"
-            >
-                👥 Ver equipe completa
-            </a>
-
-            <button
-                type="button"
-                class="modal-fechar"
-                onclick="fecharModalEquipe()"
-            >
-                ×
-            </button>
 
         </div>
 
     </div>
 
-    <div class="modal-equipe-conteudo">
 
-        <!-- COORDENADOR -->
+    <!-- RECUSADAS -->
 
-        <div class="equipe-coordenador">
+    <div class="col-6 col-lg-3">
 
-            <div class="equipe-coordenador-icone">
-                👤
+        <div class="card card-bn h-100">
+
+            <div class="card-body text-center">
+
+                <div style="font-size: 30px;">
+                    ❌
+                </div>
+
+                <div
+                    style="
+                        color: #d4af37;
+                        font-size: 28px;
+                        font-weight: 700;
+                    ">
+
+                    {{ total_recusadas }}
+
+                </div>
+
+                <div class="text-secondary">
+                    Recusadas
+                </div>
+
             </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- COMPONENTES -->
+
+    <div class="col-6 col-lg-3">
+
+        <div class="card card-bn h-100">
+
+            <div class="card-body text-center">
+
+                <div style="font-size: 30px;">
+                    👥
+                </div>
+
+                <div
+                    style="
+                        color: #d4af37;
+                        font-size: 28px;
+                        font-weight: 700;
+                    ">
+
+                    {{ total_componentes }}
+
+                </div>
+
+                <div class="text-secondary">
+                    Componentes
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================== -->
+<!-- INSCRIÇÕES -->
+<!-- ========================================== -->
+
+<div class="card card-bn shadow-lg">
+
+    <div class="card-body p-4">
+
+        <div class="d-flex justify-content-between
+                    align-items-center mb-4">
 
             <div>
 
-                <span class="equipe-coordenador-label">
-                    Coordenador responsável
-                </span>
+                <h4 style="color: #d4af37;">
 
-                <span
-                    id="modalEquipeCoordenador"
-                    class="equipe-coordenador-nome"
-                >
-                    —
-                </span>
+                    📋 Inscrições
+
+                </h4>
+
+                <p class="text-secondary mb-0">
+
+                    Corporações inscritas neste encontro.
+
+                </p>
 
             </div>
 
         </div>
 
-        <!-- ========================================================
-        ACESSAR GERENCIAMENTO COMPLETO
-        ======================================================== -->
 
-        <!-- ADICIONAR INTEGRANTE -->
+        {% if inscricoes %}
 
-        <div class="equipe-adicionar">
+            <div class="table-responsive">
 
-            <p class="equipe-adicionar-titulo">
-                ➕ Adicionar integrante à equipe
-            </p>
+                <table class="table table-dark table-hover align-middle">
 
-            <form
-                id="formAdicionarEquipe"
-                method="POST"
-                class="equipe-adicionar-form"
-            >
+                    <thead>
 
-                <select
-                    id="equipeIntegranteId"
-                    name="integrante_id"
-                    required
-                >
+                        <tr>
 
-                    <option value="">
-                        Selecione um integrante
-                    </option>
+                            <th>
+                                Corporação
+                            </th>
 
-                    {% for integrante in integrantes_responsaveis %}
+                            <th>
+                                Cidade
+                            </th>
 
-                    <option value="{{ integrante.id }}">
+                            <th>
+                                Instituição
+                            </th>
 
-                        {{ integrante.nome }}
+                            <th>
+                                Regente
+                            </th>
 
-                        {% if integrante.codigo_integrante %}
-                            — {{ integrante.codigo_integrante }}
-                        {% endif %}
+                            <th class="text-center">
+                                Componentes
+                            </th>
 
-                        {% if integrante.funcao %}
-                            — {{ integrante.funcao }}
-                        {% endif %}
+                            <th>
+                                Status
+                            </th>
 
-                    </option>
+                            <th class="text-center">
+                                Ações
+                            </th>
 
-                    {% endfor %}
+                        </tr>
 
-                </select>
+                    </thead>
 
-                <button
-                    type="submit"
-                    class="btn-equipe-adicionar"
-                >
-                    ➕ Adicionar
-                </button>
 
-            </form>
+                    <tbody>
 
-        </div>
+                        {% for inscricao in inscricoes %}
 
-        <!-- LISTA -->
+                            <tr>
 
-        <div class="equipe-lista-titulo">
+                                <td>
 
-            <h3>
-                Integrantes da equipe
-            </h3>
+                                    <strong>
+                                        {{ inscricao.nome_corporacao }}
+                                    </strong>
 
-            <span
-                id="equipeContador"
-                class="equipe-contador"
-            >
-                0 integrantes
-            </span>
+                                </td>
 
-        </div>
 
-        <div
-            id="equipeLista"
-            class="equipe-lista"
-        >
+                                <td>
 
-            <div class="equipe-vazia">
-                Nenhum integrante adicionado à equipe.
+                                    {{ inscricao.cidade or '—' }}
+
+                                    {% if inscricao.uf %}
+                                        / {{ inscricao.uf }}
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ inscricao.instituicao or '—' }}
+
+                                </td>
+
+
+                                <td>
+
+                                    {{ inscricao.maestro_nome or '—' }}
+
+                                </td>
+
+
+                                <td class="text-center">
+
+                                    {{ inscricao.quantidade_componentes }}
+
+                                </td>
+
+
+                                <!-- STATUS -->
+
+                                <td>
+
+                                    {% if inscricao.status == 'PENDENTE' %}
+
+                                        <span
+                                            class="badge"
+                                            style="
+                                                background: #d4af37;
+                                                color: #111;
+                                            ">
+
+                                            PENDENTE
+
+                                        </span>
+
+                                    {% elif inscricao.status == 'APROVADA' %}
+
+                                        <span
+                                            class="badge bg-success">
+
+                                            APROVADA
+
+                                        </span>
+
+                                    {% elif inscricao.status == 'RECUSADA' %}
+
+                                        <span
+                                            class="badge bg-danger">
+
+                                            RECUSADA
+
+                                        </span>
+
+                                    {% else %}
+
+                                        <span
+                                            class="badge bg-secondary">
+
+                                            {{ inscricao.status }}
+
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <!-- AÇÕES -->
+
+                                <td class="text-center">
+
+                                    {% if inscricao.status == 'PENDENTE' %}
+
+                                        <div class="d-flex
+                                                    justify-content-center
+                                                    gap-2
+                                                    flex-wrap">
+
+                                            <!-- EDITAR -->
+
+                                            <a
+                                                href="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/editar"
+                                                class="btn btn-sm btn-outline-light">
+
+                                                ✏️ Editar
+
+                                            </a>
+
+
+                                            <!-- APROVAR -->
+
+                                            <form
+                                                method="POST"
+                                                action="/admin/encontros-bandas/{{ encontro.id }}"
+                                                class="d-inline">
+
+                                                <input
+                                                    type="hidden"
+                                                    name="inscricao_id"
+                                                    value="{{ inscricao.id }}"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="acao"
+                                                    value="APROVAR"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-success"
+                                                    onclick="return confirm('Deseja aprovar esta inscrição?');"
+                                                >
+
+                                                    ✓ Aprovar
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- RECUSAR -->
+
+                                            <form
+                                                method="POST"
+                                                action="/admin/encontros-bandas/{{ encontro.id }}"
+                                                class="d-inline">
+
+                                                <input
+                                                    type="hidden"
+                                                    name="inscricao_id"
+                                                    value="{{ inscricao.id }}"
+                                                >
+
+                                                <input
+                                                    type="hidden"
+                                                    name="acao"
+                                                    value="RECUSAR"
+                                                >
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Deseja recusar esta inscrição?');"
+                                                >
+
+                                                    ✕ Recusar
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- EXCLUIR -->
+
+                                            <form
+                                                method="POST"
+                                                action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
+                                                class="d-inline">
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('ATENÇÃO! Deseja realmente excluir esta inscrição? Esta ação não poderá ser desfeita.');"
+                                                >
+
+                                                    🗑️ Excluir
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+
+                                    {% elif inscricao.status == 'APROVADA' %}
+
+                                        <div class="d-flex
+                                                    justify-content-center
+                                                    align-items-center
+                                                    gap-2
+                                                    flex-wrap">
+
+                                            <span class="text-success fw-bold">
+
+                                                ✓ Aprovada
+
+                                            </span>
+
+
+                                            <!-- EXCLUIR -->
+
+                                            <form
+                                                method="POST"
+                                                action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
+                                                class="d-inline">
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('ATENÇÃO! Esta banda está APROVADA. Deseja realmente excluir a inscrição? Esta ação não poderá ser desfeita.');"
+                                                >
+
+                                                    🗑️ Excluir
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+
+                                    {% elif inscricao.status == 'RECUSADA' %}
+
+                                        <div class="d-flex
+                                                    justify-content-center
+                                                    align-items-center
+                                                    gap-2
+                                                    flex-wrap">
+
+                                            <span class="text-danger fw-bold">
+
+                                                ✕ Recusada
+
+                                            </span>
+
+
+                                            <!-- EXCLUIR -->
+
+                                            <form
+                                                method="POST"
+                                                action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
+                                                class="d-inline">
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Deseja realmente excluir esta inscrição? Esta ação não poderá ser desfeita.');"
+                                                >
+
+                                                    🗑️ Excluir
+
+                                                </button>
+
+                                            </form>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
             </div>
 
-        </div>
 
-    </div>
+        {% else %}
 
-    <div class="modal-equipe-acoes">
+            <div class="text-center py-5">
 
-        <button
-            type="button"
-            class="btn-equipe-fechar"
-            onclick="fecharModalEquipe()"
-        >
-            Fechar
-        </button>
+                <div style="font-size: 50px;">
+                    🎺
+                </div>
+
+                <h5
+                    class="mt-3"
+                    style="color: #d4af37;">
+
+                    Nenhuma inscrição recebida
+
+                </h5>
+
+                <p class="text-secondary mb-0">
+
+                    As inscrições das corporações aparecerão
+                    aqui quando forem enviadas.
+
+                </p>
+
+            </div>
+
+        {% endif %}
 
     </div>
 
 </div>
 
-
 </div>
-
-<script>
-
-/* ============================================================
-   URL BASE PARA EDITAR BANDA
-   ============================================================ */
-
-const URL_EDITAR_BANDA_BASE = {{ url_for(
-    'editar_banda_encontro',
-    encontro_id=encontro.id,
-    encontro_banda_id=0
-)|tojson }};
-
-/* ============================================================
-   URL BASE — ADICIONAR INTEGRANTE À EQUIPE
-   ============================================================ */
-
-const URL_ADICIONAR_EQUIPE_BASE = {{ url_for(
-    'adicionar_integrante_equipe_banda',
-    encontro_id=encontro.id,
-    encontro_banda_id=0
-)|tojson }};
-
-/* ============================================================
-   URL BASE — REMOVER INTEGRANTE DA EQUIPE
-   ============================================================ */
-
-const URL_REMOVER_EQUIPE_BASE = {{ url_for(
-    'remover_integrante_equipe_banda',
-    encontro_id=encontro.id,
-    encontro_banda_id=0,
-    equipe_id=0
-)|tojson }};
-
-/* ============================================================
-   EDITAR ENCONTRO
-   ============================================================ */
-
-function abrirModalEditarEncontro() {
-
-    const modal = document.getElementById("modalEditarEncontro");
-
-    if (!modal) {
-        return;
-    }
-
-    modal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-
-    setTimeout(function () {
-
-        const campoNome =
-            document.getElementById("editar_nome");
-
-        if (campoNome) {
-            campoNome.focus();
-            campoNome.select();
-        }
-
-    }, 100);
-}
-
-function fecharModalEditarEncontro() {
-
-    const modal =
-        document.getElementById("modalEditarEncontro");
-
-    if (!modal) {
-        return;
-    }
-
-    modal.style.display = "none";
-    document.body.style.overflow = "";
-}
-
-function fecharModalEditarFora(event) {
-
-    if (event.target.id === "modalEditarEncontro") {
-        fecharModalEditarEncontro();
-    }
-}
-
-/* ============================================================
-   ADICIONAR BANDA
-   ============================================================ */
-
-function abrirModalAdicionarBanda() {
-
-    const modal =
-        document.getElementById("modalAdicionarBanda");
-
-    if (!modal) {
-        return;
-    }
-
-    modal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-
-    setTimeout(function () {
-
-        const campoBanda =
-            document.getElementById("nome_banda");
-
-        if (campoBanda) {
-            campoBanda.focus();
-        }
-
-    }, 100);
-}
-
-function fecharModalAdicionarBanda() {
-
-    const modal =
-        document.getElementById("modalAdicionarBanda");
-
-    if (!modal) {
-        return;
-    }
-
-    modal.style.display = "none";
-    document.body.style.overflow = "";
-}
-
-function fecharModalAdicionarBandaFora(event) {
-
-    if (event.target.id === "modalAdicionarBanda") {
-        fecharModalAdicionarBanda();
-    }
-}
-
-/* ============================================================
-   EXCLUIR ENCONTRO
-   ============================================================ */
-
-function confirmarExclusaoEncontro() {
-
-    const confirmado = confirm(
-        "Tem certeza que deseja excluir este encontro?\n\n" +
-        "Essa ação também removerá as bandas participantes " +
-        "associadas a este encontro.\n\n" +
-        "Essa ação não poderá ser desfeita."
-    );
-
-    if (!confirmado) {
-        return;
-    }
-
-    const formulario =
-        document.getElementById("formExcluirEncontro");
-
-    if (formulario) {
-        formulario.submit();
-    }
-}
-
-/* ============================================================
-   REMOVER BANDA
-   ============================================================ */
-
-function confirmarRemocaoBanda(nomeBanda) {
-
-    const nome =
-        nomeBanda || "esta banda";
-
-    return confirm(
-        "Deseja realmente remover a banda:\n\n" +
-        nome +
-        "\n\n" +
-        "A banda será removida apenas deste encontro.\n" +
-        "Essa ação não poderá ser desfeita."
-    );
-}
-
-/* ============================================================
-   EDITAR BANDA
-   ============================================================ */
-
-function abrirModalEditarBanda(
-    bandaId,
-    nomeBanda,
-    cidade,
-    uf,
-    responsavelNome,
-    responsavelTelefone,
-    capitaoNome,
-    maestroNome,
-    quantidadeComponentes,
-    responsavelBnId,
-    observacoes
-) {
-
-    const modal =
-        document.getElementById("modalEditarBanda");
-
-    const formulario =
-        document.getElementById("formEditarBanda");
-
-    if (!modal || !formulario) {
-        return;
-    }
-
-    if (!URL_EDITAR_BANDA_BASE) {
-
-        console.error(
-            "URL base para edição da banda não foi encontrada."
-        );
-
-        return;
-    }
-
-    formulario.action =
-        URL_EDITAR_BANDA_BASE.replace(
-            "/0/editar",
-            "/" +
-            encodeURIComponent(bandaId) +
-            "/editar"
-        );
-
-    const campoNome =
-        document.getElementById("editar_nome_banda");
-
-    const campoCidade =
-        document.getElementById("editar_cidade_banda");
-
-    const campoUf =
-        document.getElementById("editar_uf_banda");
-
-    const campoResponsavel =
-        document.getElementById("editar_responsavel_nome");
-
-    const campoTelefone =
-        document.getElementById(
-            "editar_responsavel_telefone"
-        );
-
-    const campoCapitao =
-        document.getElementById("editar_capitao_nome");
-
-    const campoMaestro =
-        document.getElementById("editar_maestro_nome");
-
-    const campoQuantidade =
-        document.getElementById(
-            "editar_quantidade_componentes"
-        );
-
-    const campoResponsavelBn =
-        document.getElementById(
-            "editar_responsavel_bn_integrante_id"
-        );
-
-    const campoObservacoes =
-        document.getElementById(
-            "editar_observacoes_banda"
-        );
-
-    if (campoNome) {
-        campoNome.value = nomeBanda || "";
-    }
-
-    if (campoCidade) {
-        campoCidade.value = cidade || "";
-    }
-
-    if (campoUf) {
-        campoUf.value = uf || "";
-    }
-
-    if (campoResponsavel) {
-        campoResponsavel.value =
-            responsavelNome || "";
-    }
-
-    if (campoTelefone) {
-        campoTelefone.value =
-            responsavelTelefone || "";
-    }
-
-    if (campoCapitao) {
-        campoCapitao.value =
-            capitaoNome || "";
-    }
-
-    if (campoMaestro) {
-        campoMaestro.value =
-            maestroNome || "";
-    }
-
-    if (campoQuantidade) {
-        campoQuantidade.value =
-            quantidadeComponentes !== null &&
-            quantidadeComponentes !== undefined &&
-            quantidadeComponentes !== ""
-                ? quantidadeComponentes
-                : 0;
-    }
-
-    if (campoResponsavelBn) {
-        campoResponsavelBn.value =
-            responsavelBnId !== null &&
-            responsavelBnId !== undefined &&
-            responsavelBnId !== ""
-                ? String(responsavelBnId)
-                : "";
-    }
-
-    if (campoObservacoes) {
-        campoObservacoes.value =
-            observacoes || "";
-    }
-
-    modal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-
-    setTimeout(function () {
-
-        if (campoNome) {
-            campoNome.focus();
-            campoNome.select();
-        }
-
-    }, 100);
-}
-
-function fecharModalEditarBanda() {
-
-    const modal =
-        document.getElementById("modalEditarBanda");
-
-    if (!modal) {
-        return;
-    }
-
-    modal.style.display = "none";
-    document.body.style.overflow = "";
-}
-
-function fecharModalEditarBandaFora(event) {
-
-    if (event.target.id === "modalEditarBanda") {
-        fecharModalEditarBanda();
-    }
-}
-
-/* ============================================================
-   EQUIPE DA BANDA
-   ============================================================ */
-
-const equipesBandas = {
-
-{% for banda in bandas %}
-
-    "{{ banda.id }}": [
-
-    {% for membro in banda.equipe_membros %}
-
-        {
-            equipeId: {{ membro.equipe_id|tojson }},
-            integranteId: {{ membro.integrante_id|tojson }},
-            nome: {{ (membro.nome or "")|tojson }},
-            codigo: {{ (membro.codigo_integrante or "")|tojson }},
-            funcao: {{ (membro.funcao or "")|tojson }}
-        }{% if not loop.last %},{% endif %}
-
-    {% endfor %}
-
-    ]{% if not loop.last %},{% endif %}
-
-{% endfor %}
-
-};
-
-let equipeBandaAtual = null;
-
-/* ============================================================
-   ABRIR MODAL DA EQUIPE
-   ============================================================ */
-
-function abrirModalEquipe(
-    encontroBandaId,
-    nomeBanda,
-    coordenador
-) {
-
-    console.log(
-        "Abrindo equipe da banda:",
-        encontroBandaId
-    );
-
-    const modal =
-        document.getElementById("modalEquipe");
-
-    if (!modal) {
-
-        console.error(
-            "Modal #modalEquipe não encontrado."
-        );
-
-        return;
-    }
-
-    equipeBandaAtual =
-        String(encontroBandaId);
-
-    const btnGerenciarEquipeCompleta =
-        document.getElementById(
-            "btnGerenciarEquipeCompleta"
-        );
-
-    if (btnGerenciarEquipeCompleta) {
-
-        const urlEquipeBase =
-            {{ url_for(
-                'equipe_banda',
-                encontro_id=encontro.id,
-                encontro_banda_id=0
-            )|tojson }};
-
-        btnGerenciarEquipeCompleta.href =
-            urlEquipeBase.replace(
-                "/banda/0/equipe",
-                "/banda/" +
-                encodeURIComponent(encontroBandaId) +
-                "/equipe"
-            );
-    }    
-
-    const subtitulo =
-        document.getElementById(
-            "modalEquipeSubtitulo"
-        );
-
-    const campoCoordenador =
-        document.getElementById(
-            "modalEquipeCoordenador"
-        );
-
-    const formulario =
-        document.getElementById(
-            "formAdicionarEquipe"
-        );
-
-    if (subtitulo) {
-
-        subtitulo.textContent =
-            "Equipe responsável pela banda " +
-            (nomeBanda || "Banda");
-
-    }
-
-    if (campoCoordenador) {
-
-        campoCoordenador.textContent =
-            coordenador || "Não definido";
-
-    }
-
-    if (formulario) {
-
-        formulario.action =
-            URL_ADICIONAR_EQUIPE_BASE.replace(
-                "/0/equipe/adicionar",
-                "/" +
-                encodeURIComponent(encontroBandaId) +
-                "/equipe/adicionar"
-            );
-
-        /*
-         * Impede que o formulário provoque o recarregamento
-         * da página. A equipe passa a ser adicionada por AJAX.
-         */
-        formulario.onsubmit =
-            adicionarIntegranteEquipe;
-
-    }
-
-    const select =
-        document.getElementById(
-            "equipeIntegranteId"
-        );
-
-    if (select) {
-        select.value = "";
-    }
-
-    atualizarListaEquipe();
-
-    modal.style.display = "flex";
-    document.body.style.overflow = "hidden";
-}
-
-/* ============================================================
-   ADICIONAR INTEGRANTE À EQUIPE
-   ============================================================ */
-
-async function adicionarIntegranteEquipe(event) {
-
-    event.preventDefault();
-
-    const formulario = event.currentTarget;
-
-    const select =
-        document.getElementById(
-            "equipeIntegranteId"
-        );
-
-    if (!select || !select.value) {
-        return false;
-    }
-
-    if (!equipeBandaAtual) {
-        return false;
-    }
-
-    const integranteId =
-        select.value;
-
-    const botao =
-        formulario.querySelector(
-            ".btn-equipe-adicionar"
-        );
-
-    const textoOriginal =
-        botao
-            ? botao.textContent
-            : "";
-
-    if (botao) {
-        botao.disabled = true;
-        botao.textContent = "Adicionando...";
-    }
-
-    try {
-
-        const resposta =
-            await fetch(
-                formulario.action,
-                {
-                    method: "POST",
-                    headers: {
-                        "X-Requested-With":
-                            "XMLHttpRequest",
-                        "Accept":
-                            "application/json"
-                    },
-                    body:
-                        new FormData(formulario)
-                }
-            );
-
-        const dados =
-            await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-
-            alert(
-                dados.mensagem ||
-                "Não foi possível adicionar o integrante à equipe."
-            );
-
-            return false;
-        }
-
-        if (!equipesBandas[equipeBandaAtual]) {
-            equipesBandas[equipeBandaAtual] = [];
-        }
-
-        /*
-         * O backend retorna os dados completos do membro
-         * recém-adicionado.
-         */
-        if (dados.membro) {
-
-            const membro =
-                dados.membro;
-
-            const jaExiste =
-                equipesBandas[
-                    equipeBandaAtual
-                ].some(function (item) {
-
-                    return Number(
-                        item.integranteId
-                    ) === Number(
-                        membro.integrante_id
-                    );
-
-                });
-
-            if (!jaExiste) {
-
-                equipesBandas[
-                    equipeBandaAtual
-                ].push({
-
-                    equipeId:
-                        membro.equipe_id,
-
-                    integranteId:
-                        membro.integrante_id,
-
-                    nome:
-                        membro.nome || "",
-
-                    codigo:
-                        membro.codigo_integrante || "",
-
-                    funcao:
-                        membro.funcao || ""
-
-                });
-
-            }
-
-        }
-
-        select.value = "";
-
-        atualizarListaEquipe();
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao adicionar integrante:",
-            erro
-        );
-
-        alert(
-            "Não foi possível adicionar o integrante à equipe."
-        );
-
-    } finally {
-
-        if (botao) {
-
-            botao.disabled = false;
-            botao.textContent =
-                textoOriginal;
-
-        }
-
-    }
-
-    return false;
-}
-
-/* ============================================================
-   ATUALIZAR LISTA DA EQUIPE
-   ============================================================ */
-
-function atualizarListaEquipe() {
-
-    const lista =
-        document.getElementById(
-            "equipeLista"
-        );
-
-    const contador =
-        document.getElementById(
-            "equipeContador"
-        );
-
-    const select =
-        document.getElementById(
-            "equipeIntegranteId"
-        );
-
-    if (!lista || !contador) {
-        return;
-    }
-
-    const equipe =
-        equipesBandas[
-            String(equipeBandaAtual)
-        ] || [];
-
-    contador.textContent =
-        equipe.length +
-        (
-            equipe.length === 1
-                ? " integrante"
-                : " integrantes"
-        );
-
-    lista.innerHTML = "";
-
-    /* --------------------------------------------------------
-       EQUIPE VAZIA
-       -------------------------------------------------------- */
-
-    if (equipe.length === 0) {
-
-        const vazio =
-            document.createElement("div");
-
-        vazio.className =
-            "equipe-vazia";
-
-        vazio.textContent =
-            "Nenhum integrante adicionado à equipe.";
-
-        lista.appendChild(vazio);
-
-    }
-
-    /* --------------------------------------------------------
-       INTEGRANTES
-       -------------------------------------------------------- */
-
-    else {
-
-        equipe.forEach(function (membro) {
-
-            const item =
-                document.createElement("div");
-
-            item.className =
-                "equipe-membro";
-
-            const info =
-                document.createElement("div");
-
-            info.className =
-                "equipe-membro-info";
-
-            const nome =
-                document.createElement("span");
-
-            nome.className =
-                "equipe-membro-nome";
-
-            nome.textContent =
-                membro.nome || "";
-
-            info.appendChild(nome);
-
-            const detalhes = [];
-
-            if (membro.codigo) {
-                detalhes.push(membro.codigo);
-            }
-
-            if (membro.funcao) {
-                detalhes.push(membro.funcao);
-            }
-
-            if (detalhes.length > 0) {
-
-                const detalhe =
-                    document.createElement("span");
-
-                detalhe.className =
-                    "equipe-membro-detalhe";
-
-                detalhe.textContent =
-                    detalhes.join(" — ");
-
-                info.appendChild(detalhe);
-            }
-
-            /* ------------------------------------------------
-               BOTÃO REMOVER VIA AJAX
-               ------------------------------------------------ */
-
-            const formulario =
-                document.createElement("form");
-
-            formulario.method =
-                "POST";
-
-            formulario.action =
-                montarUrlRemoverEquipe(
-                    membro.equipeId
-                );
-
-            formulario.addEventListener(
-                "submit",
-                removerIntegranteEquipe
-            );
-
-            formulario.dataset.nome =
-                membro.nome || "";
-
-            const botao =
-                document.createElement("button");
-
-            botao.type =
-                "submit";
-
-            botao.className =
-                "btn-equipe-remover";
-
-            botao.title =
-                "Remover da equipe";
-
-            botao.textContent =
-                "🗑️ Remover";
-
-            formulario.appendChild(botao);
-
-            item.appendChild(info);
-            item.appendChild(formulario);
-
-            lista.appendChild(item);
-
-        });
-
-    }
-
-    /* --------------------------------------------------------
-       DESABILITAR QUEM JÁ ESTÁ NA EQUIPE
-       -------------------------------------------------------- */
-
-    if (select) {
-
-        Array.from(
-            select.options
-        ).forEach(function (option) {
-
-            if (!option.value) {
-                return;
-            }
-
-            const integranteId =
-                Number(option.value);
-
-            const jaExiste =
-                equipe.some(function (membro) {
-
-                    return Number(
-                        membro.integranteId
-                    ) === integranteId;
-
-                });
-
-            option.disabled =
-                jaExiste;
-
-        });
-
-        select.value = "";
-    }
-}
-
-/* ============================================================
-   REMOVER INTEGRANTE DA EQUIPE
-   ============================================================ */
-
-async function removerIntegranteEquipe(event) {
-
-    event.preventDefault();
-
-    const formulario =
-        event.currentTarget;
-
-    const nome =
-        formulario.dataset.nome ||
-        "este integrante";
-
-    if (!confirmarRemocaoEquipe(nome)) {
-        return false;
-    }
-
-    const botao =
-        formulario.querySelector(
-            ".btn-equipe-remover"
-        );
-
-    if (botao) {
-
-        botao.disabled = true;
-        botao.textContent =
-            "Removendo...";
-
-    }
-
-    try {
-
-        const resposta =
-            await fetch(
-                formulario.action,
-                {
-                    method: "POST",
-                    headers: {
-                        "X-Requested-With":
-                            "XMLHttpRequest",
-                        "Accept":
-                            "application/json"
-                    }
-                }
-            );
-
-        const dados =
-            await resposta.json();
-
-        if (!resposta.ok || !dados.sucesso) {
-
-            alert(
-                dados.mensagem ||
-                "Não foi possível remover o integrante."
-            );
-
-            return false;
-        }
-
-        const equipe =
-            equipesBandas[
-                String(equipeBandaAtual)
-            ] || [];
-
-        const equipeId =
-            Number(
-                formulario.action
-                    .split("/equipe/")
-                    .pop()
-                    .split("/remover")[0]
-            );
-
-        equipesBandas[
-            String(equipeBandaAtual)
-        ] =
-            equipe.filter(function (membro) {
-
-                return Number(
-                    membro.equipeId
-                ) !== equipeId;
-
-            });
-
-        atualizarListaEquipe();
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao remover integrante:",
-            erro
-        );
-
-        alert(
-            "Não foi possível remover o integrante."
-        );
-
-    } finally {
-
-        if (botao) {
-
-            botao.disabled = false;
-            botao.textContent =
-                "🗑️ Remover";
-
-        }
-
-    }
-
-    return false;
-}
-
-/* ============================================================
-   URL PARA REMOVER INTEGRANTE
-   ============================================================ */
-
-function montarUrlRemoverEquipe(equipeId) {
-
-    return URL_REMOVER_EQUIPE_BASE
-        .replace(
-            "/0/equipe/0/remover",
-            "/" +
-            encodeURIComponent(
-                equipeBandaAtual
-            ) +
-            "/equipe/" +
-            encodeURIComponent(
-                equipeId
-            ) +
-            "/remover"
-        );
-}
-
-/* ============================================================
-   CONFIRMAR REMOÇÃO
-   ============================================================ */
-
-function confirmarRemocaoEquipe(nome) {
-
-    return confirm(
-        "Deseja remover " +
-        (nome || "este integrante") +
-        " da equipe desta banda?"
-    );
-}
-
-/* ============================================================
-   FECHAR MODAL EQUIPE
-   ============================================================ */
-
-function fecharModalEquipe() {
-
-    const modal =
-        document.getElementById(
-            "modalEquipe"
-        );
-
-    if (!modal) {
-        return;
-    }
-
-    modal.style.display =
-        "none";
-
-    document.body.style.overflow =
-        "";
-
-    equipeBandaAtual =
-        null;
-}
-
-/* ============================================================
-   FECHAR CLICANDO FORA
-   ============================================================ */
-
-function fecharModalEquipeFora(event) {
-
-    if (
-        event.target.id ===
-        "modalEquipe"
-    ) {
-
-        fecharModalEquipe();
-
-    }
-}
-
-/* ============================================================
-   ESC FECHA QUALQUER MODAL
-   ============================================================ */
-
-document.addEventListener(
-    "keydown",
-    function (event) {
-
-        if (event.key !== "Escape") {
-            return;
-        }
-
-        fecharModalEditarEncontro();
-        fecharModalAdicionarBanda();
-        fecharModalEditarBanda();
-        fecharModalEquipe();
-
-    }
-);
-
-/* ============================================================
-   GARANTE MODAIS FECHADOS AO CARREGAR
-   ============================================================ */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-        const modalEditarEncontro =
-            document.getElementById(
-                "modalEditarEncontro"
-            );
-
-        const modalAdicionarBanda =
-            document.getElementById(
-                "modalAdicionarBanda"
-            );
-
-        const modalEditarBanda =
-            document.getElementById(
-                "modalEditarBanda"
-            );
-
-        const modalEquipe =
-            document.getElementById(
-                "modalEquipe"
-            );
-
-        if (modalEditarEncontro) {
-            modalEditarEncontro.style.display =
-                "none";
-        }
-
-        if (modalAdicionarBanda) {
-            modalAdicionarBanda.style.display =
-                "none";
-        }
-
-        if (modalEditarBanda) {
-            modalEditarBanda.style.display =
-                "none";
-        }
-
-        if (modalEquipe) {
-            modalEquipe.style.display =
-                "none";
-        }
-
-    }
-);
-
-</script>
 
 {% endblock %}

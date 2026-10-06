@@ -1,5 +1,3 @@
-from io import BytesIO
-
 from datetime import datetime
 
 import os
