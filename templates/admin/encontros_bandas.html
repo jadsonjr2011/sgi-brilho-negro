@@ -66,33 +66,33 @@ Encontros de Bandas
 
     {% if encontros %}
 
-        <div class="row g-4">
+        <div class="row g-3">
 
             {% for encontro in encontros %}
 
-                <div class="col-12 col-xl-6">
+                <div class="col-12 col-md-6 col-xl-4">
 
                     <div class="card card-bn shadow-lg h-100">
 
-                        <div class="card-body p-4">
+                        <div class="card-body p-3">
 
                             <!-- CABEÇALHO DO CARD -->
 
                             <div class="d-flex justify-content-between
                                         align-items-start
-                                        gap-3 mb-3">
+                                        gap-2 mb-2">
 
                                 <div>
 
-                                    <h4
+                                    <h5
                                         class="mb-1"
-                                        style="color: #d4af37;">
+                                        style="color: #d4af37; font-size: 1.1rem; font-weight: 700;">
 
                                         {{ encontro.nome }}
 
-                                    </h4>
+                                    </h5>
 
-                                    <small class="text-secondary">
+                                    <small class="text-secondary" style="font-size: 0.8rem;">
 
                                         Encontro #{{ encontro.id }}
 
@@ -110,6 +110,7 @@ Encontros de Bandas
                                         style="
                                             background: #6c757d;
                                             color: white;
+                                            font-size: 0.7rem;
                                         ">
 
                                         PLANEJAMENTO
@@ -123,6 +124,7 @@ Encontros de Bandas
                                         style="
                                             background: #198754;
                                             color: white;
+                                            font-size: 0.7rem;
                                         ">
 
                                         CONFIRMADO
@@ -136,6 +138,7 @@ Encontros de Bandas
                                         style="
                                             background: #0d6efd;
                                             color: white;
+                                            font-size: 0.7rem;
                                         ">
 
                                         REALIZADO
@@ -149,6 +152,7 @@ Encontros de Bandas
                                         style="
                                             background: #dc3545;
                                             color: white;
+                                            font-size: 0.7rem;
                                         ">
 
                                         CANCELADO
@@ -157,7 +161,7 @@ Encontros de Bandas
 
                                 {% else %}
 
-                                    <span class="badge bg-secondary">
+                                    <span class="badge bg-secondary" style="font-size: 0.7rem;">
 
                                         {{ encontro.status }}
 
@@ -168,22 +172,22 @@ Encontros de Bandas
                             </div>
 
 
-                            <hr style="border-color: #333;">
+                            <hr style="border-color: #333; margin: 0.75rem 0;">
 
 
                             <!-- INFORMAÇÕES -->
 
-                            <div class="row g-3 mb-4">
+                            <div class="row g-2 mb-3">
 
                                 <!-- DATA -->
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-6">
 
-                                    <div class="text-secondary small">
+                                    <div class="text-secondary small" style="font-size: 0.75rem;">
                                         📅 Data
                                     </div>
 
-                                    <div class="text-light">
+                                    <div class="text-light small">
 
                                         {% if encontro.data %}
 
@@ -202,13 +206,13 @@ Encontros de Bandas
 
                                 <!-- HORÁRIO -->
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-6">
 
-                                    <div class="text-secondary small">
+                                    <div class="text-secondary small" style="font-size: 0.75rem;">
                                         🕓 Horário
                                     </div>
 
-                                    <div class="text-light">
+                                    <div class="text-light small">
 
                                         {% if encontro.horario %}
 
@@ -227,13 +231,13 @@ Encontros de Bandas
 
                                 <!-- LOCAL -->
 
-                                <div class="col-12">
+                                <div class="col-12 mt-2">
 
-                                    <div class="text-secondary small">
+                                    <div class="text-secondary small" style="font-size: 0.75rem;">
                                         📍 Local
                                     </div>
 
-                                    <div class="text-light">
+                                    <div class="text-light small text-truncate">
 
                                         {{ encontro.local or '—' }}
 
@@ -248,22 +252,22 @@ Encontros de Bandas
                             <!-- TOTAIS -->
                             <!-- ========================================== -->
 
-                            <div class="row g-3 mb-4">
+                            <div class="row g-2 mb-3">
 
                                 <div class="col-6">
 
                                     <div
-                                        class="p-3 text-center"
+                                        class="p-2 text-center"
                                         style="
                                             background: rgba(212,175,55,.08);
                                             border: 1px solid rgba(212,175,55,.20);
-                                            border-radius: 10px;
+                                            border-radius: 8px;
                                         ">
 
                                         <div
                                             style="
                                                 color: #d4af37;
-                                                font-size: 24px;
+                                                font-size: 20px;
                                                 font-weight: 700;
                                             ">
 
@@ -271,7 +275,7 @@ Encontros de Bandas
 
                                         </div>
 
-                                        <div class="text-secondary small">
+                                        <div class="text-secondary" style="font-size: 0.75rem;">
 
                                             Bandas
 
@@ -285,17 +289,17 @@ Encontros de Bandas
                                 <div class="col-6">
 
                                     <div
-                                        class="p-3 text-center"
+                                        class="p-2 text-center"
                                         style="
                                             background: rgba(212,175,55,.08);
                                             border: 1px solid rgba(212,175,55,.20);
-                                            border-radius: 10px;
+                                            border-radius: 8px;
                                         ">
 
                                         <div
                                             style="
                                                 color: #d4af37;
-                                                font-size: 24px;
+                                                font-size: 20px;
                                                 font-weight: 700;
                                             ">
 
@@ -303,7 +307,7 @@ Encontros de Bandas
 
                                         </div>
 
-                                        <div class="text-secondary small">
+                                        <div class="text-secondary" style="font-size: 0.75rem;">
 
                                             Componentes
 
@@ -320,12 +324,11 @@ Encontros de Bandas
                             <!-- BOTÕES -->
                             <!-- ========================================== -->
 
-                            <div class="d-flex flex-column
-                                        flex-md-row gap-2">
+                            <div class="d-flex flex-column gap-2">
 
                                 <a
                                     href="/admin/encontros-bandas/{{ encontro.id }}"
-                                    class="btn btn-brilho">
+                                    class="btn btn-brilho btn-sm py-2">
 
                                     👁️ Abrir encontro
 
@@ -336,7 +339,7 @@ Encontros de Bandas
 
                                 <button
                                     type="button"
-                                    class="btn btn-outline-light"
+                                    class="btn btn-outline-light btn-sm py-2"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalEditarEncontro{{ encontro.id }}">
 
@@ -926,10 +929,6 @@ Encontros de Bandas
 
 <style>
 
-/* ============================================================
-   MODAL — EDITAR ENCONTRO | BRILHO NEGRO
-   ============================================================ */
-
 .modal-editar-encontro {
 
     background: #161616;
@@ -946,8 +945,6 @@ Encontros de Bandas
     overflow: hidden;
 }
 
-
-/* CABEÇALHO */
 
 .modal-editar-encontro .modal-header {
 
@@ -993,8 +990,6 @@ Encontros de Bandas
 }
 
 
-/* CORPO */
-
 .modal-editar-encontro .modal-body {
 
     background: #181818;
@@ -1002,8 +997,6 @@ Encontros de Bandas
     padding: 24px;
 }
 
-
-/* LABELS */
 
 .modal-editar-encontro .form-label {
 
@@ -1014,8 +1007,6 @@ Encontros de Bandas
     margin-bottom: 7px;
 }
 
-
-/* CAMPOS */
 
 .modal-editar-encontro .form-control,
 .modal-editar-encontro .form-select {
@@ -1071,8 +1062,6 @@ Encontros de Bandas
 }
 
 
-/* RODAPÉ */
-
 .modal-editar-encontro .modal-footer {
 
     background: #111111;
@@ -1082,8 +1071,6 @@ Encontros de Bandas
     padding: 15px 22px;
 }
 
-
-/* BOTÃO CANCELAR */
 
 .modal-editar-encontro .btn-secondary {
 
@@ -1100,8 +1087,6 @@ Encontros de Bandas
     background: #444;
 }
 
-
-/* BOTÃO SALVAR */
 
 .modal-editar-encontro .btn-warning {
 

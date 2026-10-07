@@ -8,94 +8,196 @@
 
 <div class="container-fluid py-4">
 
-<!-- CABEÇALHO -->
+    <!-- ========================================== -->
+    <!-- CABEÇALHO -->
+    <!-- ========================================== -->
 
-<div class="d-flex flex-column flex-md-row
-            justify-content-between
-            align-items-md-center
-            gap-3 mb-4">
+    <div class="d-flex flex-column flex-md-row
+                justify-content-between
+                align-items-md-center
+                gap-3 mb-4">
 
-    <div>
+        <div>
 
-        <h2 style="color: #d4af37; font-weight: 700;">
-            🎺 {{ encontro.nome }}
-        </h2>
+            <h2 style="color: #d4af37; font-weight: 700;">
+                🎺 {{ encontro.nome }}
+            </h2>
 
-        <p class="text-secondary mb-0">
+            <p class="text-secondary mb-0 small">
 
-            📅
-            {% if encontro.data %}
-                {{ encontro.data.strftime('%d/%m/%Y') }}
-            {% endif %}
+                📅
+                {% if encontro.data %}
+                    {{ encontro.data.strftime('%d/%m/%Y') }}
+                {% endif %}
 
-            {% if encontro.horario %}
-                • 🕓 {{ encontro.horario.strftime('%H:%M') }}
-            {% endif %}
+                {% if encontro.horario %}
+                    • 🕓 {{ encontro.horario.strftime('%H:%M') }}
+                {% endif %}
 
-            {% if encontro.local %}
-                • 📍 {{ encontro.local }}
-            {% endif %}
+                {% if encontro.local %}
+                    • 📍 {{ encontro.local }}
+                {% endif %}
 
-        </p>
+            </p>
+
+        </div>
+
+
+        <div class="d-flex gap-2 flex-wrap">
+
+            <a
+                href="/admin/encontros-bandas/{{ encontro.id }}/relatorio"
+                target="_blank"
+                class="btn btn-warning btn-sm py-2">
+
+                📄 Relatório de Bandas
+
+            </a>
+
+            <a
+                href="/admin/encontros-bandas"
+                class="btn btn-secondary btn-sm py-2">
+
+                ← Voltar
+
+            </a>
+
+        </div>
 
     </div>
 
 
-    <div class="d-flex gap-2 flex-wrap">
+    <!-- ========================================== -->
+    <!-- RESUMO (CARDS COMPACTOS) -->
+    <!-- ========================================== -->
 
-    <a
-        href="/admin/encontros-bandas/{{ encontro.id }}/relatorio"
-        target="_blank"
-        class="btn btn-warning">
+    <div class="row g-2 mb-4">
 
-        📄 Relatório de Bandas
+        <!-- PENDENTES -->
 
-    </a>
+        <div class="col-6 col-lg-3">
 
-    <a
-        href="/admin/encontros-bandas"
-        class="btn btn-secondary">
+            <div class="card card-bn h-100 shadow-sm">
 
-        ← Voltar
+                <div class="card-body text-center p-2">
 
-    </a>
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span style="font-size: 20px;">⏳</span>
+                        <div
+                            style="
+                                color: #d4af37;
+                                font-size: 20px;
+                                font-weight: 700;
+                            ">
 
-</div>
+                            {{ total_pendentes }}
 
-</div>
+                        </div>
+                    </div>
 
-
-<!-- ========================================== -->
-<!-- RESUMO -->
-<!-- ========================================== -->
-
-<div class="row g-3 mb-4">
-
-    <!-- PENDENTES -->
-
-    <div class="col-6 col-lg-3">
-
-        <div class="card card-bn h-100">
-
-            <div class="card-body text-center">
-
-                <div style="font-size: 30px;">
-                    ⏳
-                </div>
-
-                <div
-                    style="
-                        color: #d4af37;
-                        font-size: 28px;
-                        font-weight: 700;
-                    ">
-
-                    {{ total_pendentes }}
+                    <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                        Pendentes
+                    </div>
 
                 </div>
 
-                <div class="text-secondary">
-                    Pendentes
+            </div>
+
+        </div>
+
+
+        <!-- APROVADAS -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card card-bn h-100 shadow-sm">
+
+                <div class="card-body text-center p-2">
+
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span style="font-size: 20px;">✅</span>
+                        <div
+                            style="
+                                color: #d4af37;
+                                font-size: 20px;
+                                font-weight: 700;
+                            ">
+
+                            {{ total_aprovadas }}
+
+                        </div>
+                    </div>
+
+                    <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                        Aprovadas
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RECUSADAS -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card card-bn h-100 shadow-sm">
+
+                <div class="card-body text-center p-2">
+
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span style="font-size: 20px;">❌</span>
+                        <div
+                            style="
+                                color: #d4af37;
+                                font-size: 20px;
+                                font-weight: 700;
+                            ">
+
+                            {{ total_recusadas }}
+
+                        </div>
+                    </div>
+
+                    <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                        Recusadas
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPONENTES -->
+
+        <div class="col-6 col-lg-3">
+
+            <div class="card card-bn h-100 shadow-sm">
+
+                <div class="card-body text-center p-2">
+
+                    <div class="d-flex align-items-center justify-content-center gap-2">
+                        <span style="font-size: 20px;">👥</span>
+                        <div
+                            style="
+                                color: #d4af37;
+                                font-size: 20px;
+                                font-weight: 700;
+                            ">
+
+                            {{ total_componentes }}
+
+                        </div>
+                    </div>
+
+                    <div class="text-secondary small mt-1" style="font-size: 0.75rem;">
+                        Componentes
+                    </div>
+
                 </div>
 
             </div>
@@ -105,506 +207,404 @@
     </div>
 
 
-    <!-- APROVADAS -->
+    <!-- ========================================== -->
+    <!-- INSCRIÇÕES -->
+    <!-- ========================================== -->
 
-    <div class="col-6 col-lg-3">
+    <div class="card card-bn shadow-lg">
 
-        <div class="card card-bn h-100">
+        <div class="card-body p-4">
 
-            <div class="card-body text-center">
+            <div class="d-flex justify-content-between
+                        align-items-center mb-4">
 
-                <div style="font-size: 30px;">
-                    ✅
-                </div>
+                <div>
 
-                <div
-                    style="
-                        color: #d4af37;
-                        font-size: 28px;
-                        font-weight: 700;
-                    ">
+                    <h4 style="color: #d4af37; font-weight: 700;">
 
-                    {{ total_aprovadas }}
+                        📋 Inscrições
 
-                </div>
+                    </h4>
 
-                <div class="text-secondary">
-                    Aprovadas
-                </div>
+                    <p class="text-secondary mb-0 small">
 
-            </div>
+                        Corporações inscritas neste encontro.
 
-        </div>
-
-    </div>
-
-
-    <!-- RECUSADAS -->
-
-    <div class="col-6 col-lg-3">
-
-        <div class="card card-bn h-100">
-
-            <div class="card-body text-center">
-
-                <div style="font-size: 30px;">
-                    ❌
-                </div>
-
-                <div
-                    style="
-                        color: #d4af37;
-                        font-size: 28px;
-                        font-weight: 700;
-                    ">
-
-                    {{ total_recusadas }}
-
-                </div>
-
-                <div class="text-secondary">
-                    Recusadas
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- COMPONENTES -->
-
-    <div class="col-6 col-lg-3">
-
-        <div class="card card-bn h-100">
-
-            <div class="card-body text-center">
-
-                <div style="font-size: 30px;">
-                    👥
-                </div>
-
-                <div
-                    style="
-                        color: #d4af37;
-                        font-size: 28px;
-                        font-weight: 700;
-                    ">
-
-                    {{ total_componentes }}
-
-                </div>
-
-                <div class="text-secondary">
-                    Componentes
+                    </p>
 
                 </div>
 
             </div>
 
-        </div>
 
-    </div>
+            {% if inscricoes %}
 
-</div>
+                <div class="table-responsive">
 
+                    <table class="table table-dark table-hover align-middle mb-0">
 
-<!-- ========================================== -->
-<!-- INSCRIÇÕES -->
-<!-- ========================================== -->
-
-<div class="card card-bn shadow-lg">
-
-    <div class="card-body p-4">
-
-        <div class="d-flex justify-content-between
-                    align-items-center mb-4">
-
-            <div>
-
-                <h4 style="color: #d4af37;">
-
-                    📋 Inscrições
-
-                </h4>
-
-                <p class="text-secondary mb-0">
-
-                    Corporações inscritas neste encontro.
-
-                </p>
-
-            </div>
-
-        </div>
-
-
-        {% if inscricoes %}
-
-            <div class="table-responsive">
-
-                <table class="table table-dark table-hover align-middle">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                Corporação
-                            </th>
-
-                            <th>
-                                Cidade
-                            </th>
-
-                            <th>
-                                Instituição
-                            </th>
-
-                            <th>
-                                Regente
-                            </th>
-
-                            <th class="text-center">
-                                Componentes
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th class="text-center">
-                                Ações
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody>
-
-                        {% for inscricao in inscricoes %}
+                        <thead>
 
                             <tr>
 
-                                <td>
-
-                                    <strong>
-                                        {{ inscricao.nome_corporacao }}
-                                    </strong>
-
-                                </td>
-
-
-                                <td>
-
-                                    {{ inscricao.cidade or '—' }}
-
-                                    {% if inscricao.uf %}
-                                        / {{ inscricao.uf }}
-                                    {% endif %}
-
-                                </td>
-
-
-                                <td>
-
-                                    {{ inscricao.instituicao or '—' }}
-
-                                </td>
-
-
-                                <td>
-
-                                    {{ inscricao.maestro_nome or '—' }}
-
-                                </td>
-
-
-                                <td class="text-center">
-
-                                    {{ inscricao.quantidade_componentes }}
-
-                                </td>
-
-
-                                <!-- STATUS -->
-
-                                <td>
-
-                                    {% if inscricao.status == 'PENDENTE' %}
-
-                                        <span
-                                            class="badge"
-                                            style="
-                                                background: #d4af37;
-                                                color: #111;
-                                            ">
-
-                                            PENDENTE
-
-                                        </span>
-
-                                    {% elif inscricao.status == 'APROVADA' %}
-
-                                        <span
-                                            class="badge bg-success">
-
-                                            APROVADA
-
-                                        </span>
-
-                                    {% elif inscricao.status == 'RECUSADA' %}
-
-                                        <span
-                                            class="badge bg-danger">
-
-                                            RECUSADA
-
-                                        </span>
-
-                                    {% else %}
-
-                                        <span
-                                            class="badge bg-secondary">
-
-                                            {{ inscricao.status }}
-
-                                        </span>
-
-                                    {% endif %}
-
-                                </td>
-
-
-                                <!-- AÇÕES -->
-
-                                <td class="text-center">
-
-                                    {% if inscricao.status == 'PENDENTE' %}
-
-                                        <div class="d-flex
-                                                    justify-content-center
-                                                    gap-2
-                                                    flex-wrap">
-
-                                            <!-- EDITAR -->
-
-                                            <a
-                                                href="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/editar"
-                                                class="btn btn-sm btn-outline-light">
-
-                                                ✏️ Editar
-
-                                            </a>
-
-
-                                            <!-- APROVAR -->
-
-                                            <form
-                                                method="POST"
-                                                action="/admin/encontros-bandas/{{ encontro.id }}"
-                                                class="d-inline">
-
-                                                <input
-                                                    type="hidden"
-                                                    name="inscricao_id"
-                                                    value="{{ inscricao.id }}"
-                                                >
-
-                                                <input
-                                                    type="hidden"
-                                                    name="acao"
-                                                    value="APROVAR"
-                                                >
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-success"
-                                                    onclick="return confirm('Deseja aprovar esta inscrição?');"
-                                                >
-
-                                                    ✓ Aprovar
-
-                                                </button>
-
-                                            </form>
-
-
-                                            <!-- RECUSAR -->
-
-                                            <form
-                                                method="POST"
-                                                action="/admin/encontros-bandas/{{ encontro.id }}"
-                                                class="d-inline">
-
-                                                <input
-                                                    type="hidden"
-                                                    name="inscricao_id"
-                                                    value="{{ inscricao.id }}"
-                                                >
-
-                                                <input
-                                                    type="hidden"
-                                                    name="acao"
-                                                    value="RECUSAR"
-                                                >
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Deseja recusar esta inscrição?');"
-                                                >
-
-                                                    ✕ Recusar
-
-                                                </button>
-
-                                            </form>
-
-
-                                            <!-- EXCLUIR -->
-
-                                            <form
-                                                method="POST"
-                                                action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
-                                                class="d-inline">
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    onclick="return confirm('ATENÇÃO! Deseja realmente excluir esta inscrição? Esta ação não poderá ser desfeita.');"
-                                                >
-
-                                                    🗑️ Excluir
-
-                                                </button>
-
-                                            </form>
-
-                                        </div>
-
-
-                                    {% elif inscricao.status == 'APROVADA' %}
-
-                                        <div class="d-flex
-                                                    justify-content-center
-                                                    align-items-center
-                                                    gap-2
-                                                    flex-wrap">
-
-                                            <span class="text-success fw-bold">
-
-                                                ✓ Aprovada
-
-                                            </span>
-
-
-                                            <!-- EXCLUIR -->
-
-                                            <form
-                                                method="POST"
-                                                action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
-                                                class="d-inline">
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    onclick="return confirm('ATENÇÃO! Esta banda está APROVADA. Deseja realmente excluir a inscrição? Esta ação não poderá ser desfeita.');"
-                                                >
-
-                                                    🗑️ Excluir
-
-                                                </button>
-
-                                            </form>
-
-                                        </div>
-
-
-                                    {% elif inscricao.status == 'RECUSADA' %}
-
-                                        <div class="d-flex
-                                                    justify-content-center
-                                                    align-items-center
-                                                    gap-2
-                                                    flex-wrap">
-
-                                            <span class="text-danger fw-bold">
-
-                                                ✕ Recusada
-
-                                            </span>
-
-
-                                            <!-- EXCLUIR -->
-
-                                            <form
-                                                method="POST"
-                                                action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
-                                                class="d-inline">
-
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    onclick="return confirm('Deseja realmente excluir esta inscrição? Esta ação não poderá ser desfeita.');"
-                                                >
-
-                                                    🗑️ Excluir
-
-                                                </button>
-
-                                            </form>
-
-                                        </div>
-
-                                    {% endif %}
-
-                                </td>
+                                <th>
+                                    Corporação
+                                </th>
+
+                                <th>
+                                    Cidade
+                                </th>
+
+                                <th>
+                                    Instituição
+                                </th>
+
+                                <th>
+                                    Regente
+                                </th>
+
+                                <th class="text-center">
+                                    Componentes
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th class="text-center">
+                                    Ações
+                                </th>
 
                             </tr>
 
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
+                        </thead>
 
 
-        {% else %}
+                        <tbody>
 
-            <div class="text-center py-5">
+                            {% for inscricao in inscricoes %}
 
-                <div style="font-size: 50px;">
-                    🎺
+                                <tr>
+
+                                    <td>
+
+                                        <strong>
+                                            {{ inscricao.nome_corporacao }}
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ inscricao.cidade or '—' }}
+
+                                        {% if inscricao.uf %}
+                                            / {{ inscricao.uf }}
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ inscricao.instituicao or '—' }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ inscricao.maestro_nome or '—' }}
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        {{ inscricao.quantidade_componentes }}
+
+                                    </td>
+
+
+                                    <!-- STATUS -->
+
+                                    <td>
+
+                                        {% if inscricao.status == 'PENDENTE' %}
+
+                                            <span
+                                                class="badge"
+                                                style="
+                                                    background: #d4af37;
+                                                    color: #111;
+                                                    font-size: 0.7rem;
+                                                ">
+
+                                                PENDENTE
+
+                                            </span>
+
+                                        {% elif inscricao.status == 'APROVADA' %}
+
+                                            <span
+                                                class="badge bg-success"
+                                                style="font-size: 0.7rem;">
+
+                                                APROVADA
+
+                                            </span>
+
+                                        {% elif inscricao.status == 'RECUSADA' %}
+
+                                            <span
+                                                class="badge bg-danger"
+                                                style="font-size: 0.7rem;">
+
+                                                RECUSADA
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="badge bg-secondary"
+                                                style="font-size: 0.7rem;">
+
+                                                {{ inscricao.status }}
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <!-- AÇÕES -->
+
+                                    <td class="text-center">
+
+                                        {% if inscricao.status == 'PENDENTE' %}
+
+                                            <div class="d-flex
+                                                        justify-content-center
+                                                        gap-1
+                                                        flex-wrap">
+
+                                                <!-- EDITAR -->
+
+                                                <a
+                                                    href="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/editar"
+                                                    class="btn btn-sm btn-outline-light"
+                                                    title="Editar">
+
+                                                    ✏️ Editar
+
+                                                </a>
+
+
+                                                <!-- APROVAR -->
+
+                                                <form
+                                                    method="POST"
+                                                    action="/admin/encontros-bandas/{{ encontro.id }}"
+                                                    class="d-inline">
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="inscricao_id"
+                                                        value="{{ inscricao.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="acao"
+                                                        value="APROVAR"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-success"
+                                                        onclick="return confirm('Deseja aprovar esta inscrição?');"
+                                                        title="Aprovar">
+
+                                                        ✓ Aprovar
+
+                                                    </button>
+
+                                                </form>
+
+
+                                                <!-- RECUSAR -->
+
+                                                <form
+                                                    method="POST"
+                                                    action="/admin/encontros-bandas/{{ encontro.id }}"
+                                                    class="d-inline">
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="inscricao_id"
+                                                        value="{{ inscricao.id }}"
+                                                    >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="acao"
+                                                        value="RECUSAR"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-danger"
+                                                        onclick="return confirm('Deseja recusar esta inscrição?');"
+                                                        title="Recusar">
+
+                                                        ✕ Recusar
+
+                                                    </button>
+
+                                                </form>
+
+
+                                                <!-- EXCLUIR -->
+
+                                                <form
+                                                    method="POST"
+                                                    action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
+                                                    class="d-inline">
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('ATENÇÃO! Deseja realmente excluir esta inscrição? Esta ação não poderá ser desfeita.');"
+                                                        title="Excluir">
+
+                                                        🗑️ Excluir
+
+                                                    </button>
+
+                                                </form>
+
+                                            </div>
+
+
+                                        {% elif inscricao.status == 'APROVADA' %}
+
+                                            <div class="d-flex
+                                                        justify-content-center
+                                                        align-items-center
+                                                        gap-2
+                                                        flex-wrap">
+
+                                                <span class="text-success small fw-bold">
+
+                                                    ✓ Aprovada
+
+                                                </span>
+
+
+                                                <!-- EXCLUIR -->
+
+                                                <form
+                                                    method="POST"
+                                                    action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
+                                                    class="d-inline">
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('ATENÇÃO! Esta banda está APROVADA. Deseja realmente excluir a inscrição? Esta ação não poderá ser desfeita.');">
+
+                                                        🗑️ Excluir
+
+                                                    </button>
+
+                                                </form>
+
+                                            </div>
+
+
+                                        {% elif inscricao.status == 'RECUSADA' %}
+
+                                            <div class="d-flex
+                                                        justify-content-center
+                                                        align-items-center
+                                                        gap-2
+                                                        flex-wrap">
+
+                                                <span class="text-danger small fw-bold">
+
+                                                    ✕ Recusada
+
+                                                </span>
+
+
+                                                <!-- EXCLUIR -->
+
+                                                <form
+                                                    method="POST"
+                                                    action="/admin/encontros-bandas/{{ encontro.id }}/inscricao/{{ inscricao.id }}/excluir"
+                                                    class="d-inline">
+
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Deseja realmente excluir esta inscrição? Esta ação não poderá ser desfeita.');">
+
+                                                        🗑️ Excluir
+
+                                                    </button>
+
+                                                </form>
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
                 </div>
 
-                <h5
-                    class="mt-3"
-                    style="color: #d4af37;">
 
-                    Nenhuma inscrição recebida
+            {% else %}
 
-                </h5>
+                <div class="text-center py-5">
 
-                <p class="text-secondary mb-0">
+                    <div style="font-size: 50px;">
+                        🎺
+                    </div>
 
-                    As inscrições das corporações aparecerão
-                    aqui quando forem enviadas.
+                    <h5
+                        class="mt-3"
+                        style="color: #d4af37;">
 
-                </p>
+                        Nenhuma inscrição recebida
 
-            </div>
+                    </h5>
 
-        {% endif %}
+                    <p class="text-secondary mb-0 small">
+
+                        As inscrições das corporações aparecerão
+                        aqui quando forem enviadas.
+
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
 
     </div>
-
-</div>
 
 </div>
 
