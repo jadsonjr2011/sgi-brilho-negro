@@ -16808,7 +16808,7 @@ def apresentacao_corporacao():
     )
 
 # ============================================================
-# ENCONTRO DE BANDAS —  O QUE VALE HOJE
+# ENCONTRO DE BANDAS —  
 # ============================================================
 
 @app.route("/encontro-bandas/inscricao", methods=["GET", "POST"])
@@ -17830,10 +17830,6 @@ def relatorio_bandas_encontro(encontro_id):
         return redirect(
             f"/admin/encontros-bandas/{encontro_id}"
         )
-
-# ============================================================
-# ENCONTRO DE BANDAS —  FIM DA AREA DOENCONTRO
-# ============================================================
 
 # ============================================================
 # RELATÓRIO DE BANDAS PARTICIPANTES

@@ -588,8 +588,8 @@ def gerar_pdf_relatorio_bandas_participantes(
         tabela_resumo = Table(
             resumo,
             colWidths=[
-                400,
-                120
+                250,
+                100
             ]
         )
 
