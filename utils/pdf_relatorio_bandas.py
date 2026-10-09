@@ -1,7 +1,10 @@
+
 from io import BytesIO
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import os
+import re
+from xml.sax.saxutils import escape
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -25,6 +28,116 @@ from reportlab.lib.enums import TA_CENTER
 from sqlalchemy import text
 
 from database import SessionLocal
+
+
+# =====================================
+# PADRONIZAÇÃO DE TEXTOS
+# =====================================
+
+CONECTIVOS = {
+    "de", "da", "das", "do", "dos",
+    "e", "em", "na", "nas", "no", "nos",
+    "a", "o", "as", "os", "com", "por"
+}
+
+SIGLAS = {
+    "RN", "PE", "PB", "CE", "BA", "AL", "SE",
+    "PI", "MA", "SP", "RJ", "MG", "ES", "PR",
+    "SC", "RS", "GO", "DF", "AM", "PA", "TO",
+    "AC", "AP", "RO", "RR", "MT", "MS",
+    "BMAF", "BMJS", "BMJP"
+}
+
+
+def padronizar_texto(valor):
+    """
+    Padroniza nomes e descrições para iniciais maiúsculas,
+    preservando conectivos e siglas conhecidas.
+    Não altera os dados no banco de dados.
+    """
+
+    if valor is None:
+        return "-"
+
+    texto = re.sub(r"\s+", " ", str(valor)).strip()
+
+    if not texto:
+        return "-"
+
+    palavras = texto.lower().split(" ")
+    resultado = []
+
+    for indice, palavra in enumerate(palavras):
+
+        if palavra.upper() in SIGLAS:
+            resultado.append(palavra.upper())
+
+        elif indice > 0 and palavra in CONECTIVOS:
+            resultado.append(palavra)
+
+        else:
+            resultado.append(
+                palavra[0].upper() + palavra[1:]
+            )
+
+    return " ".join(resultado)
+
+
+def padronizar_cidade(cidade, uf=None):
+    """
+    Padroniza cidade e UF.
+    Exemplos:
+        Macaiba + RN       -> Macaíba/RN*
+        Lajes/RN + RN      -> Lajes/RN
+        Extremoz - RN      -> Extremoz/RN
+        Natal + vazio      -> Natal
+
+    *Acentos ausentes no cadastro não são inventados.
+    """
+
+    cidade_original = str(cidade or "").strip()
+    uf = str(uf or "").strip().upper()
+
+    if not cidade_original or cidade_original == "-":
+        return "-"
+
+    # Identifica uma UF já informada no final da cidade.
+    correspondencia = re.search(
+        r"\s*[/\-]\s*([A-Za-z]{2})\s*$",
+        cidade_original
+    )
+
+    uf_existente = (
+        correspondencia.group(1).upper()
+        if correspondencia
+        else ""
+    )
+
+    # Remove a UF da cidade para evitar duplicação.
+    cidade_limpa = re.sub(
+        r"\s*[/\-]\s*[A-Za-z]{2}\s*$",
+        "",
+        cidade_original
+    ).strip()
+
+    cidade_formatada = padronizar_texto(cidade_limpa)
+
+    # Prioriza a UF informada no campo próprio.
+    uf_final = uf or uf_existente
+
+    if uf_final:
+        return f"{cidade_formatada}/{uf_final}"
+
+    return cidade_formatada
+
+
+def texto_pdf(valor):
+    """
+    Padroniza o texto e protege caracteres especiais
+    para utilização segura no Paragraph do ReportLab.
+    """
+
+    return escape(padronizar_texto(valor))
 
 
 # =====================================
@@ -70,7 +183,12 @@ def adicionar_rodape(canvas, doc):
     canvas.drawCentredString(
         largura / 2,
         11,
-        f"Emitido em {datetime.now(ZoneInfo('America/Sao_Paulo')).strftime('%d/%m/%Y %H:%M')}"
+        (
+            "Emitido em "
+            + datetime.now(
+                ZoneInfo("America/Sao_Paulo")
+            ).strftime("%d/%m/%Y %H:%M")
+        )
     )
 
     canvas.restoreState()
@@ -102,9 +220,7 @@ def adicionar_cabecalho(
 
         logo.hAlign = "CENTER"
 
-        elementos.append(
-            logo
-        )
+        elementos.append(logo)
 
         elementos.append(
             Spacer(1, 5)
@@ -167,7 +283,7 @@ def adicionar_cabecalho(
 
     elementos.append(
         Paragraph(
-            f"<b>{titulo_documento}</b>",
+            f"<b>{escape(titulo_documento)}</b>",
             ParagraphStyle(
                 "Titulo",
                 parent=estilo,
@@ -245,11 +361,9 @@ def gerar_pdf_relatorio_bandas_participantes(
         ).mappings().first()
 
         if not encontro:
-
             raise ValueError(
                 "Encontro de bandas não encontrado."
             )
-
 
         # =====================================
         # BUSCAR SOMENTE BANDAS APROVADAS
@@ -273,7 +387,7 @@ def gerar_pdf_relatorio_bandas_participantes(
                     ON b.id = eb.banda_id
 
                 WHERE eb.encontro_id = :encontro_id
-                AND eb.status = 'APROVADA'
+                  AND eb.status = 'APROVADA'
 
                 ORDER BY
                     b.nome ASC,
@@ -284,7 +398,6 @@ def gerar_pdf_relatorio_bandas_participantes(
             }
         ).mappings().all()
 
-
         # =====================================
         # RESUMO
         # =====================================
@@ -292,15 +405,12 @@ def gerar_pdf_relatorio_bandas_participantes(
         total_bandas = len(bandas)
 
         total_componentes = sum(
-            int(
-                banda["quantidade_componentes"] or 0
-            )
+            int(banda["quantidade_componentes"] or 0)
             for banda in bandas
         )
 
-
         # =====================================
-        # PDF
+        # CONFIGURAÇÃO DO PDF
         # =====================================
 
         buffer = BytesIO()
@@ -315,7 +425,6 @@ def gerar_pdf_relatorio_bandas_participantes(
         )
 
         estilos = getSampleStyleSheet()
-
 
         # =====================================
         # ESTILOS
@@ -332,7 +441,8 @@ def gerar_pdf_relatorio_bandas_participantes(
             "Tabela",
             parent=estilos["Normal"],
             fontSize=8,
-            leading=10
+            leading=10,
+            wordWrap="LTR"
         )
 
         estilo_tabela_centro = ParagraphStyle(
@@ -352,9 +462,7 @@ def gerar_pdf_relatorio_bandas_participantes(
             leading=9
         )
 
-
         elementos = []
-
 
         # =====================================
         # CABEÇALHO
@@ -365,7 +473,6 @@ def gerar_pdf_relatorio_bandas_participantes(
             estilos,
             "RELATÓRIO DE BANDAS PARTICIPANTES"
         )
-
 
         # =====================================
         # 1 - DADOS DO ENCONTRO
@@ -382,96 +489,59 @@ def gerar_pdf_relatorio_bandas_participantes(
             Spacer(1, 10)
         )
 
-
         dados_encontro = [
 
             [
+                Paragraph("<b>Evento</b>", estilo_tabela),
                 Paragraph(
-                    "<b>Evento</b>",
-                    estilo_tabela
-                ),
-                Paragraph(
-                    str(
-                        encontro["nome"] or "-"
-                    ),
+                    texto_pdf(encontro["nome"]),
                     estilo_tabela
                 )
             ],
 
             [
+                Paragraph("<b>Data</b>", estilo_tabela),
                 Paragraph(
-                    "<b>Data</b>",
-                    estilo_tabela
-                ),
-                Paragraph(
-                    formatar_data(
-                        encontro["data"]
-                    ),
+                    escape(formatar_data(encontro["data"])),
                     estilo_tabela
                 )
             ],
 
             [
+                Paragraph("<b>Local</b>", estilo_tabela),
                 Paragraph(
-                    "<b>Local</b>",
-                    estilo_tabela
-                ),
-                Paragraph(
-                    str(
-                        encontro["local"] or "-"
-                    ),
+                    texto_pdf(encontro["local"]),
                     estilo_tabela
                 )
             ],
 
             [
+                Paragraph("<b>Horário</b>", estilo_tabela),
                 Paragraph(
-                    "<b>Horário</b>",
-                    estilo_tabela
-                ),
-                Paragraph(
-                    formatar_horario(
-                        encontro["horario"]
-                    ),
+                    escape(formatar_horario(encontro["horario"])),
                     estilo_tabela
                 )
             ],
 
             [
+                Paragraph("<b>Status</b>", estilo_tabela),
                 Paragraph(
-                    "<b>Status</b>",
-                    estilo_tabela
-                ),
-                Paragraph(
-                    str(
-                        encontro["status"] or "-"
-                    ),
+                    texto_pdf(encontro["status"]),
                     estilo_tabela
                 )
             ]
 
         ]
 
-
         tabela_encontro = Table(
             dados_encontro,
-            colWidths=[
-                120,
-                400
-            ]
+            colWidths=[120, 400]
         )
-
 
         tabela_encontro.setStyle(
             TableStyle([
 
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
 
                 (
                     "BACKGROUND",
@@ -480,53 +550,21 @@ def gerar_pdf_relatorio_bandas_participantes(
                     colors.lightgrey
                 ),
 
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE"
-                ),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
 
-                (
-                    "LEFTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                )
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5)
 
             ])
         )
 
-
-        elementos.append(
-            tabela_encontro
-        )
+        elementos.append(tabela_encontro)
 
         elementos.append(
             Spacer(1, 20)
         )
-
 
         # =====================================
         # 2 - RESUMO
@@ -543,15 +581,10 @@ def gerar_pdf_relatorio_bandas_participantes(
             Spacer(1, 10)
         )
 
-
         resumo = [
 
             [
-                Paragraph(
-                    "<b>Descrição</b>",
-                    estilo_tabela
-                ),
-
+                Paragraph("<b>Descrição</b>", estilo_tabela),
                 Paragraph(
                     "<b>Quantidade</b>",
                     estilo_tabela_centro
@@ -559,11 +592,7 @@ def gerar_pdf_relatorio_bandas_participantes(
             ],
 
             [
-                Paragraph(
-                    "Bandas participantes",
-                    estilo_tabela
-                ),
-
+                Paragraph("Bandas participantes", estilo_tabela),
                 Paragraph(
                     str(total_bandas),
                     estilo_tabela_centro
@@ -571,11 +600,7 @@ def gerar_pdf_relatorio_bandas_participantes(
             ],
 
             [
-                Paragraph(
-                    "Total de componentes",
-                    estilo_tabela
-                ),
-
+                Paragraph("Total de componentes", estilo_tabela),
                 Paragraph(
                     str(total_componentes),
                     estilo_tabela_centro
@@ -584,26 +609,15 @@ def gerar_pdf_relatorio_bandas_participantes(
 
         ]
 
-
         tabela_resumo = Table(
             resumo,
-            colWidths=[
-                250,
-                100
-            ]
+            colWidths=[250, 100]
         )
-
 
         tabela_resumo.setStyle(
             TableStyle([
 
-                (
-                    "GRID",
-                    (0, 0),
-                    (-1, -1),
-                    0.5,
-                    colors.grey
-                ),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
 
                 (
                     "BACKGROUND",
@@ -619,60 +633,23 @@ def gerar_pdf_relatorio_bandas_participantes(
                     "Helvetica-Bold"
                 ),
 
-                (
-                    "ALIGN",
-                    (1, 1),
-                    (1, -1),
-                    "CENTER"
-                ),
+                ("ALIGN", (1, 1), (1, -1), "CENTER"),
 
-                (
-                    "VALIGN",
-                    (0, 0),
-                    (-1, -1),
-                    "MIDDLE"
-                ),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
 
-                (
-                    "LEFTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "RIGHTPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "TOPPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                ),
-
-                (
-                    "BOTTOMPADDING",
-                    (0, 0),
-                    (-1, -1),
-                    5
-                )
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5)
 
             ])
         )
 
-
-        elementos.append(
-            tabela_resumo
-        )
+        elementos.append(tabela_resumo)
 
         elementos.append(
             Spacer(1, 25)
         )
-
 
         # =====================================
         # 3 - BANDAS PARTICIPANTES
@@ -689,144 +666,78 @@ def gerar_pdf_relatorio_bandas_participantes(
             Spacer(1, 10)
         )
 
-
         dados = [
 
             [
-
-                Paragraph(
-                    "<b>Nº</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Corporação</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Regente</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Responsável</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Instituição</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Cidade</b>",
-                    estilo_tabela_centro
-                ),
-
-                Paragraph(
-                    "<b>Componentes</b>",
-                    estilo_tabela_centro
-                )
-
+                Paragraph("<b>Nº</b>", estilo_tabela_centro),
+                Paragraph("<b>Corporação</b>", estilo_tabela_centro),
+                Paragraph("<b>Regente</b>", estilo_tabela_centro),
+                Paragraph("<b>Responsável</b>", estilo_tabela_centro),
+                Paragraph("<b>Instituição</b>", estilo_tabela_centro),
+                Paragraph("<b>Cidade</b>", estilo_tabela_centro),
+                Paragraph("<b>Componentes</b>", estilo_tabela_centro)
             ]
 
         ]
-
 
         # =====================================
         # DADOS DAS BANDAS
         # =====================================
 
-        for numero, banda in enumerate(
-            bandas,
-            start=1
-        ):
+        for numero, banda in enumerate(bandas, start=1):
 
-            cidade = str(
-                banda["cidade"] or "-"
-            ).strip()
-
-            uf = str(
-                banda["uf"] or ""
-            ).strip().upper()
-
-            if cidade != "-" and uf:
-                cidade = f"{cidade}/{uf}"
-
-
-            dados.append(
-
-                [
-
-                    Paragraph(
-                        str(numero),
-                        estilo_tabela_centro
-                    ),
-
-                    Paragraph(
-                        str(
-                            banda["nome_corporacao"]
-                            or "-"
-                        ),
-                        estilo_tabela_centro_negrito
-                    ),
-
-                    Paragraph(
-                        str(
-                            banda["nome_regente"]
-                            or "-"
-                        ),
-                        estilo_tabela_centro
-                    ),
-
-                    Paragraph(
-                        str(
-                            banda["responsavel"]
-                            or "-"
-                        ),
-                        estilo_tabela_centro
-                    ),
-
-                    Paragraph(
-                        str(
-                            banda["instituicao"]
-                            or "-"
-                        ),
-                        estilo_tabela_centro
-                    ),
-
-                    Paragraph(
-                        cidade,
-                        estilo_tabela_centro
-                    ),
-
-                    Paragraph(
-                        str(
-                            banda["quantidade_componentes"]
-                            or 0
-                        ),
-                        estilo_tabela_centro
-                    )
-
-                ]
-
+            cidade = padronizar_cidade(
+                banda["cidade"],
+                banda["uf"]
             )
 
+            dados.append([
 
+                Paragraph(
+                    str(numero),
+                    estilo_tabela_centro
+                ),
+
+                Paragraph(
+                    texto_pdf(banda["nome_corporacao"]),
+                    estilo_tabela_centro_negrito
+                ),
+
+                Paragraph(
+                    texto_pdf(banda["nome_regente"]),
+                    estilo_tabela_centro
+                ),
+
+                Paragraph(
+                    texto_pdf(banda["responsavel"]),
+                    estilo_tabela_centro
+                ),
+
+                Paragraph(
+                    texto_pdf(banda["instituicao"]),
+                    estilo_tabela_centro
+                ),
+
+                Paragraph(
+                    escape(cidade),
+                    estilo_tabela_centro
+                ),
+
+                Paragraph(
+                    str(banda["quantidade_componentes"] or 0),
+                    estilo_tabela_centro
+                )
+
+            ])
 
         # =====================================
-        # TABELA
+        # TABELA DE BANDAS
         # =====================================
 
         tabela_bandas = Table(
-
             dados,
-
             repeatRows=1,
-
             colWidths=[
-
                 25,     # Nº
                 85,     # Corporação
                 80,     # Regente
@@ -834,14 +745,10 @@ def gerar_pdf_relatorio_bandas_participantes(
                 105,    # Instituição
                 65,     # Cidade
                 70      # Componentes
-
             ]
-
         )
 
-
         tabela_bandas.setStyle(
-
             TableStyle([
 
                 (
@@ -909,14 +816,9 @@ def gerar_pdf_relatorio_bandas_participantes(
                 )
 
             ])
-
         )
 
-
-        elementos.append(
-            tabela_bandas
-        )
-
+        elementos.append(tabela_bandas)
 
         # =====================================
         # OBSERVAÇÃO
@@ -937,27 +839,19 @@ def gerar_pdf_relatorio_bandas_participantes(
             )
         )
 
-
         # =====================================
         # GERAR PDF
         # =====================================
 
         doc.build(
-
             elementos,
-
             onFirstPage=adicionar_rodape,
-
             onLaterPages=adicionar_rodape
-
         )
-
 
         buffer.seek(0)
 
         return buffer
 
-
     finally:
-
         db.close()
