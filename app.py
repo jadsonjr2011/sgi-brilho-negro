@@ -12,6 +12,9 @@ from utils.pdf_relatorio_viagens import gerar_pdf_relatorio_viagens
 from utils.pdf_relatorio_bandas import gerar_pdf_relatorio_bandas_participantes
 from utils.pdf_declaracao_escolar import gerar_pdf_declaracao_escolar
 from utils.pdf_lista_embarque import gerar_pdf_lista_embarque
+from utils.pdf_oficio_solicitacao_apoio import (
+    gerar_pdf_oficio_solicitacao_apoio
+)
 from utils.pdf_prestacao_bingo import gerar_pdf_prestacao_bingo
 from io import BytesIO
 from utils.pdf_fardamento import (
@@ -17879,6 +17882,54 @@ def relatorio_bandas_participantes(encontro_id):
             "Erro ao gerar o relatório de bandas.",
             500
         )
+
+
+# ============================================================
+# ENCONTRO DE BANDAS
+# GERAR OFÍCIO DE SOLICITAÇÃO DE APOIO INSTITUCIONAL
+# ============================================================
+
+@app.route(
+    "/admin/encontros-bandas/<int:encontro_id>/oficio-solicitacao-apoio",
+    methods=["GET"]
+)
+def gerar_oficio_solicitacao_apoio_admin(encontro_id):
+
+    # ==========================================
+    # VALIDAR PERMISSÃO
+    # ==========================================
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    # ==========================================
+    # GERAR PDF
+    # ==========================================
+
+    try:
+
+        pdf = gerar_pdf_oficio_solicitacao_apoio(
+            encontro_id
+        )
+
+        # ==========================================
+        # RETORNAR PDF PARA O NAVEGADOR
+        # ==========================================
+
+        from flask import send_file
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=(
+                f"oficio_solicitacao_apoio_encontro_{encontro_id}.pdf"
+            )
+        )
+
+    except ValueError as erro:
+
+        return str(erro), 404
 
 # ============================================================
 # EXECUÇÃO
