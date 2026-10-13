@@ -599,6 +599,25 @@ def gerar_pdf_oficio_solicitacao_apoio(encontro_id):
                 "Secretaria Municipal de Educação e da direção "
                 "da unidade escolar."
             ),
+
+            (
+                "<b>6. Locutor para a cerimônia:</b> profissional "
+                "para conduzir a apresentação, anunciar as bandas "
+                "participantes e realizar as chamadas e os momentos "
+                "oficiais do evento."
+            ),
+            (
+                "<b>7. Púlpito:</b> para utilização durante os "
+                "pronunciamentos e atos oficiais da cerimônia."
+            ),
+            (
+                "<b>8. Organização da área em frente à Igreja Matriz:</b> "
+                "solicitamos apoio para a retirada ou o remanejamento "
+                "dos carros de lanches e brinquedos infantis instalados "
+                "em frente à Igreja Matriz, mediante articulação com "
+                "os responsáveis e os órgãos competentes, a fim de "
+                "liberar e organizar o espaço para a realização do evento."
+            ),
         ]
 
         for solicitacao in solicitacoes:
