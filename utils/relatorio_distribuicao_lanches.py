@@ -289,7 +289,7 @@ def desenhar_cabecalho_tabela(pdf, y_topo):
 
 # ============================================================
 # LINHA DE UMA BANDA
-# GRADE PRETA MAIS VISÍVEL
+# GRADE PRETA — SEM QUADRADOS EM PÃES E REFRIGERANTES
 # ============================================================
 
 def desenhar_linha_banda(
@@ -393,7 +393,8 @@ def desenhar_linha_banda(
     )
 
     # --------------------------------------------------------
-    # CAMPOS PARA ANOTAÇÃO
+    # CAMPOS DE ANOTAÇÃO
+    # PÃES E REFRIGERANTES FICAM SEM QUADRADOS
     # --------------------------------------------------------
 
     inicio_paes = MARGEM + larguras[0] + larguras[1]
@@ -406,28 +407,15 @@ def desenhar_linha_banda(
         inicio_refrigerantes + larguras[3]
     )
 
-    # Caixas com contorno preto
+    # --------------------------------------------------------
+    # QUADRADO DE CONFERÊNCIA — COLUNA OK
+    # --------------------------------------------------------
+
     pdf.setStrokeColor(PRETO)
     pdf.setLineWidth(0.7)
 
     caixa = 5 * mm
     centro_y = y_base + altura_linha / 2
-
-    # Caixa para quantidade de pães e refrigerantes
-    for inicio, largura in [
-        (inicio_paes, larguras[2]),
-        (inicio_refrigerantes, larguras[3]),
-    ]:
-        pdf.rect(
-            inicio + (largura - caixa) / 2,
-            centro_y - caixa / 2,
-            caixa,
-            caixa,
-            stroke=1,
-            fill=0,
-        )
-
-    # Caixa de conferência da entrega
     largura_ok = larguras[4]
 
     pdf.rect(
