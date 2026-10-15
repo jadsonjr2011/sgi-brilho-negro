@@ -17931,6 +17931,66 @@ def gerar_oficio_solicitacao_apoio_admin(encontro_id):
 
         return str(erro), 404
 
+
+# ============================================================
+# ENCONTRO DE BANDAS
+# GERAR ETIQUETAS DE LANCHES
+# ============================================================
+
+@app.route(
+    "/admin/encontros-bandas/<int:encontro_id>/etiquetas-lanches",
+    methods=["GET"]
+)
+def imprimir_etiquetas_lanches(encontro_id):
+
+    # ==========================================
+    # VALIDAR PERMISSÃO
+    # ==========================================
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    # ==========================================
+    # GERAR PDF
+    # ==========================================
+
+    try:
+
+        from utils.relatorio_sacolas_lanches import (
+            gerar_pdf_etiquetas_lanches_bandas
+        )
+
+        pdf = gerar_pdf_etiquetas_lanches_bandas(
+            encontro_id
+        )
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=(
+                f"etiquetas_lanches_encontro_{encontro_id}.pdf"
+            )
+        )
+
+    except ValueError as erro:
+
+        return str(erro), 404
+
+    except Exception as erro:
+
+        print(
+            "ERRO AO GERAR ETIQUETAS DE LANCHES:",
+            erro
+        )
+
+        return (
+            "Erro ao gerar as etiquetas de lanches. "
+            "Confira o terminal do Flask.",
+            500
+        )
+
+
 # ============================================================
 # EXECUÇÃO
 # ============================================================
