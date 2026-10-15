@@ -1,11 +1,10 @@
-
 from io import BytesIO
 import os
 import re
 from xml.sax.saxutils import escape
 
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph
@@ -17,14 +16,20 @@ from database import SessionLocal
 
 # ============================================================
 # CONFIGURAÇÕES GERAIS
+# A4 RETRATO — 3 ETIQUETAS POR FOLHA
 # ============================================================
 
-PAGINA = landscape(A4)
+PAGINA = A4
 LARGURA, ALTURA = PAGINA
 
 PRETO = colors.HexColor("#151515")
 DOURADO = colors.HexColor("#D4AF37")
 CINZA = colors.HexColor("#666666")
+CINZA_CORTE = colors.HexColor("#888888")
+
+QUANTIDADE_ETIQUETAS_POR_FOLHA = 3
+
+ALTURA_ETIQUETA = ALTURA / QUANTIDADE_ETIQUETAS_POR_FOLHA
 
 DIRETORIO_PROJETO = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +43,7 @@ LOGO_PATH = os.path.join(
     "logo_relatorio.PNG",
 )
 
-# Logo exclusiva da marca-d'água
+# Logo utilizada como marca-d'água
 MARCA_DAGUA_PATH = os.path.join(
     DIRETORIO_PROJETO,
     "static",
@@ -105,29 +110,24 @@ def desenhar_texto_centralizado(
 
 
 # ============================================================
-# MARCA-D'ÁGUA AMPLIADA
+# MARCA-D'ÁGUA
+# Ajustada ao formato A4 retrato e à etiqueta individual
 # ============================================================
 
 def desenhar_marca_dagua(pdf, centro_x, centro_y):
-    """
-    Marca-d'água ampliada e centralizada em cada etiqueta.
-    Mantém a proporção original da imagem.
-    """
-
     if not os.path.isfile(MARCA_DAGUA_PATH):
         return
 
     pdf.saveState()
 
     try:
-        # Transparência suave para manter a leitura dos dados.
         if hasattr(pdf, "setFillAlpha"):
             pdf.setFillAlpha(0.055)
 
-        # Área maior que a utilizada anteriormente.
-        # A imagem será ajustada sem distorcer sua proporção.
-        largura_logo = 230 * mm
-        altura_logo = 88 * mm
+        # Tamanho adequado à largura da etiqueta em retrato.
+        # Preserva a proporção original da imagem.
+        largura_logo = 155 * mm
+        altura_logo = 60 * mm
 
         pdf.drawImage(
             MARCA_DAGUA_PATH,
@@ -155,13 +155,13 @@ def desenhar_etiqueta(
     y_base,
     altura,
 ):
-    margem = 12 * mm
+    margem = 10 * mm
     largura_util = LARGURA - 2 * margem
 
     centro_x = LARGURA / 2
     centro_y = y_base + altura / 2
 
-    topo = y_base + altura - 10 * mm
+    topo = y_base + altura - 8 * mm
 
     # ========================================================
     # 1. MARCA-D'ÁGUA
@@ -174,19 +174,19 @@ def desenhar_etiqueta(
     )
 
     # ========================================================
-    # 2. MOLDURA
+    # 2. MOLDURA DOURADA
     # ========================================================
 
     pdf.saveState()
 
     pdf.setStrokeColor(DOURADO)
-    pdf.setLineWidth(1.4)
+    pdf.setLineWidth(1.2)
 
     pdf.roundRect(
         margem,
-        y_base + 7 * mm,
+        y_base + 5 * mm,
         largura_util,
-        altura - 14 * mm,
+        altura - 10 * mm,
         3 * mm,
         stroke=1,
         fill=0,
@@ -195,20 +195,14 @@ def desenhar_etiqueta(
     pdf.restoreState()
 
     # ========================================================
-    # 3. CABEÇALHO CENTRALIZADO
-    # ========================================================
-    #
-    # Logo no topo, centralizada e maior.
-    # Nome institucional abaixo, em tamanho equilibrado.
-    # Nome BRILHO NEGRO destacado sem exagero.
-    #
+    # 3. LOGO DO CABEÇALHO
     # ========================================================
 
-    largura_logo = 55 * mm
-    altura_logo = 19 * mm
+    largura_logo = 45 * mm
+    altura_logo = 15 * mm
 
     x_logo = centro_x - largura_logo / 2
-    y_logo = topo - 20 * mm
+    y_logo = topo - 16 * mm
 
     if os.path.isfile(LOGO_PATH):
         pdf.drawImage(
@@ -222,12 +216,15 @@ def desenhar_etiqueta(
             mask="auto",
         )
 
-    # Nome completo da associação.
+    # ========================================================
+    # 4. NOME DA ASSOCIAÇÃO
+    # ========================================================
+
     estilo_associacao = ParagraphStyle(
         "NomeAssociacao",
         fontName="Helvetica-Bold",
-        fontSize=8,
-        leading=9,
+        fontSize=7,
+        leading=8,
         alignment=1,
         textColor=PRETO,
     )
@@ -237,7 +234,7 @@ def desenhar_etiqueta(
         estilo_associacao,
     )
 
-    largura_associacao = largura_util - 20 * mm
+    largura_associacao = largura_util - 12 * mm
 
     _, altura_associacao = texto_associacao.wrap(
         largura_associacao,
@@ -247,70 +244,75 @@ def desenhar_etiqueta(
     texto_associacao.drawOn(
         pdf,
         centro_x - largura_associacao / 2,
-        topo - 22 * mm - altura_associacao,
+        topo - 18 * mm - altura_associacao,
     )
 
-    # Nome da marca.
+    # ========================================================
+    # 5. NOME DA MARCA
+    # ========================================================
+
     pdf.setFillColor(DOURADO)
-    pdf.setFont("Helvetica-Bold", 13)
+    pdf.setFont("Helvetica-Bold", 12)
 
     pdf.drawCentredString(
         centro_x,
-        topo - 29 * mm,
+        topo - 25 * mm,
         "BRILHO NEGRO",
     )
 
     # ========================================================
-    # 4. NOME DO ENCONTRO
+    # 6. NOME DO ENCONTRO
     # ========================================================
 
-    nome_evento = formatar(
-        encontro["nome"]
-    )
+    nome_evento = formatar(encontro["nome"])
 
     desenhar_texto_centralizado(
         pdf,
         nome_evento,
-        margem + 8 * mm,
-        topo - 31 * mm,
-        largura_util - 16 * mm,
-        tamanho=8,
+        margem + 5 * mm,
+        topo - 27 * mm,
+        largura_util - 10 * mm,
+        tamanho=7,
         negrito=True,
         cor=CINZA,
     )
 
-    # Linha divisória dourada.
+    # ========================================================
+    # 7. LINHA DIVISÓRIA
+    # ========================================================
+
     pdf.setStrokeColor(DOURADO)
-    pdf.setLineWidth(1.0)
+    pdf.setLineWidth(0.8)
 
     pdf.line(
-        margem + 6 * mm,
-        topo - 36 * mm,
-        LARGURA - margem - 6 * mm,
-        topo - 36 * mm,
+        margem + 5 * mm,
+        topo - 33 * mm,
+        LARGURA - margem - 5 * mm,
+        topo - 33 * mm,
     )
 
     # ========================================================
-    # 5. NOME DA CORPORAÇÃO
+    # 8. NOME DA CORPORAÇÃO
     # ========================================================
 
     nome_banda = formatar(
         banda["nome_corporacao"]
     )
 
-    tamanho_nome = (
-        24 if len(nome_banda) <= 30
-        else 19
-    )
-
-    if len(nome_banda) > 55:
-        tamanho_nome = 15
+    if len(nome_banda) <= 24:
+        tamanho_nome = 19
+    elif len(nome_banda) <= 38:
+        tamanho_nome = 16
+    elif len(nome_banda) <= 55:
+        tamanho_nome = 13
+    else:
+        tamanho_nome = 10
 
     nome_estilo = ParagraphStyle(
         "NomeBanda",
         fontName="Helvetica-Bold",
         fontSize=tamanho_nome,
-        leading=tamanho_nome * 1.15,
+        leading=tamanho_nome * 1.12,
         alignment=1,
         textColor=PRETO,
     )
@@ -320,32 +322,27 @@ def desenhar_etiqueta(
         nome_estilo,
     )
 
-    largura_nome = largura_util - 20 * mm
+    largura_nome = largura_util - 12 * mm
 
     _, altura_nome = paragrafo_nome.wrap(
         largura_nome,
-        20 * mm,
+        25 * mm,
     )
 
     paragrafo_nome.drawOn(
         pdf,
         centro_x - largura_nome / 2,
-        topo - 39 * mm - altura_nome,
+        topo - 36 * mm - altura_nome,
     )
 
     # ========================================================
-    # 6. CIDADE E UF
+    # 9. CIDADE E UF
     # ========================================================
 
-    cidade = formatar(
-        banda["cidade"]
-    )
+    cidade = formatar(banda["cidade"])
+    uf = formatar(banda["uf"])
 
-    uf = formatar(
-        banda["uf"]
-    )
-
-    # Evita acrescentar novamente a UF.
+    # Evita repetir a UF caso ela já esteja na cidade.
     if uf != "-" and not re.search(
         r"(?:/|-|\s)\s*"
         + re.escape(uf)
@@ -359,14 +356,14 @@ def desenhar_etiqueta(
         pdf,
         cidade.upper(),
         margem + 5 * mm,
-        y_base + 42 * mm,
+        y_base + 39 * mm,
         largura_util - 10 * mm,
-        tamanho=11,
+        tamanho=10,
         negrito=True,
     )
 
     # ========================================================
-    # 7. QUANTIDADE DE COMPONENTES
+    # 10. QUANTIDADE DE COMPONENTES
     # ========================================================
 
     quantidade = int(
@@ -377,21 +374,21 @@ def desenhar_etiqueta(
         pdf,
         f"QUANTIDADE DE COMPONENTES: {quantidade}",
         margem + 5 * mm,
-        y_base + 33 * mm,
+        y_base + 31 * mm,
         largura_util - 10 * mm,
-        tamanho=10,
+        tamanho=9,
         negrito=True,
     )
 
     # ========================================================
-    # 8. REGENTE E RESPONSÁVEL
+    # 11. REGENTE E RESPONSÁVEL
     # ========================================================
 
     estilo_dados = ParagraphStyle(
         "DadosBanda",
         fontName="Helvetica",
-        fontSize=8,
-        leading=10,
+        fontSize=7,
+        leading=8.5,
         alignment=1,
         textColor=PRETO,
     )
@@ -399,7 +396,7 @@ def desenhar_etiqueta(
     dados = (
         f"<b>Regente:</b> "
         f"{escape(formatar(banda['nome_regente']))}"
-        f" &nbsp;&nbsp; | &nbsp;&nbsp; "
+        f"<br/>"
         f"<b>Responsável:</b> "
         f"{escape(formatar(banda['responsavel']))}"
     )
@@ -409,7 +406,7 @@ def desenhar_etiqueta(
         estilo_dados,
     )
 
-    largura_dados = largura_util - 16 * mm
+    largura_dados = largura_util - 14 * mm
 
     _, altura_dados = paragrafo_dados.wrap(
         largura_dados,
@@ -419,40 +416,75 @@ def desenhar_etiqueta(
     paragrafo_dados.drawOn(
         pdf,
         centro_x - largura_dados / 2,
-        y_base + 22 * mm - altura_dados,
+        y_base + 20 * mm - altura_dados,
     )
 
     # ========================================================
-    # 9. CAMPO PARA CONFERÊNCIA
+    # 12. CAMPO PARA CONFERÊNCIA
     # ========================================================
 
     pdf.setStrokeColor(CINZA)
     pdf.setLineWidth(0.6)
 
-    caixa_x = LARGURA - margem - 38 * mm
-    caixa_y = y_base + 11 * mm
+    caixa_largura = 30 * mm
+    caixa_altura = 6 * mm
+
+    caixa_x = (
+        LARGURA
+        - margem
+        - caixa_largura
+        - 2 * mm
+    )
+
+    caixa_y = y_base + 8 * mm
 
     pdf.rect(
         caixa_x,
         caixa_y,
-        32 * mm,
-        7 * mm,
+        caixa_largura,
+        caixa_altura,
         stroke=1,
         fill=0,
     )
 
     pdf.setFillColor(CINZA)
-    pdf.setFont("Helvetica", 7)
+    pdf.setFont("Helvetica", 6.5)
 
     pdf.drawCentredString(
-        caixa_x + 16 * mm,
-        caixa_y + 2.3 * mm,
+        caixa_x + caixa_largura / 2,
+        caixa_y + 2 * mm,
         "CONFERIDO",
     )
 
 
 # ============================================================
+# LINHAS PONTILHADAS PARA CORTE
+# ============================================================
+
+def desenhar_linhas_corte(pdf):
+    pdf.saveState()
+
+    pdf.setStrokeColor(CINZA_CORTE)
+    pdf.setLineWidth(0.6)
+    pdf.setDash(3, 3)
+
+    # Duas linhas horizontais dividem o A4 em três partes.
+    for divisao in (1, 2):
+        y = ALTURA_ETIQUETA * divisao
+
+        pdf.line(
+            3 * mm,
+            y,
+            LARGURA - 3 * mm,
+            y,
+        )
+
+    pdf.restoreState()
+
+
+# ============================================================
 # GERAR PDF DAS ETIQUETAS DE LANCHES
+# A4 RETRATO — 3 ETIQUETAS POR FOLHA
 # ============================================================
 
 def gerar_pdf_etiquetas_lanches_bandas(encontro_id):
@@ -517,7 +549,7 @@ def gerar_pdf_etiquetas_lanches_bandas(encontro_id):
             )
 
         # ====================================================
-        # PREPARAR DOCUMENTO
+        # PREPARAR DOCUMENTO PDF
         # ====================================================
 
         buffer = BytesIO()
@@ -538,55 +570,51 @@ def gerar_pdf_etiquetas_lanches_bandas(encontro_id):
             "Brilho Negro"
         )
 
-        altura_etiqueta = ALTURA / 2
-
         # ====================================================
-        # DUAS ETIQUETAS POR FOLHA
+        # GERAR AS FOLHAS COM 3 ETIQUETAS CADA
         # ====================================================
 
-        for indice in range(0, len(bandas), 2):
+        for indice in range(
+            0,
+            len(bandas),
+            QUANTIDADE_ETIQUETAS_POR_FOLHA,
+        ):
 
-            # Etiqueta superior.
-            desenhar_etiqueta(
-                pdf,
-                bandas[indice],
-                encontro,
-                altura_etiqueta,
-                altura_etiqueta,
-            )
+            # Posições de baixo para cima:
+            # etiqueta 1: parte inferior
+            # etiqueta 2: parte central
+            # etiqueta 3: parte superior
 
-            # Etiqueta inferior, quando houver outra banda.
-            if indice + 1 < len(bandas):
-                desenhar_etiqueta(
-                    pdf,
-                    bandas[indice + 1],
-                    encontro,
-                    0,
-                    altura_etiqueta,
+            for posicao in range(
+                QUANTIDADE_ETIQUETAS_POR_FOLHA
+            ):
+                indice_banda = indice + posicao
+
+                # Não desenha etiquetas vazias.
+                if indice_banda >= len(bandas):
+                    continue
+
+                y_base = ALTURA_ETIQUETA * (
+                    QUANTIDADE_ETIQUETAS_POR_FOLHA
+                    - 1
+                    - posicao
                 )
 
-            # Linha pontilhada para corte.
-            pdf.saveState()
+                desenhar_etiqueta(
+                    pdf=pdf,
+                    banda=bandas[indice_banda],
+                    encontro=encontro,
+                    y_base=y_base,
+                    altura=ALTURA_ETIQUETA,
+                )
 
-            pdf.setStrokeColor(
-                colors.HexColor("#888888")
-            )
-            pdf.setLineWidth(0.7)
-            pdf.setDash(3, 3)
-
-            pdf.line(
-                5 * mm,
-                altura_etiqueta,
-                LARGURA - 5 * mm,
-                altura_etiqueta,
-            )
-
-            pdf.restoreState()
+            # Linhas de corte entre as três etiquetas.
+            desenhar_linhas_corte(pdf)
 
             pdf.showPage()
 
         # ====================================================
-        # FINALIZAR
+        # FINALIZAR PDF
         # ====================================================
 
         pdf.save()
