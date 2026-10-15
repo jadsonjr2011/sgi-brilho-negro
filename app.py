@@ -17991,6 +17991,66 @@ def imprimir_etiquetas_lanches(encontro_id):
         )
 
 
+
+# ============================================================
+# ENCONTRO DE BANDAS
+# RELATÓRIO DE DISTRIBUIÇÃO DE LANCHES
+# ============================================================
+
+@app.route(
+    "/admin/encontros-bandas/<int:encontro_id>/relatorio-lanches",
+    methods=["GET"]
+)
+def imprimir_relatorio_distribuicao_lanches(encontro_id):
+
+    # ==========================================
+    # VALIDAR PERMISSÃO
+    # ==========================================
+
+    if not usuario_tem_permissao("encontro_bandas"):
+        return redirect("/admin")
+
+    # ==========================================
+    # GERAR PDF
+    # ==========================================
+
+    try:
+
+        from utils.relatorio_distribuicao_lanches import (
+            gerar_pdf_relatorio_distribuicao_lanches
+        )
+
+        pdf = gerar_pdf_relatorio_distribuicao_lanches(
+            encontro_id
+        )
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=(
+                f"distribuicao_lanches_encontro_{encontro_id}.pdf"
+            )
+        )
+
+    except ValueError as erro:
+
+        return str(erro), 404
+
+    except Exception as erro:
+
+        print(
+            "ERRO AO GERAR RELATÓRIO DE DISTRIBUIÇÃO DE LANCHES:",
+            erro
+        )
+
+        return (
+            "Erro ao gerar o relatório de distribuição de lanches. "
+            "Confira o terminal do Flask.",
+            500
+        )
+
+
 # ============================================================
 # EXECUÇÃO
 # ============================================================

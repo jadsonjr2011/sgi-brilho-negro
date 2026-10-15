@@ -69,6 +69,20 @@
 
             </a>
 
+            
+            <a
+                href="{{ url_for(
+                    'imprimir_relatorio_distribuicao_lanches',
+                    encontro_id=encontro.id
+                ) }}"
+                target="_blank"
+                class="btn btn-outline-warning"
+            >
+                <i class="fas fa-utensils"></i>
+                Controle de Entrega de Lanches
+            </a>
+
+
             <!-- OFÍCIO DE SOLICITAÇÃO DE APOIO -->
 
             <a
