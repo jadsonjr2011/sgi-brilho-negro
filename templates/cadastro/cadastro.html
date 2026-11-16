@@ -291,46 +291,30 @@ id="descricao_alergia"></textarea>
 
 <h4>🎺 Informações do Integrante</h4>
 
+
 <label class="mt-3">
-Função na Banda
+    Função na Banda
 </label>
 
 <select
-class="form-select"
-name="funcao"
-required>
+    class="form-select"
+    name="funcao"
+    required>
 
-<option value="">
-Selecione
-</option>
+    <option value="">
+        Selecione
+    </option>
 
+    {% for valor, nome in funcoes_banda %}
 
-<option value="Músico">
-🎺 Músico
-</option>
+        <option value="{{ valor }}">
+            {{ nome }}
+        </option>
 
-
-<option value="Corpo Coreográfico">
-💃 Corpo Coreográfico
-</option>
-
-
-<option value="Apoio">
-🛠️ Apoio
-</option>
-
-
-<option value="Maestro">
-🥁 Maestro
-</option>
-
-
-<option value="Instrutor">
-🎼 Instrutor
-</option>
-
+    {% endfor %}
 
 </select>
+
 
 <hr>
 

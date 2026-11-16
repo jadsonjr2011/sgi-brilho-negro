@@ -297,6 +297,7 @@ def inicio():
 
     return render_template("index.html")
 
+
 @app.route("/cadastro")
 def cadastro():
 
@@ -312,14 +313,8 @@ def cadastro():
             """)
         ).scalar()
 
-        # Se não existir configuração,
-        # mantém o cadastro aberto.
         if not status:
             status = "ABERTA"
-
-        # ==========================================
-        # INSCRIÇÕES PAUSADAS
-        # ==========================================
 
         if status == "PAUSADA":
 
@@ -327,27 +322,21 @@ def cadastro():
                 "cadastro/pausado.html"
             )
 
-        # ==========================================
-        # INSCRIÇÕES FECHADAS
-        # ==========================================
-
         if status == "FECHADA":
 
             return render_template(
                 "cadastro/fechado.html"
             )
 
-        # ==========================================
-        # INSCRIÇÕES ABERTAS
-        # ==========================================
-
         return render_template(
-            "cadastro/cadastro.html"
+            "cadastro/cadastro.html",
+            funcoes_banda=FUNCOES_BANDA
         )
 
     finally:
 
         db.close()
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
