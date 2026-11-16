@@ -432,31 +432,41 @@ target="_blank">
 
 </a>
 
-<!-- APROVAÇÃO SOMENTE PENDENTE -->
+
+<!-- CONTROLE DE APROVAÇÃO -->
 
 {% if integrante.status == "PENDENTE" %}
 
+    <a 
+    href="/admin/aprovar/{{ integrante.id }}"
+    class="btn btn-success"
+    onclick="return confirm('Deseja aprovar este integrante?')">
 
-<a 
-href="/admin/aprovar/{{ integrante.id }}"
-class="btn btn-success">
+        ✅ Aprovar
 
-✅ Aprovar
+    </a>
 
-</a>
+    <a 
+    href="/admin/reprovar/{{ integrante.id }}"
+    class="btn btn-warning"
+    onclick="return confirm('Deseja realmente reprovar este integrante?')">
 
+        ❌ Reprovar
 
-<a 
-href="/admin/reprovar/{{ integrante.id }}"
-class="btn btn-warning">
+    </a>
 
-❌ Reprovar
+{% elif integrante.status == "REPROVADO" %}
 
-</a>
+    <a 
+    href="/admin/aprovar/{{ integrante.id }}"
+    class="btn btn-success"
+    onclick="return confirm('Deseja aprovar novamente este integrante?')">
 
+        🔄 Aprovar Integrante Reprovado
+
+    </a>
 
 {% endif %}
-
 
 
 
