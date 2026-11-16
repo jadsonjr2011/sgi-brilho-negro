@@ -1,3 +1,4 @@
+
 {% extends 'layout/base.html' %}
 
 {% block titulo %}
@@ -6,37 +7,121 @@ Portal Brilho Negro
 
 {% block conteudo %}
 
+<style>
+    .menu-acessos {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+    }
+
+    .btn-menu-acessos {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid rgba(212, 175, 55, 0.5);
+        background: #1d1f25;
+        color: #d4af37;
+        font-size: 20px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-menu-acessos:hover {
+        background: #d4af37;
+        color: #111;
+        transform: rotate(15deg);
+    }
+
+    .opcoes-acessos {
+        display: none;
+        position: absolute;
+        top: 54px;
+        right: 0;
+        width: 230px;
+        padding: 10px;
+        background: #1d1f25;
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.45);
+    }
+
+    .opcoes-acessos.aberto {
+        display: block;
+        animation: aparecerMenu 0.2s ease;
+    }
+
+    .item-acesso {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: 0.2s;
+    }
+
+    .item-acesso:hover {
+        background: rgba(212, 175, 55, 0.15);
+        color: #d4af37;
+    }
+
+    .item-acesso + .item-acesso {
+        margin-top: 4px;
+    }
+
+    @keyframes aparecerMenu {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <div class="tela-inicial">
 
     <div class="fundo-brilho"></div>
 
-    <!-- =========================================================
-         ACESSO ADMINISTRATIVO
-         ========================================================= -->
+    <!-- MENU DE ACESSOS -->
+    <div class="menu-acessos">
 
-    <a
-        href="/login"
-        class="btn btn-dark"
-        title="Área Administrativa"
-        style="
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            padding: 0;
-            z-index: 10;
-            opacity: 0.85;
-        "
-    >
-        ⚙️
-    </a>
+        <button
+            type="button"
+            class="btn-menu-acessos"
+            id="btnMenuAcessos"
+            aria-label="Abrir menu de acessos"
+            aria-expanded="false"
+            aria-controls="opcoesAcessos"
+        >
+            ☰
+        </button>
 
+        <div class="opcoes-acessos" id="opcoesAcessos">
+
+            <a
+                href="/login"
+                class="item-acesso"
+            >
+                ⚙️ Acesso Administrativo
+            </a>
+
+            <a
+                href="/encontro-bandas/inscricao"
+                class="item-acesso"
+            >
+                🎺 Inscrição de Bandas
+            </a>
+
+        </div>
+
+    </div>
 
     <div class="conteudo-inicial">
 
@@ -58,50 +143,14 @@ Portal Brilho Negro
             Escolha uma das opções abaixo para continuar.
         </p>
 
-
         <div class="area-botoes-inicial">
 
-        {#    
-            <!-- =====================================================
-                 INSCRIÇÃO DE BANDAS
+            <!--
+                CADASTRO DE INTEGRANTES
 
-                 ATUALMENTE É A ÚNICA OPÇÃO PÚBLICA EXIBIDA.
-
-                 Após o encerramento do período de inscrições do
-                 Encontro de Bandas, avaliar se este botão deve
-                 permanecer disponível.
-                 ===================================================== -->
-
-            <a
-                href="/encontro-bandas/inscricao"
-                class="btn btn-brilho btn-inicial"
-            >
-                🎺 Inscrição de Bandas
-            </a>
-            #}
-
-
-            <!-- =====================================================
-                 CADASTRO DE INTEGRANTES — TEMPORARIAMENTE OCULTO
-
-                 IMPORTANTE:
-
-                 O cadastro de integrantes NÃO foi excluído.
-
-                 A rota /cadastro continua funcionando normalmente.
-
-                 O botão está apenas oculto temporariamente durante
-                 o período de inscrições do Encontro de Bandas.
-
-                 >>> APÓS O ENCERRAMENTO DAS INSCRIÇÕES <<<
-                 REATIVAR ESTE BOTÃO.
-
-                 Para reativar:
-                 1. Remover os comentários {# e #}
-                 2. Manter o link apontando para /cadastro
-
-                 ===================================================== -->
-
+                TEMPORARIAMENTE DISPONÍVEL.
+                A rota /cadastro permanece funcionando.
+            -->
 
             <a
                 href="/cadastro"
@@ -109,13 +158,45 @@ Portal Brilho Negro
             >
                 👤 Cadastro de Integrantes
             </a>
-            
-
 
         </div>
 
     </div>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const botao = document.getElementById("btnMenuAcessos");
+    const menu = document.getElementById("opcoesAcessos");
+
+    botao.addEventListener("click", function (evento) {
+
+        evento.stopPropagation();
+
+        const aberto = menu.classList.toggle("aberto");
+
+        botao.setAttribute("aria-expanded", aberto);
+
+        botao.innerHTML = aberto ? "✕" : "☰";
+
+    });
+
+    document.addEventListener("click", function (evento) {
+
+        if (!menu.contains(evento.target) &&
+            !botao.contains(evento.target)) {
+
+            menu.classList.remove("aberto");
+            botao.setAttribute("aria-expanded", "false");
+            botao.innerHTML = "☰";
+
+        }
+
+    });
+
+});
+</script>
 
 {% endblock %}
