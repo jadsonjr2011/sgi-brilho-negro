@@ -5,6 +5,7 @@ from urllib.parse import quote
 from flask import send_file
 import json
 from flask import request, redirect, render_template, flash
+from utils.relatorio_competicoes import gerar_pdf_competicao
 from utils.pdf_financeiro_categoria import gerar_pdf_financeiro_categoria
 from utils.pdf_financeiro_periodo import gerar_pdf_financeiro_periodo
 from utils.pdf_financeiro_receitas_despesas import gerar_pdf_receitas_despesas
@@ -15955,6 +15956,667 @@ def imprimir_relatorio_distribuicao_lanches(encontro_id):
             "Confira o terminal do Flask.",
             500
         )
+
+
+# ============================================================
+# COMPETIÇÕES — BRILHO NEGRO
+# ============================================================
+
+def verificar_acesso_competicoes():
+
+    return usuario_tem_permissao("encontro_bandas")
+
+
+# ============================================================
+# LISTAGEM E CADASTRO DE COMPETIÇÕES
+# ============================================================
+
+@app.route("/admin/competicoes", methods=["GET", "POST"])
+def competicoes_admin():
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        if request.method == "POST":
+
+            nome = request.form.get("nome", "").strip()
+            data_inicio = request.form.get("data_inicio", "").strip()
+            data_termino = request.form.get("data_termino", "").strip()
+            local = request.form.get("local", "").strip()
+            cidade = request.form.get("cidade", "").strip()
+            uf = request.form.get("uf", "").strip().upper()
+            observacoes = request.form.get("observacoes", "").strip()
+
+            if not nome:
+
+                competicoes = db.execute(
+                    text("""
+                        SELECT *
+                        FROM competicoes
+                        ORDER BY id DESC
+                    """)
+                ).mappings().all()
+
+                return render_template(
+                    "admin/competicoes.html",
+                    competicoes=competicoes,
+                    erro="Informe o nome da competição.",
+                    abrir_modal=True,
+                    competicao=None
+                )
+
+            if data_inicio and data_termino and data_termino < data_inicio:
+                competicoes = db.execute(
+                    text("""
+                        SELECT *
+                        FROM competicoes
+                        ORDER BY id DESC
+                    """)
+                ).mappings().all()
+
+                return render_template(
+                    "admin/competicoes.html",
+                    competicoes=competicoes,
+                    erro="A data de término não pode ser anterior à data de início.",
+                    abrir_modal=True,
+                    competicao=None
+                )
+
+            db.execute(
+                text("""
+                    INSERT INTO competicoes (
+                        nome,
+                        data_inicio,
+                        data_termino,
+                        local,
+                        cidade,
+                        uf,
+                        observacoes
+                    )
+                    VALUES (
+                        :nome,
+                        NULLIF(:data_inicio, '')::date,
+                        NULLIF(:data_termino, '')::date,
+                        :local,
+                        :cidade,
+                        :uf,
+                        :observacoes
+                    )
+                """),
+                {
+                    "nome": nome,
+                    "data_inicio": data_inicio,
+                    "data_termino": data_termino,
+                    "local": local or None,
+                    "cidade": cidade or None,
+                    "uf": uf or None,
+                    "observacoes": observacoes or None
+                }
+            )
+
+            db.commit()
+
+            return redirect("/admin/competicoes?sucesso=cadastrada")
+
+        competicoes = db.execute(
+            text("""
+                SELECT
+                    c.*,
+
+                    (
+                        SELECT COUNT(*)
+                        FROM competicao_categorias cc
+                        WHERE cc.competicao_id = c.id
+                    ) AS total_categorias,
+
+                    (
+                        SELECT COUNT(*)
+                        FROM competicao_integrantes ci
+                        JOIN competicao_categorias cc
+                            ON cc.id = ci.categoria_id
+                        WHERE cc.competicao_id = c.id
+                    ) AS total_integrantes
+
+                FROM competicoes c
+
+                ORDER BY
+                    CASE WHEN c.status = 'ABERTA' THEN 0 ELSE 1 END,
+                    c.id DESC
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/competicoes.html",
+            competicoes=competicoes,
+            competicao=None,
+            erro=None,
+            abrir_modal=False
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# DETALHES DA COMPETIÇÃO
+# ============================================================
+
+@app.route("/admin/competicoes/<int:id>")
+def detalhes_competicao(id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        competicao = db.execute(
+            text("""
+                SELECT
+                    c.*,
+
+                    (
+                        SELECT COUNT(*)
+                        FROM competicao_categorias cc
+                        WHERE cc.competicao_id = c.id
+                    ) AS total_categorias,
+
+                    (
+                        SELECT COUNT(*)
+                        FROM competicao_integrantes ci
+                        JOIN competicao_categorias cc
+                            ON cc.id = ci.categoria_id
+                        WHERE cc.competicao_id = c.id
+                    ) AS total_integrantes
+
+                FROM competicoes c
+
+                WHERE c.id = :id
+            """),
+            {"id": id}
+        ).mappings().first()
+
+        if not competicao:
+            return "Competição não encontrada.", 404
+
+        categorias = db.execute(
+            text("""
+                SELECT
+                    cc.*,
+                    COUNT(ci.id) AS total_integrantes
+
+                FROM competicao_categorias cc
+
+                LEFT JOIN competicao_integrantes ci
+                    ON ci.categoria_id = cc.id
+
+                WHERE cc.competicao_id = :id
+
+                GROUP BY cc.id
+
+                ORDER BY cc.nome
+            """),
+            {"id": id}
+        ).mappings().all()
+
+        participantes = db.execute(
+            text("""
+                SELECT
+                    ci.id AS vinculo_id,
+                    ci.categoria_id,
+                    i.id AS integrante_id,
+                    i.nome,
+                    i.codigo_integrante,
+                    i.funcao,
+                    ins.nome AS instrumento_nome
+
+                FROM competicao_integrantes ci
+
+                JOIN integrantes i
+                    ON i.id = ci.integrante_id
+
+                LEFT JOIN instrumentos ins
+                    ON ins.id = i.instrumento_id
+
+                JOIN competicao_categorias cc
+                    ON cc.id = ci.categoria_id
+
+                WHERE cc.competicao_id = :id
+
+                ORDER BY
+                    cc.nome,
+                    i.nome
+            """),
+            {"id": id}
+        ).mappings().all()
+
+        integrantes_disponiveis = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.nome,
+                    i.codigo_integrante,
+                    i.funcao,
+                    ins.nome AS instrumento_nome
+
+                FROM integrantes i
+
+                LEFT JOIN instrumentos ins
+                    ON ins.id = i.instrumento_id
+
+                WHERE
+                    i.status = 'APROVADO'
+                    AND i.situacao = 'ATIVO'
+
+                ORDER BY i.nome
+            """)
+        ).mappings().all()
+
+        return render_template(
+            "admin/competicoes.html",
+            competicoes=[],
+            competicao=competicao,
+            categorias=categorias,
+            participantes=participantes,
+            integrantes_disponiveis=integrantes_disponiveis,
+            erro=None,
+            abrir_modal=False
+        )
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# CADASTRAR CATEGORIA
+# ============================================================
+
+@app.route(
+    "/admin/competicoes/<int:id>/categorias",
+    methods=["POST"]
+)
+def cadastrar_categoria_competicao(id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        competicao = db.execute(
+            text("""
+                SELECT id, status
+                FROM competicoes
+                WHERE id = :id
+            """),
+            {"id": id}
+        ).mappings().first()
+
+        if not competicao:
+            return "Competição não encontrada.", 404
+
+        if competicao.status != "ABERTA":
+            return redirect(f"/admin/competicoes/{id}")
+
+        nome = request.form.get("nome", "").strip()
+        observacoes = request.form.get("observacoes", "").strip()
+
+        if not nome:
+            return redirect(f"/admin/competicoes/{id}")
+
+        db.execute(
+            text("""
+                INSERT INTO competicao_categorias (
+                    competicao_id,
+                    nome,
+                    observacoes
+                )
+                VALUES (
+                    :competicao_id,
+                    :nome,
+                    :observacoes
+                )
+                ON CONFLICT (competicao_id, nome)
+                DO NOTHING
+            """),
+            {
+                "competicao_id": id,
+                "nome": nome,
+                "observacoes": observacoes or None
+            }
+        )
+
+        db.commit()
+
+        return redirect(f"/admin/competicoes/{id}")
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# ADICIONAR INTEGRANTES À CATEGORIA
+# ============================================================
+
+@app.route(
+    "/admin/competicoes/categoria/<int:categoria_id>/integrantes",
+    methods=["POST"]
+)
+def adicionar_integrantes_competicao(categoria_id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        categoria = db.execute(
+            text("""
+                SELECT
+                    cc.id,
+                    cc.competicao_id,
+                    c.status
+
+                FROM competicao_categorias cc
+
+                JOIN competicoes c
+                    ON c.id = cc.competicao_id
+
+                WHERE cc.id = :id
+            """),
+            {"id": categoria_id}
+        ).mappings().first()
+
+        if not categoria:
+            return "Categoria não encontrada.", 404
+
+        competicao_id = categoria.competicao_id
+
+        if categoria.status != "ABERTA":
+            return redirect(f"/admin/competicoes/{competicao_id}")
+
+        integrantes_ids = request.form.getlist("integrante_ids")
+
+        for integrante_id in integrantes_ids:
+
+            try:
+                integrante_id = int(integrante_id)
+            except (ValueError, TypeError):
+                continue
+
+            integrante_ativo = db.execute(
+                text("""
+                    SELECT id
+
+                    FROM integrantes
+
+                    WHERE
+                        id = :id
+                        AND status = 'APROVADO'
+                        AND situacao = 'ATIVO'
+                """),
+                {"id": integrante_id}
+            ).scalar()
+
+            if not integrante_ativo:
+                continue
+
+            db.execute(
+                text("""
+                    INSERT INTO competicao_integrantes (
+                        categoria_id,
+                        integrante_id
+                    )
+                    VALUES (
+                        :categoria_id,
+                        :integrante_id
+                    )
+                    ON CONFLICT (
+                        categoria_id,
+                        integrante_id
+                    )
+                    DO NOTHING
+                """),
+                {
+                    "categoria_id": categoria_id,
+                    "integrante_id": integrante_id
+                }
+            )
+
+        db.commit()
+
+        return redirect(f"/admin/competicoes/{competicao_id}")
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# REMOVER INTEGRANTE DA COMPETIÇÃO
+# ============================================================
+
+@app.route(
+    "/admin/competicoes/categoria/<int:categoria_id>/remover/<int:integrante_id>",
+    methods=["POST"]
+)
+def remover_integrante_competicao(categoria_id, integrante_id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        categoria = db.execute(
+            text("""
+                SELECT
+                    cc.competicao_id,
+                    c.status
+
+                FROM competicao_categorias cc
+
+                JOIN competicoes c
+                    ON c.id = cc.competicao_id
+
+                WHERE cc.id = :id
+            """),
+            {"id": categoria_id}
+        ).mappings().first()
+
+        if not categoria:
+            return "Categoria não encontrada.", 404
+
+        competicao_id = categoria.competicao_id
+
+        if categoria.status != "ABERTA":
+            return redirect(f"/admin/competicoes/{competicao_id}")
+
+        db.execute(
+            text("""
+                DELETE FROM competicao_integrantes
+
+                WHERE
+                    categoria_id = :categoria_id
+                    AND integrante_id = :integrante_id
+            """),
+            {
+                "categoria_id": categoria_id,
+                "integrante_id": integrante_id
+            }
+        )
+
+        db.commit()
+
+        return redirect(f"/admin/competicoes/{competicao_id}")
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# ENCERRAR COMPETIÇÃO
+# ============================================================
+
+@app.route(
+    "/admin/competicoes/<int:id>/encerrar",
+    methods=["POST"]
+)
+def encerrar_competicao(id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        db.execute(
+            text("""
+                UPDATE competicoes
+
+                SET
+                    status = 'ENCERRADA',
+                    encerrado_em = CURRENT_TIMESTAMP
+
+                WHERE
+                    id = :id
+                    AND status = 'ABERTA'
+            """),
+            {"id": id}
+        )
+
+        db.commit()
+
+        return redirect(f"/admin/competicoes/{id}")
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
+# RELATÓRIO GERAL DA COMPETIÇÃO
+# ============================================================
+
+@app.route("/admin/competicoes/<int:id>/relatorio")
+def relatorio_competicao(id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        pdf = gerar_pdf_competicao(
+            db,
+            competicao_id=id
+        )
+
+        if pdf is None:
+            return "Competição não encontrada ou sem categorias cadastradas.", 404
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=f"relatorio_competicao_{id}.pdf"
+        )
+
+    except Exception as e:
+
+        print("ERRO AO GERAR RELATÓRIO DA COMPETIÇÃO:", e)
+
+        return "Erro ao gerar o relatório da competição.", 500
+
+
+# ============================================================
+# RELATÓRIO DE UMA CATEGORIA
+# ============================================================
+
+@app.route(
+    "/admin/competicoes/categoria/<int:categoria_id>/relatorio"
+)
+def relatorio_categoria_competicao(categoria_id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        competicao_id = db.execute(
+            text("""
+                SELECT competicao_id
+                FROM competicao_categorias
+                WHERE id = :id
+            """),
+            {"id": categoria_id}
+        ).scalar()
+
+        if not competicao_id:
+            return "Categoria não encontrada.", 404
+
+        pdf = gerar_pdf_competicao(
+            db,
+            competicao_id=competicao_id,
+            categoria_id=categoria_id
+        )
+
+        if pdf is None:
+            return "Não foi possível gerar o relatório desta categoria.", 404
+
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            as_attachment=False,
+            download_name=f"relatorio_categoria_{categoria_id}.pdf"
+        )
+
+    except Exception as e:
+
+        print("ERRO AO GERAR RELATÓRIO DA CATEGORIA:", e)
+
+        return "Erro ao gerar o relatório da categoria.", 500
 
 
 # ============================================================

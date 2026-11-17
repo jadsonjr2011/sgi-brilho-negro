@@ -1,0 +1,1311 @@
+
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}Competições | Brilho Negro{% endblock %}
+
+{% block titulo_pagina %}
+🏆 Competições
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+.competicoes-page {
+    color: #f1f1f1;
+}
+
+.bn-card {
+    background: #1d1f25;
+    border: 1px solid #33353d;
+    border-radius: 13px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.bn-card h5 {
+    color: #d4af37;
+    font-weight: 700;
+}
+
+.bn-titulo {
+    color: #d4af37;
+    font-weight: 700;
+}
+
+.bn-muted {
+    color: #aaa;
+}
+
+.bn-card .form-control,
+.bn-card .form-select {
+    background: #24262d;
+    border: 1px solid #41434c;
+    color: #fff;
+    border-radius: 8px;
+    min-height: 43px;
+}
+
+.bn-card .form-control:focus,
+.bn-card .form-select:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 0.15rem rgba(212,175,55,.15);
+    background: #24262d;
+    color: white;
+}
+
+.bn-card .form-select option {
+    background: #24262d;
+    color: white;
+}
+
+.bn-btn {
+    background: #d4af37;
+    color: #151515;
+    border: 1px solid #d4af37;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 9px 16px;
+}
+
+.bn-btn:hover {
+    background: #e5c45b;
+    color: #111;
+}
+
+.bn-btn-secundario {
+    background: #30323a;
+    color: white;
+    border: 1px solid #484a53;
+    border-radius: 8px;
+    padding: 8px 13px;
+}
+
+.bn-btn-secundario:hover {
+    background: #41434c;
+    color: white;
+}
+
+.bn-tabela {
+    color: #eee;
+    vertical-align: middle;
+}
+
+.bn-tabela th {
+    color: #d4af37;
+    border-bottom-color: #555;
+    white-space: nowrap;
+}
+
+.bn-tabela td {
+    border-bottom-color: #363840;
+}
+
+.bn-modal .modal-content {
+    background: #1d1f25;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 14px;
+}
+
+.bn-modal .modal-header {
+    border-bottom: 1px solid #d4af37;
+}
+
+.bn-modal .modal-footer {
+    border-top: 1px solid #444;
+}
+
+.bn-modal .modal-title {
+    color: #d4af37;
+    font-weight: 700;
+}
+
+.bn-modal .btn-close {
+    filter: invert(1);
+}
+
+.bn-modal .form-control {
+    background: #24262d;
+    color: white;
+    border: 1px solid #444;
+    min-height: 43px;
+}
+
+.bn-modal .form-control:focus {
+    background: #24262d;
+    color: white;
+    border-color: #d4af37;
+    box-shadow: none;
+}
+
+.bn-modal label,
+.bn-card label {
+    color: #d4af37;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.bn-resumo {
+    background: #25272f;
+    border: 1px solid #393b43;
+    border-radius: 10px;
+    padding: 15px;
+    height: 100%;
+}
+
+.bn-resumo strong {
+    display: block;
+    color: #d4af37;
+    font-size: 25px;
+}
+
+.bn-categoria {
+    border: 1px solid #3b3d46;
+    background: #202229;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.bn-categoria-topo {
+    padding: 15px 18px;
+    border-bottom: 1px solid #3b3d46;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.bn-categoria-corpo {
+    padding: 18px;
+}
+
+.bn-participante {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 4px;
+    border-bottom: 1px solid #343640;
+}
+
+.bn-participante:last-child {
+    border-bottom: 0;
+}
+
+.bn-participante small {
+    color: #999;
+}
+
+.bn-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 20px;
+}
+
+.bn-aberta {
+    background: rgba(25,135,84,.17);
+    color: #65d69c;
+    border: 1px solid #287b53;
+}
+
+.bn-encerrada {
+    background: rgba(108,117,125,.18);
+    color: #bbb;
+    border: 1px solid #666;
+}
+
+@media(max-width: 576px) {
+
+    .bn-card {
+        padding: 15px;
+    }
+
+    .bn-participante {
+        align-items: flex-start;
+    }
+
+}
+
+
+/* SELETOR DINÂMICO DE INTEGRANTES */
+
+.bn-busca-integrantes {
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.bn-busca-integrantes input {
+    padding-left: 40px;
+}
+
+.bn-busca-integrantes span {
+    position: absolute;
+    left: 13px;
+    top: 10px;
+    color: #999;
+}
+
+.bn-lista-integrantes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 9px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 3px;
+}
+
+.bn-integrante-opcao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px;
+    background: #25272f;
+    border: 1px solid #3d3f48;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: .2s;
+    margin: 0 !important;
+}
+
+.bn-integrante-opcao:hover {
+    border-color: #d4af37;
+    background: #302d23;
+}
+
+.bn-integrante-opcao.selecionado {
+    border-color: #d4af37;
+    background: rgba(212,175,55,.10);
+}
+
+.bn-integrante-opcao input {
+    accent-color: #d4af37;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.bn-integrante-opcao span {
+    color: #eee;
+    font-weight: 500;
+}
+
+.bn-integrante-opcao small {
+    display: block;
+    color: #999;
+    font-weight: 400;
+}
+
+.bn-contador-selecao {
+    color: #d4af37;
+    font-weight: 700;
+}
+
+.bn-sem-resultado {
+    color: #999;
+    padding: 18px;
+    text-align: center;
+    display: none;
+}
+
+.bn-integrante-opcao.oculto {
+    display: none;
+}
+
+
+</style>
+
+
+<div class="competicoes-page">
+
+
+{% if erro %}
+
+<div class="alert alert-danger">
+    {{ erro }}
+</div>
+
+{% endif %}
+
+
+{% if request.args.get('sucesso') == 'cadastrada' %}
+
+<div class="alert alert-success">
+    Competição cadastrada com sucesso!
+</div>
+
+{% endif %}
+
+
+<!-- ================================================= -->
+<!-- LISTAGEM DE COMPETIÇÕES                           -->
+<!-- ================================================= -->
+
+{% if not competicao %}
+
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
+    <div>
+        <h4 class="bn-titulo mb-1">
+            🏆 Gerenciamento de Competições
+        </h4>
+
+        <small class="bn-muted">
+            Cadastre competições e organize os participantes.
+        </small>
+    </div>
+
+
+    <button
+        type="button"
+        class="bn-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#modalNovaCompeticao">
+
+        + Nova Competição
+
+    </button>
+
+</div>
+
+
+{% if competicoes %}
+
+<div class="row g-3">
+
+    {% for item in competicoes %}
+
+    <div class="col-12 col-lg-6">
+
+        <div class="bn-card h-100 mb-0">
+
+            <div class="d-flex justify-content-between gap-2 mb-3">
+
+                <span class="bn-status
+                    {% if item.status == 'ABERTA' %}
+                        bn-aberta
+                    {% else %}
+                        bn-encerrada
+                    {% endif %}">
+
+                    {{ item.status }}
+
+                </span>
+
+                <small class="bn-muted">
+                    #{{ item.id }}
+                </small>
+
+            </div>
+
+
+            <h5>
+                🏆 {{ item.nome }}
+            </h5>
+
+
+            <div class="bn-muted small mb-3">
+
+                {% if item.data_inicio %}
+                    <div>
+                        📅 {{ item.data_inicio.strftime('%d/%m/%Y') }}
+
+                        {% if item.data_termino %}
+                            até {{ item.data_termino.strftime('%d/%m/%Y') }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if item.local %}
+                    <div>📍 {{ item.local }}</div>
+                {% endif %}
+
+                {% if item.cidade %}
+                    <div>
+                        {{ item.cidade }}{% if item.uf %}/{{ item.uf }}{% endif %}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <div class="row g-2 mb-3">
+
+                <div class="col-6">
+
+                    <div class="bn-resumo">
+
+                        <strong>
+                            {{ item.total_categorias }}
+                        </strong>
+
+                        <small class="bn-muted">
+                            Categorias
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-6">
+
+                    <div class="bn-resumo">
+
+                        <strong>
+                            {{ item.total_integrantes }}
+                        </strong>
+
+                        <small class="bn-muted">
+                            Inscrições em categorias
+                        </small>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="/admin/competicoes/{{ item.id }}"
+                class="bn-btn d-block text-center text-decoration-none">
+
+                Gerenciar Competição →
+
+            </a>
+
+        </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+
+{% else %}
+
+<div class="bn-card text-center py-5">
+
+    <div style="font-size:45px;">
+        🏆
+    </div>
+
+    <h5 class="mt-3">
+        Nenhuma competição cadastrada
+    </h5>
+
+    <p class="bn-muted">
+        Comece cadastrando a primeira competição da Brilho Negro.
+    </p>
+
+    <button
+        class="bn-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#modalNovaCompeticao">
+
+        Cadastrar primeira competição
+
+    </button>
+
+</div>
+
+{% endif %}
+
+
+<!-- ================================================= -->
+<!-- MODAL NOVA COMPETIÇÃO                             -->
+<!-- ================================================= -->
+
+<div
+    class="modal fade bn-modal"
+    id="modalNovaCompeticao"
+    tabindex="-1">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form method="POST" action="/admin/competicoes">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h5 class="modal-title">
+                            🏆 Nova Competição
+                        </h5>
+
+                        <small class="bn-muted">
+                            Informe os dados da participação.
+                        </small>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label>Nome da competição *</label>
+
+                            <input
+                                type="text"
+                                name="nome"
+                                class="form-control"
+                                placeholder="Ex.: Nordestão de Bandas 2026"
+                                required>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <label>Data de início</label>
+
+                            <input
+                                type="date"
+                                name="data_inicio"
+                                class="form-control">
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <label>Data de término</label>
+
+                            <input
+                                type="date"
+                                name="data_termino"
+                                class="form-control">
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label>Local</label>
+
+                            <input
+                                type="text"
+                                name="local"
+                                class="form-control"
+                                placeholder="Nome do local">
+
+                        </div>
+
+
+                        <div class="col-md-8">
+
+                            <label>Cidade</label>
+
+                            <input
+                                type="text"
+                                name="cidade"
+                                class="form-control">
+
+                        </div>
+
+
+                        <div class="col-md-4">
+
+                            <label>UF</label>
+
+                            <input
+                                type="text"
+                                name="uf"
+                                class="form-control"
+                                maxlength="2"
+                                placeholder="RN">
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label>Observações</label>
+
+                            <textarea
+                                name="observacoes"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Informações adicionais"></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="bn-btn-secundario"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="bn-btn">
+
+                        Salvar Competição
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endif %}
+
+
+<!-- ================================================= -->
+<!-- DETALHES DA COMPETIÇÃO                            -->
+<!-- ================================================= -->
+
+{% if competicao %}
+
+
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+
+    <div>
+
+        <a
+            href="/admin/competicoes"
+            class="text-decoration-none bn-muted small">
+
+            ← Voltar para competições
+
+        </a>
+
+        <h4 class="bn-titulo mt-2 mb-1">
+            🏆 {{ competicao.nome }}
+        </h4>
+
+        <small class="bn-muted">
+            Gerenciamento de categorias e participantes
+        </small>
+
+    </div>
+
+
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+
+            <a
+                href="/admin/competicoes/{{ competicao.id }}/relatorio"
+                target="_blank"
+                class="bn-btn text-decoration-none">
+
+                📄 Relatório geral
+
+            </a>
+
+            <span class="bn-status
+                {% if competicao.status == 'ABERTA' %}
+                    bn-aberta
+                {% else %}
+                    bn-encerrada
+                {% endif %}">
+
+                {{ competicao.status }}
+
+            </span>
+
+        </div>
+
+</div>
+
+
+<!-- RESUMO -->
+
+<div class="row g-3 mb-4">
+
+    <div class="col-6 col-lg-3">
+
+        <div class="bn-resumo">
+
+            <strong>{{ competicao.total_categorias }}</strong>
+
+            <small class="bn-muted">
+                Categorias
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-6 col-lg-3">
+
+        <div class="bn-resumo">
+
+            <strong>{{ competicao.total_integrantes }}</strong>
+
+            <small class="bn-muted">
+                Inscrições em categorias
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <div class="col-12 col-lg-6">
+
+        <div class="bn-resumo">
+
+            <strong style="font-size:16px;">
+
+                {% if competicao.local %}
+                    {{ competicao.local }}
+                {% else %}
+                    Local não informado
+                {% endif %}
+
+            </strong>
+
+            <small class="bn-muted">
+
+                {% if competicao.cidade %}
+                    {{ competicao.cidade }}
+                    {% if competicao.uf %}/{{ competicao.uf }}{% endif %}
+                {% endif %}
+
+            </small>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- DADOS DA COMPETIÇÃO -->
+
+<div class="bn-card">
+
+    <h5>📋 Informações da competição</h5>
+
+    <div class="row g-3 mt-1">
+
+        <div class="col-md-6">
+
+            <small class="bn-muted">Data de início</small>
+
+            <div>
+                {% if competicao.data_inicio %}
+                    {{ competicao.data_inicio.strftime('%d/%m/%Y') }}
+                {% else %}
+                    Não informada
+                {% endif %}
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+            <small class="bn-muted">Data de término</small>
+
+            <div>
+                {% if competicao.data_termino %}
+                    {{ competicao.data_termino.strftime('%d/%m/%Y') }}
+                {% else %}
+                    Não informada
+                {% endif %}
+            </div>
+
+        </div>
+
+
+        {% if competicao.observacoes %}
+
+        <div class="col-12">
+
+            <small class="bn-muted">Observações</small>
+
+            <div>
+                {{ competicao.observacoes }}
+            </div>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% if competicao.status == 'ABERTA' %}
+
+<!-- CADASTRAR CATEGORIA -->
+
+<div class="bn-card">
+
+    <h5>➕ Adicionar categoria</h5>
+
+    <form
+        method="POST"
+        action="/admin/competicoes/{{ competicao.id }}/categorias">
+
+        <div class="row g-3">
+
+            <div class="col-md-8">
+
+                <label>Nome da categoria *</label>
+
+                <input
+                    type="text"
+                    name="nome"
+                    class="form-control"
+                    placeholder="Ex.: Banda Marcial"
+                    required>
+
+            </div>
+
+
+            <div class="col-md-4 d-flex align-items-end">
+
+                <button
+                    type="submit"
+                    class="bn-btn w-100">
+
+                    + Adicionar Categoria
+
+                </button>
+
+            </div>
+
+
+            <div class="col-12">
+
+                <label>Observações da categoria</label>
+
+                <input
+                    type="text"
+                    name="observacoes"
+                    class="form-control"
+                    placeholder="Opcional">
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endif %}
+
+
+<!-- LISTAGEM DE CATEGORIAS -->
+
+<h5 class="bn-titulo mb-3">
+    🎺 Categorias e participantes
+</h5>
+
+
+{% if categorias %}
+
+{% for categoria in categorias %}
+
+<div class="bn-categoria">
+
+    <div class="bn-categoria-topo">
+
+        <div>
+
+            <h5 class="mb-1" style="color:#d4af37;">
+                {{ categoria.nome }}
+            </h5>
+
+            <small class="bn-muted">
+                {{ categoria.total_integrantes }} integrante(s)
+            </small>
+
+        </div>
+
+        <a
+            href="/admin/competicoes/categoria/{{ categoria.id }}/relatorio"
+            target="_blank"
+            class="bn-btn-secundario text-decoration-none">
+
+            📄 Imprimir categoria
+
+        </a>
+
+    </div>
+
+
+    <div class="bn-categoria-corpo">
+
+        {% set lista_categoria = participantes
+            |selectattr('categoria_id', 'equalto', categoria.id)
+            |list %}
+
+
+        {% if lista_categoria %}
+
+            {% for participante in lista_categoria %}
+
+            <div class="bn-participante">
+
+                <div>
+
+                    <strong>
+                        {{ participante.nome }}
+                    </strong>
+
+                    <br>
+
+                    <small>
+
+                        {% if participante.codigo_integrante %}
+                            {{ participante.codigo_integrante }} ·
+                        {% endif %}
+
+                        {{ participante.funcao or 'Função não informada' }}
+
+                        {% if participante.instrumento_nome %}
+                            · {{ participante.instrumento_nome }}
+                        {% endif %}
+
+                    </small>
+
+                </div>
+
+
+                {% if competicao.status == 'ABERTA' %}
+
+                <form
+                    method="POST"
+                    action="/admin/competicoes/categoria/{{ categoria.id }}/remover/{{ participante.integrante_id }}"
+                    onsubmit="return confirm('Deseja remover este integrante da categoria?');">
+
+                    <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger">
+
+                        Remover
+
+                    </button>
+
+                </form>
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="bn-muted mb-3">
+                Nenhum integrante adicionado nesta categoria.
+            </p>
+
+        {% endif %}
+
+
+        {% if competicao.status == 'ABERTA' %}
+
+        <hr style="border-color:#444;">
+
+
+        
+        <form
+            method="POST"
+            action="/admin/competicoes/categoria/{{ categoria.id }}/integrantes"
+            class="form-adicionar-integrantes">
+
+            <label class="mb-2">
+                👥 Adicionar integrantes
+            </label>
+
+            <div class="bn-busca-integrantes">
+
+                <span>🔎</span>
+
+                <input
+                    type="text"
+                    class="form-control campo-busca-integrantes"
+                    placeholder="Digite o nome do integrante...">
+
+            </div>
+
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+
+                <small class="bn-muted">
+                    Selecione quantos integrantes desejar
+                </small>
+
+                <small class="bn-contador-selecao">
+                    <span class="quantidade-selecionados">0</span> selecionado(s)
+                </small>
+
+            </div>
+
+
+            <div class="bn-lista-integrantes">
+
+                {% set ids_categoria = lista_categoria
+                    |map(attribute='integrante_id')
+                    |list %}
+
+                {% for integrante in integrantes_disponiveis %}
+
+                    {% if integrante.id not in ids_categoria %}
+
+                    <label
+                        class="bn-integrante-opcao"
+                        data-nome="{{ integrante.nome|lower }}">
+
+                        <input
+                            type="checkbox"
+                            name="integrante_ids"
+                            value="{{ integrante.id }}"
+                            class="checkbox-integrante">
+
+                        <span>
+
+                            {{ integrante.nome }}
+
+                            <small>
+                                {{ integrante.instrumento_nome or 'Sem instrumento' }}
+
+                                {% if integrante.funcao %}
+                                    · {{ integrante.funcao }}
+                                {% endif %}
+                            </small>
+
+                        </span>
+
+                    </label>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+
+            <div class="bn-sem-resultado">
+                Nenhum integrante encontrado.
+            </div>
+
+
+            <button
+                type="submit"
+                class="bn-btn mt-3 btn-adicionar-selecionados"
+                disabled>
+
+                + Adicionar selecionados
+
+            </button>
+
+        </form>
+
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endfor %}
+
+
+{% else %}
+
+<div class="bn-card text-center py-4">
+
+    <h5>
+        Nenhuma categoria cadastrada
+    </h5>
+
+    <p class="bn-muted mb-0">
+        Adicione as categorias para começar a incluir os integrantes.
+    </p>
+
+</div>
+
+{% endif %}
+
+
+<!-- ENCERRAR COMPETIÇÃO -->
+
+{% if competicao.status == 'ABERTA' %}
+
+<div class="bn-card mt-4">
+
+    <h5>🔒 Encerramento da competição</h5>
+
+    <p class="bn-muted">
+        Ao encerrar, a competição e suas categorias ficarão bloqueadas
+        para novas inclusões e remoções. O histórico continuará disponível.
+    </p>
+
+    <form
+        method="POST"
+        action="/admin/competicoes/{{ competicao.id }}/encerrar"
+        onsubmit="return confirm('Tem certeza que deseja encerrar esta competição? Essa ação bloqueará novas alterações nos participantes.');">
+
+        <button
+            type="submit"
+            class="btn btn-danger">
+
+            🔒 Encerrar Competição
+
+        </button>
+
+    </form>
+
+</div>
+
+{% else %}
+
+<div class="bn-card mt-4">
+
+    <h5>🔒 Competição encerrada</h5>
+
+    <p class="bn-muted mb-0">
+        Esta competição está encerrada. Os dados e participantes
+        permanecem disponíveis para consulta.
+    </p>
+
+</div>
+
+{% endif %}
+
+
+{% endif %}
+
+</div>
+
+
+{% if abrir_modal %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const modal = document.getElementById("modalNovaCompeticao");
+
+    if (modal) {
+        bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
+
+});
+</script>
+{% endif %}
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(
+        ".form-adicionar-integrantes"
+    ).forEach(function (form) {
+
+        const busca = form.querySelector(".campo-busca-integrantes");
+        const opcoes = form.querySelectorAll(".bn-integrante-opcao");
+        const contador = form.querySelector(".quantidade-selecionados");
+        const botao = form.querySelector(".btn-adicionar-selecionados");
+        const mensagem = form.querySelector(".bn-sem-resultado");
+
+        function atualizar() {
+
+            let selecionados = 0;
+            let visiveis = 0;
+
+            opcoes.forEach(function (opcao) {
+
+                const checkbox = opcao.querySelector(
+                    ".checkbox-integrante"
+                );
+
+                if (checkbox.checked) {
+                    selecionados++;
+                    opcao.classList.add("selecionado");
+                } else {
+                    opcao.classList.remove("selecionado");
+                }
+
+                if (!opcao.classList.contains("oculto")) {
+                    visiveis++;
+                }
+
+            });
+
+            contador.textContent = selecionados;
+            botao.disabled = selecionados === 0;
+
+            mensagem.style.display =
+                visiveis === 0 ? "block" : "none";
+        }
+
+        busca.addEventListener("input", function () {
+
+            const termo = this.value
+                .toLocaleLowerCase("pt-BR")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            opcoes.forEach(function (opcao) {
+
+                const nome = opcao.dataset.nome
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+
+                opcao.classList.toggle(
+                    "oculto",
+                    !nome.includes(termo)
+                );
+
+            });
+
+            atualizar();
+        });
+
+        opcoes.forEach(function (opcao) {
+
+            opcao.querySelector(
+                ".checkbox-integrante"
+            ).addEventListener("change", atualizar);
+
+        });
+
+        atualizar();
+
+    });
+
+});
+</script>
+
+{% endblock %}
