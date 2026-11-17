@@ -59,6 +59,47 @@
     color: white;
 }
 
+/* CARDS DA LISTAGEM DE COMPETIÇÕES */
+.bn-card-competicao {
+    width: 340px;
+    max-width: 100%;
+    flex: 0 0 340px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin: 0;
+}
+
+.bn-card-competicao h5 {
+    font-size: 15px;
+    margin-bottom: 6px;
+}
+
+.bn-card-competicao .bn-resumo {
+    padding: 7px 10px;
+    border-radius: 8px;
+}
+
+.bn-card-competicao .bn-resumo strong {
+    font-size: 19px;
+}
+
+.bn-card-competicao .bn-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.bn-card-competicao .bn-status {
+    padding: 4px 8px;
+    font-size: 10px;
+}
+
+@media (max-width: 576px) {
+    .bn-card-competicao {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+}
+
 .bn-btn {
     background: #d4af37;
     color: #151515;
@@ -315,6 +356,32 @@
     display: none;
 }
 
+/* ROLAGEM INTERNA DOS PARTICIPANTES */
+.bn-lista-participantes-categoria {
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 12px;
+}
+
+/* Personalização da barra de rolagem */
+.bn-lista-participantes-categoria::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bn-lista-participantes-categoria::-webkit-scrollbar-track {
+    background: #202229;
+    border-radius: 10px;
+}
+
+.bn-lista-participantes-categoria::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 10px;
+}
+
+.bn-lista-participantes-categoria::-webkit-scrollbar-thumb:hover {
+    background: #d4af37;
+}
 
 </style>
 
@@ -331,6 +398,21 @@
 {% endif %}
 
 
+{% if request.args.get('sucesso_categoria') == 'editada' %}
+
+<div class="alert alert-success">
+    Categoria atualizada com sucesso!
+</div>
+
+{% elif request.args.get('erro_categoria') == 'duplicada' %}
+
+<div class="alert alert-danger">
+    Já existe uma categoria com esse nome nesta competição.
+</div>
+
+{% endif %}
+
+
 {% if request.args.get('sucesso') == 'cadastrada' %}
 
 <div class="alert alert-success">
@@ -339,6 +421,19 @@
 
 {% endif %}
 
+{% if request.args.get('sucesso_competicao') == 'editada' %}
+<div class="alert alert-success">
+    Dados da competição atualizados com sucesso!
+</div>
+{% elif request.args.get('erro_competicao') == 'nome' %}
+<div class="alert alert-danger">
+    Informe o nome da competição.
+</div>
+{% elif request.args.get('erro_competicao') == 'datas' %}
+<div class="alert alert-danger">
+    A data de término não pode ser anterior à data de início.
+</div>
+{% endif %}
 
 <!-- ================================================= -->
 <!-- LISTAGEM DE COMPETIÇÕES                           -->
@@ -375,111 +470,84 @@
 
 {% if competicoes %}
 
-<div class="row g-3">
+<div class="d-flex flex-wrap justify-content-start gap-2">
 
     {% for item in competicoes %}
 
-    <div class="col-12 col-lg-6">
+    <div class="bn-card bn-card-competicao mb-0">
 
-        <div class="bn-card h-100 mb-0">
+        <div class="d-flex justify-content-between gap-2 mb-3">
 
-            <div class="d-flex justify-content-between gap-2 mb-3">
+            <span class="bn-status
+                {% if item.status == 'ABERTA' %}
+                    bn-aberta
+                {% else %}
+                    bn-encerrada
+                {% endif %}">
 
-                <span class="bn-status
-                    {% if item.status == 'ABERTA' %}
-                        bn-aberta
-                    {% else %}
-                        bn-encerrada
-                    {% endif %}">
+                {{ item.status }}
 
-                    {{ item.status }}
+            </span>
 
-                </span>
-
-                <small class="bn-muted">
-                    #{{ item.id }}
-                </small>
-
-            </div>
-
-
-            <h5>
-                🏆 {{ item.nome }}
-            </h5>
-
-
-            <div class="bn-muted small mb-3">
-
-                {% if item.data_inicio %}
-                    <div>
-                        📅 {{ item.data_inicio.strftime('%d/%m/%Y') }}
-
-                        {% if item.data_termino %}
-                            até {{ item.data_termino.strftime('%d/%m/%Y') }}
-                        {% endif %}
-                    </div>
-                {% endif %}
-
-                {% if item.local %}
-                    <div>📍 {{ item.local }}</div>
-                {% endif %}
-
-                {% if item.cidade %}
-                    <div>
-                        {{ item.cidade }}{% if item.uf %}/{{ item.uf }}{% endif %}
-                    </div>
-                {% endif %}
-
-            </div>
-
-
-            <div class="row g-2 mb-3">
-
-                <div class="col-6">
-
-                    <div class="bn-resumo">
-
-                        <strong>
-                            {{ item.total_categorias }}
-                        </strong>
-
-                        <small class="bn-muted">
-                            Categorias
-                        </small>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-6">
-
-                    <div class="bn-resumo">
-
-                        <strong>
-                            {{ item.total_integrantes }}
-                        </strong>
-
-                        <small class="bn-muted">
-                            Inscrições em categorias
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <a
-                href="/admin/competicoes/{{ item.id }}"
-                class="bn-btn d-block text-center text-decoration-none">
-
-                Gerenciar Competição →
-
-            </a>
+            <small class="bn-muted">
+                #{{ item.id }}
+            </small>
 
         </div>
+
+        <h5>
+            🏆 {{ item.nome }}
+        </h5>
+
+        <div class="bn-muted small mb-3">
+
+            {% if item.data_inicio %}
+                <div>
+                    📅 {{ item.data_inicio.strftime('%d/%m/%Y') }}
+
+                    {% if item.data_termino %}
+                        até {{ item.data_termino.strftime('%d/%m/%Y') }}
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {% if item.local %}
+                <div>📍 {{ item.local }}</div>
+            {% endif %}
+
+            {% if item.cidade %}
+                <div>
+                    {{ item.cidade }}{% if item.uf %}/{{ item.uf }}{% endif %}
+                </div>
+            {% endif %}
+
+        </div>
+
+        <div class="row g-2 mb-3">
+
+            <div class="col-6">
+                <div class="bn-resumo">
+                    <strong>{{ item.total_categorias }}</strong>
+                    <small class="bn-muted">Categorias</small>
+                </div>
+            </div>
+
+            <div class="col-6">
+                <div class="bn-resumo">
+                    <strong>{{ item.total_integrantes }}</strong>
+                    <small class="bn-muted">Inscrições em categorias</small>
+                </div>
+            </div>
+
+        </div>
+
+        <a
+            href="/admin/competicoes/{{ item.id }}"
+            class="bn-btn d-block text-center text-decoration-none">
+
+            Gerenciar Competição →
+
+        </a>
 
     </div>
 
@@ -717,6 +785,16 @@
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
 
+            <button
+                type="button"
+                class="bn-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#modalEditarCompeticao">
+
+                ✏️ Editar competição
+
+            </button>
+
             <a
                 href="/admin/competicoes/{{ competicao.id }}/relatorio"
                 target="_blank"
@@ -776,7 +854,7 @@
     </div>
 
 
-    <div class="col-12 col-lg-6">
+    <div class="col-12 col-md-auto">
 
         <div class="bn-resumo">
 
@@ -862,6 +940,173 @@
 
 </div>
 
+<!-- ================================================= -->
+<!-- MODAL EDITAR COMPETIÇÃO                           -->
+<!-- ================================================= -->
+
+<div
+    class="modal fade bn-modal"
+    id="modalEditarCompeticao"
+    tabindex="-1"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form
+                method="POST"
+                action="/admin/competicoes/{{ competicao.id }}/editar">
+
+                <div class="modal-header">
+
+                    <div>
+                        <h5 class="modal-title">
+                            ✏️ Editar competição
+                        </h5>
+
+                        <small class="bn-muted">
+                            Altere as informações gerais da competição.
+                        </small>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-12">
+
+                            <label>Nome da competição *</label>
+
+                            <input
+                                type="text"
+                                name="nome"
+                                class="form-control"
+                                value="{{ competicao.nome }}"
+                                required>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label>Data de início</label>
+
+                            <input
+                                type="date"
+                                name="data_inicio"
+                                class="form-control"
+                                value="{{ competicao.data_inicio.strftime('%Y-%m-%d') if competicao.data_inicio else '' }}">
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <label>Data de término</label>
+
+                            <input
+                                type="date"
+                                name="data_termino"
+                                class="form-control"
+                                value="{{ competicao.data_termino.strftime('%Y-%m-%d') if competicao.data_termino else '' }}">
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <label>Local</label>
+
+                            <input
+                                type="text"
+                                name="local"
+                                class="form-control"
+                                value="{{ competicao.local or '' }}"
+                                placeholder="Nome do local">
+
+                        </div>
+
+                        <div class="col-md-8">
+
+                            <label>Cidade</label>
+
+                            <input
+                                type="text"
+                                name="cidade"
+                                class="form-control"
+                                value="{{ competicao.cidade or '' }}">
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <label>UF</label>
+
+                            <input
+                                type="text"
+                                name="uf"
+                                class="form-control"
+                                maxlength="2"
+                                value="{{ competicao.uf or '' }}"
+                                placeholder="RN">
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <label>Observações</label>
+
+                            <textarea
+                                name="observacoes"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Informações adicionais">{{ competicao.observacoes or '' }}</textarea>
+
+                        </div>
+
+                    </div>
+
+                    <small class="bn-muted d-block mt-3">
+                        A alteração dos dados gerais não modifica as categorias
+                        nem os integrantes já inscritos.
+                    </small>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="bn-btn-secundario"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="bn-btn">
+
+                        Salvar alterações
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% if competicao.status == 'ABERTA' %}
 
@@ -875,7 +1120,7 @@
         method="POST"
         action="/admin/competicoes/{{ competicao.id }}/categorias">
 
-        <div class="row g-3">
+        <div class="row g-2 justify-content-start">
 
             <div class="col-md-8">
 
@@ -938,6 +1183,7 @@
 
 <div class="bn-categoria">
 
+    
     <div class="bn-categoria-topo">
 
         <div>
@@ -950,18 +1196,43 @@
                 {{ categoria.total_integrantes }} integrante(s)
             </small>
 
+            {% if categoria.observacoes %}
+                <div class="bn-muted small mt-1">
+                    {{ categoria.observacoes }}
+                </div>
+            {% endif %}
+
         </div>
 
-        <a
-            href="/admin/competicoes/categoria/{{ categoria.id }}/relatorio"
-            target="_blank"
-            class="bn-btn-secundario text-decoration-none">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
 
-            📄 Imprimir categoria
+            {% if competicao.status == 'ABERTA' %}
 
-        </a>
+            <button
+                type="button"
+                class="bn-btn-secundario"
+                data-bs-toggle="modal"
+                data-bs-target="#modalEditarCategoria{{ categoria.id }}">
+
+                ✏️ Editar
+
+            </button>
+
+            {% endif %}
+
+            <a
+                href="/admin/competicoes/categoria/{{ categoria.id }}/relatorio"
+                target="_blank"
+                class="bn-btn-secundario text-decoration-none">
+
+                📄 Imprimir categoria
+
+            </a>
+
+        </div>
 
     </div>
+
 
 
     <div class="bn-categoria-corpo">
@@ -972,6 +1243,8 @@
 
 
         {% if lista_categoria %}
+
+        <div class="bn-lista-participantes-categoria">
 
             {% for participante in lista_categoria %}
 
@@ -1024,6 +1297,8 @@
             </div>
 
             {% endfor %}
+
+        </div>
 
         {% else %}
 
@@ -1139,6 +1414,101 @@
     </div>
 
 </div>
+
+
+<!-- MODAL EDITAR CATEGORIA -->
+{% if competicao.status == 'ABERTA' %}
+
+<div
+    class="modal fade bn-modal"
+    id="modalEditarCategoria{{ categoria.id }}"
+    tabindex="-1">
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <form
+                method="POST"
+                action="/admin/competicoes/categoria/{{ categoria.id }}/editar">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        ✏️ Editar categoria
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label>Nome da categoria *</label>
+
+                        <input
+                            type="text"
+                            name="nome"
+                            class="form-control"
+                            value="{{ categoria.nome }}"
+                            required>
+
+                    </div>
+
+                    <div>
+
+                        <label>Observações</label>
+
+                        <textarea
+                            name="observacoes"
+                            class="form-control"
+                            rows="3">{{ categoria.observacoes or '' }}</textarea>
+
+                    </div>
+
+                    <small class="bn-muted d-block mt-3">
+                        Os integrantes já vinculados à categoria serão preservados.
+                    </small>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="bn-btn-secundario"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="bn-btn">
+
+                        Salvar alterações
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endif %}
+
 
 {% endfor %}
 

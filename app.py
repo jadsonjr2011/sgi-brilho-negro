@@ -16240,6 +16240,92 @@ def detalhes_competicao(id):
 
 
 # ============================================================
+# EDITAR DADOS GERAIS DA COMPETIÇÃO
+# ============================================================
+
+@app.route("/admin/competicoes/<int:id>/editar", methods=["POST"])
+def editar_competicao(id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        competicao = db.execute(
+            text("""
+                SELECT id
+                FROM competicoes
+                WHERE id = :id
+            """),
+            {"id": id}
+        ).first()
+
+        if not competicao:
+            return "Competição não encontrada.", 404
+
+        nome = request.form.get("nome", "").strip()
+        data_inicio = request.form.get("data_inicio", "").strip()
+        data_termino = request.form.get("data_termino", "").strip()
+        local = request.form.get("local", "").strip()
+        cidade = request.form.get("cidade", "").strip()
+        uf = request.form.get("uf", "").strip().upper()
+        observacoes = request.form.get("observacoes", "").strip()
+
+        if not nome:
+            return redirect(
+                f"/admin/competicoes/{id}?erro_competicao=nome"
+            )
+
+        if data_inicio and data_termino and data_termino < data_inicio:
+            return redirect(
+                f"/admin/competicoes/{id}?erro_competicao=datas"
+            )
+
+        db.execute(
+            text("""
+                UPDATE competicoes
+                SET
+                    nome = :nome,
+                    data_inicio = NULLIF(:data_inicio, '')::date,
+                    data_termino = NULLIF(:data_termino, '')::date,
+                    local = :local,
+                    cidade = :cidade,
+                    uf = :uf,
+                    observacoes = :observacoes
+
+                WHERE id = :id
+            """),
+            {
+                "id": id,
+                "nome": nome,
+                "data_inicio": data_inicio,
+                "data_termino": data_termino,
+                "local": local or None,
+                "cidade": cidade or None,
+                "uf": uf or None,
+                "observacoes": observacoes or None
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/competicoes/{id}?sucesso_competicao=editada"
+        )
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+# ============================================================
 # CADASTRAR CATEGORIA
 # ============================================================
 
@@ -16302,6 +16388,111 @@ def cadastrar_categoria_competicao(id):
         db.commit()
 
         return redirect(f"/admin/competicoes/{id}")
+
+    except Exception:
+
+        db.rollback()
+        raise
+
+    finally:
+
+        db.close()
+
+
+
+# ============================================================
+# EDITAR CATEGORIA DA COMPETIÇÃO
+# ============================================================
+
+@app.route(
+    "/admin/competicoes/categoria/<int:categoria_id>/editar",
+    methods=["POST"]
+)
+def editar_categoria_competicao(categoria_id):
+
+    if not verificar_acesso_competicoes():
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        categoria = db.execute(
+            text("""
+                SELECT
+                    cc.id,
+                    cc.competicao_id,
+                    c.status
+
+                FROM competicao_categorias cc
+
+                JOIN competicoes c
+                    ON c.id = cc.competicao_id
+
+                WHERE cc.id = :id
+            """),
+            {"id": categoria_id}
+        ).mappings().first()
+
+        if not categoria:
+            return "Categoria não encontrada.", 404
+
+        competicao_id = categoria.competicao_id
+
+        if categoria.status != "ABERTA":
+            return redirect(f"/admin/competicoes/{competicao_id}")
+
+        nome = request.form.get("nome", "").strip()
+        observacoes = request.form.get("observacoes", "").strip()
+
+        if not nome:
+            return redirect(f"/admin/competicoes/{competicao_id}")
+
+        # Verifica se já existe outra categoria com o mesmo nome
+        categoria_duplicada = db.execute(
+            text("""
+                SELECT id
+                FROM competicao_categorias
+
+                WHERE
+                    competicao_id = :competicao_id
+                    AND LOWER(TRIM(nome)) = LOWER(TRIM(:nome))
+                    AND id <> :categoria_id
+            """),
+            {
+                "competicao_id": competicao_id,
+                "nome": nome,
+                "categoria_id": categoria_id
+            }
+        ).scalar()
+
+        if categoria_duplicada:
+            return redirect(
+                f"/admin/competicoes/{competicao_id}?erro_categoria=duplicada"
+            )
+
+        db.execute(
+            text("""
+                UPDATE competicao_categorias
+
+                SET
+                    nome = :nome,
+                    observacoes = :observacoes
+
+                WHERE id = :categoria_id
+            """),
+            {
+                "nome": nome,
+                "observacoes": observacoes or None,
+                "categoria_id": categoria_id
+            }
+        )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/competicoes/{competicao_id}?sucesso_categoria=editada"
+        )
 
     except Exception:
 
