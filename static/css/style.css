@@ -3247,14 +3247,14 @@ body:has(.login-brilho) footer{
         z-index: 1100;
     }
 
-    /* Ao clicar no botão, o menu aparece */
+    /* Menu aberto */
     .menu-admin-recolhido .menu-lateral-admin {
         width: 270px;
         max-width: 85vw;
         transform: translateX(0);
     }
 
-    /* No celular, os textos precisam aparecer */
+    /* Textos visíveis */
     .menu-admin-recolhido .texto-menu {
         display: inline;
     }
@@ -3290,9 +3290,28 @@ body:has(.login-brilho) footer{
         width: 100%;
     }
 
+    /* Botão ☰ sempre acima do menu lateral */
     .btn-menu-admin {
-        display: block;
+        position: relative;
+        z-index: 1202;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex-shrink: 0;
+
+        background: #111c2a;
+        color: #ffffff;
+
+        border: 1px solid rgba(255,255,255,0.20);
+        border-radius: 8px;
+
+        width: 44px;
+        height: 44px;
+        font-size: 25px;
+    }
+
+    .btn-menu-admin:hover {
+        background: #26364a;
     }
 
     .cabecalho-admin {
@@ -3303,4 +3322,3 @@ body:has(.login-brilho) footer{
         padding: 15px;
     }
 }
-
