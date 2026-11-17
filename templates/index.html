@@ -7,6 +7,7 @@ Portal Brilho Negro
 
 {% block conteudo %}
 
+
 <style>
     .menu-acessos {
         position: absolute;
@@ -38,12 +39,14 @@ Portal Brilho Negro
         position: absolute;
         top: 54px;
         right: 0;
-        width: 230px;
+        width: 250px;
+        max-width: calc(100vw - 30px);
         padding: 10px;
         background: #1d1f25;
         border: 1px solid rgba(212, 175, 55, 0.4);
         border-radius: 12px;
         box-shadow: 0 8px 25px rgba(0,0,0,0.45);
+        box-sizing: border-box;
     }
 
     .opcoes-acessos.aberto {
@@ -56,11 +59,16 @@ Portal Brilho Negro
         align-items: center;
         gap: 10px;
         width: 100%;
+        min-width: 0;
         padding: 12px;
         color: #fff;
         text-decoration: none;
         border-radius: 8px;
         font-size: 14px;
+        line-height: 1.4;
+        white-space: normal;
+        overflow-wrap: break-word;
+        box-sizing: border-box;
         transition: 0.2s;
     }
 
@@ -83,7 +91,27 @@ Portal Brilho Negro
             transform: translateY(0);
         }
     }
+
+    /* AJUSTES PARA CELULAR */
+    @media (max-width: 576px) {
+
+        .menu-acessos {
+            top: 12px;
+            right: 12px;
+        }
+
+        .opcoes-acessos {
+            width: 260px;
+            max-width: calc(100vw - 24px);
+        }
+
+        .item-acesso {
+            padding: 13px 10px;
+            font-size: 14px;
+        }
+    }
 </style>
+
 
 <div class="tela-inicial">
 
