@@ -71,15 +71,11 @@ def gerar_pdf_competicao(db, competicao_id, categoria_id=None):
 
         if categoria_id is not None:
             sql += """
-                AND cc.id = :categoria_id
-            """
-            parametros["categoria_id"] = categoria_id
-
-        sql += """
-            ORDER BY
+                ORDER BY
                 LOWER(cc.nome),
+                LOWER(COALESCE(i.funcao, 'SEM FUNÇÃO')),
                 LOWER(i.nome)
-        """
+            """
 
         registros = db.execute(
             text(sql),
@@ -375,8 +371,16 @@ def gerar_pdf_competicao(db, competicao_id, categoria_id=None):
 
             if categoria["integrantes"]:
 
-                for numero, integrante in enumerate(
+                integrantes_ordenados = sorted(
                     categoria["integrantes"],
+                    key=lambda i: (
+                        (i["funcao"] or "SEM FUNÇÃO").strip().lower(),
+                        (i["integrante_nome"] or "").strip().lower()
+                    )
+                )
+
+                for numero, integrante in enumerate(
+                    integrantes_ordenados,
                     start=1
                 ):
 
