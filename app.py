@@ -12548,6 +12548,8 @@ def gerar_pdf_rifa_vendedor(rifa_id, integrante_id):
 
         db.close()
 
+
+
 @app.route("/admin/carteirinhas")
 def admin_carteirinhas():
 
@@ -12558,37 +12560,398 @@ def admin_carteirinhas():
 
     try:
 
-        # ==========================================
-        # INTEGRANTES APTOS PARA CARTEIRINHA
-        # ==========================================
-
-        integrantes = db.execute(
+        temporadas = db.execute(
             text("""
                 SELECT
-                    id,
-                    codigo_integrante,
-                    nome,
-                    status,
-                    situacao
-                FROM integrantes
-                WHERE status = 'APROVADO'
-                  AND situacao = 'ATIVO'
-                ORDER BY LOWER(nome)
+                    t.id,
+                    t.nome,
+                    t.ano,
+                    t.status,
+                    t.data_cadastro,
+                    g.id AS grupo_id,
+                    (
+                        SELECT COUNT(*)
+                        FROM grupo_carteirinha_integrantes gi
+                        WHERE gi.grupo_id = g.id
+                    ) AS total_integrantes
+                FROM temporadas t
+                LEFT JOIN grupos_carteirinhas g
+                    ON g.temporada_id = t.id
+                ORDER BY t.ano DESC
             """)
         ).mappings().all()
 
     finally:
-
         db.close()
-
-    # ==========================================
-    # RETORNO
-    # ==========================================
 
     return render_template(
         "admin/carteirinhas.html",
-        integrantes=integrantes
-    )        
+        temporadas=temporadas
+    )
+
+
+@app.route("/admin/carteirinhas/temporada/acessar", methods=["POST"])
+def acessar_temporada_carteirinhas():
+
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
+
+    temporada_id = request.form.get("temporada_id", type=int)
+
+    if not temporada_id:
+        return redirect("/admin/carteirinhas")
+
+    db = SessionLocal()
+
+    try:
+
+        # ==========================================
+        # VERIFICAR TEMPORADA
+        # ==========================================
+
+        temporada = db.execute(
+            text("""
+                SELECT id, nome, ano, status
+                FROM temporadas
+                WHERE id = :id
+            """),
+            {"id": temporada_id}
+        ).mappings().first()
+
+        if not temporada:
+            return redirect("/admin/carteirinhas")
+
+        # ==========================================
+        # BUSCAR GRUPO EXISTENTE
+        # ==========================================
+
+        grupo_id = db.execute(
+            text("""
+                SELECT id
+                FROM grupos_carteirinhas
+                WHERE temporada_id = :temporada_id
+            """),
+            {"temporada_id": temporada_id}
+        ).scalar()
+
+        # ==========================================
+        # CRIAR GRUPO AUTOMATICAMENTE
+        # ==========================================
+
+        if not grupo_id:
+
+            grupo_id = db.execute(
+                text("""
+                    INSERT INTO grupos_carteirinhas (
+                        nome,
+                        descricao,
+                        status,
+                        temporada_id
+                    )
+                    VALUES (
+                        :nome,
+                        :descricao,
+                        'ATIVO',
+                        :temporada_id
+                    )
+                    RETURNING id
+                """),
+                {
+                    "nome": temporada.nome,
+                    "descricao": f"Carteirinhas da temporada {temporada.ano}",
+                    "temporada_id": temporada_id
+                }
+            ).scalar()
+
+            db.commit()
+
+        return redirect(
+            f"/admin/carteirinhas/temporada/{grupo_id}"
+        )
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+
+# ==============================================
+# GERENCIAR INTEGRANTES DE UMA TEMPORADA
+# ==============================================
+
+@app.route("/admin/carteirinhas/temporada/<int:grupo_id>")
+def gerenciar_temporada_carteirinhas(grupo_id):
+
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        grupo = db.execute(
+            text("""
+                SELECT
+                    g.id,
+                    g.nome,
+                    g.status,
+                    t.nome AS temporada_nome,
+                    t.ano AS temporada_ano
+                FROM grupos_carteirinhas g
+                JOIN temporadas t
+                    ON t.id = g.temporada_id
+                WHERE g.id = :grupo_id
+            """),
+            {"grupo_id": grupo_id}
+        ).mappings().first()
+
+        if not grupo:
+            return redirect("/admin/carteirinhas")
+
+        # Integrantes já vinculados.
+        # Mantemos o histórico mesmo se ficarem inativos depois.
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.codigo_integrante,
+                    i.nome,
+                    i.status,
+                    i.situacao
+                FROM grupo_carteirinha_integrantes gi
+                JOIN integrantes i
+                    ON i.id = gi.integrante_id
+                WHERE gi.grupo_id = :grupo_id
+                ORDER BY LOWER(i.nome)
+            """),
+            {"grupo_id": grupo_id}
+        ).mappings().all()
+
+        # Somente aprovados e ativos que ainda não pertencem ao grupo.
+
+        disponiveis = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.codigo_integrante,
+                    i.nome
+                FROM integrantes i
+                WHERE i.status = 'APROVADO'
+                  AND i.situacao = 'ATIVO'
+                  AND NOT EXISTS (
+                      SELECT 1
+                      FROM grupo_carteirinha_integrantes gi
+                      WHERE gi.grupo_id = :grupo_id
+                        AND gi.integrante_id = i.id
+                  )
+                ORDER BY LOWER(i.nome)
+            """),
+            {"grupo_id": grupo_id}
+        ).mappings().all()
+
+    finally:
+        db.close()
+
+    return render_template(
+        "admin/carteirinhas_temporada.html",
+        grupo=grupo,
+        integrantes=integrantes,
+        disponiveis=disponiveis
+    )
+
+
+# ==============================================
+# ADICIONAR INTEGRANTES À TEMPORADA
+# ==============================================
+
+@app.route(
+    "/admin/carteirinhas/temporada/<int:grupo_id>/adicionar",
+    methods=["POST"]
+)
+def adicionar_integrantes_carteirinhas(grupo_id):
+
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
+
+    ids = request.form.getlist("integrante_ids")
+
+    db = SessionLocal()
+
+    try:
+
+        grupo_existe = db.execute(
+            text("""
+                SELECT id
+                FROM grupos_carteirinhas
+                WHERE id = :grupo_id
+            """),
+            {"grupo_id": grupo_id}
+        ).scalar()
+
+        if not grupo_existe:
+            return redirect("/admin/carteirinhas")
+
+        for integrante_id in ids:
+
+            try:
+                integrante_id = int(integrante_id)
+            except (TypeError, ValueError):
+                continue
+
+            # Confere novamente se continua aprovado e ativo.
+
+            integrante_apto = db.execute(
+                text("""
+                    SELECT id
+                    FROM integrantes
+                    WHERE id = :integrante_id
+                      AND status = 'APROVADO'
+                      AND situacao = 'ATIVO'
+                """),
+                {"integrante_id": integrante_id}
+            ).scalar()
+
+            if not integrante_apto:
+                continue
+
+            db.execute(
+                text("""
+                    INSERT INTO grupo_carteirinha_integrantes (
+                        grupo_id,
+                        integrante_id
+                    )
+                    VALUES (
+                        :grupo_id,
+                        :integrante_id
+                    )
+                    ON CONFLICT (grupo_id, integrante_id)
+                    DO NOTHING
+                """),
+                {
+                    "grupo_id": grupo_id,
+                    "integrante_id": integrante_id
+                }
+            )
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+    return redirect(
+        f"/admin/carteirinhas/temporada/{grupo_id}?adicionado=1"
+    )
+
+
+# ==============================================
+# REMOVER INTEGRANTE DA TEMPORADA
+# ==============================================
+
+@app.route(
+    "/admin/carteirinhas/temporada/<int:grupo_id>/remover/<int:integrante_id>",
+    methods=["POST"]
+)
+def remover_integrante_carteirinhas(grupo_id, integrante_id):
+
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        db.execute(
+            text("""
+                DELETE FROM grupo_carteirinha_integrantes
+                WHERE grupo_id = :grupo_id
+                  AND integrante_id = :integrante_id
+            """),
+            {
+                "grupo_id": grupo_id,
+                "integrante_id": integrante_id
+            }
+        )
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+    return redirect(
+        f"/admin/carteirinhas/temporada/{grupo_id}?removido=1"
+    )
+
+
+@app.route("/admin/carteirinhas/grupo/criar", methods=["POST"])
+def criar_grupo_carteirinhas():
+
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
+
+    nome = request.form.get("nome", "").strip()
+    descricao = request.form.get("descricao", "").strip()
+
+    if not nome:
+        return redirect("/admin/carteirinhas?erro=nome")
+
+    db = SessionLocal()
+
+    try:
+
+        existente = db.execute(
+            text("""
+                SELECT id
+                FROM grupos_carteirinhas
+                WHERE LOWER(TRIM(nome)) = LOWER(TRIM(:nome))
+                LIMIT 1
+            """),
+            {"nome": nome}
+        ).scalar()
+
+        if existente:
+            return redirect("/admin/carteirinhas?erro=duplicado")
+
+        db.execute(
+            text("""
+                INSERT INTO grupos_carteirinhas (
+                    nome,
+                    descricao,
+                    status
+                )
+                VALUES (
+                    :nome,
+                    :descricao,
+                    'ATIVO'
+                )
+            """),
+            {
+                "nome": nome,
+                "descricao": descricao or None
+            }
+        )
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+    return redirect("/admin/carteirinhas?criado=1")
+
 
 @app.route("/admin/carteirinha/pdf/<int:id>")
 def baixar_carteirinha_pdf(id):

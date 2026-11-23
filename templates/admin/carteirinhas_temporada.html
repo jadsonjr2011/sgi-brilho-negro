@@ -1,0 +1,404 @@
+
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Carteirinhas | Temporada
+{% endblock %}
+
+{% block titulo_pagina %}
+Carteirinhas
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+
+.carteirinhas-page {
+    color: #f1f1f1;
+}
+
+.bn-card {
+    background: #1d1f25;
+    border: 1px solid #343740;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.bn-titulo {
+    color: #fff;
+    font-weight: 700;
+}
+
+.bn-numero {
+    color: #d4af37;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.bn-input {
+    background: #111318;
+    border: 1px solid #424650;
+    color: #fff;
+}
+
+.bn-input:focus {
+    background: #111318;
+    color: #fff;
+    border-color: #d4af37;
+    box-shadow: none;
+}
+
+.lista-disponiveis {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid #343740;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.integrante-disponivel {
+    padding: 10px;
+    border-bottom: 1px solid #343740;
+}
+
+.integrante-disponivel:last-child {
+    border-bottom: none;
+}
+
+.integrante-disponivel:hover {
+    background: #282b33;
+}
+
+</style>
+
+
+<div class="carteirinhas-page">
+
+    <!-- CABEÇALHO -->
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+
+        <div>
+
+            <a
+                href="/admin/carteirinhas"
+                class="btn btn-sm btn-outline-light mb-3"
+            >
+                ← Voltar às temporadas
+            </a>
+
+            <h2 class="titulo mb-1">
+                🪪 {{ grupo.temporada_nome }}
+            </h2>
+
+            <p class="text-secondary mb-0">
+                Gerenciamento de integrantes e carteirinhas
+            </p>
+
+        </div>
+
+        <span class="badge bg-success">
+            {{ grupo.status }}
+        </span>
+
+    </div>
+
+
+    {% if request.args.get('adicionado') == '1' %}
+
+        <div class="alert alert-success">
+            Integrantes adicionados à temporada com sucesso!
+        </div>
+
+    {% endif %}
+
+    {% if request.args.get('removido') == '1' %}
+
+        <div class="alert alert-success">
+            Integrante removido da temporada.
+        </div>
+
+    {% endif %}
+
+
+    <!-- RESUMO -->
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+
+            <div class="bn-card">
+
+                <div class="text-secondary">
+                    👥 Integrantes vinculados
+                </div>
+
+                <div class="bn-numero">
+                    {{ integrantes|length }}
+                </div>
+
+                <small class="text-secondary">
+                    Nesta temporada
+                </small>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="bn-card">
+
+                <div class="text-secondary">
+                    ➕ Disponíveis para adicionar
+                </div>
+
+                <div class="bn-numero">
+                    {{ disponiveis|length }}
+                </div>
+
+                <small class="text-secondary">
+                    Aprovados e ativos
+                </small>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="bn-card">
+
+                <div class="text-secondary">
+                    📅 Ano da temporada
+                </div>
+
+                <div class="bn-numero">
+                    {{ grupo.temporada_ano }}
+                </div>
+
+                <small class="text-secondary">
+                    Cadastro oficial
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ADICIONAR INTEGRANTES -->
+
+    <div class="bn-card mb-4">
+
+        <h5 class="bn-titulo mb-3">
+            ➕ Adicionar integrantes
+        </h5>
+
+        {% if disponiveis %}
+
+            <form
+                method="POST"
+                action="/admin/carteirinhas/temporada/{{ grupo.id }}/adicionar"
+            >
+
+                <p class="text-secondary small">
+                    Marque os integrantes que deseja incluir nesta temporada.
+                </p>
+
+                <div class="lista-disponiveis mb-3">
+
+                    {% for integrante in disponiveis %}
+
+                        <label class="integrante-disponivel d-flex align-items-center gap-3">
+
+                            <input
+                                type="checkbox"
+                                name="integrante_ids"
+                                value="{{ integrante.id }}"
+                                class="form-check-input"
+                            >
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    {{ integrante.nome }}
+                                </div>
+
+                                <small class="text-secondary">
+                                    Matrícula:
+                                    {{ integrante.codigo_integrante or '-' }}
+                                </small>
+
+                            </div>
+
+                        </label>
+
+                    {% endfor %}
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="btn btn-brilho"
+                >
+                    ➕ Adicionar selecionados
+                </button>
+
+            </form>
+
+        {% else %}
+
+            <div class="text-center text-secondary py-4">
+
+                Todos os integrantes aprovados e ativos já foram vinculados,
+                ou não existem integrantes disponíveis.
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- INTEGRANTES VINCULADOS -->
+
+    <div class="painel-admin">
+
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
+            <div class="painel-admin-titulo mb-0">
+                📋 Integrantes da temporada
+            </div>
+
+            <span class="badge bg-secondary">
+                {{ integrantes|length }}
+                integrante{% if integrantes|length != 1 %}s{% endif %}
+            </span>
+
+        </div>
+
+
+        {% if integrantes %}
+
+            <div class="table-responsive">
+
+                <table class="table table-dark table-hover align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Matrícula</th>
+
+                            <th>Integrante</th>
+
+                            <th>Status atual</th>
+
+                            <th class="text-end">Ações</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for integrante in integrantes %}
+
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        {{ integrante.codigo_integrante or '-' }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ integrante.nome }}
+                                </td>
+
+                                <td>
+
+                                    {% if integrante.status == 'APROVADO' and integrante.situacao == 'ATIVO' %}
+
+                                        <span class="badge bg-success">
+                                            Ativo
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-secondary">
+                                            Histórico
+                                        </span>
+
+                                    {% endif %}
+
+                                </td>
+
+                                <td class="text-end">
+
+                                    <div class="d-flex justify-content-end gap-2">
+
+                                        <a
+                                            href="/admin/carteirinha/pdf/{{ integrante.id }}"
+                                            target="_blank"
+                                            class="btn btn-sm btn-outline-light"
+                                        >
+                                            📄 PDF
+                                        </a>
+
+                                        <form
+                                            method="POST"
+                                            action="/admin/carteirinhas/temporada/{{ grupo.id }}/remover/{{ integrante.id }}"
+                                            onsubmit="return confirm('Remover este integrante da temporada? O cadastro geral não será excluído.');"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                            >
+                                                Remover
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="text-center text-secondary py-5">
+
+                <div style="font-size: 3rem;">
+                    👥
+                </div>
+
+                <h5 class="mt-3">
+                    Nenhum integrante vinculado
+                </h5>
+
+                <p class="mb-0">
+                    Utilize a área acima para adicionar os integrantes desta temporada.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

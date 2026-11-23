@@ -375,6 +375,10 @@ def gerar_pdf_competicao(db, competicao_id, categoria_id=None):
                 integrantes_ordenados = sorted(
                     categoria["integrantes"],
                     key=lambda i: (
+                        0 if (i["funcao"] or "").strip().lower() == "capitão-mor"
+                        else 1 if (i["funcao"] or "").strip().lower() == "maestro"
+                        else 2,
+
                         (i["funcao"] or "SEM FUNÇÃO").strip().lower(),
                         (i["instrumento"] or "SEM INSTRUMENTO").strip().lower(),
                         (i["integrante_nome"] or "").strip().lower()

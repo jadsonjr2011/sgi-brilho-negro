@@ -1,3 +1,4 @@
+
 from io import BytesIO
 from datetime import datetime
 import os
@@ -16,7 +17,7 @@ from reportlab.lib.styles import (
 )
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 
 
 # ============================================================
@@ -227,6 +228,7 @@ def gerar_oficio_onibus(
     data_viagem,
     horario_saida,
     horario_retorno,
+    horario_atividade,
     origem,
     destino,
     quantidade_pessoas,
@@ -247,6 +249,10 @@ def gerar_oficio_onibus(
 
     horario_retorno = formatar_horario(
         horario_retorno
+    )
+
+    horario_atividade = formatar_horario(
+        horario_atividade
     )
 
     numero_oficio = str(
@@ -303,11 +309,11 @@ def gerar_oficio_onibus(
 
         pagesize=A4,
 
-        rightMargin=65,
-        leftMargin=65,
+        rightMargin=50,
+        leftMargin=50,
 
-        topMargin=45,
-        bottomMargin=65
+        topMargin=25,
+        bottomMargin=58
     )
 
 
@@ -362,6 +368,19 @@ def gerar_oficio_onibus(
         fontName="Helvetica-Bold",
         fontSize=11,
         leading=17
+    )
+
+
+    estilo_topico = ParagraphStyle(
+        "Topico",
+        parent=estilo_base,
+        fontName="Helvetica",
+        fontSize=10,
+        leading=16,
+        leftIndent=15,
+        firstLineIndent=-12,
+        spaceAfter=7,
+        alignment=TA_LEFT
     )
 
 
@@ -553,8 +572,8 @@ def gerar_oficio_onibus(
     elementos.append(
 
         Paragraph(
-            "<b>Assunto: Solicitação de disponibilização de ônibus "
-            "para transporte da Banda Brilho Negro</b>",
+            "<b>ASSUNTO: Solicitação de transporte para "
+            "deslocamento da Banda Brilho Negro</b>",
             estilo_assunto
         )
 
@@ -571,14 +590,11 @@ def gerar_oficio_onibus(
     # ========================================================
 
     elementos.append(
-
         Paragraph(
-            "Prezados(as),",
+            "Prezados(as) Senhores(as),",
             estilo_oficio
         )
-
     )
-
 
     elementos.append(
         Spacer(1, 14)
@@ -586,19 +602,17 @@ def gerar_oficio_onibus(
 
 
     # ========================================================
-    # PRIMEIRO PARÁGRAFO
+    # APRESENTAÇÃO E SOLICITAÇÃO
     # ========================================================
 
     texto_1 = (
 
         "A Associação Cultural de Percussão Rudimentar Brilho Negro, "
-        "por meio deste, vem respeitosamente solicitar a disponibilização "
-        "de <b>um ônibus</b> para o transporte dos integrantes e "
-        "demais participantes da Banda Brilho Negro, em razão da "
-        f"atividade oficial que será realizada no dia <b>{data_viagem}</b>, "
-        f"com saída prevista para as <b>{horario_saida}</b>, "
-        f"partindo de <b>{origem}</b>, com destino a "
-        f"<b>{destino}</b>."
+        "entidade cultural sediada no município de João Câmara/RN, "
+        "vem, respeitosamente, por meio deste, solicitar a "
+        "disponibilização de <b>01 (um) ônibus</b> para o transporte "
+        "dos integrantes da Banda Brilho Negro, visando à "
+        f"{finalidade}."
     )
 
 
@@ -611,20 +625,19 @@ def gerar_oficio_onibus(
 
 
     elementos.append(
-        Spacer(1, 15)
+        Spacer(1, 14)
     )
 
 
     # ========================================================
-    # SEGUNDO PARÁGRAFO
+    # DATA E LOCAL DA ATIVIDADE
     # ========================================================
 
     texto_2 = (
 
-        f"A referida viagem tem como finalidade {finalidade}. "
-        f"Para o deslocamento, estima-se a participação de "
-        f"<b>{quantidade_pessoas} pessoas</b>, entre integrantes, "
-        "equipe de apoio e responsáveis pela atividade."
+        f"A atividade será realizada no dia <b>{data_viagem}</b>, "
+        f"no local <b>{destino}</b>, com previsão de início "
+        f"às <b>{horario_atividade}</b>."
     )
 
 
@@ -637,20 +650,76 @@ def gerar_oficio_onibus(
 
 
     elementos.append(
-        Spacer(1, 15)
+        Spacer(1, 14)
     )
 
 
     # ========================================================
-    # TERCEIRO PARÁGRAFO
+    # INFORMAÇÕES DA VIAGEM
+    # ========================================================
+
+    elementos.append(
+        Paragraph(
+            "<b>Para fins de organização e planejamento do transporte, "
+            "seguem as informações da viagem:</b>",
+            estilo_oficio
+        )
+    )
+
+
+    elementos.append(
+        Spacer(1, 9)
+    )
+
+
+    topicos = [
+
+        ("DESTINO", destino),
+
+        ("DATA", data_viagem),
+
+        ("HORÁRIO DA ATIVIDADE", horario_atividade),
+
+        ("HORÁRIO DE SAÍDA", f"{horario_saida} – {origem}"),
+
+        ("PREVISÃO DE RETORNO", horario_retorno),
+
+        ("QUANTIDADE DE PESSOAS", f"{quantidade_pessoas} pessoas"),
+
+        ("TRANSPORTE SOLICITADO", "01 (um) ônibus"),
+
+        ("TRAJETO", f"{origem} → {destino} → {origem}")
+
+    ]
+
+
+    for titulo, informacao in topicos:
+
+        elementos.append(
+            Paragraph(
+                f"<b>{titulo}:</b> {informacao}",
+                estilo_topico,
+                bulletText="•"
+            )
+        )
+
+
+    elementos.append(
+        Spacer(1, 10)
+    )
+
+
+    # ========================================================
+    # JUSTIFICATIVA INSTITUCIONAL
     # ========================================================
 
     texto_3 = (
 
-        f"Solicitamos, ainda, que seja considerado o retorno do veículo "
-        f"após a conclusão da atividade, com previsão para "
-        f"<b>{horario_retorno}</b>, de acordo com a programação "
-        "e as necessidades do grupo."
+        "A participação da Banda Brilho Negro na referida atividade "
+        "representa uma oportunidade de levar o nome e a cultura "
+        "do município de João Câmara para outros territórios, "
+        "fortalecendo a valorização da música, da cultura e da "
+        "participação dos jovens em atividades culturais."
     )
 
 
@@ -663,20 +732,20 @@ def gerar_oficio_onibus(
 
 
     elementos.append(
-        Spacer(1, 15)
+        Spacer(1, 14)
     )
 
 
     # ========================================================
-    # QUARTO PARÁGRAFO
+    # SOLICITAÇÃO FINAL
     # ========================================================
 
     texto_4 = (
 
-        "Ressaltamos que o apoio solicitado é de grande importância "
-        "para garantir o deslocamento seguro e adequado dos integrantes "
-        "e participantes da Banda Brilho Negro, contribuindo para a "
-        "realização da atividade previamente programada."
+        "Dessa forma, solicitamos a atenção e o apoio da Prefeitura "
+        "Municipal de João Câmara/RN para a disponibilização do "
+        "transporte necessário, possibilitando o deslocamento "
+        "seguro dos integrantes e representantes da associação."
     )
 
 
@@ -689,7 +758,7 @@ def gerar_oficio_onibus(
 
 
     elementos.append(
-        Spacer(1, 15)
+        Spacer(1, 14)
     )
 
 
@@ -700,9 +769,8 @@ def gerar_oficio_onibus(
     elementos.append(
 
         Paragraph(
-            "Certos de podermos contar com a atenção e colaboração "
-            "dessa Administração Pública, agradecemos antecipadamente "
-            "e colocamo-nos à disposição para quaisquer esclarecimentos.",
+            "Certos de podermos contar com a colaboração do "
+            "Poder Público Municipal, agradecemos antecipadamente.",
             estilo_oficio
         )
 
@@ -814,26 +882,31 @@ if __name__ == "__main__":
     ).strip()
 
     if not destinatario:
-        destinatario = "Prefeitura Municipal de João Câmara"
+        destinatario = "Prefeitura Municipal de João Câmara/RN"
 
 
     cargo = input(
-        "Cargo do destinatário [ex.: Ao Excelentíssimo Senhor Prefeito Municipal]: "
+        "Cargo do destinatário [ex.: A/C: Administração Municipal]: "
     ).strip()
 
 
     data_viagem = input(
-        "Data da viagem [ex.: 15/09/2026]: "
+        "Data da viagem [ex.: 29/11/2026]: "
     ).strip()
 
 
     horario_saida = input(
-        "Horário de saída [ex.: 07:00]: "
+        "Horário de saída [ex.: 08:30]: "
     ).strip()
 
 
     horario_retorno = input(
-        "Horário previsto de retorno [ex.: 20:00]: "
+        "Horário previsto de retorno [ex.: 21:30]: "
+    ).strip()
+
+
+    horario_atividade = input(
+        "Horário de início da atividade [ex.: 10:00]: "
     ).strip()
 
 
@@ -846,12 +919,13 @@ if __name__ == "__main__":
 
 
     destino = input(
-        "Destino [ex.: Rio do Fogo/RN]: "
+        "Destino [ex.: Centro Esportivo João Gomes da Costa Neto, "
+        "Bairro Liberdade, Parnamirim/RN]: "
     ).strip()
 
 
     quantidade = input(
-        "Quantidade de pessoas [ex.: 45]: "
+        "Quantidade de pessoas [ex.: 46]: "
     ).strip()
 
 
@@ -861,7 +935,7 @@ if __name__ == "__main__":
 
     if not finalidade:
         finalidade = (
-            "participação em atividade oficial da Banda Brilho Negro"
+            "participação em competição de bandas e fanfarras"
         )
 
 
@@ -891,6 +965,8 @@ if __name__ == "__main__":
         horario_saida=horario_saida,
 
         horario_retorno=horario_retorno,
+
+        horario_atividade=horario_atividade,
 
         origem=origem,
 

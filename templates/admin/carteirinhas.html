@@ -1,3 +1,4 @@
+
 {% extends 'layout/base_admin.html' %}
 
 {% block titulo %}
@@ -10,193 +11,255 @@ Carteirinhas
 
 {% block conteudo %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
 
-    <div>
+.carteirinhas-page {
+    color: #f1f1f1;
+}
+
+.temporada-card {
+    background: #1d1f25;
+    border: 1px solid #343740;
+    border-radius: 12px;
+    padding: 22px;
+    height: 100%;
+    transition: .2s;
+}
+
+.temporada-card:hover {
+    border-color: #d4af37;
+    transform: translateY(-2px);
+}
+
+.temporada-icone {
+    font-size: 2rem;
+    margin-bottom: 12px;
+}
+
+.temporada-nome {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.temporada-ano {
+    color: #d4af37;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.temporada-info {
+    color: #aeb3bd;
+    font-size: .9rem;
+}
+
+.seletor-temporada {
+    background: #1d1f25;
+    border: 1px solid #343740;
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.seletor-temporada .form-select {
+    background-color: #111318;
+    border: 1px solid #424650;
+    color: #fff;
+}
+
+.seletor-temporada .form-select:focus {
+    border-color: #d4af37;
+    box-shadow: none;
+}
+
+</style>
+
+
+<div class="carteirinhas-page">
+
+    <div class="mb-4">
 
         <h2 class="titulo mb-1">
             🪪 Carteirinhas
         </h2>
 
         <p class="text-secondary mb-0">
-            Gere as carteirinhas dos integrantes aprovados e ativos.
+            Organize a emissão de carteirinhas por temporada.
         </p>
 
     </div>
 
 
-    <a
-        href="/admin/carteirinha/pdf/todas"
-        target="_blank"
-        class="btn btn-success">
+    <!-- SELEÇÃO DE TEMPORADA -->
 
-        🪪 Gerar Todas
+    <div class="seletor-temporada mb-4">
 
-    </a>
+        <h5 class="mb-3">
+            📅 Selecionar temporada
+        </h5>
 
-</div>
+        <form
+            method="POST"
+            action="/admin/carteirinhas/temporada/acessar"
+        >
+
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-9">
+
+                    <label class="form-label">
+                        Temporada cadastrada
+                    </label>
+
+                    <select
+                        name="temporada_id"
+                        class="form-select"
+                        required
+                    >
+
+                        <option value="">
+                            Selecione uma temporada
+                        </option>
+
+                        {% for temporada in temporadas %}
+
+                            <option value="{{ temporada.id }}">
+
+                                {{ temporada.nome }}
+                                ({{ temporada.ano }})
+
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
 
 
-<!-- ===================================================== -->
-<!-- RESUMO                                                -->
-<!-- ===================================================== -->
+                <div class="col-md-3">
 
-<div class="row g-3 mb-4">
+                    <button
+                        type="submit"
+                        class="btn btn-brilho w-100"
+                    >
+                        Acessar temporada →
+                    </button>
 
-    <div class="col-md-4">
+                </div>
 
-        <div class="card-resumo">
-
-            <div class="icone">
-                👥
             </div>
 
-            <div class="numero">
-                {{ integrantes|length }}
-            </div>
-
-            <div class="descricao">
-                Integrantes aptos
-            </div>
-
-            <div class="detalhe">
-                Aprovados e ativos
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- ===================================================== -->
-<!-- LISTA                                                 -->
-<!-- ===================================================== -->
-
-<div class="painel-admin">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-
-        <div class="painel-admin-titulo mb-0">
-            📋 Integrantes
-        </div>
-
-        <span class="badge bg-secondary">
-
-            {{ integrantes|length }}
-
-            integrante{% if integrantes|length != 1 %}s{% endif %}
-
-        </span>
+        </form>
 
     </div>
 
 
-    {% if integrantes %}
+    <!-- LISTAGEM DAS TEMPORADAS -->
 
-        <div class="table-responsive">
+    <div class="painel-admin">
 
-            <table class="table table-dark table-hover align-middle">
+        <div class="d-flex justify-content-between align-items-center mb-4">
 
-                <thead>
+            <div class="painel-admin-titulo mb-0">
+                📋 Temporadas disponíveis
+            </div>
 
-                    <tr>
-
-                        <th>
-                            Matrícula
-                        </th>
-
-                        <th>
-                            Integrante
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th class="text-end">
-                            Ação
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    {% for integrante in integrantes %}
-
-                    <tr>
-
-                        <td>
-
-                            <strong>
-                                {{ integrante.codigo_integrante }}
-                            </strong>
-
-                        </td>
-
-
-                        <td>
-
-                            {{ integrante.nome }}
-
-                        </td>
-
-
-                        <td>
-
-                            <span class="badge bg-success">
-
-                                🟢 Ativo
-
-                            </span>
-
-                        </td>
-
-
-                        <td class="text-end">
-
-                            <a
-                                href="/admin/carteirinha/pdf/{{ integrante.id }}"
-                                target="_blank"
-                                class="btn btn-sm btn-outline-light">
-
-                                📄 Gerar PDF
-
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
+            <span class="badge bg-secondary">
+                {{ temporadas|length }}
+                temporada{% if temporadas|length != 1 %}s{% endif %}
+            </span>
 
         </div>
 
-    {% else %}
 
-        <div class="text-center text-secondary py-5">
+        {% if temporadas %}
 
-            <div style="font-size: 3rem;">
-                🪪
+            <div class="row g-3">
+
+                {% for temporada in temporadas %}
+
+                    <div class="col-md-6 col-xl-4">
+
+                        <div class="temporada-card">
+
+                            <div class="temporada-icone">
+                                🪪
+                            </div>
+
+                            <div class="temporada-nome">
+                                {{ temporada.nome }}
+                            </div>
+
+                            <div class="temporada-ano">
+                                {{ temporada.ano }}
+                            </div>
+
+                            <div class="temporada-info">
+                                Status:
+                                {{ temporada.status or 'Não informado' }}
+                            </div>
+
+                            <hr style="border-color: #424650;">
+
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div>
+
+                                    <div class="fw-bold">
+                                        {{ temporada.total_integrantes }}
+                                    </div>
+
+                                    <small class="text-secondary">
+                                        Integrantes vinculados
+                                    </small>
+
+                                </div>
+
+                                {% if temporada.grupo_id %}
+
+                                    <span class="badge bg-success">
+                                        Configurada
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        Não configurada
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
             </div>
 
-            <div class="mt-3">
+        {% else %}
 
-                Nenhum integrante aprovado e ativo encontrado.
+            <div class="text-center text-secondary py-5">
+
+                <div style="font-size: 3rem;">
+                    📅
+                </div>
+
+                <h5 class="mt-3">
+                    Nenhuma temporada encontrada
+                </h5>
+
+                <p class="mb-0">
+                    Cadastre uma temporada no módulo Temporadas primeiro.
+                </p>
 
             </div>
 
-        </div>
+        {% endif %}
 
-    {% endif %}
+    </div>
 
 </div>
 
