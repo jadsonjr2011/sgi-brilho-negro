@@ -72,9 +72,10 @@ def gerar_pdf_competicao(db, competicao_id, categoria_id=None):
         if categoria_id is not None:
             sql += """
                 ORDER BY
-                LOWER(cc.nome),
-                LOWER(COALESCE(i.funcao, 'SEM FUNÇÃO')),
-                LOWER(i.nome)
+                    LOWER(cc.nome),
+                    LOWER(COALESCE(i.funcao, 'SEM FUNÇÃO')),
+                    LOWER(COALESCE(ins.nome, 'SEM INSTRUMENTO')),
+                    LOWER(i.nome)
             """
 
         registros = db.execute(
@@ -375,6 +376,7 @@ def gerar_pdf_competicao(db, competicao_id, categoria_id=None):
                     categoria["integrantes"],
                     key=lambda i: (
                         (i["funcao"] or "SEM FUNÇÃO").strip().lower(),
+                        (i["instrumento"] or "SEM INSTRUMENTO").strip().lower(),
                         (i["integrante_nome"] or "").strip().lower()
                     )
                 )
