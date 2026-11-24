@@ -25,7 +25,8 @@ from utils.pdf_fardamento import (
 )
 from utils.pdf_carteirinha import (
     gerar_pdf_carteirinha,
-    gerar_pdf_todas_carteirinhas
+    gerar_pdf_todas_carteirinhas,
+    gerar_pdf_carteirinhas_temporada
 )
 from utils.pdf_financeiro import gerar_pdf_financeiro
 from utils.pdf_rifa import gerar_pdf_rifa
@@ -12952,6 +12953,15 @@ def criar_grupo_carteirinhas():
 
     return redirect("/admin/carteirinhas?criado=1")
 
+@app.route(
+    "/admin/carteirinhas/temporada/<int:grupo_id>/pdf/todas"
+)
+def baixar_todas_carteirinhas_temporada(grupo_id):
+
+    if not usuario_tem_permissao("carteirinhas"):
+        return redirect("/admin")
+
+    return gerar_pdf_carteirinhas_temporada(grupo_id)
 
 @app.route("/admin/carteirinha/pdf/<int:id>")
 def baixar_carteirinha_pdf(id):
@@ -12959,7 +12969,12 @@ def baixar_carteirinha_pdf(id):
     if "admin" not in session:
         return redirect("/login")
 
-    return gerar_pdf_carteirinha(id)
+    grupo_id = request.args.get("grupo_id", type=int)
+
+    return gerar_pdf_carteirinha(
+        id,
+        grupo_id=grupo_id
+    )
 
 @app.route("/admin/carteirinha/pdf/todas")
 def baixar_todas_carteirinhas_pdf():

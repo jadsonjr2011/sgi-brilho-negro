@@ -566,6 +566,16 @@ def desenhar_informacoes(
         codigo
     )
 
+    # LINHA ABAIXO DA MATRÍCULA
+    pdf.setStrokeColor(CINZA_LINHA_BN)
+    pdf.setLineWidth(0.7)
+    pdf.line(
+        x + 17,
+        y + 29,
+        x + CARD_W - 17,
+        y + 29
+    )
+
 
 # ==========================================================
 # DESENHO DA CARTEIRINHA
@@ -577,7 +587,8 @@ def desenhar_carteirinha(
     x,
     y,
     data_emissao=None,
-    logo_reader=None
+    logo_reader=None,
+    temporada_nome=None
 ):
 
     # ==========================================
@@ -669,56 +680,25 @@ def desenhar_carteirinha(
     )
 
     # ==========================================
-    # DIVISÓRIA DO RODAPÉ
-    # ==========================================
-
-    pdf.setStrokeColor(
-        CINZA_LINHA_BN
-    )
-
-    pdf.setLineWidth(0.7)
-
-    pdf.line(
-        x + 13,
-        y + 32,
-        x + CARD_W - 13,
-        y + 32
-    )
-
-    # ==========================================
     # RODAPÉ
     # ==========================================
 
-    pdf.setFillColor(
-        AZUL_BN
+    pdf.setFillColor(AZUL_BN)
+    pdf.setFont("Helvetica-Bold", 6.5)
+
+    pdf.drawCentredString(
+        x + CARD_W / 2,
+        y + 19,
+        "ASSOCIAÇÃO CULTURAL BRILHO NEGRO"
     )
 
-    pdf.setFont(
-        "Helvetica-Bold",
-        7
-    )
+    pdf.setFillColor(AZUL_BN)
+    pdf.setFont("Helvetica-Bold", 7.5)
 
-    pdf.drawString(
-        x + 15,
-        y + 17,
-        "CARTEIRINHA DE INTEGRANTE"
-    )
-
-    pdf.setFillColor(
-        CINZA_BN
-    )
-
-    pdf.setFont(
-        "Helvetica",
-        7
-    )
-
-    data = data_emissao or datetime.now()
-
-    pdf.drawRightString(
-        x + CARD_W - 15,
-        y + 17,
-        data.strftime("%d/%m/%Y")
+    pdf.drawCentredString(
+        x + CARD_W / 2,
+        y + 8,
+        temporada_nome or "TEMPORADA NÃO INFORMADA"
     )
 
 
@@ -801,11 +781,7 @@ def imagem_arredondada_para_banner(
 
 
 
-# ==========================================================
-# GERAÇÃO DO PDF INDIVIDUAL
-# ==========================================================
-
-def gerar_pdf_carteirinha(id):
+def gerar_pdf_carteirinha(id, grupo_id=None):
 
     db = SessionLocal()
 
@@ -821,19 +797,50 @@ def gerar_pdf_carteirinha(id):
                 FROM integrantes
                 WHERE id = :id
             """),
-            {
-                "id": id
-            }
+            {"id": id}
         ).mappings().first()
 
         if not integrante:
-
             return "Integrante não encontrado"
 
         integrante = dict(integrante)
 
-    finally:
+        temporada_nome = "TEMPORADA NÃO INFORMADA"
 
+        # Busca a temporada somente quando o PDF
+        # é solicitado a partir de um grupo.
+
+        if grupo_id:
+
+            temporada = db.execute(
+                text("""
+                    SELECT
+                        t.nome,
+                        t.ano
+                    FROM grupo_carteirinha_integrantes gi
+                    JOIN grupos_carteirinhas g
+                        ON g.id = gi.grupo_id
+                    JOIN temporadas t
+                        ON t.id = g.temporada_id
+                    WHERE gi.grupo_id = :grupo_id
+                      AND gi.integrante_id = :integrante_id
+                """),
+                {
+                    "grupo_id": grupo_id,
+                    "integrante_id": id
+                }
+            ).mappings().first()
+
+            if not temporada:
+                return "Integrante não vinculado a esta temporada"
+
+            temporada_nome = (
+                f"TEMPORADA {temporada.ano}"
+                if temporada.ano
+                else temporada.nome.upper()
+            )
+
+    finally:
         db.close()
 
     arquivo = BytesIO()
@@ -845,10 +852,7 @@ def gerar_pdf_carteirinha(id):
 
     largura, altura = A4
 
-    # Centraliza a carteirinha na folha.
-
     x = (largura - CARD_W) / 2
-
     y = (altura - CARD_H) / 2
 
     logo_reader = carregar_logo()
@@ -859,11 +863,11 @@ def gerar_pdf_carteirinha(id):
         x,
         y,
         data_emissao=datetime.now(),
-        logo_reader=logo_reader
+        logo_reader=logo_reader,
+        temporada_nome=temporada_nome
     )
 
     pdf.save()
-
     arquivo.seek(0)
 
     nome_arquivo = re.sub(
@@ -878,7 +882,6 @@ def gerar_pdf_carteirinha(id):
         download_name=f"Carteirinha_{nome_arquivo}.pdf",
         mimetype="application/pdf"
     )
-
 
 # ==========================================================
 # GERAÇÃO DO PDF COLETIVO
@@ -1022,5 +1025,154 @@ def gerar_pdf_todas_carteirinhas():
         arquivo,
         as_attachment=True,
         download_name="Carteirinhas_Integrantes.pdf",
+        mimetype="application/pdf"
+    )
+
+
+def gerar_pdf_carteirinhas_temporada(grupo_id):
+
+    db = SessionLocal()
+
+    try:
+        grupo = db.execute(
+            text("""
+                SELECT
+                    g.id,
+                    t.nome,
+                    t.ano
+                FROM grupos_carteirinhas g
+                JOIN temporadas t
+                    ON t.id = g.temporada_id
+                WHERE g.id = :grupo_id
+            """),
+            {"grupo_id": grupo_id}
+        ).mappings().first()
+
+        if not grupo:
+            return "Temporada não encontrada"
+
+        temporada_nome = (
+            f"TEMPORADA {grupo.ano}"
+            if grupo.ano
+            else grupo.nome.upper()
+        )
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    i.id,
+                    i.codigo_integrante,
+                    i.nome,
+                    i.foto_url
+                FROM grupo_carteirinha_integrantes gi
+                JOIN integrantes i
+                    ON i.id = gi.integrante_id
+                WHERE gi.grupo_id = :grupo_id
+                ORDER BY LOWER(i.nome)
+            """),
+            {"grupo_id": grupo_id}
+        ).mappings().all()
+
+        integrantes = [
+            dict(integrante)
+            for integrante in integrantes
+        ]
+
+    finally:
+        db.close()
+
+    if not integrantes:
+        return "Nenhum integrante vinculado a esta temporada"
+
+    arquivo = BytesIO()
+
+    pdf = canvas.Canvas(
+        arquivo,
+        pagesize=A4
+    )
+
+    largura, altura = A4
+
+    # ORGANIZAÇÃO DA FOLHA A4
+
+    espacamento_x = 20
+    espacamento_y = 18
+
+    colunas = 2
+    linhas = 4
+
+    por_pagina = colunas * linhas
+
+    largura_grade = (
+        colunas * CARD_W
+        + (colunas - 1) * espacamento_x
+    )
+
+    altura_grade = (
+        linhas * CARD_H
+        + (linhas - 1) * espacamento_y
+    )
+
+    inicio_x = (
+        largura - largura_grade
+    ) / 2
+
+    inicio_y = (
+        altura - altura_grade
+    ) / 2
+
+    logo_reader = carregar_logo()
+    data_emissao = datetime.now()
+
+    total = len(integrantes)
+
+    for indice, integrante in enumerate(integrantes):
+
+        posicao = indice % por_pagina
+
+        coluna = posicao % colunas
+        linha = posicao // colunas
+
+        x = (
+            inicio_x
+            + coluna * (CARD_W + espacamento_x)
+        )
+
+        y = (
+            altura
+            - inicio_y
+            - CARD_H
+            - linha * (CARD_H + espacamento_y)
+        )
+
+        desenhar_carteirinha(
+            pdf,
+            integrante,
+            x,
+            y,
+            data_emissao=data_emissao,
+            logo_reader=logo_reader,
+            temporada_nome=temporada_nome
+        )
+
+        if (
+            (indice + 1) % por_pagina == 0
+            and (indice + 1) < total
+        ):
+            pdf.showPage()
+
+    pdf.save()
+    arquivo.seek(0)
+
+    nome_arquivo = re.sub(
+        r'[\\/:\*?"<>|]+',
+        "_",
+        temporada_nome
+    )
+
+    return send_file(
+        arquivo,
+        as_attachment=True,
+        download_name=f"Carteirinhas_{nome_arquivo}.pdf",
         mimetype="application/pdf"
     )

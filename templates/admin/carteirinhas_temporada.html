@@ -97,9 +97,26 @@ Carteirinhas
 
         </div>
 
-        <span class="badge bg-success">
-            {{ grupo.status }}
-        </span>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+
+                    <span class="badge bg-success">
+                        {{ grupo.status }}
+                    </span>
+
+                    {% if integrantes %}
+
+                        <a
+                            href="/admin/carteirinhas/temporada/{{ grupo.id }}/pdf/todas"
+                            target="_blank"
+                            class="btn btn-brilho"
+                        >
+                            <i class="bi bi-printer"></i>
+                            Imprimir todas
+                        </a>
+
+                    {% endif %}
+
+                </div>
 
     </div>
 
@@ -341,7 +358,7 @@ Carteirinhas
                                     <div class="d-flex justify-content-end gap-2">
 
                                         <a
-                                            href="/admin/carteirinha/pdf/{{ integrante.id }}"
+                                            href="/admin/carteirinha/pdf/{{ integrante.id }}?grupo_id={{ grupo.id }}"
                                             target="_blank"
                                             class="btn btn-sm btn-outline-light"
                                         >
