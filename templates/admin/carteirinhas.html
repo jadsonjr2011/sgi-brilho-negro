@@ -13,63 +13,65 @@ Carteirinhas
 
 <style>
 
-.carteirinhas-page {
-    color: #f1f1f1;
-}
 
 .temporada-card {
     background: #1d1f25;
     border: 1px solid #343740;
-    border-radius: 12px;
-    padding: 22px;
+    border-radius: 9px;
+    padding: 10px 12px;
     height: 100%;
     transition: .2s;
-}
-
-.temporada-card:hover {
-    border-color: #d4af37;
-    transform: translateY(-2px);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 .temporada-icone {
-    font-size: 2rem;
-    margin-bottom: 12px;
+    font-size: 1.1rem;
+    margin-bottom: 2px;
 }
 
 .temporada-nome {
-    font-size: 1.15rem;
+    font-size: .9rem;
     font-weight: 700;
     color: #fff;
 }
 
 .temporada-ano {
     color: #d4af37;
-    font-size: 1.8rem;
+    font-size: 1.2rem;
     font-weight: 700;
+    margin-bottom: 0;
+    line-height: 1.2;
 }
 
 .temporada-info {
     color: #aeb3bd;
-    font-size: .9rem;
+    font-size: .75rem;
 }
 
-.seletor-temporada {
-    background: #1d1f25;
-    border: 1px solid #343740;
-    border-radius: 12px;
-    padding: 22px;
+.temporada-card hr {
+    border-color: #424650;
+    margin: 6px 0;
 }
 
-.seletor-temporada .form-select {
-    background-color: #111318;
-    border: 1px solid #424650;
-    color: #fff;
+.btn-acessar-temporada {
+    background: #d4af37;
+    color: #111 !important;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-size: .78rem;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
 }
 
-.seletor-temporada .form-select:focus {
-    border-color: #d4af37;
-    box-shadow: none;
+.temporada-card form {
+    margin-top: 7px;
 }
+
 
 </style>
 
@@ -83,78 +85,11 @@ Carteirinhas
         </h2>
 
         <p class="text-secondary mb-0">
-            Organize a emissão de carteirinhas por temporada.
+            Selecione uma temporada para gerenciar seus integrantes e emitir carteirinhas.
         </p>
 
     </div>
 
-
-    <!-- SELEÇÃO DE TEMPORADA -->
-
-    <div class="seletor-temporada mb-4">
-
-        <h5 class="mb-3">
-            📅 Selecionar temporada
-        </h5>
-
-        <form
-            method="POST"
-            action="/admin/carteirinhas/temporada/acessar"
-        >
-
-            <div class="row g-3 align-items-end">
-
-                <div class="col-md-9">
-
-                    <label class="form-label">
-                        Temporada cadastrada
-                    </label>
-
-                    <select
-                        name="temporada_id"
-                        class="form-select"
-                        required
-                    >
-
-                        <option value="">
-                            Selecione uma temporada
-                        </option>
-
-                        {% for temporada in temporadas %}
-
-                            <option value="{{ temporada.id }}">
-
-                                {{ temporada.nome }}
-                                ({{ temporada.ano }})
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
-
-                </div>
-
-
-                <div class="col-md-3">
-
-                    <button
-                        type="submit"
-                        class="btn btn-brilho w-100"
-                    >
-                        Acessar temporada →
-                    </button>
-
-                </div>
-
-            </div>
-
-        </form>
-
-    </div>
-
-
-    <!-- LISTAGEM DAS TEMPORADAS -->
 
     <div class="painel-admin">
 
@@ -178,9 +113,10 @@ Carteirinhas
 
                 {% for temporada in temporadas %}
 
-                    <div class="col-md-6 col-xl-4">
+                    <div class="col-6 col-md-4 col-xl-3">
 
-                        <div class="temporada-card">
+                        <div class="temporada-card"
+                             onclick="this.querySelector('form').requestSubmit();">
 
                             <div class="temporada-icone">
                                 🪪
@@ -199,7 +135,7 @@ Carteirinhas
                                 {{ temporada.status or 'Não informado' }}
                             </div>
 
-                            <hr style="border-color: #424650;">
+                            <hr>
 
                             <div class="d-flex justify-content-between align-items-center">
 
@@ -230,6 +166,26 @@ Carteirinhas
                                 {% endif %}
 
                             </div>
+
+                            <form
+                                method="POST"
+                                action="/admin/carteirinhas/temporada/acessar"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="temporada_id"
+                                    value="{{ temporada.id }}"
+                                >
+
+                                <button
+                                    type="submit"
+                                    class="btn-acessar-temporada"
+                                >
+                                    Acessar temporada →
+                                </button>
+
+                            </form>
 
                         </div>
 
