@@ -9213,45 +9213,144 @@ def editar_rifa(id):
 
         db.close() 
 
+
+
 @app.route("/admin/temporadas/nova", methods=["POST"])
 def nova_temporada():
 
     if "admin" not in session:
         return redirect("/login")
 
+    status_permitidos = [
+        "PLANEJADA",
+        "ATIVA",
+        "ENCERRADA",
+        "CANCELADA"
+    ]
+
+    status = request.form["status"]
+
+    if status not in status_permitidos:
+        return redirect("/admin/temporadas")
 
     db = SessionLocal()
 
+    try:
+        db.execute(
+            text("""
+                INSERT INTO temporadas
+                (
+                    nome,
+                    ano,
+                    status
+                )
+                VALUES
+                (
+                    :nome,
+                    :ano,
+                    :status
+                )
+            """),
+            {
+                "nome": request.form["nome"].strip(),
+                "ano": int(request.form["ano"]),
+                "status": status
+            }
+        )
 
-    db.execute(
-        text("""
-            INSERT INTO temporadas
-            (
-                nome,
-                ano,
-                status
-            )
+        db.commit()
 
-            VALUES
-            (
-                :nome,
-                :ano,
-                :status
-            )
-        """),
-        {
-            "nome": request.form["nome"],
-            "ano": request.form["ano"],
-            "status": request.form["status"]
-        }
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+    return redirect("/admin/temporadas")
+
+
+@app.route("/admin/temporadas/<int:temporada_id>/editar", methods=["POST"])
+def editar_temporada(temporada_id):
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    status_permitidos = [
+        "PLANEJADA",
+        "ATIVA",
+        "ENCERRADA",
+        "CANCELADA"
+    ]
+
+    status = request.form["status"]
+
+    if status not in status_permitidos:
+        return redirect("/admin/temporadas")
+
+    db = SessionLocal()
+
+    try:
+        resultado = db.execute(
+            text("""
+                UPDATE temporadas
+                SET
+                    nome = :nome,
+                    ano = :ano,
+                    status = :status
+                WHERE id = :id
+            """),
+            {
+                "id": temporada_id,
+                "nome": request.form["nome"].strip(),
+                "ano": int(request.form["ano"]),
+                "status": status
+            }
+        )
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
+    return redirect("/admin/temporadas")
+
+
+
+@app.route("/admin/temporadas")
+def admin_temporadas():
+
+    if "admin" not in session:
+        return redirect("/login")
+
+    db = SessionLocal()
+
+    try:
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    id,
+                    nome,
+                    ano,
+                    status,
+                    data_cadastro
+                FROM temporadas
+                ORDER BY ano DESC
+            """)
+        ).mappings().all()
+
+    finally:
+        db.close()
+
+    return render_template(
+        "admin/temporadas.html",
+        temporadas=temporadas
     )
 
-
-    db.commit()
-    db.close()
-
-
-    return redirect("/admin")
 
 @app.route("/admin/rifas/excluir/<int:id>", methods=["POST"])
 def excluir_rifa(id):
@@ -12984,41 +13083,6 @@ def baixar_todas_carteirinhas_pdf():
 
     return gerar_pdf_todas_carteirinhas()
 
-@app.route("/admin/temporadas")
-def admin_temporadas():
-
-    if "admin" not in session:
-        return redirect("/login")
-
-    db = SessionLocal()
-
-    try:
-
-        # ==========================================
-        # TEMPORADAS
-        # ==========================================
-
-        temporadas = db.execute(
-            text("""
-                SELECT
-                    id,
-                    nome,
-                    ano,
-                    status,
-                    data_cadastro
-                FROM temporadas
-                ORDER BY ano DESC
-            """)
-        ).mappings().all()
-
-    finally:
-
-        db.close()
-
-    return render_template(
-        "admin/temporadas.html",
-        temporadas=temporadas
-    )
 
 @app.route("/admin/relatorios")
 def admin_relatorios():

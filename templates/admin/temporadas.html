@@ -1,3 +1,4 @@
+
 {% extends 'layout/base_admin.html' %}
 
 {% block titulo %}
@@ -10,123 +11,234 @@ Temporadas
 
 {% block conteudo %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<style>
 
-    <div>
+.temporadas-page {
+    color: #f1f1f1;
+}
 
-        <h2 class="titulo mb-1">
-            📅 Temporadas
-        </h2>
+.temporadas-page .bn-card {
+    background: #1d1f25;
+    border: 1px solid #33353d;
+    border-radius: 12px;
+    padding: 17px;
+}
 
-        <p class="text-secondary mb-0">
-            Gerencie as temporadas da Banda Fanfarra Brilho Negro.
-        </p>
+.temporadas-page .resumo-card {
+    padding: 13px 17px;
+    min-height: 105px;
+}
+
+.temporadas-page .resumo-numero {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: #d4af37;
+    line-height: 1.2;
+}
+
+.temporadas-page .resumo-icone {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+}
+
+.temporadas-page .table {
+    margin-bottom: 0;
+}
+
+.temporadas-page .table th {
+    color: #aaa;
+    font-size: .76rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    white-space: nowrap;
+    border-bottom: 1px solid #41434b;
+    padding: 12px 14px;
+}
+
+.temporadas-page .table td {
+    padding: 13px 14px;
+    border-color: #33353d;
+    vertical-align: middle;
+}
+
+.temporadas-page .ano-destaque {
+    color: #d4af37;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.temporadas-page .temporada-nome {
+    font-weight: 600;
+}
+
+.temporadas-page .badge {
+    font-size: .76rem;
+    padding: 6px 9px;
+}
+
+.temporadas-page .modal-content {
+    background: #1d1f25;
+    color: #f1f1f1;
+    border: 1px solid #393b43;
+    border-radius: 12px;
+}
+
+.temporadas-page .modal-header,
+.temporadas-page .modal-footer {
+    border-color: #393b43;
+}
+
+.temporadas-page .form-control,
+.temporadas-page .form-select {
+    background-color: #111318;
+    border-color: #41434b;
+    color: #fff;
+}
+
+.temporadas-page .form-control:focus,
+.temporadas-page .form-select:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 .2rem rgba(212,175,55,.15);
+}
+
+.temporadas-page .form-select option {
+    background: #1d1f25;
+}
+
+.temporadas-page .form-label {
+    color: #ccc;
+    font-weight: 500;
+}
+
+.temporadas-page .btn-editar {
+    white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+
+    .temporadas-page .cabecalho {
+        align-items: flex-start !important;
+        gap: 15px;
+        flex-direction: column;
+    }
+
+    .temporadas-page .btn-nova {
+        width: 100%;
+    }
+
+    .temporadas-page .bn-card {
+        padding: 13px;
+    }
+
+    .temporadas-page .table th,
+    .temporadas-page .table td {
+        padding: 11px 10px;
+    }
+
+}
+
+</style>
+
+
+<div class="temporadas-page">
+
+    <!-- CABEÇALHO -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3 cabecalho">
+
+        <div>
+            <h2 class="titulo mb-1">📅 Temporadas</h2>
+
+            <p class="text-secondary mb-0">
+                Gerencie as temporadas da Banda Fanfarra Brilho Negro.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-primary btn-nova"
+            data-bs-toggle="modal"
+            data-bs-target="#modalNovaTemporada">
+
+            ➕ Nova Temporada
+
+        </button>
 
     </div>
 
-    <button
-        type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#modalNovaTemporada">
 
-        ➕ Nova Temporada
+    <!-- RESUMO -->
 
-    </button>
+    <div class="row g-2 mb-3">
 
-</div>
+        <div class="col-md-3 col-6">
 
+            <div class="bn-card resumo-card">
 
-<!-- ===================================================== -->
-<!-- RESUMO                                                -->
-<!-- ===================================================== -->
+                <div class="d-flex align-items-center gap-3">
 
-<div class="row g-3 mb-4">
+                    <div class="resumo-icone mb-0">📅</div>
 
-    <div class="col-md-4">
+                    <div>
+                        <div class="resumo-numero">
+                            {{ temporadas|length }}
+                        </div>
 
-        <div class="card-resumo">
+                        <small class="text-secondary">
+                            Temporadas cadastradas
+                        </small>
+                    </div>
 
-            <div class="icone">
-                📅
+                </div>
+
             </div>
 
-            <div class="numero">
+        </div>
+
+    </div>
+
+
+    <!-- LISTAGEM -->
+
+    <div class="bn-card">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div>
+                <h5 class="mb-1">📋 Temporadas cadastradas</h5>
+
+                <small class="text-secondary">
+                    Consulte e atualize as temporadas.
+                </small>
+            </div>
+
+            <span class="badge bg-secondary">
                 {{ temporadas|length }}
-            </div>
-
-            <div class="descricao">
-                Temporadas
-            </div>
-
-            <div class="detalhe">
-                Cadastradas no sistema
-            </div>
+                {% if temporadas|length == 1 %}
+                    temporada
+                {% else %}
+                    temporadas
+                {% endif %}
+            </span>
 
         </div>
 
-    </div>
 
-</div>
-
-
-<!-- ===================================================== -->
-<!-- LISTA                                                 -->
-<!-- ===================================================== -->
-
-<div class="painel-admin">
-
-    <div class="d-flex justify-content-between align-items-center mb-3">
-
-        <div class="painel-admin-titulo mb-0">
-            📋 Temporadas cadastradas
-        </div>
-
-        <span class="badge bg-secondary">
-
-            {{ temporadas|length }}
-
-            temporada{% if temporadas|length != 1 %}s{% endif %}
-
-        </span>
-
-    </div>
-
-
-    {% if temporadas %}
+        {% if temporadas %}
 
         <div class="table-responsive">
 
             <table class="table table-dark table-hover align-middle">
 
                 <thead>
-
                     <tr>
-
-                        <th>
-                            Ano
-                        </th>
-
-                        <th>
-                            Nome
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Cadastro
-                        </th>
-
-                        <th class="text-end">
-                            Ações
-                        </th>
-
+                        <th>ANO</th>
+                        <th>NOME DA TEMPORADA</th>
+                        <th>STATUS</th>
+                        <th>CADASTRO</th>
+                        <th class="text-end">AÇÕES</th>
                     </tr>
-
                 </thead>
-
 
                 <tbody>
 
@@ -135,27 +247,41 @@ Temporadas
                     <tr>
 
                         <td>
-
-                            <strong>
+                            <span class="ano-destaque">
                                 {{ temporada.ano }}
-                            </strong>
-
+                            </span>
                         </td>
 
+                        <td>
+                            <span class="temporada-nome">
+                                {{ temporada.nome }}
+                            </span>
+                        </td>
 
                         <td>
 
-                            {{ temporada.nome }}
+                            {% if temporada.status == 'PLANEJADA' %}
 
-                        </td>
+                                <span class="badge bg-info text-dark">
+                                    🔵 Planejada
+                                </span>
 
-
-                        <td>
-
-                            {% if temporada.status == 'ATIVA' %}
+                            {% elif temporada.status == 'ATIVA' %}
 
                                 <span class="badge bg-success">
                                     🟢 Ativa
+                                </span>
+
+                            {% elif temporada.status == 'ENCERRADA' %}
+
+                                <span class="badge bg-secondary">
+                                    ⚫ Encerrada
+                                </span>
+
+                            {% elif temporada.status == 'CANCELADA' %}
+
+                                <span class="badge bg-danger">
+                                    🔴 Cancelada
                                 </span>
 
                             {% elif temporada.status == 'INATIVA' %}
@@ -174,27 +300,23 @@ Temporadas
 
                         </td>
 
-
-                        <td>
+                        <td class="text-secondary">
 
                             {% if temporada.data_cadastro %}
-
                                 {{ temporada.data_cadastro.strftime('%d/%m/%Y') }}
-
                             {% else %}
-
                                 —
-
                             {% endif %}
 
                         </td>
-
 
                         <td class="text-end">
 
                             <button
                                 type="button"
-                                class="btn btn-sm btn-outline-light">
+                                class="btn btn-sm btn-outline-light btn-editar"
+                                data-bs-toggle="modal"
+                                data-bs-target="#modalEditar{{ temporada.id }}">
 
                                 ✏️ Editar
 
@@ -212,140 +334,285 @@ Temporadas
 
         </div>
 
-    {% else %}
+        {% else %}
 
         <div class="text-center text-secondary py-5">
 
-            <div style="font-size: 3rem;">
-                📅
-            </div>
+            <div style="font-size: 3rem;">📅</div>
 
-            <div class="mt-3">
-                Nenhuma temporada cadastrada.
+            <h5 class="mt-3">
+                Nenhuma temporada cadastrada
+            </h5>
+
+            <p class="mb-0">
+                Clique em Nova Temporada para começar.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- MODAIS DE EDIÇÃO -->
+
+    {% for temporada in temporadas %}
+
+    <div
+        class="modal fade"
+        id="modalEditar{{ temporada.id }}"
+        tabindex="-1"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        ✏️ Editar Temporada
+                    </h5>
+
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <form
+                    method="POST"
+                    action="/admin/temporadas/{{ temporada.id }}/editar">
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nome da temporada
+                            </label>
+
+                            <input
+                                type="text"
+                                name="nome"
+                                class="form-control"
+                                value="{{ temporada.nome }}"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Ano
+                            </label>
+
+                            <input
+                                type="number"
+                                name="ano"
+                                class="form-control"
+                                min="2000"
+                                max="2100"
+                                value="{{ temporada.ano }}"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Status da temporada
+                            </label>
+
+                            <select
+                                name="status"
+                                class="form-select"
+                                required>
+
+                                <option
+                                    value="PLANEJADA"
+                                    {% if temporada.status == 'PLANEJADA' %}selected{% endif %}>
+                                    🔵 Planejada
+                                </option>
+
+                                <option
+                                    value="ATIVA"
+                                    {% if temporada.status == 'ATIVA' %}selected{% endif %}>
+                                    🟢 Ativa
+                                </option>
+
+                                <option
+                                    value="ENCERRADA"
+                                    {% if temporada.status == 'ENCERRADA' %}selected{% endif %}>
+                                    ⚫ Encerrada
+                                </option>
+
+                                <option
+                                    value="CANCELADA"
+                                    {% if temporada.status == 'CANCELADA' %}selected{% endif %}>
+                                    🔴 Cancelada
+                                </option>
+
+                                {% if temporada.status == 'INATIVA' %}
+
+                                <option value="INATIVA" selected>
+                                    ⚪ Inativa (antigo)
+                                </option>
+
+                                {% endif %}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary">
+                            💾 Salvar alterações
+                        </button>
+
+                    </div>
+
+                </form>
+
             </div>
 
         </div>
 
-    {% endif %}
+    </div>
 
-</div>
-
-
-<!-- ===================================================== -->
-<!-- MODAL NOVA TEMPORADA                                  -->
-<!-- ===================================================== -->
-
-<div
-    class="modal fade"
-    id="modalNovaTemporada"
-    tabindex="-1"
-    aria-hidden="true">
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    📅 Nova Temporada
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
+    {% endfor %}
 
 
-            <form method="POST" action="/admin/temporadas/nova">
+    <!-- MODAL NOVA TEMPORADA -->
 
-                <div class="modal-body">
+    <div
+        class="modal fade"
+        id="modalNovaTemporada"
+        tabindex="-1"
+        aria-hidden="true">
 
-                    <div class="mb-3">
+        <div class="modal-dialog modal-dialog-centered">
 
-                        <label class="form-label">
-                            Nome da temporada
-                        </label>
+            <div class="modal-content">
 
-                        <input
-                            type="text"
-                            name="nome"
-                            class="form-control"
-                            placeholder="Ex.: Temporada 2026"
-                            required>
+                <div class="modal-header">
 
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Ano
-                        </label>
-
-                        <input
-                            type="number"
-                            name="ano"
-                            class="form-control"
-                            min="2000"
-                            max="2100"
-                            value="2026"
-                            required>
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
-                            Status
-                        </label>
-
-                        <select
-                            name="status"
-                            class="form-select"
-                            required>
-
-                            <option value="ATIVA">
-                                🟢 Ativa
-                            </option>
-
-                            <option value="INATIVA">
-                                ⚪ Inativa
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <div class="modal-footer">
+                    <h5 class="modal-title">
+                        📅 Nova Temporada
+                    </h5>
 
                     <button
                         type="button"
-                        class="btn btn-secondary"
+                        class="btn-close btn-close-white"
                         data-bs-dismiss="modal">
-
-                        Cancelar
-
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary">
-
-                        💾 Salvar
-
                     </button>
 
                 </div>
 
-            </form>
+                <form method="POST" action="/admin/temporadas/nova">
+
+                    <div class="modal-body">
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Nome da temporada
+                            </label>
+
+                            <input
+                                type="text"
+                                name="nome"
+                                class="form-control"
+                                placeholder="Ex.: Temporada 2027"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Ano
+                            </label>
+
+                            <input
+                                type="number"
+                                name="ano"
+                                class="form-control"
+                                min="2000"
+                                max="2100"
+                                value="2027"
+                                required>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Status da temporada
+                            </label>
+
+                            <select
+                                name="status"
+                                class="form-select"
+                                required>
+
+                                <option value="PLANEJADA" selected>
+                                    🔵 Planejada
+                                </option>
+
+                                <option value="ATIVA">
+                                    🟢 Ativa
+                                </option>
+
+                                <option value="ENCERRADA">
+                                    ⚫ Encerrada
+                                </option>
+
+                                <option value="CANCELADA">
+                                    🔴 Cancelada
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary">
+                            💾 Salvar temporada
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
 
         </div>
 
