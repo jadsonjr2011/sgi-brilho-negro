@@ -20,12 +20,18 @@ Viagens
 
     <div>
         <h2 class="titulo mb-1">
-            🚌 Viagens
+            🚌 Viagens — {{ temporada.nome }}
         </h2>
 
         <div class="text-secondary">
-            Organize e acompanhe as viagens da banda.
+            Organize e acompanhe as viagens desta temporada.
         </div>
+
+        <a
+            href="/admin/viagens"
+            class="btn btn-outline-secondary btn-sm mt-2">
+            ← Voltar às temporadas
+        </a>
     </div>
 
 
@@ -289,6 +295,10 @@ Viagens
             method="POST"
             action="/admin/viagens/nova">
 
+            <input
+                type="hidden"
+                name="temporada_id"
+                value="{{ temporada_id }}">
 
             <div class="modal-body">
 

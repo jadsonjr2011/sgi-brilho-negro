@@ -5515,6 +5515,7 @@ def exportar_excel():
 
     )
 
+
 @app.route("/admin/viagens")
 def viagens():
 
@@ -5523,92 +5524,150 @@ def viagens():
 
     db = SessionLocal()
 
-    # ==========================================
-    # VIAGENS
-    # ==========================================
+    try:
 
-    lista = db.execute(
-        text("""
-            SELECT
-                v.*,
+        temporadas = db.execute(
+            text("""
+                SELECT
+                    t.*,
 
-                COUNT(vi.integrante_id) AS total_participantes
+                    (
+                        SELECT COUNT(*)
+                        FROM viagens v
+                        WHERE v.temporada_id = t.id
+                    ) AS total_viagens
 
-            FROM viagens v
+                FROM temporadas_viagens t
 
-            LEFT JOIN viagem_integrantes vi
-            ON vi.viagem_id = v.id
+                ORDER BY t.ano DESC
+            """)
+        ).mappings().all()
 
-            GROUP BY v.id
-
-            ORDER BY v.data_saida ASC
-        """)
-    ).mappings().all()
-
-
-    # ==========================================
-    # INTEGRANTES APROVADOS E ATIVOS
-    # ==========================================
-
-    integrantes = db.execute(
-        text("""
-            SELECT
-                id,
-                codigo_integrante,
-                nome,
-                cidade,
-                status,
-                situacao
-
-            FROM integrantes
-
-            WHERE TRIM(status) = 'APROVADO'
-            AND TRIM(situacao) = 'ATIVO'
-
-            ORDER BY nome
-        """)
-    ).mappings().all()
-
-
-    # ==========================================
-    # INTEGRANTES JÁ SELECIONADOS POR VIAGEM
-    # ==========================================
-
-    selecionados = db.execute(
-        text("""
-            SELECT
-                viagem_id,
-                integrante_id
-
-            FROM viagem_integrantes
-        """)
-    ).mappings().all()
-
-
-    selecionados_por_viagem = {}
-
-    for item in selecionados:
-
-        viagem_id = item["viagem_id"]
-        integrante_id = item["integrante_id"]
-
-        if viagem_id not in selecionados_por_viagem:
-            selecionados_por_viagem[viagem_id] = []
-
-        selecionados_por_viagem[viagem_id].append(
-            integrante_id
+        return render_template(
+            "admin/temporadas_viagens.html",
+            temporadas=temporadas
         )
 
+    finally:
+        db.close()
 
-    db.close()
 
+@app.route("/admin/viagens/temporada/<int:temporada_id>")
+def viagens_temporada(temporada_id):
 
-    return render_template(
-        "admin/viagens.html",
-        viagens=lista,
-        integrantes=integrantes,
-        selecionados_por_viagem=selecionados_por_viagem
-    )
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        temporada = db.execute(
+            text("""
+                SELECT *
+                FROM temporadas_viagens
+                WHERE id = :id
+            """),
+            {"id": temporada_id}
+        ).mappings().first()
+
+        if not temporada:
+            return redirect("/admin/viagens")
+
+        # ==========================================
+        # VIAGENS DA TEMPORADA
+        # ==========================================
+
+        lista = db.execute(
+            text("""
+                SELECT
+                    v.*,
+
+                    COUNT(vi.integrante_id) AS total_participantes
+
+                FROM viagens v
+
+                LEFT JOIN viagem_integrantes vi
+                    ON vi.viagem_id = v.id
+
+                WHERE v.temporada_id = :temporada_id
+
+                GROUP BY v.id
+
+                ORDER BY v.data_saida ASC
+            """),
+            {"temporada_id": temporada_id}
+        ).mappings().all()
+
+        # ==========================================
+        # INTEGRANTES APROVADOS E ATIVOS
+        # ==========================================
+
+        integrantes = db.execute(
+            text("""
+                SELECT
+                    id,
+                    codigo_integrante,
+                    nome,
+                    cidade,
+                    status,
+                    situacao
+
+                FROM integrantes
+
+                WHERE TRIM(status) = 'APROVADO'
+                AND TRIM(situacao) = 'ATIVO'
+
+                ORDER BY nome
+            """)
+        ).mappings().all()
+
+        # ==========================================
+        # INTEGRANTES SELECIONADOS POR VIAGEM
+        # ==========================================
+
+        selecionados = db.execute(
+            text("""
+                SELECT
+                    vi.viagem_id,
+                    vi.integrante_id
+
+                FROM viagem_integrantes vi
+
+                INNER JOIN viagens v
+                    ON v.id = vi.viagem_id
+
+                WHERE v.temporada_id = :temporada_id
+            """),
+            {"temporada_id": temporada_id}
+        ).mappings().all()
+
+        selecionados_por_viagem = {}
+
+        for item in selecionados:
+
+            viagem_id = item["viagem_id"]
+            integrante_id = item["integrante_id"]
+
+            if viagem_id not in selecionados_por_viagem:
+                selecionados_por_viagem[viagem_id] = []
+
+            selecionados_por_viagem[viagem_id].append(
+                integrante_id
+            )
+
+        return render_template(
+            "admin/viagens.html",
+            viagens=lista,
+            integrantes=integrantes,
+            selecionados_por_viagem=selecionados_por_viagem,
+            temporada=temporada,
+            temporada_id=temporada_id
+        )
+
+    finally:
+        db.close()
+
 
 @app.route("/admin/viagens/nova", methods=["POST"])
 def nova_viagem():
@@ -5616,49 +5675,75 @@ def nova_viagem():
     if not usuario_tem_permissao("viagens"):
         return redirect("/admin")
 
+    temporada_id = request.form.get("temporada_id", type=int)
+
+    if not temporada_id:
+        return redirect("/admin/viagens")
 
     db = SessionLocal()
 
+    try:
 
-    db.execute(
-        text("""
-            INSERT INTO viagens
-            (
-                evento,
-                destino,
-                data_saida,
-                data_retorno,
-                responsavel,
-                observacoes
-            )
+        temporada = db.execute(
+            text("""
+                SELECT id
+                FROM temporadas_viagens
+                WHERE id = :id
+            """),
+            {"id": temporada_id}
+        ).first()
 
-            VALUES
-            (
-                :evento,
-                :destino,
-                :data_saida,
-                :data_retorno,
-                :responsavel,
-                :observacoes
-            )
-        """),
-        {
-            "evento": request.form["evento"],
-            "destino": request.form["destino"],
-            "data_saida": request.form["data_saida"],
-            "data_retorno": request.form["data_retorno"] or None,
-            "responsavel": request.form["responsavel"],
-            "observacoes": request.form["observacoes"]
-        }
-    )
+        if not temporada:
+            return redirect("/admin/viagens")
 
+        db.execute(
+            text("""
+                INSERT INTO viagens
+                (
+                    evento,
+                    destino,
+                    data_saida,
+                    data_retorno,
+                    responsavel,
+                    observacoes,
+                    temporada_id
+                )
 
-    db.commit()
+                VALUES
+                (
+                    :evento,
+                    :destino,
+                    :data_saida,
+                    :data_retorno,
+                    :responsavel,
+                    :observacoes,
+                    :temporada_id
+                )
+            """),
+            {
+                "evento": request.form["evento"],
+                "destino": request.form["destino"],
+                "data_saida": request.form["data_saida"],
+                "data_retorno": request.form["data_retorno"] or None,
+                "responsavel": request.form["responsavel"],
+                "observacoes": request.form["observacoes"],
+                "temporada_id": temporada_id
+            }
+        )
 
-    db.close()
+        db.commit()
 
+        return redirect(
+            f"/admin/viagens/temporada/{temporada_id}"
+        )
 
-    return redirect("/admin/viagens")
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
 
 @app.route("/admin/viagem/<int:id>/editar", methods=["POST"])
 def editar_viagem(id):
@@ -5670,9 +5755,17 @@ def editar_viagem(id):
 
     try:
 
-        # ==========================================
-        # ATUALIZAR VIAGEM
-        # ==========================================
+        temporada_id = db.execute(
+            text("""
+                SELECT temporada_id
+                FROM viagens
+                WHERE id = :id
+            """),
+            {"id": id}
+        ).scalar()
+
+        if not temporada_id:
+            return redirect("/admin/viagens")
 
         db.execute(
             text("""
@@ -5701,11 +5794,12 @@ def editar_viagem(id):
 
         db.commit()
 
+        return redirect(
+            f"/admin/viagens/temporada/{temporada_id}"
+        )
+
     finally:
-
         db.close()
-
-    return redirect("/admin/viagens")
 
 
 @app.route("/admin/viagem/<int:id>/excluir", methods=["POST"])
@@ -5718,45 +5812,110 @@ def excluir_viagem(id):
 
     try:
 
-        # ==========================================
-        # EXCLUIR PARTICIPANTES DA VIAGEM
-        # ==========================================
+        temporada_id = db.execute(
+            text("""
+                SELECT temporada_id
+                FROM viagens
+                WHERE id = :id
+            """),
+            {"id": id}
+        ).scalar()
+
+        if not temporada_id:
+            return redirect("/admin/viagens")
 
         db.execute(
             text("""
                 DELETE FROM viagem_integrantes
-
                 WHERE viagem_id = :id
             """),
-            {
-                "id": id
-            }
+            {"id": id}
         )
-
-
-        # ==========================================
-        # EXCLUIR VIAGEM
-        # ==========================================
 
         db.execute(
             text("""
                 DELETE FROM viagens
-
                 WHERE id = :id
             """),
-            {
-                "id": id
-            }
+            {"id": id}
         )
-
 
         db.commit()
 
-    finally:
+        return redirect(
+            f"/admin/viagens/temporada/{temporada_id}"
+        )
 
+    finally:
         db.close()
 
-    return redirect("/admin/viagens")
+
+@app.route("/admin/viagem/<int:id>/integrantes/salvar", methods=["POST"])
+def salvar_integrantes_viagem(id):
+
+    if not usuario_tem_permissao("viagens"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        temporada_id = db.execute(
+            text("""
+                SELECT temporada_id
+                FROM viagens
+                WHERE id = :id
+            """),
+            {"id": id}
+        ).scalar()
+
+        if not temporada_id:
+            return redirect("/admin/viagens")
+
+        db.execute(
+            text("""
+                DELETE FROM viagem_integrantes
+                WHERE viagem_id = :id
+            """),
+            {"id": id}
+        )
+
+        integrantes = request.form.getlist("integrantes")
+
+        for integrante_id in integrantes:
+
+            db.execute(
+                text("""
+                    INSERT INTO viagem_integrantes
+                    (
+                        viagem_id,
+                        integrante_id
+                    )
+                    VALUES
+                    (
+                        :viagem_id,
+                        :integrante_id
+                    )
+                """),
+                {
+                    "viagem_id": id,
+                    "integrante_id": int(integrante_id)
+                }
+            )
+
+        db.commit()
+
+        return redirect(
+            f"/admin/viagens/temporada/{temporada_id}"
+        )
+
+    except Exception:
+        db.rollback()
+        raise
+
+    finally:
+        db.close()
+
 
 @app.route("/admin/viagem/<int:id>/integrantes")
 def integrantes_viagem(id):
@@ -5847,59 +6006,6 @@ def integrantes_viagem(id):
         participantes=participantes
     )
 
-@app.route("/admin/viagem/<int:id>/integrantes/salvar", methods=["POST"])
-def salvar_integrantes_viagem(id):
-
-    if not usuario_tem_permissao("viagens"):
-        return redirect("/admin")
-
-
-    db = SessionLocal()
-
-
-    # Remove os integrantes atuais dessa viagem
-    db.execute(
-        text("""
-            DELETE FROM viagem_integrantes
-            WHERE viagem_id=:id
-        """),
-        {
-            "id": id
-        }
-    )
-
-
-    integrantes = request.form.getlist("integrantes")
-
-
-    for integrante_id in integrantes:
-
-        db.execute(
-            text("""
-                INSERT INTO viagem_integrantes
-                (
-                    viagem_id,
-                    integrante_id
-                )
-                VALUES
-                (
-                    :viagem_id,
-                    :integrante_id
-                )
-            """),
-            {
-                "viagem_id": id,
-                "integrante_id": integrante_id
-            }
-        )
-
-
-    db.commit()
-
-    db.close()
-
-
-    return redirect("/admin/viagens")
 
 @app.route(
     "/admin/viagem/<int:viagem_id>/integrante/<int:integrante_id>/remover",

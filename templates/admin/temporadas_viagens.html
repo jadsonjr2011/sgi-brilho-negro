@@ -1,0 +1,141 @@
+
+{% extends 'layout/base_admin.html' %}
+
+{% block titulo %}
+Temporadas de Viagens
+{% endblock %}
+
+{% block titulo_pagina %}
+Temporadas de Viagens
+{% endblock %}
+
+{% block conteudo %}
+
+<style>
+.temporadas-viagens {
+    color: #f1f1f1;
+}
+
+.temporadas-viagens .temporada-card {
+    background: #1d1f25;
+    border: 1px solid #34363d;
+    border-radius: 12px;
+    padding: 20px;
+    height: 100%;
+    transition: .2s;
+}
+
+.temporadas-viagens .temporada-card:hover {
+    border-color: #d4af37;
+    transform: translateY(-3px);
+}
+
+.temporadas-viagens .temporada-ano {
+    font-size: 30px;
+    font-weight: 700;
+    color: #d4af37;
+}
+
+.temporadas-viagens .temporada-info {
+    color: #aaa;
+    font-size: 13px;
+}
+
+.temporadas-viagens .temporada-acessar {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.temporadas-viagens .temporada-acessar:hover {
+    color: inherit;
+}
+
+.temporadas-viagens .temporada-card .btn-brilho {
+    width: 100%;
+}
+</style>
+
+<div class="temporadas-viagens">
+
+    <div class="card-bn p-3 mb-4">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <div>
+                <h4 class="titulo mb-1">
+                    🚌 Temporadas de Viagens
+                </h4>
+
+                <div class="text-secondary">
+                    Selecione uma temporada para acessar suas viagens.
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row g-3">
+
+        {% for temporada in temporadas %}
+
+        <div class="col-md-6 col-lg-4">
+
+            <a
+                href="/admin/viagens/temporada/{{ temporada.id }}"
+                class="temporada-acessar"
+            >
+
+                <div class="temporada-card">
+
+                    <div class="d-flex justify-content-between align-items-start">
+
+                        <div>
+                            <div class="temporada-ano">
+                                {{ temporada.ano }}
+                            </div>
+
+                            <h5 class="mb-1">
+                                {{ temporada.nome }}
+                            </h5>
+                        </div>
+
+                        <span style="font-size: 27px;">
+                            🚌
+                        </span>
+
+                    </div>
+
+                    <hr style="border-color: #444;">
+
+                    <div class="temporada-info mb-3">
+                        {{ temporada.total_viagens }}
+                        viagem(ns) cadastrada(s)
+                    </div>
+
+                    <span class="btn btn-brilho">
+                        Acessar temporada →
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+        {% else %}
+
+        <div class="col-12">
+            <div class="card-bn p-4 text-center text-secondary">
+                Nenhuma temporada cadastrada.
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}
