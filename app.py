@@ -6800,6 +6800,7 @@ def excluir_movimentacao_financeiro(id):
 
     return redirect("/admin/financeiro/movimentacoes")
 
+
 @app.route("/admin/financeiro/prestacao")
 def prestacao_financeira():
 
@@ -6808,95 +6809,109 @@ def prestacao_financeira():
 
     db = SessionLocal()
 
+    try:
 
-    movimentacoes = db.execute(
-        text("""
-            SELECT *
-            FROM financeiro
-            ORDER BY data_movimento
-        """)
-    ).fetchall()
+        temporada = request.args.get(
+            "temporada",
+            "2026"
+        )
 
+        movimentacoes = db.execute(
+            text("""
+                SELECT *
+                FROM financeiro
+                WHERE temporada = :temporada
+                ORDER BY data_movimento
+            """),
+            {
+                "temporada": temporada
+            }
+        ).fetchall()
 
+        receitas = db.execute(
+            text("""
+                SELECT COALESCE(SUM(valor), 0)
+                FROM financeiro
+                WHERE tipo = 'RECEITA'
+                  AND temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar() or 0
 
-    receitas = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor),0)
-            FROM financeiro
-            WHERE tipo='RECEITA'
-        """)
-    ).scalar()
+        despesas = db.execute(
+            text("""
+                SELECT COALESCE(SUM(valor), 0)
+                FROM financeiro
+                WHERE tipo = 'DESPESA'
+                  AND temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar() or 0
 
+        saldo = receitas - despesas
 
+        total_doacoes = db.execute(
+            text("""
+                SELECT COALESCE(SUM(valor), 0)
+                FROM financeiro
+                WHERE tipo = 'RECEITA'
+                  AND categoria ILIKE '%Doação%'
+                  AND temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar() or 0
 
-    despesas = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor),0)
-            FROM financeiro
-            WHERE tipo='DESPESA'
-        """)
-    ).scalar()
+        total_patrocinios = db.execute(
+            text("""
+                SELECT COALESCE(SUM(valor), 0)
+                FROM financeiro
+                WHERE tipo = 'RECEITA'
+                  AND categoria ILIKE '%Patrocínio%'
+                  AND temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar() or 0
 
+        quantidade_movimentos = db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM financeiro
+                WHERE temporada = :temporada
+            """),
+            {
+                "temporada": temporada
+            }
+        ).scalar() or 0
 
+        pdf = gerar_pdf_financeiro(
+            movimentacoes,
+            receitas,
+            despesas,
+            saldo,
+            total_doacoes,
+            total_patrocinios,
+            quantidade_movimentos,
+            temporada
+        )
 
-    saldo = receitas - despesas
+        return send_file(
+            pdf,
+            mimetype="application/pdf",
+            download_name=f"Prestacao_Contas_{temporada}.pdf",
+            as_attachment=False
+        )
 
+    finally:
+        db.close()
 
-
-    total_doacoes = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor),0)
-            FROM financeiro
-            WHERE tipo='RECEITA'
-            AND categoria ILIKE '%Doação%'
-        """)
-    ).scalar()
-
-
-
-    total_patrocinios = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor),0)
-            FROM financeiro
-            WHERE tipo='RECEITA'
-            AND categoria ILIKE '%Patrocínio%'
-        """)
-    ).scalar()
-
-
-
-    quantidade_movimentos = db.execute(
-        text("""
-            SELECT COUNT(*)
-            FROM financeiro
-        """)
-    ).scalar()
-
-
-
-    db.close()
-
-
-
-    pdf = gerar_pdf_financeiro(
-        movimentacoes,
-        receitas,
-        despesas,
-        saldo,
-        total_doacoes,
-        total_patrocinios,
-        quantidade_movimentos,
-        "2026"
-    )
-
-
-
-    return send_file(
-        pdf,
-        mimetype="application/pdf",
-        download_name="Prestacao_Contas_2026.pdf",
-        as_attachment=False
-    )
 
 @app.route("/admin/financeiro/relatorio-categorias")
 def relatorio_financeiro_categorias():
