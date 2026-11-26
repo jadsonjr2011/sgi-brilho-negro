@@ -6565,6 +6565,100 @@ def nova_movimentacao():
         "admin/nova_movimentacao.html"
     )
 
+
+@app.route("/admin/financeiro/editar/<int:id>", methods=["GET", "POST"])
+def editar_movimentacao_financeiro(id):
+
+    if not usuario_tem_permissao("financeiro"):
+        return redirect("/admin")
+
+    db = SessionLocal()
+
+    try:
+
+        movimentacao = db.execute(
+            text("""
+                SELECT
+                    id,
+                    temporada,
+                    tipo,
+                    categoria,
+                    descricao,
+                    valor,
+                    data_movimento,
+                    observacao
+                FROM financeiro
+                WHERE id = :id
+            """),
+            {"id": id}
+        ).fetchone()
+
+        if not movimentacao:
+            return redirect("/admin/financeiro/movimentacoes")
+
+        if request.method == "POST":
+
+            valor = (
+                request.form.get("valor") or "0"
+            ).strip()
+
+            valor = valor.replace(".", "").replace(",", ".")
+
+            db.execute(
+                text("""
+                    UPDATE financeiro
+                    SET
+                        temporada = :temporada,
+                        tipo = :tipo,
+                        categoria = :categoria,
+                        descricao = :descricao,
+                        valor = :valor,
+                        data_movimento = :data_movimento,
+                        observacao = :observacao
+                    WHERE id = :id
+                """),
+                {
+                    "temporada": request.form.get("temporada"),
+                    "tipo": request.form.get("tipo"),
+                    "categoria": request.form.get("categoria"),
+                    "descricao": request.form.get("descricao"),
+                    "valor": valor,
+                    "data_movimento": request.form.get("data_movimento"),
+                    "observacao": request.form.get("observacao"),
+                    "id": id
+                }
+            )
+
+            db.commit()
+
+            return redirect(
+                "/admin/financeiro/movimentacoes?editado=ok"
+            )
+
+        temporadas = db.execute(
+            text("""
+                SELECT ano
+                FROM temporadas
+                ORDER BY ano DESC
+            """)
+        ).fetchall()
+
+        return render_template(
+            "admin/editar_movimentacao.html",
+            item=movimentacao,
+            temporadas=temporadas
+        )
+
+    except Exception as e:
+
+        db.rollback()
+        print("ERRO AO EDITAR MOVIMENTAÇÃO:", e)
+        raise
+
+    finally:
+        db.close()
+
+
 @app.route("/admin/financeiro/movimentacoes")
 def movimentacoes_financeiro():
 
@@ -8782,6 +8876,7 @@ def relatorio_controles_financeiros():
     "/admin/financeiro/controles/<int:id>/editar",
     methods=["GET", "POST"]
 )
+
 def editar_controle_financeiro(id):
 
     if not usuario_tem_permissao("financeiro"):

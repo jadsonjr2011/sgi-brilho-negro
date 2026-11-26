@@ -1,203 +1,363 @@
-{% extends 'layout/base_admin.html' %}
 
+{% extends 'layout/base_admin.html' %}
 
 {% block titulo %}
 Movimentações Financeiras
 {% endblock %}
 
-
-
 {% block conteudo %}
-
 
 <div class="card-bn">
 
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="titulo mb-0">
+            📋 Movimentações Financeiras
+        </h2>
 
-    <h2 class="titulo mb-0">
-        📋 Movimentações Financeiras
-    </h2>
-
-    <a href="/admin/financeiro" class="btn btn-secondary">
-        ← Voltar
-    </a>
-
-</div>
-
-<!-- PESQUISA -->
-
-<div class="row mb-4">
-
-    <div class="col-md-8">
-
-        <label class="form-label">
-            🔎 Pesquisar movimentação
-        </label>
-
-        <input
-        type="text"
-        id="pesquisaMovimento"
-        class="form-control"
-        placeholder="Digite categoria, descrição, observação ou temporada..."
-        onkeyup="filtrarMovimentacoes()">
+        <a href="/admin/financeiro" class="btn btn-secondary">
+            ← Voltar
+        </a>
 
     </div>
 
+    <!-- PESQUISA -->
 
-    <div class="col-md-4">
+    <div class="row mb-4">
 
-        <label class="form-label">
-            Tipo
-        </label>
+        <div class="col-md-8">
 
-        <select
-        id="filtroTipo"
-        class="form-select"
-        onchange="filtrarMovimentacoes()">
+            <label class="form-label">
+                🔎 Pesquisar movimentação
+            </label>
 
-            <option value="">
-                Todos
-            </option>
+            <input
+                type="text"
+                id="pesquisaMovimento"
+                class="form-control"
+                placeholder="Digite categoria, descrição, observação ou temporada..."
+                onkeyup="filtrarMovimentacoes()">
 
-            <option value="despesa">
-                Despesas
-            </option>
+        </div>
 
-            <option value="receita">
-                Receitas
-            </option>
+        <div class="col-md-4">
 
-        </select>
+            <label class="form-label">
+                Tipo
+            </label>
+
+            <select
+                id="filtroTipo"
+                class="form-select"
+                onchange="filtrarMovimentacoes()">
+
+                <option value="">Todos</option>
+                <option value="despesa">Despesas</option>
+                <option value="receita">Receitas</option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+    <hr>
+
+    <div class="table-responsive">
+
+        <table class="table table-dark table-hover">
+
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Tipo</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Temporada</th>
+                    <th>Observação</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for item in movimentacoes %}
+
+                <tr class="linha-movimento">
+
+                    <td>
+                        {{ item.data_movimento.strftime('%d/%m/%Y') }}
+                    </td>
+
+                    <td>
+
+                        {% if item.tipo == "DESPESA" %}
+
+                        <span class="badge bg-danger">
+                            ⬇ Despesa
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-success">
+                            ⬆ Receita
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>{{ item.categoria }}</td>
+
+                    <td>{{ item.descricao }}</td>
+
+                    <td>
+                        R$ {{ item.valor|moeda }}
+                    </td>
+
+                    <td>{{ item.temporada }}</td>
+
+                    <td>{{ item.observacao or "-" }}</td>
+
+                    <td class="text-nowrap">
+
+                        <!-- EDITAR -->
+
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-warning"
+                            title="Editar movimentação"
+                            onclick="abrirModalEdicao(this)"
+
+                            data-id="{{ item.id }}"
+                            data-tipo="{{ item.tipo }}"
+                            data-categoria="{{ item.categoria }}"
+                            data-descricao="{{ item.descricao }}"
+                            data-valor="{{ item.valor }}"
+                            data-data="{{ item.data_movimento.strftime('%Y-%m-%d') }}"
+                            data-temporada="{{ item.temporada }}"
+                            data-observacao="{{ item.observacao or '' }}">
+
+                            ✏️
+
+                        </button>
+
+                        <!-- EXCLUIR -->
+
+                        <form
+                            action="/admin/financeiro/excluir/{{ item.id }}"
+                            method="POST"
+                            class="d-inline"
+                            onsubmit="return confirm('Deseja realmente excluir esta movimentação?');">
+
+                            <button
+                                type="submit"
+                                class="btn btn-sm btn-danger"
+                                title="Excluir movimentação">
+
+                                🗑️
+
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
 
     </div>
 
 </div>
 
-<hr>
 
+<!-- MODAL DE EDIÇÃO -->
 
+<div
+    class="modal fade"
+    id="modalEditarMovimentacao"
+    tabindex="-1"
+    aria-labelledby="tituloModalEdicao"
+    aria-hidden="true">
 
-<div class="table-responsive">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
 
+        <div class="modal-content"
+             style="background:#1d1f25; color:#f1f1f1; border:1px solid #3a3a3a;">
 
-<table class="table table-dark table-hover">
+            <form
+                id="formEditarMovimentacao"
+                method="POST">
 
+                <div class="modal-header"
+                     style="border-bottom:1px solid #3a3a3a;">
 
-<thead>
+                    <h5 class="modal-title" id="tituloModalEdicao">
+                        ✏️ Editar Movimentação Financeira
+                    </h5>
 
-<tr>
+                    <button
+                        type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Fechar">
+                    </button>
 
-<th>Data</th>
-<th>Tipo</th>
-<th>Categoria</th>
-<th>Descrição</th>
-<th>Valor</th>
-<th>Temporada</th>
-<th>Observação</th>
-<th>Ações</th>
+                </div>
 
-</tr>
+                <div class="modal-body">
 
-</thead>
+                    <div class="row g-3">
 
+                        <div class="col-md-4">
 
+                            <label class="form-label">
+                                Tipo
+                            </label>
 
-<tbody>
+                            <select
+                                name="tipo"
+                                id="editarTipo"
+                                class="form-select"
+                                required>
 
+                                <option value="RECEITA">Receita</option>
+                                <option value="DESPESA">Despesa</option>
 
-{% for item in movimentacoes %}
+                            </select>
 
-<tr class="linha-movimento">
+                        </div>
 
+                        <div class="col-md-4">
 
-<td>
-{{ item.data_movimento.strftime('%d/%m/%Y') }}
-</td>
+                            <label class="form-label">
+                                Data
+                            </label>
 
+                            <input
+                                type="date"
+                                name="data_movimento"
+                                id="editarData"
+                                class="form-control"
+                                required>
 
-<td>
+                        </div>
 
-{% if item.tipo == "DESPESA" %}
+                        <div class="col-md-4">
 
-<span class="badge bg-danger">
-⬇ Despesa
-</span>
+                            <label class="form-label">
+                                Valor (R$)
+                            </label>
 
-{% else %}
+                            <input
+                                type="text"
+                                name="valor"
+                                id="editarValor"
+                                class="form-control"
+                                placeholder="0,00"
+                                required>
 
-<span class="badge bg-success">
-⬆ Receita
-</span>
+                        </div>
 
-{% endif %}
+                        <div class="col-md-6">
 
+                            <label class="form-label">
+                                Categoria
+                            </label>
 
-</td>
+                            <input
+                                type="text"
+                                name="categoria"
+                                id="editarCategoria"
+                                class="form-control"
+                                required>
 
+                        </div>
 
+                        <div class="col-md-6">
 
-<td>
-{{ item.categoria }}
-</td>
+                            <label class="form-label">
+                                Temporada
+                            </label>
 
+                            <input
+                                type="text"
+                                name="temporada"
+                                id="editarTemporada"
+                                class="form-control"
+                                required>
 
-<td>
-{{ item.descricao }}
-</td>
+                        </div>
 
+                        <div class="col-12">
 
-<td>
-    R$ {{ item.valor|moeda }}
-</td>
+                            <label class="form-label">
+                                Descrição
+                            </label>
 
+                            <input
+                                type="text"
+                                name="descricao"
+                                id="editarDescricao"
+                                class="form-control"
+                                required>
 
-<td>
-{{ item.temporada }}
-</td>
+                        </div>
 
+                        <div class="col-12">
 
-<td>
-{{ item.observacao or "-" }}
-</td>
+                            <label class="form-label">
+                                Observação
+                            </label>
 
-<td>
+                            <textarea
+                                name="observacao"
+                                id="editarObservacao"
+                                class="form-control"
+                                rows="3"></textarea>
 
-<form 
-action="/admin/financeiro/excluir/{{ item.id }}"
-method="POST"
-onsubmit="return confirm('Deseja realmente excluir esta movimentação?');">
+                        </div>
 
+                    </div>
 
-<button
-class="btn btn-sm btn-danger">
+                </div>
 
-🗑️
+                <div class="modal-footer"
+                     style="border-top:1px solid #3a3a3a;">
 
-</button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
 
+                        Cancelar
 
-</form>
+                    </button>
 
-</td>
+                    <button
+                        type="submit"
+                        class="btn btn-warning">
 
-</tr>
+                        💾 Salvar alterações
 
+                    </button>
 
-{% endfor %}
+                </div>
 
+            </form>
 
-</tbody>
+        </div>
 
-
-</table>
-
+    </div>
 
 </div>
 
-
-
-</div>
 
 <script>
 
@@ -208,28 +368,21 @@ function filtrarMovimentacoes(){
         .value
         .toLowerCase();
 
-
     let tipo = document
         .getElementById("filtroTipo")
         .value
         .toLowerCase();
 
-
-
     let linhas = document.querySelectorAll(
         ".linha-movimento"
     );
 
-
     linhas.forEach(function(linha){
-
 
         let conteudo = linha.innerText.toLowerCase();
 
-
         let atendeTexto =
             conteudo.includes(texto);
-
 
         let atendeTipo =
             tipo === "" ||
@@ -237,20 +390,53 @@ function filtrarMovimentacoes(){
                 tipo == "despesa" ? "despesa" : "receita"
             );
 
-
-
         if(atendeTexto && atendeTipo){
-
             linha.style.display = "";
-
         }else{
-
             linha.style.display = "none";
-
         }
 
-
     });
+
+}
+
+
+function abrirModalEdicao(botao){
+
+    const id = botao.dataset.id;
+
+    document.getElementById("formEditarMovimentacao").action =
+        "/admin/financeiro/editar/" + id;
+
+    document.getElementById("editarTipo").value =
+        botao.dataset.tipo;
+
+    document.getElementById("editarData").value =
+        botao.dataset.data;
+
+    document.getElementById("editarValor").value =
+        Number(botao.dataset.valor.replace(",", ".")).toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    document.getElementById("editarCategoria").value =
+        botao.dataset.categoria;
+
+    document.getElementById("editarDescricao").value =
+        botao.dataset.descricao;
+
+    document.getElementById("editarTemporada").value =
+        botao.dataset.temporada;
+
+    document.getElementById("editarObservacao").value =
+        botao.dataset.observacao;
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("modalEditarMovimentacao")
+    );
+
+    modal.show();
 
 }
 
