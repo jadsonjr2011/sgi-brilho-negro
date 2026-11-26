@@ -6225,48 +6225,275 @@ def relatorio_geral_viagens():
         download_name="relatorio_geral_viagens.pdf"
     )
 
+
 @app.route("/admin/financeiro")
 def financeiro():
 
     if not usuario_tem_permissao("financeiro"):
         return redirect("/admin")
 
-
     db = SessionLocal()
 
+    try:
 
-    receitas = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor),0)
-            FROM financeiro
-            WHERE tipo='RECEITA'
-        """)
-    ).scalar()
+        # ==========================================
+        # TEMPORADAS
+        # ==========================================
 
+        temporadas = db.execute(
+            text("""
+                SELECT id, nome, ano, status
+                FROM temporadas
+                ORDER BY ano DESC, id DESC
+            """)
+        ).fetchall()
 
-    despesas = db.execute(
-        text("""
-            SELECT COALESCE(SUM(valor),0)
-            FROM financeiro
-            WHERE tipo='DESPESA'
-        """)
-    ).scalar()
+        temporada_selecionada = (
+            request.args.get("temporada") or ""
+        ).strip()
 
+        anos_disponiveis = [
+            str(item.ano)
+            for item in temporadas
+        ]
 
-    saldo = receitas - despesas
+        if temporada_selecionada not in anos_disponiveis:
+            temporada_selecionada = (
+                anos_disponiveis[0]
+                if anos_disponiveis
+                else ""
+            )
 
+        # ==========================================
+        # FUNÇÃO DE FORMATAÇÃO
+        # ==========================================
 
-    db.close()
+        def formatar_valor(valor):
 
-    movimento_ok = request.args.get("novo")
+            return (
+                f"{float(valor or 0):,.2f}"
+                .replace(",", "X")
+                .replace(".", ",")
+                .replace("X", ".")
+            )
 
-    return render_template(
-        "admin/financeiro.html",
-        receitas=f"{receitas:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-        despesas=f"{despesas:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-        saldo=f"{saldo:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
-        movimento_ok=movimento_ok
-    )
+        receitas = 0
+        despesas = 0
+        chart_mensal = []
+        ultimas_movimentacoes = []
+
+        # ==========================================
+        # DADOS DA TEMPORADA
+        # ==========================================
+
+        if temporada_selecionada:
+
+            # ======================================
+            # RECEITAS
+            # ======================================
+
+            receitas = db.execute(
+                text("""
+                    SELECT COALESCE(SUM(valor), 0)
+                    FROM financeiro
+                    WHERE tipo = 'RECEITA'
+                      AND temporada = :temporada
+                """),
+                {"temporada": temporada_selecionada}
+            ).scalar() or 0
+
+            # ======================================
+            # DESPESAS
+            # ======================================
+
+            despesas = db.execute(
+                text("""
+                    SELECT COALESCE(SUM(valor), 0)
+                    FROM financeiro
+                    WHERE tipo = 'DESPESA'
+                      AND temporada = :temporada
+                """),
+                {"temporada": temporada_selecionada}
+            ).scalar() or 0
+
+            # ======================================
+            # EVOLUÇÃO MENSAL
+            # ======================================
+
+            dados_mensais = db.execute(
+                text("""
+                    SELECT
+                        EXTRACT(
+                            MONTH FROM CAST(data_movimento AS DATE)
+                        ) AS numero_mes,
+
+                        COALESCE(
+                            SUM(
+                                CASE
+                                    WHEN tipo = 'RECEITA'
+                                    THEN valor
+                                    ELSE 0
+                                END
+                            ), 0
+                        ) AS receitas,
+
+                        COALESCE(
+                            SUM(
+                                CASE
+                                    WHEN tipo = 'DESPESA'
+                                    THEN valor
+                                    ELSE 0
+                                END
+                            ), 0
+                        ) AS despesas
+
+                    FROM financeiro
+
+                    WHERE temporada = :temporada
+
+                    GROUP BY
+                        EXTRACT(
+                            MONTH FROM CAST(data_movimento AS DATE)
+                        )
+
+                    ORDER BY numero_mes
+                """),
+                {"temporada": temporada_selecionada}
+            ).fetchall()
+
+            meses = [
+                "Jan", "Fev", "Mar", "Abr",
+                "Mai", "Jun", "Jul", "Ago",
+                "Set", "Out", "Nov", "Dez"
+            ]
+
+            valores_mensais = {
+                int(item.numero_mes): item
+                for item in dados_mensais
+            }
+
+            for numero, nome_mes in enumerate(meses, 1):
+
+                item = valores_mensais.get(numero)
+
+                valor_receitas = (
+                    float(item.receitas or 0)
+                    if item else 0
+                )
+
+                valor_despesas = (
+                    float(item.despesas or 0)
+                    if item else 0
+                )
+
+                chart_mensal.append({
+                    "mes": nome_mes,
+                    "receitas": formatar_valor(valor_receitas),
+                    "despesas": formatar_valor(valor_despesas),
+                    "receitas_valor": valor_receitas,
+                    "despesas_valor": valor_despesas
+                })
+
+            maior_valor = max(
+                [
+                    max(
+                        item["receitas_valor"],
+                        item["despesas_valor"]
+                    )
+                    for item in chart_mensal
+                ] or [0]
+            )
+
+            for item in chart_mensal:
+
+                if maior_valor > 0:
+
+                    item["receitas_largura"] = round(
+                        item["receitas_valor"] / maior_valor * 100,
+                        1
+                    )
+
+                    item["despesas_largura"] = round(
+                        item["despesas_valor"] / maior_valor * 100,
+                        1
+                    )
+
+                else:
+
+                    item["receitas_largura"] = 0
+                    item["despesas_largura"] = 0
+
+            # ======================================
+            # ÚLTIMAS MOVIMENTAÇÕES
+            # ======================================
+
+            dados_movimentacoes = db.execute(
+                text("""
+                    SELECT
+                        id,
+                        data_movimento,
+                        tipo,
+                        categoria,
+                        descricao,
+                        valor
+
+                    FROM financeiro
+
+                    WHERE temporada = :temporada
+
+                    ORDER BY
+                        CAST(data_movimento AS DATE) DESC,
+                        id DESC
+
+                    LIMIT 5
+                """),
+                {"temporada": temporada_selecionada}
+            ).fetchall()
+
+            for item in dados_movimentacoes:
+
+                ultimas_movimentacoes.append({
+
+                    "id": item.id,
+                    "data": item.data_movimento,
+                    "tipo": item.tipo,
+                    "categoria": item.categoria,
+                    "descricao": item.descricao,
+                    "valor": formatar_valor(item.valor)
+
+                })
+
+        # ==========================================
+        # SALDO
+        # ==========================================
+
+        saldo = float(receitas) - float(despesas)
+
+        # ==========================================
+        # RETORNO
+        # ==========================================
+
+        return render_template(
+            "admin/financeiro.html",
+
+            temporadas=temporadas,
+
+            temporada_selecionada=temporada_selecionada,
+
+            receitas=formatar_valor(receitas),
+            despesas=formatar_valor(despesas),
+            saldo=formatar_valor(saldo),
+
+            chart_mensal=chart_mensal,
+            ultimas_movimentacoes=ultimas_movimentacoes,
+
+            movimento_ok=request.args.get("novo")
+        )
+
+    finally:
+
+        db.close()
+
 
 @app.route("/admin/financeiro/nova", methods=["GET","POST"])
 def nova_movimentacao():
@@ -6326,7 +6553,9 @@ def nova_movimentacao():
         db.close()
 
 
-        return redirect("/admin/financeiro?novo=ok")
+        return redirect(
+            f"/admin/financeiro?temporada={request.form.get('temporada')}&novo=ok"
+        )
 
 
     db.close()

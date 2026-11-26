@@ -6,6 +6,160 @@ Financeiro
 
 {% block conteudo %}
 
+
+<style>
+
+.financeiro-analise {
+    color: #f1f1f1;
+}
+
+.financeiro-analise .bn-painel {
+    background: #1d1f25;
+    border: 1px solid #33353d;
+    border-radius: 14px;
+    padding: 22px;
+    height: 100%;
+}
+
+.financeiro-analise .bn-painel-titulo {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.financeiro-analise .bn-painel-subtitulo {
+    color: #999;
+    font-size: 13px;
+    margin-bottom: 22px;
+}
+
+.financeiro-analise .legenda {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #bbb;
+    margin-bottom: 20px;
+}
+
+.financeiro-analise .legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.financeiro-analise .legenda-cor {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+}
+
+.financeiro-analise .mes-linha {
+    display: grid;
+    grid-template-columns: 35px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.financeiro-analise .mes-nome {
+    color: #aaa;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.financeiro-analise .barras-mes {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.financeiro-analise .barra-fundo {
+    height: 9px;
+    width: 100%;
+    background: #30333b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.financeiro-analise .barra-valor {
+    height: 100%;
+    border-radius: 10px;
+    min-width: 0;
+}
+
+.financeiro-analise .barra-receita {
+    background: #20a66a;
+}
+
+.financeiro-analise .barra-despesa {
+    background: #dc5965;
+}
+
+.financeiro-analise .tabela-movimentos {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.financeiro-analise .tabela-movimentos th {
+    color: #999;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 12px 8px;
+    border-bottom: 1px solid #383b43;
+}
+
+.financeiro-analise .tabela-movimentos td {
+    padding: 13px 8px;
+    border-bottom: 1px solid #30333b;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+.financeiro-analise .movimento-descricao {
+    font-weight: 600;
+    color: #eee;
+}
+
+.financeiro-analise .movimento-categoria {
+    color: #999;
+    font-size: 11px;
+}
+
+.financeiro-analise .valor-receita {
+    color: #35c486;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.financeiro-analise .valor-despesa {
+    color: #ef707b;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.financeiro-analise .vazio {
+    color: #888;
+    text-align: center;
+    padding: 30px 10px;
+}
+
+@media(max-width: 768px) {
+
+    .financeiro-analise .bn-painel {
+        padding: 16px;
+    }
+
+    .financeiro-analise .tabela-movimentos {
+        min-width: 550px;
+    }
+
+}
+
+</style>
+
+
 <div class="card-bn financeiro-container">
 
 
@@ -22,11 +176,43 @@ Financeiro
      CABEÇALHO
 ============================ -->
 
-<div class="financeiro-cabecalho">
+<div class="financeiro-cabecalho d-flex justify-content-between align-items-center flex-wrap gap-3">
 
     <h2 class="titulo mb-0">
         💰 Financeiro
     </h2>
+
+    <form method="GET" action="/admin/financeiro">
+
+        <div class="d-flex align-items-center gap-2">
+
+            <label class="form-label mb-0">
+                Temporada:
+            </label>
+
+            <select
+                name="temporada"
+                class="form-select"
+                style="min-width: 180px;"
+                onchange="this.form.submit()">
+
+                {% for temporada in temporadas %}
+
+                    <option
+                        value="{{ temporada.ano }}"
+                        {% if temporada_selecionada == temporada.ano|string %}selected{% endif %}>
+
+                        {{ temporada.nome or temporada.ano }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+    </form>
 
 </div>
 
@@ -126,7 +312,7 @@ Financeiro
 
 
     <a
-        href="/admin/financeiro/movimentacoes"
+        href="/admin/financeiro/movimentacoes?temporada={{ temporada_selecionada }}"
         class="btn btn-info">
 
         📋 Ver Movimentações
@@ -143,6 +329,186 @@ Financeiro
 
     </button>
 
+
+</div>
+
+
+<!-- ==========================================
+     ANÁLISES DO FINANCEIRO
+========================================== -->
+
+<div class="financeiro-analise mt-4">
+
+    <div class="row g-4">
+
+        <!-- EVOLUÇÃO MENSAL -->
+
+        <div class="col-lg-6">
+
+            <div class="bn-painel">
+
+                <div class="bn-painel-titulo">
+                    📊 Evolução Mensal
+                </div>
+
+                <div class="bn-painel-subtitulo">
+                    Receitas e despesas da temporada selecionada
+                </div>
+
+                <div class="legenda">
+
+                    <div class="legenda-item">
+                        <span class="legenda-cor"
+                              style="background:#20a66a"></span>
+                        Receitas
+                    </div>
+
+                    <div class="legenda-item">
+                        <span class="legenda-cor"
+                              style="background:#dc5965"></span>
+                        Despesas
+                    </div>
+
+                </div>
+
+                {% for mes in chart_mensal %}
+
+                    <div class="mes-linha">
+
+                        <div class="mes-nome">
+                            {{ mes.mes }}
+                        </div>
+
+                        <div class="barras-mes">
+
+                            <div class="barra-fundo">
+
+                                <div
+                                    class="barra-valor barra-receita"
+                                    style="width:{{ mes.receitas_largura }}%">
+                                </div>
+
+                            </div>
+
+                            <div class="barra-fundo">
+
+                                <div
+                                    class="barra-valor barra-despesa"
+                                    style="width:{{ mes.despesas_largura }}%">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ÚLTIMAS MOVIMENTAÇÕES -->
+
+        <div class="col-lg-6">
+
+            <div class="bn-painel">
+
+                <div class="bn-painel-titulo">
+                    🧾 Últimas Movimentações
+                </div>
+
+                <div class="bn-painel-subtitulo">
+                    Os cinco lançamentos mais recentes
+                </div>
+
+                {% if ultimas_movimentacoes %}
+
+                    <div class="table-responsive">
+
+                        <table class="tabela-movimentos">
+
+                            <thead>
+
+                                <tr>
+                                    <th>Movimentação</th>
+                                    <th>Data</th>
+                                    <th class="text-end">Valor</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% for item in ultimas_movimentacoes %}
+
+                                    <tr>
+
+                                        <td>
+
+                                            <div class="movimento-descricao">
+                                                {{ item.descricao }}
+                                            </div>
+
+                                            <div class="movimento-categoria">
+                                                {{ item.categoria }}
+                                            </div>
+
+                                        </td>
+
+                                        <td class="text-nowrap">
+
+                                            {{ item.data.strftime('%d/%m/%Y') if item.data else '-' }}
+
+                                        </td>
+
+                                        <td class="text-end">
+
+                                            {% if item.tipo == 'RECEITA' %}
+
+                                                <span class="valor-receita">
+                                                    + R$ {{ item.valor }}
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="valor-despesa">
+                                                    - R$ {{ item.valor }}
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="vazio">
+
+                        <div class="fs-3 mb-2">📭</div>
+
+                        Nenhuma movimentação cadastrada nesta temporada.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -219,14 +585,17 @@ Financeiro
                                     Selecione a temporada
                                 </option>
 
-                                <option value="2026">
-                                    2026
-                                </option>
+                                {% for temporada in temporadas %}
 
-                                <option value="2027">
-                                    2027
-                                </option>
+                                    <option
+                                        value="{{ temporada.ano }}"
+                                        {% if temporada_selecionada == temporada.ano|string %}selected{% endif %}>
+                                        {{ temporada.nome or temporada.ano }}
+                                    </option>
 
+                                {% endfor %}    
+
+                               
                             </select>
 
                         </div>
@@ -511,7 +880,7 @@ Financeiro
                     <div class="col-md-6">
 
                         <a
-                            href="/admin/financeiro/relatorio-categorias"
+                            href="/admin/financeiro/relatorio-categorias?temporada={{ temporada_selecionada }}"
                             target="_blank"
                             class="btn btn-outline-warning w-100 p-3">
 
@@ -776,13 +1145,17 @@ Financeiro
                             class="form-select"
                             required>
 
-                            <option value="2026">
-                                2026
-                            </option>
+                            {% for temporada in temporadas %}
 
-                            <option value="2027">
-                                2027
-                            </option>
+                                <option
+                                    value="{{ temporada.ano }}"
+                                    {% if temporada_selecionada == temporada.ano|string %}selected{% endif %}>
+
+                                    {{ temporada.nome or temporada.ano }}
+
+                                </option>
+
+                            {% endfor %}
 
                         </select>
 
@@ -953,13 +1326,17 @@ Financeiro
                             class="form-select"
                             required>
 
-                            <option value="2026">
-                                2026
-                            </option>
+                            {% for temporada in temporadas %}
 
-                            <option value="2027">
-                                2027
-                            </option>
+                                <option
+                                    value="{{ temporada.ano }}"
+                                    {% if temporada_selecionada == temporada.ano|string %}selected{% endif %}>
+
+                                    {{ temporada.nome or temporada.ano }}
+
+                                </option>
+
+                            {% endfor %}
 
                         </select>
 
